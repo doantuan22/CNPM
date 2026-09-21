@@ -56,14 +56,14 @@ Frontend (http://localhost:5173):
 
 ```bash
 cd frontend
-npm run dev
+npm.cmd run dev
 ```
 
 Backend (http://localhost:5000):
 
 ```bash
 cd backend
-npm run dev
+npm.cmd run dev
 ```
 
 Kiểm tra backend: `GET http://localhost:5000/api/health`
