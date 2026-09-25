@@ -1,0 +1,13 @@
+// Prisma schema file for Hotel Booking Platform
+// Note: Database (SQL Server) is the single source of truth.
+// Business schema will be synchronized from the database via Prisma db pull in M0/DB-0.
+// Do not modify business models manually.
+
+datasource db {
+  provider = "sqlserver"
+}
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
