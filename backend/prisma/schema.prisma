@@ -40,7 +40,7 @@ model DANH_GIA {
   MaKhachHang       Int
   MaKhachSan        Int
   DiemDanhGia       Int                 @db.TinyInt
-  NoiDung           String              @db.NVarChar(Max)
+  NoiDung           String?             @db.NVarChar(Max)
   TrangThai         String              @db.NVarChar(30)
   DAT_PHONG         DAT_PHONG           @relation(fields: [MaDatPhong], references: [MaDatPhong], onUpdate: NoAction, map: "FK_DANH_GIA_DAT_PHONG")
   KHACH_SAN         KHACH_SAN           @relation(fields: [MaKhachSan], references: [MaKhachSan], onUpdate: NoAction, map: "FK_DANH_GIA_KHACH_SAN")
@@ -141,7 +141,7 @@ model KHACH_SAN {
   TenKhachSan                                    String                @db.NVarChar(255)
   DiaChiChiTiet                                  String                @db.NVarChar(500)
   HangSao                                        Int                   @db.TinyInt
-  MoTa                                           String                @db.NVarChar(Max)
+  MoTa                                           String?               @db.NVarChar(Max)
   GioNhanPhong                                   DateTime              @db.Time
   GioTraPhong                                    DateTime              @db.Time
   TrangThai                                      String                @db.NVarChar(30)
@@ -190,7 +190,7 @@ model LOAI_PHONG {
   SucChua              Int
   DienTich             Decimal                @db.Decimal(6, 2)
   LoaiGiuong           String                 @db.NVarChar(50)
-  MoTa                 String                 @db.NVarChar(Max)
+  MoTa                 String?                @db.NVarChar(Max)
   TrangThai            String                 @db.NVarChar(30)
   CHI_TIET_DAT_PHONG   CHI_TIET_DAT_PHONG[]
   HINH_ANH_LOAI_PHONG  HINH_ANH_LOAI_PHONG[]
@@ -216,6 +216,8 @@ model QUY_PHONG_GIA {
   SoLuongPhong Int
   TrangThai    String     @db.NVarChar(30)
   LOAI_PHONG   LOAI_PHONG @relation(fields: [MaLoaiPhong], references: [MaLoaiPhong], onUpdate: NoAction, map: "FK_QUY_PHONG_GIA_LOAI_PHONG")
+
+  @@unique([MaLoaiPhong, NgayApDung], map: "UQ_QUY_PHONG_GIA_MaLoaiPhong_NgayApDung")
 }
 
 model TAI_KHOAN {
@@ -226,9 +228,9 @@ model TAI_KHOAN {
   MatKhau                                                      String           @db.NVarChar(255)
   HoTen                                                        String           @db.NVarChar(150)
   SoDienThoai                                                  String           @db.VarChar(20)
-  NgaySinh                                                     DateTime         @db.Date
-  GioiTinh                                                     String           @db.NVarChar(20)
-  AnhDaiDien                                                   String           @db.NVarChar(500)
+  NgaySinh                                                     DateTime?        @db.Date
+  GioiTinh                                                     String?          @db.NVarChar(20)
+  AnhDaiDien                                                   String?          @db.NVarChar(500)
   TrangThai                                                    String           @db.NVarChar(30)
   NgayTao                                                      DateTime
   NgayCapNhat                                                  DateTime
@@ -258,7 +260,7 @@ model THANH_TOAN {
 model TIEN_NGHI {
   MaTienNghi           Int                    @id(map: "PK_TIEN_NGHI") @default(autoincrement())
   TenTienNghi          String                 @unique(map: "UQ_TIEN_NGHI_TenTienNghi") @db.NVarChar(150)
-  BieuTuong            String                 @db.NVarChar(255)
+  BieuTuong            String?                @db.NVarChar(255)
   KHACH_SAN_TIEN_NGHI  KHACH_SAN_TIEN_NGHI[]
   LOAI_PHONG_TIEN_NGHI LOAI_PHONG_TIEN_NGHI[]
 }

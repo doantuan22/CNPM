@@ -83,7 +83,7 @@ Implemented = created in `database/migrations/`. Tested = exercised in `database
 | DANH_GIA | UQ_DANH_GIA_MaDatPhong | MaDatPhong | Ch7 RB9 (7.5) / RB26 (7.2, "Đồng thời là khóa duy nhất") | Yes | — |
 | KHACH_SAN_TIEN_NGHI | PK_KHACH_SAN_TIEN_NGHI (composite PK doubles as uniqueness) | MaKhachSan, MaTienNghi | Ch7 RB4 (7.5) | Yes | — |
 | LOAI_PHONG_TIEN_NGHI | PK_LOAI_PHONG_TIEN_NGHI (composite PK doubles as uniqueness) | MaLoaiPhong, MaTienNghi | Ch7 RB5 (7.5) | Yes | — |
-| QUY_PHONG_GIA | *(not created)* | MaLoaiPhong, NgayApDung | **No source — DDI-02** | No | — |
+| QUY_PHONG_GIA | UQ_QUY_PHONG_GIA_MaLoaiPhong_NgayApDung | MaLoaiPhong, NgayApDung | **DDI-02 (RESOLVED) — user decision** | Yes | Yes |
 
 > RB7 (7.5, KHUYEN_MAI_KHACH_SAN composite unique) là OBSOLETE theo G0-01.
 

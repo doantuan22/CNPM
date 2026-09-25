@@ -37,6 +37,11 @@ INSERT INTO LOAI_PHONG (MaKhachSan, TenLoaiPhong, SoGiuong, SucChua, DienTich, L
 VALUES (@MaKhachSan, N'Standard', 1, 2, 20.0, N'Double', N'Standard room', N'Hoat dong');
 DECLARE @MaLoaiPhong INT = SCOPE_IDENTITY();
 
+-- Second room type, used only by the DDI-02 "different MaLoaiPhong" test.
+INSERT INTO LOAI_PHONG (MaKhachSan, TenLoaiPhong, SoGiuong, SucChua, DienTich, LoaiGiuong, MoTa, TrangThai)
+VALUES (@MaKhachSan, N'Deluxe', 1, 2, 25.0, N'Double', N'Deluxe room', N'Hoat dong');
+DECLARE @MaLoaiPhong2 INT = SCOPE_IDENTITY();
+
 INSERT INTO CHINH_SACH_HUY (TenChinhSach, MoTa, TrangThai, NgayTao)
 VALUES (N'Flexible', N'Flexible cancellation', N'Hoat dong', SYSDATETIME());
 DECLARE @MaChinhSachHuy INT = SCOPE_IDENTITY();
@@ -156,6 +161,24 @@ BEGIN CATCH
 END CATCH
 
 -- -----------------------------------------------------------------
+-- TEST 9b (positive, encoding-sensitive): a valid closed-domain Vietnamese
+-- value (with diacritics) must be ACCEPTED. This specifically guards against
+-- the class of bug where a migration/script is executed with the wrong
+-- input codepage and the CHECK constraint gets compiled with mojibake
+-- literals that no longer match correctly-encoded application data — see
+-- database/docs/db0-report.md "Encoding defect found and fixed in M1".
+-- -----------------------------------------------------------------
+BEGIN TRY
+    INSERT INTO HO_SO_DOI_TAC (MaTaiKhoan, SoCCCD, SoGiayPhepKinhDoanh, MaSoThue, TepGiayTo, TrangThaiDuyet, NgayNop)
+    VALUES (@MaTaiKhoan, N'987654321', N'GP-002', N'MST-002', N'/doc2.pdf', N'Chờ duyệt', SYSDATETIME());
+    PRINT 'PASS: TEST 9b valid Vietnamese-diacritic TrangThaiDuyet accepted';
+END TRY
+BEGIN CATCH
+    PRINT 'FAIL: TEST 9b valid TrangThaiDuyet (Chờ duyệt) was rejected (' + ERROR_MESSAGE() + ')';
+    SET @FailCount += 1;
+END CATCH
+
+-- -----------------------------------------------------------------
 -- TEST 9 (control/positive): a fully valid CHI_TIET_DAT_PHONG insert must succeed
 -- -----------------------------------------------------------------
 BEGIN TRY
@@ -165,6 +188,124 @@ BEGIN TRY
 END TRY
 BEGIN CATCH
     PRINT 'FAIL: TEST 9 valid insert was rejected (' + ERROR_MESSAGE() + ')';
+    SET @FailCount += 1;
+END CATCH
+
+-- -----------------------------------------------------------------
+-- DDI-02 (RESOLVED) regression: UNIQUE (MaLoaiPhong, NgayApDung) on
+-- QUY_PHONG_GIA. User decision: one loại phòng, one bản ghi giá per ngày.
+-- -----------------------------------------------------------------
+
+-- TEST 10: first insert for (MaLoaiPhong, NgayApDung) -> must succeed
+BEGIN TRY
+    INSERT INTO QUY_PHONG_GIA (MaLoaiPhong, NgayApDung, GiaPhong, SoLuongPhong, TrangThai)
+    VALUES (@MaLoaiPhong, '2026-02-01', 500000, 5, N'Mo ban');
+    PRINT 'PASS: TEST 10 first (MaLoaiPhong, NgayApDung) insert succeeded';
+END TRY
+BEGIN CATCH
+    PRINT 'FAIL: TEST 10 first insert was rejected (' + ERROR_MESSAGE() + ')';
+    SET @FailCount += 1;
+END CATCH
+
+-- TEST 11: same (MaLoaiPhong, NgayApDung) again -> must fail (DDI-02 UNIQUE)
+BEGIN TRY
+    INSERT INTO QUY_PHONG_GIA (MaLoaiPhong, NgayApDung, GiaPhong, SoLuongPhong, TrangThai)
+    VALUES (@MaLoaiPhong, '2026-02-01', 600000, 3, N'Mo ban');
+    PRINT 'FAIL: TEST 11 duplicate (MaLoaiPhong, NgayApDung) was allowed';
+    SET @FailCount += 1;
+END TRY
+BEGIN CATCH
+    PRINT 'PASS: TEST 11 duplicate (MaLoaiPhong, NgayApDung) rejected (' + ERROR_MESSAGE() + ')';
+END CATCH
+
+-- TEST 12: same MaLoaiPhong, different NgayApDung -> must succeed
+BEGIN TRY
+    INSERT INTO QUY_PHONG_GIA (MaLoaiPhong, NgayApDung, GiaPhong, SoLuongPhong, TrangThai)
+    VALUES (@MaLoaiPhong, '2026-02-02', 500000, 5, N'Mo ban');
+    PRINT 'PASS: TEST 12 same MaLoaiPhong / different NgayApDung succeeded';
+END TRY
+BEGIN CATCH
+    PRINT 'FAIL: TEST 12 same MaLoaiPhong / different NgayApDung was rejected (' + ERROR_MESSAGE() + ')';
+    SET @FailCount += 1;
+END CATCH
+
+-- TEST 13: different MaLoaiPhong, same NgayApDung -> must succeed
+BEGIN TRY
+    INSERT INTO QUY_PHONG_GIA (MaLoaiPhong, NgayApDung, GiaPhong, SoLuongPhong, TrangThai)
+    VALUES (@MaLoaiPhong2, '2026-02-01', 700000, 2, N'Mo ban');
+    PRINT 'PASS: TEST 13 different MaLoaiPhong / same NgayApDung succeeded';
+END TRY
+BEGIN CATCH
+    PRINT 'FAIL: TEST 13 different MaLoaiPhong / same NgayApDung was rejected (' + ERROR_MESSAGE() + ')';
+    SET @FailCount += 1;
+END CATCH
+
+-- -----------------------------------------------------------------
+-- DDI-01 (RESOLVED) regression: exact nullable/not-null per user decision.
+-- -----------------------------------------------------------------
+
+-- TEST 14: TAI_KHOAN with NgaySinh/GioiTinh/AnhDaiDien = NULL -> must succeed
+BEGIN TRY
+    INSERT INTO TAI_KHOAN (MaVaiTro, TenDangNhap, Email, MatKhau, HoTen, SoDienThoai, NgaySinh, GioiTinh, AnhDaiDien, TrangThai, NgayTao, NgayCapNhat)
+    VALUES (@MaVaiTro, N'test_user_nulls', N'test_user_nulls@example.com', N'hashed', N'Nullable Fields User', '0900000002', NULL, NULL, NULL, N'Hoat dong', SYSDATETIME(), SYSDATETIME());
+    PRINT 'PASS: TEST 14 TAI_KHOAN with NgaySinh/GioiTinh/AnhDaiDien = NULL accepted';
+END TRY
+BEGIN CATCH
+    PRINT 'FAIL: TEST 14 NULL optional fields were rejected (' + ERROR_MESSAGE() + ')';
+    SET @FailCount += 1;
+END CATCH
+
+-- TEST 15: TAI_KHOAN with SoDienThoai = NULL -> must still fail (stays NOT NULL)
+BEGIN TRY
+    INSERT INTO TAI_KHOAN (MaVaiTro, TenDangNhap, Email, MatKhau, HoTen, SoDienThoai, NgaySinh, GioiTinh, AnhDaiDien, TrangThai, NgayTao, NgayCapNhat)
+    VALUES (@MaVaiTro, N'test_user_badphone', N'test_user_badphone@example.com', N'hashed', N'Bad Phone User', NULL, '1990-01-01', N'Khac', N'/avatar.png', N'Hoat dong', SYSDATETIME(), SYSDATETIME());
+    PRINT 'FAIL: TEST 15 SoDienThoai = NULL was allowed';
+    SET @FailCount += 1;
+END TRY
+BEGIN CATCH
+    PRINT 'PASS: TEST 15 SoDienThoai = NULL rejected (' + ERROR_MESSAGE() + ')';
+END CATCH
+
+-- TEST 16: KHACH_SAN.MoTa = NULL -> must succeed
+BEGIN TRY
+    INSERT INTO KHACH_SAN (MaTaiKhoanSoHuu, MaDiaPhuong, TenKhachSan, DiaChiChiTiet, HangSao, MoTa, GioNhanPhong, GioTraPhong, TrangThai, NgayDangKy, NgayCapNhat)
+    VALUES (@MaTaiKhoan, @MaDiaPhuong, N'No-Description Hotel', N'789 Test St', 3, NULL, '14:00', '12:00', N'Hoat dong', SYSDATETIME(), SYSDATETIME());
+    PRINT 'PASS: TEST 16 KHACH_SAN.MoTa = NULL accepted';
+END TRY
+BEGIN CATCH
+    PRINT 'FAIL: TEST 16 KHACH_SAN.MoTa = NULL was rejected (' + ERROR_MESSAGE() + ')';
+    SET @FailCount += 1;
+END CATCH
+
+-- TEST 17: LOAI_PHONG.MoTa = NULL -> must succeed
+BEGIN TRY
+    INSERT INTO LOAI_PHONG (MaKhachSan, TenLoaiPhong, SoGiuong, SucChua, DienTich, LoaiGiuong, MoTa, TrangThai)
+    VALUES (@MaKhachSan, N'No-Description Room', 1, 2, 18.0, N'Single', NULL, N'Hoat dong');
+    PRINT 'PASS: TEST 17 LOAI_PHONG.MoTa = NULL accepted';
+END TRY
+BEGIN CATCH
+    PRINT 'FAIL: TEST 17 LOAI_PHONG.MoTa = NULL was rejected (' + ERROR_MESSAGE() + ')';
+    SET @FailCount += 1;
+END CATCH
+
+-- TEST 18: TIEN_NGHI.BieuTuong = NULL -> must succeed
+BEGIN TRY
+    INSERT INTO TIEN_NGHI (TenTienNghi, BieuTuong) VALUES (N'No-Icon Amenity', NULL);
+    PRINT 'PASS: TEST 18 TIEN_NGHI.BieuTuong = NULL accepted';
+END TRY
+BEGIN CATCH
+    PRINT 'FAIL: TEST 18 TIEN_NGHI.BieuTuong = NULL was rejected (' + ERROR_MESSAGE() + ')';
+    SET @FailCount += 1;
+END CATCH
+
+-- TEST 19: DANH_GIA.NoiDung = NULL -> must succeed
+BEGIN TRY
+    INSERT INTO DANH_GIA (MaDatPhong, MaKhachHang, MaKhachSan, DiemDanhGia, NoiDung, TrangThai)
+    VALUES (@MaDatPhong, @MaTaiKhoan, @MaKhachSan, 5, NULL, N'Hien thi');
+    PRINT 'PASS: TEST 19 DANH_GIA.NoiDung = NULL accepted';
+END TRY
+BEGIN CATCH
+    PRINT 'FAIL: TEST 19 DANH_GIA.NoiDung = NULL was rejected (' + ERROR_MESSAGE() + ')';
     SET @FailCount += 1;
 END CATCH
 

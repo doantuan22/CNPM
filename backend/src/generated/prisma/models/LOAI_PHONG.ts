@@ -227,7 +227,7 @@ export type LOAI_PHONGGroupByOutputType = {
   SucChua: number
   DienTich: runtime.Decimal
   LoaiGiuong: string
-  MoTa: string
+  MoTa: string | null
   TrangThai: string
   _count: LOAI_PHONGCountAggregateOutputType | null
   _avg: LOAI_PHONGAvgAggregateOutputType | null
@@ -262,7 +262,7 @@ export type LOAI_PHONGWhereInput = {
   SucChua?: Prisma.IntFilter<"LOAI_PHONG"> | number
   DienTich?: Prisma.DecimalFilter<"LOAI_PHONG"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   LoaiGiuong?: Prisma.StringFilter<"LOAI_PHONG"> | string
-  MoTa?: Prisma.StringFilter<"LOAI_PHONG"> | string
+  MoTa?: Prisma.StringNullableFilter<"LOAI_PHONG"> | string | null
   TrangThai?: Prisma.StringFilter<"LOAI_PHONG"> | string
   CHI_TIET_DAT_PHONG?: Prisma.CHI_TIET_DAT_PHONGListRelationFilter
   HINH_ANH_LOAI_PHONG?: Prisma.HINH_ANH_LOAI_PHONGListRelationFilter
@@ -279,7 +279,7 @@ export type LOAI_PHONGOrderByWithRelationInput = {
   SucChua?: Prisma.SortOrder
   DienTich?: Prisma.SortOrder
   LoaiGiuong?: Prisma.SortOrder
-  MoTa?: Prisma.SortOrder
+  MoTa?: Prisma.SortOrderInput | Prisma.SortOrder
   TrangThai?: Prisma.SortOrder
   CHI_TIET_DAT_PHONG?: Prisma.CHI_TIET_DAT_PHONGOrderByRelationAggregateInput
   HINH_ANH_LOAI_PHONG?: Prisma.HINH_ANH_LOAI_PHONGOrderByRelationAggregateInput
@@ -299,7 +299,7 @@ export type LOAI_PHONGWhereUniqueInput = Prisma.AtLeast<{
   SucChua?: Prisma.IntFilter<"LOAI_PHONG"> | number
   DienTich?: Prisma.DecimalFilter<"LOAI_PHONG"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   LoaiGiuong?: Prisma.StringFilter<"LOAI_PHONG"> | string
-  MoTa?: Prisma.StringFilter<"LOAI_PHONG"> | string
+  MoTa?: Prisma.StringNullableFilter<"LOAI_PHONG"> | string | null
   TrangThai?: Prisma.StringFilter<"LOAI_PHONG"> | string
   CHI_TIET_DAT_PHONG?: Prisma.CHI_TIET_DAT_PHONGListRelationFilter
   HINH_ANH_LOAI_PHONG?: Prisma.HINH_ANH_LOAI_PHONGListRelationFilter
@@ -316,7 +316,7 @@ export type LOAI_PHONGOrderByWithAggregationInput = {
   SucChua?: Prisma.SortOrder
   DienTich?: Prisma.SortOrder
   LoaiGiuong?: Prisma.SortOrder
-  MoTa?: Prisma.SortOrder
+  MoTa?: Prisma.SortOrderInput | Prisma.SortOrder
   TrangThai?: Prisma.SortOrder
   _count?: Prisma.LOAI_PHONGCountOrderByAggregateInput
   _avg?: Prisma.LOAI_PHONGAvgOrderByAggregateInput
@@ -336,7 +336,7 @@ export type LOAI_PHONGScalarWhereWithAggregatesInput = {
   SucChua?: Prisma.IntWithAggregatesFilter<"LOAI_PHONG"> | number
   DienTich?: Prisma.DecimalWithAggregatesFilter<"LOAI_PHONG"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   LoaiGiuong?: Prisma.StringWithAggregatesFilter<"LOAI_PHONG"> | string
-  MoTa?: Prisma.StringWithAggregatesFilter<"LOAI_PHONG"> | string
+  MoTa?: Prisma.StringNullableWithAggregatesFilter<"LOAI_PHONG"> | string | null
   TrangThai?: Prisma.StringWithAggregatesFilter<"LOAI_PHONG"> | string
 }
 
@@ -346,7 +346,7 @@ export type LOAI_PHONGCreateInput = {
   SucChua: number
   DienTich: runtime.Decimal | runtime.DecimalJsLike | number | string
   LoaiGiuong: string
-  MoTa: string
+  MoTa?: string | null
   TrangThai: string
   CHI_TIET_DAT_PHONG?: Prisma.CHI_TIET_DAT_PHONGCreateNestedManyWithoutLOAI_PHONGInput
   HINH_ANH_LOAI_PHONG?: Prisma.HINH_ANH_LOAI_PHONGCreateNestedManyWithoutLOAI_PHONGInput
@@ -363,7 +363,7 @@ export type LOAI_PHONGUncheckedCreateInput = {
   SucChua: number
   DienTich: runtime.Decimal | runtime.DecimalJsLike | number | string
   LoaiGiuong: string
-  MoTa: string
+  MoTa?: string | null
   TrangThai: string
   CHI_TIET_DAT_PHONG?: Prisma.CHI_TIET_DAT_PHONGUncheckedCreateNestedManyWithoutLOAI_PHONGInput
   HINH_ANH_LOAI_PHONG?: Prisma.HINH_ANH_LOAI_PHONGUncheckedCreateNestedManyWithoutLOAI_PHONGInput
@@ -377,7 +377,7 @@ export type LOAI_PHONGUpdateInput = {
   SucChua?: Prisma.IntFieldUpdateOperationsInput | number
   DienTich?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   LoaiGiuong?: Prisma.StringFieldUpdateOperationsInput | string
-  MoTa?: Prisma.StringFieldUpdateOperationsInput | string
+  MoTa?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
   CHI_TIET_DAT_PHONG?: Prisma.CHI_TIET_DAT_PHONGUpdateManyWithoutLOAI_PHONGNestedInput
   HINH_ANH_LOAI_PHONG?: Prisma.HINH_ANH_LOAI_PHONGUpdateManyWithoutLOAI_PHONGNestedInput
@@ -394,7 +394,7 @@ export type LOAI_PHONGUncheckedUpdateInput = {
   SucChua?: Prisma.IntFieldUpdateOperationsInput | number
   DienTich?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   LoaiGiuong?: Prisma.StringFieldUpdateOperationsInput | string
-  MoTa?: Prisma.StringFieldUpdateOperationsInput | string
+  MoTa?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
   CHI_TIET_DAT_PHONG?: Prisma.CHI_TIET_DAT_PHONGUncheckedUpdateManyWithoutLOAI_PHONGNestedInput
   HINH_ANH_LOAI_PHONG?: Prisma.HINH_ANH_LOAI_PHONGUncheckedUpdateManyWithoutLOAI_PHONGNestedInput
@@ -409,7 +409,7 @@ export type LOAI_PHONGCreateManyInput = {
   SucChua: number
   DienTich: runtime.Decimal | runtime.DecimalJsLike | number | string
   LoaiGiuong: string
-  MoTa: string
+  MoTa?: string | null
   TrangThai: string
 }
 
@@ -419,7 +419,7 @@ export type LOAI_PHONGUpdateManyMutationInput = {
   SucChua?: Prisma.IntFieldUpdateOperationsInput | number
   DienTich?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   LoaiGiuong?: Prisma.StringFieldUpdateOperationsInput | string
-  MoTa?: Prisma.StringFieldUpdateOperationsInput | string
+  MoTa?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
@@ -431,7 +431,7 @@ export type LOAI_PHONGUncheckedUpdateManyInput = {
   SucChua?: Prisma.IntFieldUpdateOperationsInput | number
   DienTich?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   LoaiGiuong?: Prisma.StringFieldUpdateOperationsInput | string
-  MoTa?: Prisma.StringFieldUpdateOperationsInput | string
+  MoTa?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
@@ -606,7 +606,7 @@ export type LOAI_PHONGCreateWithoutCHI_TIET_DAT_PHONGInput = {
   SucChua: number
   DienTich: runtime.Decimal | runtime.DecimalJsLike | number | string
   LoaiGiuong: string
-  MoTa: string
+  MoTa?: string | null
   TrangThai: string
   HINH_ANH_LOAI_PHONG?: Prisma.HINH_ANH_LOAI_PHONGCreateNestedManyWithoutLOAI_PHONGInput
   KHACH_SAN: Prisma.KHACH_SANCreateNestedOneWithoutLOAI_PHONGInput
@@ -622,7 +622,7 @@ export type LOAI_PHONGUncheckedCreateWithoutCHI_TIET_DAT_PHONGInput = {
   SucChua: number
   DienTich: runtime.Decimal | runtime.DecimalJsLike | number | string
   LoaiGiuong: string
-  MoTa: string
+  MoTa?: string | null
   TrangThai: string
   HINH_ANH_LOAI_PHONG?: Prisma.HINH_ANH_LOAI_PHONGUncheckedCreateNestedManyWithoutLOAI_PHONGInput
   LOAI_PHONG_TIEN_NGHI?: Prisma.LOAI_PHONG_TIEN_NGHIUncheckedCreateNestedManyWithoutLOAI_PHONGInput
@@ -651,7 +651,7 @@ export type LOAI_PHONGUpdateWithoutCHI_TIET_DAT_PHONGInput = {
   SucChua?: Prisma.IntFieldUpdateOperationsInput | number
   DienTich?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   LoaiGiuong?: Prisma.StringFieldUpdateOperationsInput | string
-  MoTa?: Prisma.StringFieldUpdateOperationsInput | string
+  MoTa?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
   HINH_ANH_LOAI_PHONG?: Prisma.HINH_ANH_LOAI_PHONGUpdateManyWithoutLOAI_PHONGNestedInput
   KHACH_SAN?: Prisma.KHACH_SANUpdateOneRequiredWithoutLOAI_PHONGNestedInput
@@ -667,7 +667,7 @@ export type LOAI_PHONGUncheckedUpdateWithoutCHI_TIET_DAT_PHONGInput = {
   SucChua?: Prisma.IntFieldUpdateOperationsInput | number
   DienTich?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   LoaiGiuong?: Prisma.StringFieldUpdateOperationsInput | string
-  MoTa?: Prisma.StringFieldUpdateOperationsInput | string
+  MoTa?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
   HINH_ANH_LOAI_PHONG?: Prisma.HINH_ANH_LOAI_PHONGUncheckedUpdateManyWithoutLOAI_PHONGNestedInput
   LOAI_PHONG_TIEN_NGHI?: Prisma.LOAI_PHONG_TIEN_NGHIUncheckedUpdateManyWithoutLOAI_PHONGNestedInput
@@ -680,7 +680,7 @@ export type LOAI_PHONGCreateWithoutHINH_ANH_LOAI_PHONGInput = {
   SucChua: number
   DienTich: runtime.Decimal | runtime.DecimalJsLike | number | string
   LoaiGiuong: string
-  MoTa: string
+  MoTa?: string | null
   TrangThai: string
   CHI_TIET_DAT_PHONG?: Prisma.CHI_TIET_DAT_PHONGCreateNestedManyWithoutLOAI_PHONGInput
   KHACH_SAN: Prisma.KHACH_SANCreateNestedOneWithoutLOAI_PHONGInput
@@ -696,7 +696,7 @@ export type LOAI_PHONGUncheckedCreateWithoutHINH_ANH_LOAI_PHONGInput = {
   SucChua: number
   DienTich: runtime.Decimal | runtime.DecimalJsLike | number | string
   LoaiGiuong: string
-  MoTa: string
+  MoTa?: string | null
   TrangThai: string
   CHI_TIET_DAT_PHONG?: Prisma.CHI_TIET_DAT_PHONGUncheckedCreateNestedManyWithoutLOAI_PHONGInput
   LOAI_PHONG_TIEN_NGHI?: Prisma.LOAI_PHONG_TIEN_NGHIUncheckedCreateNestedManyWithoutLOAI_PHONGInput
@@ -725,7 +725,7 @@ export type LOAI_PHONGUpdateWithoutHINH_ANH_LOAI_PHONGInput = {
   SucChua?: Prisma.IntFieldUpdateOperationsInput | number
   DienTich?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   LoaiGiuong?: Prisma.StringFieldUpdateOperationsInput | string
-  MoTa?: Prisma.StringFieldUpdateOperationsInput | string
+  MoTa?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
   CHI_TIET_DAT_PHONG?: Prisma.CHI_TIET_DAT_PHONGUpdateManyWithoutLOAI_PHONGNestedInput
   KHACH_SAN?: Prisma.KHACH_SANUpdateOneRequiredWithoutLOAI_PHONGNestedInput
@@ -741,7 +741,7 @@ export type LOAI_PHONGUncheckedUpdateWithoutHINH_ANH_LOAI_PHONGInput = {
   SucChua?: Prisma.IntFieldUpdateOperationsInput | number
   DienTich?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   LoaiGiuong?: Prisma.StringFieldUpdateOperationsInput | string
-  MoTa?: Prisma.StringFieldUpdateOperationsInput | string
+  MoTa?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
   CHI_TIET_DAT_PHONG?: Prisma.CHI_TIET_DAT_PHONGUncheckedUpdateManyWithoutLOAI_PHONGNestedInput
   LOAI_PHONG_TIEN_NGHI?: Prisma.LOAI_PHONG_TIEN_NGHIUncheckedUpdateManyWithoutLOAI_PHONGNestedInput
@@ -754,7 +754,7 @@ export type LOAI_PHONGCreateWithoutKHACH_SANInput = {
   SucChua: number
   DienTich: runtime.Decimal | runtime.DecimalJsLike | number | string
   LoaiGiuong: string
-  MoTa: string
+  MoTa?: string | null
   TrangThai: string
   CHI_TIET_DAT_PHONG?: Prisma.CHI_TIET_DAT_PHONGCreateNestedManyWithoutLOAI_PHONGInput
   HINH_ANH_LOAI_PHONG?: Prisma.HINH_ANH_LOAI_PHONGCreateNestedManyWithoutLOAI_PHONGInput
@@ -769,7 +769,7 @@ export type LOAI_PHONGUncheckedCreateWithoutKHACH_SANInput = {
   SucChua: number
   DienTich: runtime.Decimal | runtime.DecimalJsLike | number | string
   LoaiGiuong: string
-  MoTa: string
+  MoTa?: string | null
   TrangThai: string
   CHI_TIET_DAT_PHONG?: Prisma.CHI_TIET_DAT_PHONGUncheckedCreateNestedManyWithoutLOAI_PHONGInput
   HINH_ANH_LOAI_PHONG?: Prisma.HINH_ANH_LOAI_PHONGUncheckedCreateNestedManyWithoutLOAI_PHONGInput
@@ -813,7 +813,7 @@ export type LOAI_PHONGScalarWhereInput = {
   SucChua?: Prisma.IntFilter<"LOAI_PHONG"> | number
   DienTich?: Prisma.DecimalFilter<"LOAI_PHONG"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   LoaiGiuong?: Prisma.StringFilter<"LOAI_PHONG"> | string
-  MoTa?: Prisma.StringFilter<"LOAI_PHONG"> | string
+  MoTa?: Prisma.StringNullableFilter<"LOAI_PHONG"> | string | null
   TrangThai?: Prisma.StringFilter<"LOAI_PHONG"> | string
 }
 
@@ -823,7 +823,7 @@ export type LOAI_PHONGCreateWithoutLOAI_PHONG_TIEN_NGHIInput = {
   SucChua: number
   DienTich: runtime.Decimal | runtime.DecimalJsLike | number | string
   LoaiGiuong: string
-  MoTa: string
+  MoTa?: string | null
   TrangThai: string
   CHI_TIET_DAT_PHONG?: Prisma.CHI_TIET_DAT_PHONGCreateNestedManyWithoutLOAI_PHONGInput
   HINH_ANH_LOAI_PHONG?: Prisma.HINH_ANH_LOAI_PHONGCreateNestedManyWithoutLOAI_PHONGInput
@@ -839,7 +839,7 @@ export type LOAI_PHONGUncheckedCreateWithoutLOAI_PHONG_TIEN_NGHIInput = {
   SucChua: number
   DienTich: runtime.Decimal | runtime.DecimalJsLike | number | string
   LoaiGiuong: string
-  MoTa: string
+  MoTa?: string | null
   TrangThai: string
   CHI_TIET_DAT_PHONG?: Prisma.CHI_TIET_DAT_PHONGUncheckedCreateNestedManyWithoutLOAI_PHONGInput
   HINH_ANH_LOAI_PHONG?: Prisma.HINH_ANH_LOAI_PHONGUncheckedCreateNestedManyWithoutLOAI_PHONGInput
@@ -868,7 +868,7 @@ export type LOAI_PHONGUpdateWithoutLOAI_PHONG_TIEN_NGHIInput = {
   SucChua?: Prisma.IntFieldUpdateOperationsInput | number
   DienTich?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   LoaiGiuong?: Prisma.StringFieldUpdateOperationsInput | string
-  MoTa?: Prisma.StringFieldUpdateOperationsInput | string
+  MoTa?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
   CHI_TIET_DAT_PHONG?: Prisma.CHI_TIET_DAT_PHONGUpdateManyWithoutLOAI_PHONGNestedInput
   HINH_ANH_LOAI_PHONG?: Prisma.HINH_ANH_LOAI_PHONGUpdateManyWithoutLOAI_PHONGNestedInput
@@ -884,7 +884,7 @@ export type LOAI_PHONGUncheckedUpdateWithoutLOAI_PHONG_TIEN_NGHIInput = {
   SucChua?: Prisma.IntFieldUpdateOperationsInput | number
   DienTich?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   LoaiGiuong?: Prisma.StringFieldUpdateOperationsInput | string
-  MoTa?: Prisma.StringFieldUpdateOperationsInput | string
+  MoTa?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
   CHI_TIET_DAT_PHONG?: Prisma.CHI_TIET_DAT_PHONGUncheckedUpdateManyWithoutLOAI_PHONGNestedInput
   HINH_ANH_LOAI_PHONG?: Prisma.HINH_ANH_LOAI_PHONGUncheckedUpdateManyWithoutLOAI_PHONGNestedInput
@@ -897,7 +897,7 @@ export type LOAI_PHONGCreateWithoutQUY_PHONG_GIAInput = {
   SucChua: number
   DienTich: runtime.Decimal | runtime.DecimalJsLike | number | string
   LoaiGiuong: string
-  MoTa: string
+  MoTa?: string | null
   TrangThai: string
   CHI_TIET_DAT_PHONG?: Prisma.CHI_TIET_DAT_PHONGCreateNestedManyWithoutLOAI_PHONGInput
   HINH_ANH_LOAI_PHONG?: Prisma.HINH_ANH_LOAI_PHONGCreateNestedManyWithoutLOAI_PHONGInput
@@ -913,7 +913,7 @@ export type LOAI_PHONGUncheckedCreateWithoutQUY_PHONG_GIAInput = {
   SucChua: number
   DienTich: runtime.Decimal | runtime.DecimalJsLike | number | string
   LoaiGiuong: string
-  MoTa: string
+  MoTa?: string | null
   TrangThai: string
   CHI_TIET_DAT_PHONG?: Prisma.CHI_TIET_DAT_PHONGUncheckedCreateNestedManyWithoutLOAI_PHONGInput
   HINH_ANH_LOAI_PHONG?: Prisma.HINH_ANH_LOAI_PHONGUncheckedCreateNestedManyWithoutLOAI_PHONGInput
@@ -942,7 +942,7 @@ export type LOAI_PHONGUpdateWithoutQUY_PHONG_GIAInput = {
   SucChua?: Prisma.IntFieldUpdateOperationsInput | number
   DienTich?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   LoaiGiuong?: Prisma.StringFieldUpdateOperationsInput | string
-  MoTa?: Prisma.StringFieldUpdateOperationsInput | string
+  MoTa?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
   CHI_TIET_DAT_PHONG?: Prisma.CHI_TIET_DAT_PHONGUpdateManyWithoutLOAI_PHONGNestedInput
   HINH_ANH_LOAI_PHONG?: Prisma.HINH_ANH_LOAI_PHONGUpdateManyWithoutLOAI_PHONGNestedInput
@@ -958,7 +958,7 @@ export type LOAI_PHONGUncheckedUpdateWithoutQUY_PHONG_GIAInput = {
   SucChua?: Prisma.IntFieldUpdateOperationsInput | number
   DienTich?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   LoaiGiuong?: Prisma.StringFieldUpdateOperationsInput | string
-  MoTa?: Prisma.StringFieldUpdateOperationsInput | string
+  MoTa?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
   CHI_TIET_DAT_PHONG?: Prisma.CHI_TIET_DAT_PHONGUncheckedUpdateManyWithoutLOAI_PHONGNestedInput
   HINH_ANH_LOAI_PHONG?: Prisma.HINH_ANH_LOAI_PHONGUncheckedUpdateManyWithoutLOAI_PHONGNestedInput
@@ -971,7 +971,7 @@ export type LOAI_PHONGCreateManyKHACH_SANInput = {
   SucChua: number
   DienTich: runtime.Decimal | runtime.DecimalJsLike | number | string
   LoaiGiuong: string
-  MoTa: string
+  MoTa?: string | null
   TrangThai: string
 }
 
@@ -981,7 +981,7 @@ export type LOAI_PHONGUpdateWithoutKHACH_SANInput = {
   SucChua?: Prisma.IntFieldUpdateOperationsInput | number
   DienTich?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   LoaiGiuong?: Prisma.StringFieldUpdateOperationsInput | string
-  MoTa?: Prisma.StringFieldUpdateOperationsInput | string
+  MoTa?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
   CHI_TIET_DAT_PHONG?: Prisma.CHI_TIET_DAT_PHONGUpdateManyWithoutLOAI_PHONGNestedInput
   HINH_ANH_LOAI_PHONG?: Prisma.HINH_ANH_LOAI_PHONGUpdateManyWithoutLOAI_PHONGNestedInput
@@ -996,7 +996,7 @@ export type LOAI_PHONGUncheckedUpdateWithoutKHACH_SANInput = {
   SucChua?: Prisma.IntFieldUpdateOperationsInput | number
   DienTich?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   LoaiGiuong?: Prisma.StringFieldUpdateOperationsInput | string
-  MoTa?: Prisma.StringFieldUpdateOperationsInput | string
+  MoTa?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
   CHI_TIET_DAT_PHONG?: Prisma.CHI_TIET_DAT_PHONGUncheckedUpdateManyWithoutLOAI_PHONGNestedInput
   HINH_ANH_LOAI_PHONG?: Prisma.HINH_ANH_LOAI_PHONGUncheckedUpdateManyWithoutLOAI_PHONGNestedInput
@@ -1011,7 +1011,7 @@ export type LOAI_PHONGUncheckedUpdateManyWithoutKHACH_SANInput = {
   SucChua?: Prisma.IntFieldUpdateOperationsInput | number
   DienTich?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   LoaiGiuong?: Prisma.StringFieldUpdateOperationsInput | string
-  MoTa?: Prisma.StringFieldUpdateOperationsInput | string
+  MoTa?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
@@ -1132,7 +1132,7 @@ export type $LOAI_PHONGPayload<ExtArgs extends runtime.Types.Extensions.Internal
     SucChua: number
     DienTich: runtime.Decimal
     LoaiGiuong: string
-    MoTa: string
+    MoTa: string | null
     TrangThai: string
   }, ExtArgs["result"]["lOAI_PHONG"]>
   composites: {}

@@ -42,13 +42,25 @@ backend/prisma/schema.prisma   (phản ánh DB thật — không tự viết tay
 npx prisma generate
 ```
 
+> **QUAN TRỌNG — mã hóa ký tự:** mọi file `.sql` trong `database/` chứa literal tiếng Việt có dấu (CHECK constraint, seed data) và được lưu bằng UTF-8. `sqlcmd` mặc định đọc file `-i` theo codepage của console, KHÔNG phải UTF-8, nên nếu chạy thiếu cờ mã hóa, các literal N'...' có dấu sẽ bị biên dịch sai (mojibake) ngay trong constraint — lỗi này từng xảy ra thật ở DB-0 và được phát hiện/sửa trong M1 (xem `db0-report.md`). **Luôn chạy với `-f 65001`**:
+
+```bash
+sqlcmd -S <server> -d <database> -i database/migrations/001_core_identity.sql -f 65001
+# ... tương tự cho từng migration theo thứ tự 001 → 006, rồi:
+sqlcmd -S <server> -d <database> -i database/seed/001_roles.sql -f 65001
+```
+
 Kiểm tra sau khi chạy migration:
 
 ```bash
-sqlcmd -S <server> -d <database> -i database/scripts/verify-schema.sql
-sqlcmd -S <server> -d <database> -i database/scripts/test-constraints.sql
+sqlcmd -S <server> -d <database> -i database/scripts/verify-schema.sql -f 65001
+sqlcmd -S <server> -d <database> -i database/scripts/test-constraints.sql -f 65001
 ```
 
 `verify-schema.sql` xác nhận đúng 22 bảng chính thức, các override Gate 0 (không có `KHUYEN_MAI_KHACH_SAN`/`CHI_TIET_GIA_DAT_PHONG`, `CHINH_SACH_HUY` không có `MaDatPhong`, `HO_SO_DOI_TAC` có `MaTaiKhoanDuyet`), PK/FK/UNIQUE/CHECK hợp lệ, và không có cột tiền kiểu FLOAT/REAL. `test-constraints.sql` chạy trong 1 transaction luôn ROLLBACK, không để lại dữ liệu.
 
-Xem `database/docs/db0-report.md` để biết kết quả chạy thực tế và 2 Database Design Issue còn cần xác nhận (DDI-01, DDI-02) trước khi triển khai DB-1.
+Xem `database/docs/db0-report.md` để biết kết quả chạy thực tế. DDI-01 (nullability) và DDI-02 (UNIQUE `QUY_PHONG_GIA`) đã **RESOLVED** — quyết định và chi tiết ở Addendum 2 của file đó; áp dụng trực tiếp vào migrations 001/002/003/006, không có migration 007.
+
+## DB-1 seed (M1)
+
+`database/seed/001_roles.sql` nạp 3 vai trò baseline (`Khách hàng`, `Chủ khách sạn`, `Quản trị hệ thống`) vào `VAI_TRO`, idempotent (dùng `MERGE`, chạy lại không tạo trùng). Guest/anonymous không phải tài khoản DB nên không có role row. Không seed CSKH/Employee/HotelStaff/Moderator (G0-09).

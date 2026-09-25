@@ -223,6 +223,62 @@ BEGIN
 END
 
 -- -----------------------------------------------------------------
+-- Check 12: DDI-01 (RESOLVED) - exact nullability per the user's decision
+-- -----------------------------------------------------------------
+DECLARE @NullabilityExpected TABLE (TableName SYSNAME, ColumnName SYSNAME, ExpectNullable BIT);
+INSERT INTO @NullabilityExpected (TableName, ColumnName, ExpectNullable) VALUES
+    ('TAI_KHOAN', 'SoDienThoai', 0),  -- stays NOT NULL
+    ('TAI_KHOAN', 'NgaySinh', 1),
+    ('TAI_KHOAN', 'GioiTinh', 1),
+    ('TAI_KHOAN', 'AnhDaiDien', 1),
+    ('KHACH_SAN', 'MoTa', 1),
+    ('LOAI_PHONG', 'MoTa', 1),
+    ('TIEN_NGHI', 'BieuTuong', 1),
+    ('DANH_GIA', 'NoiDung', 1);
+
+IF EXISTS (
+    SELECT 1
+    FROM @NullabilityExpected e
+    JOIN sys.tables t ON t.name = e.TableName
+    JOIN sys.columns c ON c.object_id = t.object_id AND c.name = e.ColumnName
+    WHERE c.is_nullable <> e.ExpectNullable
+)
+BEGIN
+    PRINT 'FAIL: DDI-01 nullability mismatch found:';
+    SELECT e.TableName, e.ColumnName, e.ExpectNullable AS Expected, c.is_nullable AS Actual
+    FROM @NullabilityExpected e
+    JOIN sys.tables t ON t.name = e.TableName
+    JOIN sys.columns c ON c.object_id = t.object_id AND c.name = e.ColumnName
+    WHERE c.is_nullable <> e.ExpectNullable;
+    SET @FailCount += 1;
+END
+ELSE
+    PRINT 'PASS: DDI-01 - nullability matches the resolved decision (SoDienThoai NOT NULL; NgaySinh/GioiTinh/AnhDaiDien/KHACH_SAN.MoTa/LOAI_PHONG.MoTa/TIEN_NGHI.BieuTuong/DANH_GIA.NoiDung NULL)';
+
+-- -----------------------------------------------------------------
+-- Check 13: DDI-02 (RESOLVED) - UNIQUE (MaLoaiPhong, NgayApDung) on
+-- QUY_PHONG_GIA, verified by actual key columns, not just constraint name.
+-- -----------------------------------------------------------------
+IF EXISTS (
+    SELECT i.index_id
+    FROM sys.indexes i
+    JOIN sys.tables t ON t.object_id = i.object_id
+    JOIN sys.index_columns ic ON ic.object_id = i.object_id AND ic.index_id = i.index_id
+    WHERE t.name = 'QUY_PHONG_GIA' AND i.is_unique = 1
+    GROUP BY i.index_id
+    HAVING
+        COUNT(*) = 2
+        AND SUM(CASE WHEN COL_NAME(i.object_id, ic.column_id) = 'MaLoaiPhong' THEN 1 ELSE 0 END) = 1
+        AND SUM(CASE WHEN COL_NAME(i.object_id, ic.column_id) = 'NgayApDung' THEN 1 ELSE 0 END) = 1
+)
+    PRINT 'PASS: DDI-02 - UNIQUE (MaLoaiPhong, NgayApDung) exists on QUY_PHONG_GIA';
+ELSE
+BEGIN
+    PRINT 'FAIL: DDI-02 - no UNIQUE index on QUY_PHONG_GIA covering exactly (MaLoaiPhong, NgayApDung)';
+    SET @FailCount += 1;
+END
+
+-- -----------------------------------------------------------------
 -- Summary
 -- -----------------------------------------------------------------
 IF @FailCount = 0

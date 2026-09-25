@@ -170,7 +170,7 @@ export type TIEN_NGHIGroupByArgs<ExtArgs extends runtime.Types.Extensions.Intern
 export type TIEN_NGHIGroupByOutputType = {
   MaTienNghi: number
   TenTienNghi: string
-  BieuTuong: string
+  BieuTuong: string | null
   _count: TIEN_NGHICountAggregateOutputType | null
   _avg: TIEN_NGHIAvgAggregateOutputType | null
   _sum: TIEN_NGHISumAggregateOutputType | null
@@ -199,7 +199,7 @@ export type TIEN_NGHIWhereInput = {
   NOT?: Prisma.TIEN_NGHIWhereInput | Prisma.TIEN_NGHIWhereInput[]
   MaTienNghi?: Prisma.IntFilter<"TIEN_NGHI"> | number
   TenTienNghi?: Prisma.StringFilter<"TIEN_NGHI"> | string
-  BieuTuong?: Prisma.StringFilter<"TIEN_NGHI"> | string
+  BieuTuong?: Prisma.StringNullableFilter<"TIEN_NGHI"> | string | null
   KHACH_SAN_TIEN_NGHI?: Prisma.KHACH_SAN_TIEN_NGHIListRelationFilter
   LOAI_PHONG_TIEN_NGHI?: Prisma.LOAI_PHONG_TIEN_NGHIListRelationFilter
 }
@@ -207,7 +207,7 @@ export type TIEN_NGHIWhereInput = {
 export type TIEN_NGHIOrderByWithRelationInput = {
   MaTienNghi?: Prisma.SortOrder
   TenTienNghi?: Prisma.SortOrder
-  BieuTuong?: Prisma.SortOrder
+  BieuTuong?: Prisma.SortOrderInput | Prisma.SortOrder
   KHACH_SAN_TIEN_NGHI?: Prisma.KHACH_SAN_TIEN_NGHIOrderByRelationAggregateInput
   LOAI_PHONG_TIEN_NGHI?: Prisma.LOAI_PHONG_TIEN_NGHIOrderByRelationAggregateInput
 }
@@ -218,7 +218,7 @@ export type TIEN_NGHIWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.TIEN_NGHIWhereInput | Prisma.TIEN_NGHIWhereInput[]
   OR?: Prisma.TIEN_NGHIWhereInput[]
   NOT?: Prisma.TIEN_NGHIWhereInput | Prisma.TIEN_NGHIWhereInput[]
-  BieuTuong?: Prisma.StringFilter<"TIEN_NGHI"> | string
+  BieuTuong?: Prisma.StringNullableFilter<"TIEN_NGHI"> | string | null
   KHACH_SAN_TIEN_NGHI?: Prisma.KHACH_SAN_TIEN_NGHIListRelationFilter
   LOAI_PHONG_TIEN_NGHI?: Prisma.LOAI_PHONG_TIEN_NGHIListRelationFilter
 }, "MaTienNghi" | "TenTienNghi">
@@ -226,7 +226,7 @@ export type TIEN_NGHIWhereUniqueInput = Prisma.AtLeast<{
 export type TIEN_NGHIOrderByWithAggregationInput = {
   MaTienNghi?: Prisma.SortOrder
   TenTienNghi?: Prisma.SortOrder
-  BieuTuong?: Prisma.SortOrder
+  BieuTuong?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.TIEN_NGHICountOrderByAggregateInput
   _avg?: Prisma.TIEN_NGHIAvgOrderByAggregateInput
   _max?: Prisma.TIEN_NGHIMaxOrderByAggregateInput
@@ -240,12 +240,12 @@ export type TIEN_NGHIScalarWhereWithAggregatesInput = {
   NOT?: Prisma.TIEN_NGHIScalarWhereWithAggregatesInput | Prisma.TIEN_NGHIScalarWhereWithAggregatesInput[]
   MaTienNghi?: Prisma.IntWithAggregatesFilter<"TIEN_NGHI"> | number
   TenTienNghi?: Prisma.StringWithAggregatesFilter<"TIEN_NGHI"> | string
-  BieuTuong?: Prisma.StringWithAggregatesFilter<"TIEN_NGHI"> | string
+  BieuTuong?: Prisma.StringNullableWithAggregatesFilter<"TIEN_NGHI"> | string | null
 }
 
 export type TIEN_NGHICreateInput = {
   TenTienNghi: string
-  BieuTuong: string
+  BieuTuong?: string | null
   KHACH_SAN_TIEN_NGHI?: Prisma.KHACH_SAN_TIEN_NGHICreateNestedManyWithoutTIEN_NGHIInput
   LOAI_PHONG_TIEN_NGHI?: Prisma.LOAI_PHONG_TIEN_NGHICreateNestedManyWithoutTIEN_NGHIInput
 }
@@ -253,14 +253,14 @@ export type TIEN_NGHICreateInput = {
 export type TIEN_NGHIUncheckedCreateInput = {
   MaTienNghi?: number
   TenTienNghi: string
-  BieuTuong: string
+  BieuTuong?: string | null
   KHACH_SAN_TIEN_NGHI?: Prisma.KHACH_SAN_TIEN_NGHIUncheckedCreateNestedManyWithoutTIEN_NGHIInput
   LOAI_PHONG_TIEN_NGHI?: Prisma.LOAI_PHONG_TIEN_NGHIUncheckedCreateNestedManyWithoutTIEN_NGHIInput
 }
 
 export type TIEN_NGHIUpdateInput = {
   TenTienNghi?: Prisma.StringFieldUpdateOperationsInput | string
-  BieuTuong?: Prisma.StringFieldUpdateOperationsInput | string
+  BieuTuong?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   KHACH_SAN_TIEN_NGHI?: Prisma.KHACH_SAN_TIEN_NGHIUpdateManyWithoutTIEN_NGHINestedInput
   LOAI_PHONG_TIEN_NGHI?: Prisma.LOAI_PHONG_TIEN_NGHIUpdateManyWithoutTIEN_NGHINestedInput
 }
@@ -268,25 +268,25 @@ export type TIEN_NGHIUpdateInput = {
 export type TIEN_NGHIUncheckedUpdateInput = {
   MaTienNghi?: Prisma.IntFieldUpdateOperationsInput | number
   TenTienNghi?: Prisma.StringFieldUpdateOperationsInput | string
-  BieuTuong?: Prisma.StringFieldUpdateOperationsInput | string
+  BieuTuong?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   KHACH_SAN_TIEN_NGHI?: Prisma.KHACH_SAN_TIEN_NGHIUncheckedUpdateManyWithoutTIEN_NGHINestedInput
   LOAI_PHONG_TIEN_NGHI?: Prisma.LOAI_PHONG_TIEN_NGHIUncheckedUpdateManyWithoutTIEN_NGHINestedInput
 }
 
 export type TIEN_NGHICreateManyInput = {
   TenTienNghi: string
-  BieuTuong: string
+  BieuTuong?: string | null
 }
 
 export type TIEN_NGHIUpdateManyMutationInput = {
   TenTienNghi?: Prisma.StringFieldUpdateOperationsInput | string
-  BieuTuong?: Prisma.StringFieldUpdateOperationsInput | string
+  BieuTuong?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type TIEN_NGHIUncheckedUpdateManyInput = {
   MaTienNghi?: Prisma.IntFieldUpdateOperationsInput | number
   TenTienNghi?: Prisma.StringFieldUpdateOperationsInput | string
-  BieuTuong?: Prisma.StringFieldUpdateOperationsInput | string
+  BieuTuong?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type TIEN_NGHIScalarRelationFilter = {
@@ -350,14 +350,14 @@ export type TIEN_NGHIUpdateOneRequiredWithoutLOAI_PHONG_TIEN_NGHINestedInput = {
 
 export type TIEN_NGHICreateWithoutKHACH_SAN_TIEN_NGHIInput = {
   TenTienNghi: string
-  BieuTuong: string
+  BieuTuong?: string | null
   LOAI_PHONG_TIEN_NGHI?: Prisma.LOAI_PHONG_TIEN_NGHICreateNestedManyWithoutTIEN_NGHIInput
 }
 
 export type TIEN_NGHIUncheckedCreateWithoutKHACH_SAN_TIEN_NGHIInput = {
   MaTienNghi?: number
   TenTienNghi: string
-  BieuTuong: string
+  BieuTuong?: string | null
   LOAI_PHONG_TIEN_NGHI?: Prisma.LOAI_PHONG_TIEN_NGHIUncheckedCreateNestedManyWithoutTIEN_NGHIInput
 }
 
@@ -379,27 +379,27 @@ export type TIEN_NGHIUpdateToOneWithWhereWithoutKHACH_SAN_TIEN_NGHIInput = {
 
 export type TIEN_NGHIUpdateWithoutKHACH_SAN_TIEN_NGHIInput = {
   TenTienNghi?: Prisma.StringFieldUpdateOperationsInput | string
-  BieuTuong?: Prisma.StringFieldUpdateOperationsInput | string
+  BieuTuong?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   LOAI_PHONG_TIEN_NGHI?: Prisma.LOAI_PHONG_TIEN_NGHIUpdateManyWithoutTIEN_NGHINestedInput
 }
 
 export type TIEN_NGHIUncheckedUpdateWithoutKHACH_SAN_TIEN_NGHIInput = {
   MaTienNghi?: Prisma.IntFieldUpdateOperationsInput | number
   TenTienNghi?: Prisma.StringFieldUpdateOperationsInput | string
-  BieuTuong?: Prisma.StringFieldUpdateOperationsInput | string
+  BieuTuong?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   LOAI_PHONG_TIEN_NGHI?: Prisma.LOAI_PHONG_TIEN_NGHIUncheckedUpdateManyWithoutTIEN_NGHINestedInput
 }
 
 export type TIEN_NGHICreateWithoutLOAI_PHONG_TIEN_NGHIInput = {
   TenTienNghi: string
-  BieuTuong: string
+  BieuTuong?: string | null
   KHACH_SAN_TIEN_NGHI?: Prisma.KHACH_SAN_TIEN_NGHICreateNestedManyWithoutTIEN_NGHIInput
 }
 
 export type TIEN_NGHIUncheckedCreateWithoutLOAI_PHONG_TIEN_NGHIInput = {
   MaTienNghi?: number
   TenTienNghi: string
-  BieuTuong: string
+  BieuTuong?: string | null
   KHACH_SAN_TIEN_NGHI?: Prisma.KHACH_SAN_TIEN_NGHIUncheckedCreateNestedManyWithoutTIEN_NGHIInput
 }
 
@@ -421,14 +421,14 @@ export type TIEN_NGHIUpdateToOneWithWhereWithoutLOAI_PHONG_TIEN_NGHIInput = {
 
 export type TIEN_NGHIUpdateWithoutLOAI_PHONG_TIEN_NGHIInput = {
   TenTienNghi?: Prisma.StringFieldUpdateOperationsInput | string
-  BieuTuong?: Prisma.StringFieldUpdateOperationsInput | string
+  BieuTuong?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   KHACH_SAN_TIEN_NGHI?: Prisma.KHACH_SAN_TIEN_NGHIUpdateManyWithoutTIEN_NGHINestedInput
 }
 
 export type TIEN_NGHIUncheckedUpdateWithoutLOAI_PHONG_TIEN_NGHIInput = {
   MaTienNghi?: Prisma.IntFieldUpdateOperationsInput | number
   TenTienNghi?: Prisma.StringFieldUpdateOperationsInput | string
-  BieuTuong?: Prisma.StringFieldUpdateOperationsInput | string
+  BieuTuong?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   KHACH_SAN_TIEN_NGHI?: Prisma.KHACH_SAN_TIEN_NGHIUncheckedUpdateManyWithoutTIEN_NGHINestedInput
 }
 
@@ -505,7 +505,7 @@ export type $TIEN_NGHIPayload<ExtArgs extends runtime.Types.Extensions.InternalA
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     MaTienNghi: number
     TenTienNghi: string
-    BieuTuong: string
+    BieuTuong: string | null
   }, ExtArgs["result"]["tIEN_NGHI"]>
   composites: {}
 }

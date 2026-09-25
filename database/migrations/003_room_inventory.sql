@@ -15,7 +15,7 @@ CREATE TABLE LOAI_PHONG (
     SucChua        INT               NOT NULL,
     DienTich       DECIMAL(6,2)      NOT NULL,
     LoaiGiuong     NVARCHAR(50)      NOT NULL,
-    MoTa           NVARCHAR(MAX)     NOT NULL,
+    MoTa           NVARCHAR(MAX)     NULL,
     TrangThai      NVARCHAR(30)      NOT NULL,
     CONSTRAINT PK_LOAI_PHONG PRIMARY KEY (MaLoaiPhong),
     CONSTRAINT FK_LOAI_PHONG_KHACH_SAN FOREIGN KEY (MaKhachSan)
@@ -55,8 +55,9 @@ GO
 
 -- -----------------------------------------------------------------
 -- QUY_PHONG_GIA (Bảng 6.12)
--- DDI-02: Không tạo UNIQUE (MaLoaiPhong, NgayApDung) — không có nguồn
--- Chương 7 xác nhận ràng buộc này. Xem database/docs/db0-report.md.
+-- DDI-02 (RESOLVED): một loại phòng chỉ có một bản ghi quỹ phòng/giá cho
+-- mỗi ngày áp dụng — UNIQUE (MaLoaiPhong, NgayApDung). Quyết định của
+-- người dùng, xem database/docs/db0-report.md.
 -- -----------------------------------------------------------------
 CREATE TABLE QUY_PHONG_GIA (
     MaQuyPhong     INT IDENTITY(1,1) NOT NULL,
@@ -69,6 +70,7 @@ CREATE TABLE QUY_PHONG_GIA (
     CONSTRAINT FK_QUY_PHONG_GIA_LOAI_PHONG FOREIGN KEY (MaLoaiPhong)
         REFERENCES LOAI_PHONG (MaLoaiPhong) ON DELETE NO ACTION,
     CONSTRAINT CK_QUY_PHONG_GIA_GiaPhong CHECK (GiaPhong >= 0),
-    CONSTRAINT CK_QUY_PHONG_GIA_SoLuongPhong CHECK (SoLuongPhong >= 0)
+    CONSTRAINT CK_QUY_PHONG_GIA_SoLuongPhong CHECK (SoLuongPhong >= 0),
+    CONSTRAINT UQ_QUY_PHONG_GIA_MaLoaiPhong_NgayApDung UNIQUE (MaLoaiPhong, NgayApDung)
 );
 GO

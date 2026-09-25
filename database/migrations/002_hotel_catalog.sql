@@ -15,7 +15,7 @@ CREATE TABLE KHACH_SAN (
     TenKhachSan       NVARCHAR(255)     NOT NULL,
     DiaChiChiTiet     NVARCHAR(500)     NOT NULL,
     HangSao           TINYINT           NOT NULL,
-    MoTa              NVARCHAR(MAX)     NOT NULL,
+    MoTa              NVARCHAR(MAX)     NULL,
     GioNhanPhong      TIME              NOT NULL,
     GioTraPhong       TIME              NOT NULL,
     TrangThai         NVARCHAR(30)      NOT NULL,
@@ -55,7 +55,7 @@ GO
 CREATE TABLE TIEN_NGHI (
     MaTienNghi    INT IDENTITY(1,1) NOT NULL,
     TenTienNghi   NVARCHAR(150)     NOT NULL,
-    BieuTuong     NVARCHAR(255)     NOT NULL,
+    BieuTuong     NVARCHAR(255)     NULL,
     CONSTRAINT PK_TIEN_NGHI PRIMARY KEY (MaTienNghi),
     CONSTRAINT UQ_TIEN_NGHI_TenTienNghi UNIQUE (TenTienNghi)
 );

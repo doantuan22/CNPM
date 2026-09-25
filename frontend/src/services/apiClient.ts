@@ -1,4 +1,6 @@
 import { ApiResponse } from '../types/api';
+import { AuthResult } from '../types/auth';
+import { getAccessToken, useAuthStore } from '../lib/authStore';
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
@@ -15,28 +17,70 @@ export class ApiError extends Error {
   }
 }
 
-export async function apiClient<T>(
-  endpoint: string,
-  options: RequestInit = {}
-): Promise<ApiResponse<T>> {
-  const url = `${API_BASE_URL.replace(/\/$/, '')}/${endpoint.replace(/^\//, '')}`;
+const buildUrl = (endpoint: string) =>
+  `${API_BASE_URL.replace(/\/$/, '')}/${endpoint.replace(/^\//, '')}`;
 
-  const defaultHeaders: Record<string, string> = {
+// Concurrent 401s must share a single in-flight refresh instead of each
+// firing their own — otherwise every refresh call would rotate the cookie
+// and race the others out.
+let refreshPromise: Promise<string | null> | null = null;
+
+const refreshAccessToken = async (): Promise<string | null> => {
+  if (!refreshPromise) {
+    refreshPromise = fetch(buildUrl('/auth/refresh'), {
+      method: 'POST',
+      credentials: 'include',
+    })
+      .then(async (res) => {
+        if (!res.ok) return null;
+        const body = (await res.json()) as ApiResponse<{ accessToken: string }>;
+        return body.data?.accessToken ?? null;
+      })
+      .catch(() => null)
+      .finally(() => {
+        refreshPromise = null;
+      });
+  }
+  return refreshPromise;
+};
+
+interface ApiClientOptions extends RequestInit {
+  /** Internal — prevents infinite refresh-retry loops. */
+  _retried?: boolean;
+}
+
+export async function apiClient<T, TResponse extends ApiResponse<T> = ApiResponse<T>>(
+  endpoint: string,
+  options: ApiClientOptions = {}
+): Promise<TResponse> {
+  const url = buildUrl(endpoint);
+  const token = getAccessToken();
+
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(options.headers as Record<string, string> | undefined),
   };
 
   const response = await fetch(url, {
     ...options,
-    headers: {
-      ...defaultHeaders,
-      ...options.headers,
-    },
+    headers,
+    credentials: 'include',
   });
 
-  const data: ApiResponse<T> = await response.json().catch(() => ({
+  const data: TResponse = await response.json().catch(() => ({
     success: false,
     message: 'Failed to parse response JSON',
   }));
+
+  if (response.status === 401 && !options._retried && !endpoint.startsWith('/auth/')) {
+    const newToken = await refreshAccessToken();
+    if (newToken) {
+      useAuthStore.getState().setAccessToken(newToken);
+      return apiClient<T, TResponse>(endpoint, { ...options, _retried: true });
+    }
+    useAuthStore.getState().clear();
+  }
 
   if (!response.ok || !data.success) {
     throw new ApiError(data.message || 'Request failed', response.status, data.error);
@@ -44,3 +88,8 @@ export async function apiClient<T>(
 
   return data;
 }
+
+/** Login/register both return { account, accessToken } and set the access token in the store. */
+export const applyAuthResult = (result: AuthResult): void => {
+  useAuthStore.getState().setAccessToken(result.accessToken);
+};

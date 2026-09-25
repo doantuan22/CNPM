@@ -7,7 +7,20 @@
 
 Các quy ước sau là quyết định triển khai (không phải suy diễn cấu trúc), áp dụng thống nhất cho toàn bộ 22 bảng:
 
-1. **Nullable**: một cột là `NULL` **chỉ khi** Chương 6 ghi rõ "Có thể rỗng" ở cột Ghi chú (hoặc Gate 0 nêu rõ, ví dụ `HO_SO_DOI_TAC.MaTaiKhoanDuyet`). Mọi cột khác mặc định `NOT NULL`. Một số cột NOT NULL theo quy tắc này có thể gây khó khăn cho nghiệp vụ hồ sơ người dùng tối giản (xem `db0-report.md` mục Issues — DDI-01).
+1. **Nullable**: một cột là `NULL` **chỉ khi** Chương 6 ghi rõ "Có thể rỗng" ở cột Ghi chú, Gate 0 nêu rõ (ví dụ `HO_SO_DOI_TAC.MaTaiKhoanDuyet`), **hoặc** DDI-01 đã RESOLVED chuyển cột đó sang NULL (xem bảng quyết định bên dưới). Mọi cột khác mặc định `NOT NULL`.
+
+   **DDI-01 (RESOLVED)** — quyết định chính thức của người dùng, áp dụng trực tiếp vào baseline migrations 001–006 (không qua migration 007):
+
+   | Cột | Quyết định |
+   |---|---|
+   | `TAI_KHOAN.SoDienThoai` | **NOT NULL** (giữ nguyên) |
+   | `TAI_KHOAN.NgaySinh` | **NULL** |
+   | `TAI_KHOAN.GioiTinh` | **NULL** |
+   | `TAI_KHOAN.AnhDaiDien` | **NULL** |
+   | `KHACH_SAN.MoTa` | **NULL** |
+   | `LOAI_PHONG.MoTa` | **NULL** |
+   | `TIEN_NGHI.BieuTuong` | **NULL** |
+   | `DANH_GIA.NoiDung` | **NULL** |
 2. **Kiểu "Số nguyên" làm khóa chính** → `INT IDENTITY(1,1)` (cơ chế sinh giá trị, không phải cấu trúc mới).
 3. **Kiểu "Chuỗi"** → `NVARCHAR(n)` với độ dài chọn theo ngữ nghĩa cột (ghi rõ trong bảng); trường không cần Unicode (mã số, mã giao dịch, số điện thoại, mã xác nhận) → `VARCHAR(n)`.
 4. **Kiểu "Văn bản"** → `NVARCHAR(MAX)`.
@@ -41,10 +54,10 @@ Thông tin đăng nhập và hồ sơ cơ bản người dùng.
 | Email | NVARCHAR(255) | NOT NULL | | | UK | CK: định dạng email cơ bản | Email đăng nhập |
 | MatKhau | NVARCHAR(255) | NOT NULL | | | | CK: LEN(MatKhau) > 0 | Mật khẩu đã băm |
 | HoTen | NVARCHAR(150) | NOT NULL | | | | | Họ tên |
-| SoDienThoai | VARCHAR(20) | NOT NULL* | | | | | Số điện thoại (*xem DDI-01) |
-| NgaySinh | DATE | NOT NULL* | | | | | Ngày sinh (*xem DDI-01) |
-| GioiTinh | NVARCHAR(20) | NOT NULL* | | | | | Giới tính (*xem DDI-01) |
-| AnhDaiDien | NVARCHAR(500) | NOT NULL* | | | | | Đường dẫn ảnh đại diện (*xem DDI-01) |
+| SoDienThoai | VARCHAR(20) | NOT NULL | | | | | Số điện thoại |
+| NgaySinh | DATE | NULL | | | | | Ngày sinh (DDI-01 RESOLVED) |
+| GioiTinh | NVARCHAR(20) | NULL | | | | | Giới tính (DDI-01 RESOLVED) |
+| AnhDaiDien | NVARCHAR(500) | NULL | | | | | Đường dẫn ảnh đại diện (DDI-01 RESOLVED) |
 | TrangThai | NVARCHAR(30) | NOT NULL | | | | | Trạng thái tài khoản (miền mở — không CHECK) |
 | NgayTao | DATETIME2 | NOT NULL | | | | | Thời điểm tạo |
 | NgayCapNhat | DATETIME2 | NOT NULL | | | | CK: NgayCapNhat >= NgayTao | Thời điểm cập nhật gần nhất |
@@ -87,7 +100,7 @@ Hồ sơ đăng ký trở thành Chủ khách sạn. Có `MaTaiKhoanDuyet` theo 
 | TenKhachSan | NVARCHAR(255) | NOT NULL | | | | | Tên khách sạn |
 | DiaChiChiTiet | NVARCHAR(500) | NOT NULL | | | | | Địa chỉ cụ thể |
 | HangSao | TINYINT | NOT NULL | | | | CK: HangSao BETWEEN 1 AND 5 | Hạng sao |
-| MoTa | NVARCHAR(MAX) | NOT NULL* | | | | | Giới thiệu (*xem DDI-01) |
+| MoTa | NVARCHAR(MAX) | NULL | | | | | Giới thiệu (DDI-01 RESOLVED) |
 | GioNhanPhong | TIME | NOT NULL | | | | | Giờ nhận phòng |
 | GioTraPhong | TIME | NOT NULL | | | | | Giờ trả phòng |
 | TrangThai | NVARCHAR(30) | NOT NULL | | | | | Trạng thái (miền mở) |
@@ -110,7 +123,7 @@ Hồ sơ đăng ký trở thành Chủ khách sạn. Có `MaTaiKhoanDuyet` theo 
 |---|---|---|---|---|---|---|---|
 | MaTienNghi | INT IDENTITY(1,1) | NOT NULL | PK | | | | Mã tiện nghi |
 | TenTienNghi | NVARCHAR(150) | NOT NULL | | | UK | | Tên tiện nghi |
-| BieuTuong | NVARCHAR(255) | NOT NULL* | | | | | Biểu tượng hiển thị (*xem DDI-01) |
+| BieuTuong | NVARCHAR(255) | NULL | | | | | Biểu tượng hiển thị (DDI-01 RESOLVED) |
 
 ## 8. KHACH_SAN_TIEN_NGHI (bảng trung gian N-N)
 
@@ -132,7 +145,7 @@ Khóa chính ghép `(MaKhachSan, MaTienNghi)` — không có surrogate ID (đún
 | SucChua | INT | NOT NULL | | | | CK: SucChua >= 1 | Sức chứa tối đa |
 | DienTich | DECIMAL(6,2) | NOT NULL | | | | CK: DienTich > 0 | Diện tích (m²) |
 | LoaiGiuong | NVARCHAR(50) | NOT NULL | | | | | Loại giường |
-| MoTa | NVARCHAR(MAX) | NOT NULL* | | | | | Mô tả chi tiết (*xem DDI-01) |
+| MoTa | NVARCHAR(MAX) | NULL | | | | | Mô tả chi tiết (DDI-01 RESOLVED) |
 | TrangThai | NVARCHAR(30) | NOT NULL | | | | | Trạng thái kinh doanh (miền mở) |
 
 ## 10. HINH_ANH_LOAI_PHONG
@@ -158,13 +171,14 @@ Quỹ phòng mở bán và giá theo ngày.
 | Cột | Kiểu SQL Server | Null | PK | FK | Unique | Check | Ý nghĩa |
 |---|---|---|---|---|---|---|---|
 | MaQuyPhong | INT IDENTITY(1,1) | NOT NULL | PK | | | | Mã bản ghi quỹ phòng |
-| MaLoaiPhong | INT | NOT NULL | | FK→LOAI_PHONG | | | Loại phòng |
-| NgayApDung | DATE | NOT NULL | | | | | Ngày áp dụng |
+| MaLoaiPhong | INT | NOT NULL | | FK→LOAI_PHONG | UK (ghép) | | Loại phòng |
+| NgayApDung | DATE | NOT NULL | | | UK (ghép) | | Ngày áp dụng |
 | GiaPhong | DECIMAL(14,2) | NOT NULL | | | | CK: GiaPhong >= 0 | Giá phòng trong ngày |
 | SoLuongPhong | INT | NOT NULL | | | | CK: SoLuongPhong >= 0 | Số lượng phòng mở bán |
 | TrangThai | NVARCHAR(30) | NOT NULL | | | | | Trạng thái kinh doanh (miền mở) |
+| | | | | | **UQ_QUY_PHONG_GIA_MaLoaiPhong_NgayApDung** `(MaLoaiPhong, NgayApDung)` | | |
 
-> **DDI-02**: Chương 7 không khai báo UNIQUE `(MaLoaiPhong, NgayApDung)`, dù về nghiệp vụ có vẻ hợp lý (một loại phòng chỉ nên có một bản ghi giá/quỹ phòng mỗi ngày). Theo nguyên tắc "không tự suy diễn UNIQUE", **KHÔNG tạo** ràng buộc này trong DB-0. Xem `db0-report.md`.
+> **DDI-02 (RESOLVED)**: người dùng chốt phương án — một loại phòng chỉ được có một bản ghi quỹ phòng/giá cho cùng một ngày. Đã thêm `UNIQUE (MaLoaiPhong, NgayApDung)` trực tiếp vào `database/migrations/003_room_inventory.sql` (không qua migration 007). Xem `db0-report.md`.
 
 ## 13. CHINH_SACH_HUY
 
@@ -274,7 +288,7 @@ Bảng trung tâm nghiệp vụ.
 | MaKhachHang | INT | NOT NULL | | FK→TAI_KHOAN | | | Khách hàng đánh giá |
 | MaKhachSan | INT | NOT NULL | | FK→KHACH_SAN | | | Khách sạn được đánh giá |
 | DiemDanhGia | TINYINT | NOT NULL | | | | CK: DiemDanhGia BETWEEN 1 AND 5 | Điểm đánh giá |
-| NoiDung | NVARCHAR(MAX) | NOT NULL* | | | | | Nội dung nhận xét (*xem DDI-01) |
+| NoiDung | NVARCHAR(MAX) | NULL | | | | | Nội dung nhận xét (DDI-01 RESOLVED) |
 | TrangThai | NVARCHAR(30) | NOT NULL | | | | | Trạng thái kiểm duyệt (miền mở) |
 
 ## 21. HINH_ANH_DANH_GIA

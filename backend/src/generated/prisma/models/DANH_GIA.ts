@@ -213,7 +213,7 @@ export type DANH_GIAGroupByOutputType = {
   MaKhachHang: number
   MaKhachSan: number
   DiemDanhGia: number
-  NoiDung: string
+  NoiDung: string | null
   TrangThai: string
   _count: DANH_GIACountAggregateOutputType | null
   _avg: DANH_GIAAvgAggregateOutputType | null
@@ -246,7 +246,7 @@ export type DANH_GIAWhereInput = {
   MaKhachHang?: Prisma.IntFilter<"DANH_GIA"> | number
   MaKhachSan?: Prisma.IntFilter<"DANH_GIA"> | number
   DiemDanhGia?: Prisma.IntFilter<"DANH_GIA"> | number
-  NoiDung?: Prisma.StringFilter<"DANH_GIA"> | string
+  NoiDung?: Prisma.StringNullableFilter<"DANH_GIA"> | string | null
   TrangThai?: Prisma.StringFilter<"DANH_GIA"> | string
   DAT_PHONG?: Prisma.XOR<Prisma.DAT_PHONGScalarRelationFilter, Prisma.DAT_PHONGWhereInput>
   KHACH_SAN?: Prisma.XOR<Prisma.KHACH_SANScalarRelationFilter, Prisma.KHACH_SANWhereInput>
@@ -260,7 +260,7 @@ export type DANH_GIAOrderByWithRelationInput = {
   MaKhachHang?: Prisma.SortOrder
   MaKhachSan?: Prisma.SortOrder
   DiemDanhGia?: Prisma.SortOrder
-  NoiDung?: Prisma.SortOrder
+  NoiDung?: Prisma.SortOrderInput | Prisma.SortOrder
   TrangThai?: Prisma.SortOrder
   DAT_PHONG?: Prisma.DAT_PHONGOrderByWithRelationInput
   KHACH_SAN?: Prisma.KHACH_SANOrderByWithRelationInput
@@ -277,7 +277,7 @@ export type DANH_GIAWhereUniqueInput = Prisma.AtLeast<{
   MaKhachHang?: Prisma.IntFilter<"DANH_GIA"> | number
   MaKhachSan?: Prisma.IntFilter<"DANH_GIA"> | number
   DiemDanhGia?: Prisma.IntFilter<"DANH_GIA"> | number
-  NoiDung?: Prisma.StringFilter<"DANH_GIA"> | string
+  NoiDung?: Prisma.StringNullableFilter<"DANH_GIA"> | string | null
   TrangThai?: Prisma.StringFilter<"DANH_GIA"> | string
   DAT_PHONG?: Prisma.XOR<Prisma.DAT_PHONGScalarRelationFilter, Prisma.DAT_PHONGWhereInput>
   KHACH_SAN?: Prisma.XOR<Prisma.KHACH_SANScalarRelationFilter, Prisma.KHACH_SANWhereInput>
@@ -291,7 +291,7 @@ export type DANH_GIAOrderByWithAggregationInput = {
   MaKhachHang?: Prisma.SortOrder
   MaKhachSan?: Prisma.SortOrder
   DiemDanhGia?: Prisma.SortOrder
-  NoiDung?: Prisma.SortOrder
+  NoiDung?: Prisma.SortOrderInput | Prisma.SortOrder
   TrangThai?: Prisma.SortOrder
   _count?: Prisma.DANH_GIACountOrderByAggregateInput
   _avg?: Prisma.DANH_GIAAvgOrderByAggregateInput
@@ -309,13 +309,13 @@ export type DANH_GIAScalarWhereWithAggregatesInput = {
   MaKhachHang?: Prisma.IntWithAggregatesFilter<"DANH_GIA"> | number
   MaKhachSan?: Prisma.IntWithAggregatesFilter<"DANH_GIA"> | number
   DiemDanhGia?: Prisma.IntWithAggregatesFilter<"DANH_GIA"> | number
-  NoiDung?: Prisma.StringWithAggregatesFilter<"DANH_GIA"> | string
+  NoiDung?: Prisma.StringNullableWithAggregatesFilter<"DANH_GIA"> | string | null
   TrangThai?: Prisma.StringWithAggregatesFilter<"DANH_GIA"> | string
 }
 
 export type DANH_GIACreateInput = {
   DiemDanhGia: number
-  NoiDung: string
+  NoiDung?: string | null
   TrangThai: string
   DAT_PHONG: Prisma.DAT_PHONGCreateNestedOneWithoutDANH_GIAInput
   KHACH_SAN: Prisma.KHACH_SANCreateNestedOneWithoutDANH_GIAInput
@@ -329,14 +329,14 @@ export type DANH_GIAUncheckedCreateInput = {
   MaKhachHang: number
   MaKhachSan: number
   DiemDanhGia: number
-  NoiDung: string
+  NoiDung?: string | null
   TrangThai: string
   HINH_ANH_DANH_GIA?: Prisma.HINH_ANH_DANH_GIAUncheckedCreateNestedManyWithoutDANH_GIAInput
 }
 
 export type DANH_GIAUpdateInput = {
   DiemDanhGia?: Prisma.IntFieldUpdateOperationsInput | number
-  NoiDung?: Prisma.StringFieldUpdateOperationsInput | string
+  NoiDung?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
   DAT_PHONG?: Prisma.DAT_PHONGUpdateOneRequiredWithoutDANH_GIANestedInput
   KHACH_SAN?: Prisma.KHACH_SANUpdateOneRequiredWithoutDANH_GIANestedInput
@@ -350,7 +350,7 @@ export type DANH_GIAUncheckedUpdateInput = {
   MaKhachHang?: Prisma.IntFieldUpdateOperationsInput | number
   MaKhachSan?: Prisma.IntFieldUpdateOperationsInput | number
   DiemDanhGia?: Prisma.IntFieldUpdateOperationsInput | number
-  NoiDung?: Prisma.StringFieldUpdateOperationsInput | string
+  NoiDung?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
   HINH_ANH_DANH_GIA?: Prisma.HINH_ANH_DANH_GIAUncheckedUpdateManyWithoutDANH_GIANestedInput
 }
@@ -360,13 +360,13 @@ export type DANH_GIACreateManyInput = {
   MaKhachHang: number
   MaKhachSan: number
   DiemDanhGia: number
-  NoiDung: string
+  NoiDung?: string | null
   TrangThai: string
 }
 
 export type DANH_GIAUpdateManyMutationInput = {
   DiemDanhGia?: Prisma.IntFieldUpdateOperationsInput | number
-  NoiDung?: Prisma.StringFieldUpdateOperationsInput | string
+  NoiDung?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
@@ -376,7 +376,7 @@ export type DANH_GIAUncheckedUpdateManyInput = {
   MaKhachHang?: Prisma.IntFieldUpdateOperationsInput | number
   MaKhachSan?: Prisma.IntFieldUpdateOperationsInput | number
   DiemDanhGia?: Prisma.IntFieldUpdateOperationsInput | number
-  NoiDung?: Prisma.StringFieldUpdateOperationsInput | string
+  NoiDung?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
@@ -444,6 +444,10 @@ export type DANH_GIAListRelationFilter = {
 
 export type DANH_GIAOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
+}
+
+export type NullableStringFieldUpdateOperationsInput = {
+  set?: string | null
 }
 
 export type DANH_GIACreateNestedOneWithoutDAT_PHONGInput = {
@@ -578,7 +582,7 @@ export type DANH_GIAUncheckedUpdateManyWithoutTAI_KHOANNestedInput = {
 
 export type DANH_GIACreateWithoutDAT_PHONGInput = {
   DiemDanhGia: number
-  NoiDung: string
+  NoiDung?: string | null
   TrangThai: string
   KHACH_SAN: Prisma.KHACH_SANCreateNestedOneWithoutDANH_GIAInput
   TAI_KHOAN: Prisma.TAI_KHOANCreateNestedOneWithoutDANH_GIAInput
@@ -590,7 +594,7 @@ export type DANH_GIAUncheckedCreateWithoutDAT_PHONGInput = {
   MaKhachHang: number
   MaKhachSan: number
   DiemDanhGia: number
-  NoiDung: string
+  NoiDung?: string | null
   TrangThai: string
   HINH_ANH_DANH_GIA?: Prisma.HINH_ANH_DANH_GIAUncheckedCreateNestedManyWithoutDANH_GIAInput
 }
@@ -613,7 +617,7 @@ export type DANH_GIAUpdateToOneWithWhereWithoutDAT_PHONGInput = {
 
 export type DANH_GIAUpdateWithoutDAT_PHONGInput = {
   DiemDanhGia?: Prisma.IntFieldUpdateOperationsInput | number
-  NoiDung?: Prisma.StringFieldUpdateOperationsInput | string
+  NoiDung?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
   KHACH_SAN?: Prisma.KHACH_SANUpdateOneRequiredWithoutDANH_GIANestedInput
   TAI_KHOAN?: Prisma.TAI_KHOANUpdateOneRequiredWithoutDANH_GIANestedInput
@@ -625,14 +629,14 @@ export type DANH_GIAUncheckedUpdateWithoutDAT_PHONGInput = {
   MaKhachHang?: Prisma.IntFieldUpdateOperationsInput | number
   MaKhachSan?: Prisma.IntFieldUpdateOperationsInput | number
   DiemDanhGia?: Prisma.IntFieldUpdateOperationsInput | number
-  NoiDung?: Prisma.StringFieldUpdateOperationsInput | string
+  NoiDung?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
   HINH_ANH_DANH_GIA?: Prisma.HINH_ANH_DANH_GIAUncheckedUpdateManyWithoutDANH_GIANestedInput
 }
 
 export type DANH_GIACreateWithoutHINH_ANH_DANH_GIAInput = {
   DiemDanhGia: number
-  NoiDung: string
+  NoiDung?: string | null
   TrangThai: string
   DAT_PHONG: Prisma.DAT_PHONGCreateNestedOneWithoutDANH_GIAInput
   KHACH_SAN: Prisma.KHACH_SANCreateNestedOneWithoutDANH_GIAInput
@@ -645,7 +649,7 @@ export type DANH_GIAUncheckedCreateWithoutHINH_ANH_DANH_GIAInput = {
   MaKhachHang: number
   MaKhachSan: number
   DiemDanhGia: number
-  NoiDung: string
+  NoiDung?: string | null
   TrangThai: string
 }
 
@@ -667,7 +671,7 @@ export type DANH_GIAUpdateToOneWithWhereWithoutHINH_ANH_DANH_GIAInput = {
 
 export type DANH_GIAUpdateWithoutHINH_ANH_DANH_GIAInput = {
   DiemDanhGia?: Prisma.IntFieldUpdateOperationsInput | number
-  NoiDung?: Prisma.StringFieldUpdateOperationsInput | string
+  NoiDung?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
   DAT_PHONG?: Prisma.DAT_PHONGUpdateOneRequiredWithoutDANH_GIANestedInput
   KHACH_SAN?: Prisma.KHACH_SANUpdateOneRequiredWithoutDANH_GIANestedInput
@@ -680,13 +684,13 @@ export type DANH_GIAUncheckedUpdateWithoutHINH_ANH_DANH_GIAInput = {
   MaKhachHang?: Prisma.IntFieldUpdateOperationsInput | number
   MaKhachSan?: Prisma.IntFieldUpdateOperationsInput | number
   DiemDanhGia?: Prisma.IntFieldUpdateOperationsInput | number
-  NoiDung?: Prisma.StringFieldUpdateOperationsInput | string
+  NoiDung?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 export type DANH_GIACreateWithoutKHACH_SANInput = {
   DiemDanhGia: number
-  NoiDung: string
+  NoiDung?: string | null
   TrangThai: string
   DAT_PHONG: Prisma.DAT_PHONGCreateNestedOneWithoutDANH_GIAInput
   TAI_KHOAN: Prisma.TAI_KHOANCreateNestedOneWithoutDANH_GIAInput
@@ -698,7 +702,7 @@ export type DANH_GIAUncheckedCreateWithoutKHACH_SANInput = {
   MaDatPhong: number
   MaKhachHang: number
   DiemDanhGia: number
-  NoiDung: string
+  NoiDung?: string | null
   TrangThai: string
   HINH_ANH_DANH_GIA?: Prisma.HINH_ANH_DANH_GIAUncheckedCreateNestedManyWithoutDANH_GIAInput
 }
@@ -737,13 +741,13 @@ export type DANH_GIAScalarWhereInput = {
   MaKhachHang?: Prisma.IntFilter<"DANH_GIA"> | number
   MaKhachSan?: Prisma.IntFilter<"DANH_GIA"> | number
   DiemDanhGia?: Prisma.IntFilter<"DANH_GIA"> | number
-  NoiDung?: Prisma.StringFilter<"DANH_GIA"> | string
+  NoiDung?: Prisma.StringNullableFilter<"DANH_GIA"> | string | null
   TrangThai?: Prisma.StringFilter<"DANH_GIA"> | string
 }
 
 export type DANH_GIACreateWithoutTAI_KHOANInput = {
   DiemDanhGia: number
-  NoiDung: string
+  NoiDung?: string | null
   TrangThai: string
   DAT_PHONG: Prisma.DAT_PHONGCreateNestedOneWithoutDANH_GIAInput
   KHACH_SAN: Prisma.KHACH_SANCreateNestedOneWithoutDANH_GIAInput
@@ -755,7 +759,7 @@ export type DANH_GIAUncheckedCreateWithoutTAI_KHOANInput = {
   MaDatPhong: number
   MaKhachSan: number
   DiemDanhGia: number
-  NoiDung: string
+  NoiDung?: string | null
   TrangThai: string
   HINH_ANH_DANH_GIA?: Prisma.HINH_ANH_DANH_GIAUncheckedCreateNestedManyWithoutDANH_GIAInput
 }
@@ -789,13 +793,13 @@ export type DANH_GIACreateManyKHACH_SANInput = {
   MaDatPhong: number
   MaKhachHang: number
   DiemDanhGia: number
-  NoiDung: string
+  NoiDung?: string | null
   TrangThai: string
 }
 
 export type DANH_GIAUpdateWithoutKHACH_SANInput = {
   DiemDanhGia?: Prisma.IntFieldUpdateOperationsInput | number
-  NoiDung?: Prisma.StringFieldUpdateOperationsInput | string
+  NoiDung?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
   DAT_PHONG?: Prisma.DAT_PHONGUpdateOneRequiredWithoutDANH_GIANestedInput
   TAI_KHOAN?: Prisma.TAI_KHOANUpdateOneRequiredWithoutDANH_GIANestedInput
@@ -807,7 +811,7 @@ export type DANH_GIAUncheckedUpdateWithoutKHACH_SANInput = {
   MaDatPhong?: Prisma.IntFieldUpdateOperationsInput | number
   MaKhachHang?: Prisma.IntFieldUpdateOperationsInput | number
   DiemDanhGia?: Prisma.IntFieldUpdateOperationsInput | number
-  NoiDung?: Prisma.StringFieldUpdateOperationsInput | string
+  NoiDung?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
   HINH_ANH_DANH_GIA?: Prisma.HINH_ANH_DANH_GIAUncheckedUpdateManyWithoutDANH_GIANestedInput
 }
@@ -817,7 +821,7 @@ export type DANH_GIAUncheckedUpdateManyWithoutKHACH_SANInput = {
   MaDatPhong?: Prisma.IntFieldUpdateOperationsInput | number
   MaKhachHang?: Prisma.IntFieldUpdateOperationsInput | number
   DiemDanhGia?: Prisma.IntFieldUpdateOperationsInput | number
-  NoiDung?: Prisma.StringFieldUpdateOperationsInput | string
+  NoiDung?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
@@ -825,13 +829,13 @@ export type DANH_GIACreateManyTAI_KHOANInput = {
   MaDatPhong: number
   MaKhachSan: number
   DiemDanhGia: number
-  NoiDung: string
+  NoiDung?: string | null
   TrangThai: string
 }
 
 export type DANH_GIAUpdateWithoutTAI_KHOANInput = {
   DiemDanhGia?: Prisma.IntFieldUpdateOperationsInput | number
-  NoiDung?: Prisma.StringFieldUpdateOperationsInput | string
+  NoiDung?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
   DAT_PHONG?: Prisma.DAT_PHONGUpdateOneRequiredWithoutDANH_GIANestedInput
   KHACH_SAN?: Prisma.KHACH_SANUpdateOneRequiredWithoutDANH_GIANestedInput
@@ -843,7 +847,7 @@ export type DANH_GIAUncheckedUpdateWithoutTAI_KHOANInput = {
   MaDatPhong?: Prisma.IntFieldUpdateOperationsInput | number
   MaKhachSan?: Prisma.IntFieldUpdateOperationsInput | number
   DiemDanhGia?: Prisma.IntFieldUpdateOperationsInput | number
-  NoiDung?: Prisma.StringFieldUpdateOperationsInput | string
+  NoiDung?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
   HINH_ANH_DANH_GIA?: Prisma.HINH_ANH_DANH_GIAUncheckedUpdateManyWithoutDANH_GIANestedInput
 }
@@ -853,7 +857,7 @@ export type DANH_GIAUncheckedUpdateManyWithoutTAI_KHOANInput = {
   MaDatPhong?: Prisma.IntFieldUpdateOperationsInput | number
   MaKhachSan?: Prisma.IntFieldUpdateOperationsInput | number
   DiemDanhGia?: Prisma.IntFieldUpdateOperationsInput | number
-  NoiDung?: Prisma.StringFieldUpdateOperationsInput | string
+  NoiDung?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
@@ -938,7 +942,7 @@ export type $DANH_GIAPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     MaKhachHang: number
     MaKhachSan: number
     DiemDanhGia: number
-    NoiDung: string
+    NoiDung: string | null
     TrangThai: string
   }, ExtArgs["result"]["dANH_GIA"]>
   composites: {}

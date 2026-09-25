@@ -251,6 +251,7 @@ export type QUY_PHONG_GIAOrderByWithRelationInput = {
 
 export type QUY_PHONG_GIAWhereUniqueInput = Prisma.AtLeast<{
   MaQuyPhong?: number
+  MaLoaiPhong_NgayApDung?: Prisma.QUY_PHONG_GIAMaLoaiPhongNgayApDungCompoundUniqueInput
   AND?: Prisma.QUY_PHONG_GIAWhereInput | Prisma.QUY_PHONG_GIAWhereInput[]
   OR?: Prisma.QUY_PHONG_GIAWhereInput[]
   NOT?: Prisma.QUY_PHONG_GIAWhereInput | Prisma.QUY_PHONG_GIAWhereInput[]
@@ -260,7 +261,7 @@ export type QUY_PHONG_GIAWhereUniqueInput = Prisma.AtLeast<{
   SoLuongPhong?: Prisma.IntFilter<"QUY_PHONG_GIA"> | number
   TrangThai?: Prisma.StringFilter<"QUY_PHONG_GIA"> | string
   LOAI_PHONG?: Prisma.XOR<Prisma.LOAI_PHONGScalarRelationFilter, Prisma.LOAI_PHONGWhereInput>
-}, "MaQuyPhong">
+}, "MaQuyPhong" | "MaLoaiPhong_NgayApDung">
 
 export type QUY_PHONG_GIAOrderByWithAggregationInput = {
   MaQuyPhong?: Prisma.SortOrder
@@ -354,6 +355,11 @@ export type QUY_PHONG_GIAListRelationFilter = {
 
 export type QUY_PHONG_GIAOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
+}
+
+export type QUY_PHONG_GIAMaLoaiPhongNgayApDungCompoundUniqueInput = {
+  MaLoaiPhong: number
+  NgayApDung: Date | string
 }
 
 export type QUY_PHONG_GIACountOrderByAggregateInput = {

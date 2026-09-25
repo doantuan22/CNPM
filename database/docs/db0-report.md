@@ -1,35 +1,46 @@
 # DB-0 Baseline Report
 
-## DATABASE DESIGN ISSUES (chưa được Gate 0 giải quyết dứt điểm)
+## Addendum (found and fixed during M1): sqlcmd input codepage corrupted Vietnamese CHECK literals
 
-### DDI-01: Nullable ambiguity trên một số cột hồ sơ mô tả
+While seeding roles for M1, `VAI_TRO.TenVaiTro` values written with correct Vietnamese diacritics came back with wrong `LEN()` results after being inserted via a migration run through `sqlcmd -i <file>.sql` **without** `-f 65001`. Root cause: `sqlcmd` reads `-i` script files using the console's codepage by default, not UTF-8, so multi-byte UTF-8 sequences in `N'...'` literals get reinterpreted byte-by-byte. This affected every migration's Vietnamese CHECK constraint literals compiled during the original DB-0 run (`CK_HO_SO_DOI_TAC_TrangThaiDuyet`, `CK_KHUYEN_MAI_LoaiGiamGia`, `CK_KHUYEN_MAI_PhamViApDung`, `CK_YEU_CAU_HO_TRO_LoaiYeuCau`) — the constraints were syntactically valid and passed every DB-0 test, but the comparison literals baked into them were mojibake, silently mismatching any correctly-encoded Vietnamese value the application would ever send. DB-0's own `test-constraints.sql` did not catch this because its only closed-domain test (TEST 8) used a value without diacritics.
 
-- **Source:** Chương 6, bảng 6.2 (TAI_KHOAN), 6.5 (KHACH_SAN), 6.7 (TIEN_NGHI), 6.9 (LOAI_PHONG), 6.20 (DANH_GIA)
-- **Table / Column:**
-  - `TAI_KHOAN`: `SoDienThoai`, `NgaySinh`, `GioiTinh`, `AnhDaiDien`
-  - `KHACH_SAN`: `MoTa`
-  - `LOAI_PHONG`: `MoTa`
-  - `TIEN_NGHI`: `BieuTuong`
-  - `DANH_GIA`: `NoiDung`
-- **Problem:** Chương 6 không ghi "Có thể rỗng" cho các cột này, nên theo quy tắc triển khai (chỉ NULL khi tài liệu nói rõ), baseline hiện đặt tất cả là `NOT NULL`. Về nghiệp vụ, một số cột (đặc biệt hồ sơ người dùng khi vừa đăng ký) có khả năng chưa có giá trị ngay tại thời điểm tạo dòng.
-- **Impact:** Khi DB-1 triển khai module Auth/Hotel/Amenity, nếu luồng tạo dòng không cung cấp đủ giá trị cho các cột này, insert sẽ bị SQL Server từ chối do vi phạm NOT NULL.
-- **Possible options:**
-  1. Giữ nguyên NOT NULL như baseline (bắt buộc ứng dụng luôn cung cấp giá trị/placeholder khi tạo dòng).
-  2. Đổi các cột trên sang NULL trước khi triển khai DB-1.
-- **Recommended question to user:** Xác nhận các cột trên nên NULL hay NOT NULL trước khi triển khai DB-1 (Auth/Hotel module). *(Không tự chọn thay người dùng theo mục 0/28 của yêu cầu.)*
+**Fix applied:** `HotelBooking_DB0_Test` was dropped and rebuilt, all 6 migrations re-run with `sqlcmd ... -f 65001`, confirmed via `SELECT definition FROM sys.check_constraints` that literals now read correctly (e.g. `N'Chờ duyệt'` instead of mojibake). `database/scripts/test-constraints.sql` gained a new positive TEST 9b that inserts a valid Vietnamese-diacritic closed-domain value and asserts it is **accepted**, specifically to catch this class of bug in the future. `database/README.md` now documents the `-f 65001` requirement for every `sqlcmd -i` invocation against these scripts. `verify-schema.sql` and `test-constraints.sql` were re-run — both still **PASS**.
 
-### DDI-02: Không có UNIQUE (MaLoaiPhong, NgayApDung) trên QUY_PHONG_GIA
+No `.sql` file content needed to change — the files on disk were always correct UTF-8; only the *execution command* was missing the encoding flag. This does not change any conclusion in the report below (still PASS), but the exit-gate checklist should be read together with this addendum.
 
-- **Source:** Chương 7, mục 7.1/7.5 — không có RB nào khai báo UNIQUE cho `QUY_PHONG_GIA`.
-- **Table / Column:** `QUY_PHONG_GIA.MaLoaiPhong`, `QUY_PHONG_GIA.NgayApDung`
-- **Problem:** Về nghiệp vụ, một loại phòng dường như chỉ nên có một bản ghi giá/quỹ phòng cho mỗi ngày áp dụng, nhưng tài liệu nguồn không khai báo ràng buộc UNIQUE này, và mục 8 của yêu cầu DB-0 cấm tự suy diễn UNIQUE không có nguồn.
-- **Impact:** Không có UNIQUE, hệ thống về mặt DB cho phép nhiều bản ghi giá/quỹ phòng trùng `(MaLoaiPhong, NgayApDung)`, có thể gây mơ hồ khi tính giá/tồn phòng ở các phase sau.
-- **Possible options:**
-  1. Giữ nguyên không có UNIQUE (baseline hiện tại).
-  2. Thêm `UNIQUE (MaLoaiPhong, NgayApDung)` nếu xác nhận đây đúng là ý định thiết kế.
-- **Recommended question to user:** Xác nhận có nên thêm UNIQUE `(MaLoaiPhong, NgayApDung)` vào `QUY_PHONG_GIA` hay không.
+---
 
-Cả hai issue trên **không chặn** việc dựng baseline DB-0 (schema đã build và test PASS với lựa chọn mặc định nêu trên); chúng cần được người dùng xác nhận trước khi các phase nghiệp vụ tiếp theo (DB-1+) phụ thuộc vào các cột/ràng buộc này.
+## Addendum 2 (post-M1): DDI-01 và DDI-02 đã RESOLVED — baseline migrations 001–006 sửa trực tiếp
+
+Sau khi M1 hoàn thành, người dùng đã chốt phương án cho cả hai Database Design Issue còn mở từ DB-0. Theo đúng chỉ dẫn của người dùng, **không tạo migration 007** — sửa trực tiếp `database/migrations/001_core_identity.sql`, `002_hotel_catalog.sql`, `003_room_inventory.sql`, `006_payment_after_sales.sql` (bốn file đúng bằng số bảng bị ảnh hưởng), rebuild `HotelBooking_DB0_Test` từ zero, re-introspect Prisma, và chạy lại toàn bộ regression M1. Xem `docs/m1-report.md` phần "DDI cleanup" để biết chi tiết kết quả test/regression.
+
+## DATABASE DESIGN ISSUES — RESOLVED
+
+### DDI-01: Nullability trên các cột hồ sơ mô tả — RESOLVED
+
+- **Quyết định chính thức của người dùng:**
+
+  | Cột | Quyết định | Migration đã sửa |
+  |---|---|---|
+  | `TAI_KHOAN.SoDienThoai` | **NOT NULL** (giữ nguyên) | — |
+  | `TAI_KHOAN.NgaySinh` | **NULL** | `001_core_identity.sql` |
+  | `TAI_KHOAN.GioiTinh` | **NULL** | `001_core_identity.sql` |
+  | `TAI_KHOAN.AnhDaiDien` | **NULL** | `001_core_identity.sql` |
+  | `KHACH_SAN.MoTa` | **NULL** | `002_hotel_catalog.sql` |
+  | `TIEN_NGHI.BieuTuong` | **NULL** | `002_hotel_catalog.sql` |
+  | `LOAI_PHONG.MoTa` | **NULL** | `003_room_inventory.sql` |
+  | `DANH_GIA.NoiDung` | **NULL** | `006_payment_after_sales.sql` |
+
+- **Đã sửa:** `CREATE TABLE` tương ứng trong 4 migration trên — chỉ đổi `NOT NULL` → `NULL` cho đúng 7 cột trên, không đổi tên cột/datatype/PK/FK nào khác.
+- **Backend đã cập nhật để khớp:** `auth.schemas.ts` (registerSchema), `accounts.schemas.ts` (createAccountSchema) — `NgaySinh`/`GioiTinh` chuyển thành optional; `auth.service.ts`/`accounts.service.ts` — `AnhDaiDien` mặc định `null` thay vì `''`; `account-mapper.ts` (`SafeAccount`) — 3 field chuyển kiểu `T | null`.
+- **Frontend đã cập nhật để khớp:** `types/auth.ts` (`Account`, `RegisterPayload`), `features/auth/schemas.ts` (form schema), `RegisterPage.tsx` (không bắt buộc Ngày sinh/Giới tính, đánh dấu "(tùy chọn)"), `ProfilePage.tsx`/`AdminAccountDetailPage.tsx` (null-safe khi hiển thị/submit).
+- **Verify:** `verify-schema.sql` Check 12 kiểm tra `is_nullable` chính xác cho cả 8 cột (kể cả `SoDienThoai` phải là NOT NULL). `test-constraints.sql` TEST 14–15 (TAI_KHOAN) và TEST 16–19 (KHACH_SAN/LOAI_PHONG/TIEN_NGHI/DANH_GIA) xác nhận NULL được chấp nhận đúng cột, và `SoDienThoai = NULL` vẫn bị từ chối.
+
+### DDI-02: UNIQUE (MaLoaiPhong, NgayApDung) trên QUY_PHONG_GIA — RESOLVED
+
+- **Quyết định chính thức của người dùng:** một loại phòng chỉ được có một bản ghi quỹ phòng/giá cho cùng một ngày áp dụng.
+- **Đã thêm:** `CONSTRAINT UQ_QUY_PHONG_GIA_MaLoaiPhong_NgayApDung UNIQUE (MaLoaiPhong, NgayApDung)` trực tiếp vào `CREATE TABLE QUY_PHONG_GIA` trong `database/migrations/003_room_inventory.sql`. Không đổi `PRIMARY KEY (MaQuyPhong)`, không thêm surrogate logic khác.
+- **Verify:** `verify-schema.sql` Check 13 xác minh bằng cách đọc thật các cột của unique index (không chỉ dò tên constraint). `test-constraints.sql` TEST 10–13: insert đầu tiên PASS, insert trùng `(MaLoaiPhong, NgayApDung)` FAIL đúng như kỳ vọng, cùng `MaLoaiPhong` khác ngày PASS, khác `MaLoaiPhong` cùng ngày PASS.
 
 ---
 
@@ -136,8 +147,7 @@ Phụ trợ (không commit, đã dọn dẹp): `backend/.env` được tạo c�
 
 ### 18. Các Database Design Issues còn unresolved
 
-- **DDI-01** — nullable ambiguity trên `TAI_KHOAN` (SoDienThoai/NgaySinh/GioiTinh/AnhDaiDien), `KHACH_SAN.MoTa`, `LOAI_PHONG.MoTa`, `TIEN_NGHI.BieuTuong`, `DANH_GIA.NoiDung`. Cần xác nhận trước DB-1.
-- **DDI-02** — thiếu UNIQUE `(MaLoaiPhong, NgayApDung)` trên `QUY_PHONG_GIA`. Cần xác nhận trước khi module Inventory/Pricing (DB-1+) implement.
+**Không còn.** DDI-01 và DDI-02 đã **RESOLVED** — xem "Addendum 2" ở đầu file này để biết quyết định chính thức, migration đã sửa, và kết quả verify/test.
 
 ### 19. DB-0 đạt hay chưa đạt Exit Gate
 
@@ -165,7 +175,7 @@ Không mục nào ở trạng thái BLOCKED — SQL Server instance khả dụng
 
 ### 20. Có đủ điều kiện chuyển sang DB-1 / hoàn thành M0 hay chưa
 
-**Đủ điều kiện**, với 2 điều kiện tiên quyết cần người dùng xác nhận trước khi DB-1 code phụ thuộc vào chúng: DDI-01 (nullable) và DDI-02 (UNIQUE quỹ phòng giá). Đề xuất: xác nhận 2 issue này trước khi bắt đầu DB-1, để tránh phải sửa lại baseline (ALTER TABLE) giữa chừng.
+**Đủ điều kiện, không còn điều kiện tiên quyết treo.** DDI-01 và DDI-02 đã RESOLVED trực tiếp trong baseline (xem Addendum 2); M1 (DB-1 seed + BE-1 + FE-1) đã hoàn thành và regression lại thành công sau khi áp dụng cả hai quyết định — xem `docs/m1-report.md`.
 
 ---
 

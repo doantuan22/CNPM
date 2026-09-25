@@ -52,7 +52,7 @@ CREATE TABLE DANH_GIA (
     MaKhachHang     INT               NOT NULL,
     MaKhachSan      INT               NOT NULL,
     DiemDanhGia     TINYINT           NOT NULL,
-    NoiDung         NVARCHAR(MAX)     NOT NULL,
+    NoiDung         NVARCHAR(MAX)     NULL,
     TrangThai       NVARCHAR(30)      NOT NULL,
     CONSTRAINT PK_DANH_GIA PRIMARY KEY (MaDanhGia),
     CONSTRAINT UQ_DANH_GIA_MaDatPhong UNIQUE (MaDatPhong),

@@ -239,9 +239,9 @@ export type TAI_KHOANGroupByOutputType = {
   MatKhau: string
   HoTen: string
   SoDienThoai: string
-  NgaySinh: Date
-  GioiTinh: string
-  AnhDaiDien: string
+  NgaySinh: Date | null
+  GioiTinh: string | null
+  AnhDaiDien: string | null
   TrangThai: string
   NgayTao: Date
   NgayCapNhat: Date
@@ -278,9 +278,9 @@ export type TAI_KHOANWhereInput = {
   MatKhau?: Prisma.StringFilter<"TAI_KHOAN"> | string
   HoTen?: Prisma.StringFilter<"TAI_KHOAN"> | string
   SoDienThoai?: Prisma.StringFilter<"TAI_KHOAN"> | string
-  NgaySinh?: Prisma.DateTimeFilter<"TAI_KHOAN"> | Date | string
-  GioiTinh?: Prisma.StringFilter<"TAI_KHOAN"> | string
-  AnhDaiDien?: Prisma.StringFilter<"TAI_KHOAN"> | string
+  NgaySinh?: Prisma.DateTimeNullableFilter<"TAI_KHOAN"> | Date | string | null
+  GioiTinh?: Prisma.StringNullableFilter<"TAI_KHOAN"> | string | null
+  AnhDaiDien?: Prisma.StringNullableFilter<"TAI_KHOAN"> | string | null
   TrangThai?: Prisma.StringFilter<"TAI_KHOAN"> | string
   NgayTao?: Prisma.DateTimeFilter<"TAI_KHOAN"> | Date | string
   NgayCapNhat?: Prisma.DateTimeFilter<"TAI_KHOAN"> | Date | string
@@ -303,9 +303,9 @@ export type TAI_KHOANOrderByWithRelationInput = {
   MatKhau?: Prisma.SortOrder
   HoTen?: Prisma.SortOrder
   SoDienThoai?: Prisma.SortOrder
-  NgaySinh?: Prisma.SortOrder
-  GioiTinh?: Prisma.SortOrder
-  AnhDaiDien?: Prisma.SortOrder
+  NgaySinh?: Prisma.SortOrderInput | Prisma.SortOrder
+  GioiTinh?: Prisma.SortOrderInput | Prisma.SortOrder
+  AnhDaiDien?: Prisma.SortOrderInput | Prisma.SortOrder
   TrangThai?: Prisma.SortOrder
   NgayTao?: Prisma.SortOrder
   NgayCapNhat?: Prisma.SortOrder
@@ -331,9 +331,9 @@ export type TAI_KHOANWhereUniqueInput = Prisma.AtLeast<{
   MatKhau?: Prisma.StringFilter<"TAI_KHOAN"> | string
   HoTen?: Prisma.StringFilter<"TAI_KHOAN"> | string
   SoDienThoai?: Prisma.StringFilter<"TAI_KHOAN"> | string
-  NgaySinh?: Prisma.DateTimeFilter<"TAI_KHOAN"> | Date | string
-  GioiTinh?: Prisma.StringFilter<"TAI_KHOAN"> | string
-  AnhDaiDien?: Prisma.StringFilter<"TAI_KHOAN"> | string
+  NgaySinh?: Prisma.DateTimeNullableFilter<"TAI_KHOAN"> | Date | string | null
+  GioiTinh?: Prisma.StringNullableFilter<"TAI_KHOAN"> | string | null
+  AnhDaiDien?: Prisma.StringNullableFilter<"TAI_KHOAN"> | string | null
   TrangThai?: Prisma.StringFilter<"TAI_KHOAN"> | string
   NgayTao?: Prisma.DateTimeFilter<"TAI_KHOAN"> | Date | string
   NgayCapNhat?: Prisma.DateTimeFilter<"TAI_KHOAN"> | Date | string
@@ -356,9 +356,9 @@ export type TAI_KHOANOrderByWithAggregationInput = {
   MatKhau?: Prisma.SortOrder
   HoTen?: Prisma.SortOrder
   SoDienThoai?: Prisma.SortOrder
-  NgaySinh?: Prisma.SortOrder
-  GioiTinh?: Prisma.SortOrder
-  AnhDaiDien?: Prisma.SortOrder
+  NgaySinh?: Prisma.SortOrderInput | Prisma.SortOrder
+  GioiTinh?: Prisma.SortOrderInput | Prisma.SortOrder
+  AnhDaiDien?: Prisma.SortOrderInput | Prisma.SortOrder
   TrangThai?: Prisma.SortOrder
   NgayTao?: Prisma.SortOrder
   NgayCapNhat?: Prisma.SortOrder
@@ -380,9 +380,9 @@ export type TAI_KHOANScalarWhereWithAggregatesInput = {
   MatKhau?: Prisma.StringWithAggregatesFilter<"TAI_KHOAN"> | string
   HoTen?: Prisma.StringWithAggregatesFilter<"TAI_KHOAN"> | string
   SoDienThoai?: Prisma.StringWithAggregatesFilter<"TAI_KHOAN"> | string
-  NgaySinh?: Prisma.DateTimeWithAggregatesFilter<"TAI_KHOAN"> | Date | string
-  GioiTinh?: Prisma.StringWithAggregatesFilter<"TAI_KHOAN"> | string
-  AnhDaiDien?: Prisma.StringWithAggregatesFilter<"TAI_KHOAN"> | string
+  NgaySinh?: Prisma.DateTimeNullableWithAggregatesFilter<"TAI_KHOAN"> | Date | string | null
+  GioiTinh?: Prisma.StringNullableWithAggregatesFilter<"TAI_KHOAN"> | string | null
+  AnhDaiDien?: Prisma.StringNullableWithAggregatesFilter<"TAI_KHOAN"> | string | null
   TrangThai?: Prisma.StringWithAggregatesFilter<"TAI_KHOAN"> | string
   NgayTao?: Prisma.DateTimeWithAggregatesFilter<"TAI_KHOAN"> | Date | string
   NgayCapNhat?: Prisma.DateTimeWithAggregatesFilter<"TAI_KHOAN"> | Date | string
@@ -394,9 +394,9 @@ export type TAI_KHOANCreateInput = {
   MatKhau: string
   HoTen: string
   SoDienThoai: string
-  NgaySinh: Date | string
-  GioiTinh: string
-  AnhDaiDien: string
+  NgaySinh?: Date | string | null
+  GioiTinh?: string | null
+  AnhDaiDien?: string | null
   TrangThai: string
   NgayTao: Date | string
   NgayCapNhat: Date | string
@@ -419,9 +419,9 @@ export type TAI_KHOANUncheckedCreateInput = {
   MatKhau: string
   HoTen: string
   SoDienThoai: string
-  NgaySinh: Date | string
-  GioiTinh: string
-  AnhDaiDien: string
+  NgaySinh?: Date | string | null
+  GioiTinh?: string | null
+  AnhDaiDien?: string | null
   TrangThai: string
   NgayTao: Date | string
   NgayCapNhat: Date | string
@@ -441,9 +441,9 @@ export type TAI_KHOANUpdateInput = {
   MatKhau?: Prisma.StringFieldUpdateOperationsInput | string
   HoTen?: Prisma.StringFieldUpdateOperationsInput | string
   SoDienThoai?: Prisma.StringFieldUpdateOperationsInput | string
-  NgaySinh?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  GioiTinh?: Prisma.StringFieldUpdateOperationsInput | string
-  AnhDaiDien?: Prisma.StringFieldUpdateOperationsInput | string
+  NgaySinh?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  GioiTinh?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  AnhDaiDien?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
   NgayTao?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   NgayCapNhat?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -466,9 +466,9 @@ export type TAI_KHOANUncheckedUpdateInput = {
   MatKhau?: Prisma.StringFieldUpdateOperationsInput | string
   HoTen?: Prisma.StringFieldUpdateOperationsInput | string
   SoDienThoai?: Prisma.StringFieldUpdateOperationsInput | string
-  NgaySinh?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  GioiTinh?: Prisma.StringFieldUpdateOperationsInput | string
-  AnhDaiDien?: Prisma.StringFieldUpdateOperationsInput | string
+  NgaySinh?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  GioiTinh?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  AnhDaiDien?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
   NgayTao?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   NgayCapNhat?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -489,9 +489,9 @@ export type TAI_KHOANCreateManyInput = {
   MatKhau: string
   HoTen: string
   SoDienThoai: string
-  NgaySinh: Date | string
-  GioiTinh: string
-  AnhDaiDien: string
+  NgaySinh?: Date | string | null
+  GioiTinh?: string | null
+  AnhDaiDien?: string | null
   TrangThai: string
   NgayTao: Date | string
   NgayCapNhat: Date | string
@@ -503,9 +503,9 @@ export type TAI_KHOANUpdateManyMutationInput = {
   MatKhau?: Prisma.StringFieldUpdateOperationsInput | string
   HoTen?: Prisma.StringFieldUpdateOperationsInput | string
   SoDienThoai?: Prisma.StringFieldUpdateOperationsInput | string
-  NgaySinh?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  GioiTinh?: Prisma.StringFieldUpdateOperationsInput | string
-  AnhDaiDien?: Prisma.StringFieldUpdateOperationsInput | string
+  NgaySinh?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  GioiTinh?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  AnhDaiDien?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
   NgayTao?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   NgayCapNhat?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -519,9 +519,9 @@ export type TAI_KHOANUncheckedUpdateManyInput = {
   MatKhau?: Prisma.StringFieldUpdateOperationsInput | string
   HoTen?: Prisma.StringFieldUpdateOperationsInput | string
   SoDienThoai?: Prisma.StringFieldUpdateOperationsInput | string
-  NgaySinh?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  GioiTinh?: Prisma.StringFieldUpdateOperationsInput | string
-  AnhDaiDien?: Prisma.StringFieldUpdateOperationsInput | string
+  NgaySinh?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  GioiTinh?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  AnhDaiDien?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
   NgayTao?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   NgayCapNhat?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -771,9 +771,9 @@ export type TAI_KHOANCreateWithoutDANH_GIAInput = {
   MatKhau: string
   HoTen: string
   SoDienThoai: string
-  NgaySinh: Date | string
-  GioiTinh: string
-  AnhDaiDien: string
+  NgaySinh?: Date | string | null
+  GioiTinh?: string | null
+  AnhDaiDien?: string | null
   TrangThai: string
   NgayTao: Date | string
   NgayCapNhat: Date | string
@@ -795,9 +795,9 @@ export type TAI_KHOANUncheckedCreateWithoutDANH_GIAInput = {
   MatKhau: string
   HoTen: string
   SoDienThoai: string
-  NgaySinh: Date | string
-  GioiTinh: string
-  AnhDaiDien: string
+  NgaySinh?: Date | string | null
+  GioiTinh?: string | null
+  AnhDaiDien?: string | null
   TrangThai: string
   NgayTao: Date | string
   NgayCapNhat: Date | string
@@ -832,9 +832,9 @@ export type TAI_KHOANUpdateWithoutDANH_GIAInput = {
   MatKhau?: Prisma.StringFieldUpdateOperationsInput | string
   HoTen?: Prisma.StringFieldUpdateOperationsInput | string
   SoDienThoai?: Prisma.StringFieldUpdateOperationsInput | string
-  NgaySinh?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  GioiTinh?: Prisma.StringFieldUpdateOperationsInput | string
-  AnhDaiDien?: Prisma.StringFieldUpdateOperationsInput | string
+  NgaySinh?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  GioiTinh?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  AnhDaiDien?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
   NgayTao?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   NgayCapNhat?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -856,9 +856,9 @@ export type TAI_KHOANUncheckedUpdateWithoutDANH_GIAInput = {
   MatKhau?: Prisma.StringFieldUpdateOperationsInput | string
   HoTen?: Prisma.StringFieldUpdateOperationsInput | string
   SoDienThoai?: Prisma.StringFieldUpdateOperationsInput | string
-  NgaySinh?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  GioiTinh?: Prisma.StringFieldUpdateOperationsInput | string
-  AnhDaiDien?: Prisma.StringFieldUpdateOperationsInput | string
+  NgaySinh?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  GioiTinh?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  AnhDaiDien?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
   NgayTao?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   NgayCapNhat?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -877,9 +877,9 @@ export type TAI_KHOANCreateWithoutDAT_PHONGInput = {
   MatKhau: string
   HoTen: string
   SoDienThoai: string
-  NgaySinh: Date | string
-  GioiTinh: string
-  AnhDaiDien: string
+  NgaySinh?: Date | string | null
+  GioiTinh?: string | null
+  AnhDaiDien?: string | null
   TrangThai: string
   NgayTao: Date | string
   NgayCapNhat: Date | string
@@ -901,9 +901,9 @@ export type TAI_KHOANUncheckedCreateWithoutDAT_PHONGInput = {
   MatKhau: string
   HoTen: string
   SoDienThoai: string
-  NgaySinh: Date | string
-  GioiTinh: string
-  AnhDaiDien: string
+  NgaySinh?: Date | string | null
+  GioiTinh?: string | null
+  AnhDaiDien?: string | null
   TrangThai: string
   NgayTao: Date | string
   NgayCapNhat: Date | string
@@ -938,9 +938,9 @@ export type TAI_KHOANUpdateWithoutDAT_PHONGInput = {
   MatKhau?: Prisma.StringFieldUpdateOperationsInput | string
   HoTen?: Prisma.StringFieldUpdateOperationsInput | string
   SoDienThoai?: Prisma.StringFieldUpdateOperationsInput | string
-  NgaySinh?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  GioiTinh?: Prisma.StringFieldUpdateOperationsInput | string
-  AnhDaiDien?: Prisma.StringFieldUpdateOperationsInput | string
+  NgaySinh?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  GioiTinh?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  AnhDaiDien?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
   NgayTao?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   NgayCapNhat?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -962,9 +962,9 @@ export type TAI_KHOANUncheckedUpdateWithoutDAT_PHONGInput = {
   MatKhau?: Prisma.StringFieldUpdateOperationsInput | string
   HoTen?: Prisma.StringFieldUpdateOperationsInput | string
   SoDienThoai?: Prisma.StringFieldUpdateOperationsInput | string
-  NgaySinh?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  GioiTinh?: Prisma.StringFieldUpdateOperationsInput | string
-  AnhDaiDien?: Prisma.StringFieldUpdateOperationsInput | string
+  NgaySinh?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  GioiTinh?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  AnhDaiDien?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
   NgayTao?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   NgayCapNhat?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -983,9 +983,9 @@ export type TAI_KHOANCreateWithoutHO_SO_DOI_TAC_HO_SO_DOI_TAC_MaTaiKhoanToTAI_KH
   MatKhau: string
   HoTen: string
   SoDienThoai: string
-  NgaySinh: Date | string
-  GioiTinh: string
-  AnhDaiDien: string
+  NgaySinh?: Date | string | null
+  GioiTinh?: string | null
+  AnhDaiDien?: string | null
   TrangThai: string
   NgayTao: Date | string
   NgayCapNhat: Date | string
@@ -1007,9 +1007,9 @@ export type TAI_KHOANUncheckedCreateWithoutHO_SO_DOI_TAC_HO_SO_DOI_TAC_MaTaiKhoa
   MatKhau: string
   HoTen: string
   SoDienThoai: string
-  NgaySinh: Date | string
-  GioiTinh: string
-  AnhDaiDien: string
+  NgaySinh?: Date | string | null
+  GioiTinh?: string | null
+  AnhDaiDien?: string | null
   TrangThai: string
   NgayTao: Date | string
   NgayCapNhat: Date | string
@@ -1033,9 +1033,9 @@ export type TAI_KHOANCreateWithoutHO_SO_DOI_TAC_HO_SO_DOI_TAC_MaTaiKhoanDuyetToT
   MatKhau: string
   HoTen: string
   SoDienThoai: string
-  NgaySinh: Date | string
-  GioiTinh: string
-  AnhDaiDien: string
+  NgaySinh?: Date | string | null
+  GioiTinh?: string | null
+  AnhDaiDien?: string | null
   TrangThai: string
   NgayTao: Date | string
   NgayCapNhat: Date | string
@@ -1057,9 +1057,9 @@ export type TAI_KHOANUncheckedCreateWithoutHO_SO_DOI_TAC_HO_SO_DOI_TAC_MaTaiKhoa
   MatKhau: string
   HoTen: string
   SoDienThoai: string
-  NgaySinh: Date | string
-  GioiTinh: string
-  AnhDaiDien: string
+  NgaySinh?: Date | string | null
+  GioiTinh?: string | null
+  AnhDaiDien?: string | null
   TrangThai: string
   NgayTao: Date | string
   NgayCapNhat: Date | string
@@ -1094,9 +1094,9 @@ export type TAI_KHOANUpdateWithoutHO_SO_DOI_TAC_HO_SO_DOI_TAC_MaTaiKhoanToTAI_KH
   MatKhau?: Prisma.StringFieldUpdateOperationsInput | string
   HoTen?: Prisma.StringFieldUpdateOperationsInput | string
   SoDienThoai?: Prisma.StringFieldUpdateOperationsInput | string
-  NgaySinh?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  GioiTinh?: Prisma.StringFieldUpdateOperationsInput | string
-  AnhDaiDien?: Prisma.StringFieldUpdateOperationsInput | string
+  NgaySinh?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  GioiTinh?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  AnhDaiDien?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
   NgayTao?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   NgayCapNhat?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1118,9 +1118,9 @@ export type TAI_KHOANUncheckedUpdateWithoutHO_SO_DOI_TAC_HO_SO_DOI_TAC_MaTaiKhoa
   MatKhau?: Prisma.StringFieldUpdateOperationsInput | string
   HoTen?: Prisma.StringFieldUpdateOperationsInput | string
   SoDienThoai?: Prisma.StringFieldUpdateOperationsInput | string
-  NgaySinh?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  GioiTinh?: Prisma.StringFieldUpdateOperationsInput | string
-  AnhDaiDien?: Prisma.StringFieldUpdateOperationsInput | string
+  NgaySinh?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  GioiTinh?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  AnhDaiDien?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
   NgayTao?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   NgayCapNhat?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1150,9 +1150,9 @@ export type TAI_KHOANUpdateWithoutHO_SO_DOI_TAC_HO_SO_DOI_TAC_MaTaiKhoanDuyetToT
   MatKhau?: Prisma.StringFieldUpdateOperationsInput | string
   HoTen?: Prisma.StringFieldUpdateOperationsInput | string
   SoDienThoai?: Prisma.StringFieldUpdateOperationsInput | string
-  NgaySinh?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  GioiTinh?: Prisma.StringFieldUpdateOperationsInput | string
-  AnhDaiDien?: Prisma.StringFieldUpdateOperationsInput | string
+  NgaySinh?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  GioiTinh?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  AnhDaiDien?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
   NgayTao?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   NgayCapNhat?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1174,9 +1174,9 @@ export type TAI_KHOANUncheckedUpdateWithoutHO_SO_DOI_TAC_HO_SO_DOI_TAC_MaTaiKhoa
   MatKhau?: Prisma.StringFieldUpdateOperationsInput | string
   HoTen?: Prisma.StringFieldUpdateOperationsInput | string
   SoDienThoai?: Prisma.StringFieldUpdateOperationsInput | string
-  NgaySinh?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  GioiTinh?: Prisma.StringFieldUpdateOperationsInput | string
-  AnhDaiDien?: Prisma.StringFieldUpdateOperationsInput | string
+  NgaySinh?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  GioiTinh?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  AnhDaiDien?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
   NgayTao?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   NgayCapNhat?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1195,9 +1195,9 @@ export type TAI_KHOANCreateWithoutKHACH_SAN_KHACH_SAN_MaTaiKhoanDuyetToTAI_KHOAN
   MatKhau: string
   HoTen: string
   SoDienThoai: string
-  NgaySinh: Date | string
-  GioiTinh: string
-  AnhDaiDien: string
+  NgaySinh?: Date | string | null
+  GioiTinh?: string | null
+  AnhDaiDien?: string | null
   TrangThai: string
   NgayTao: Date | string
   NgayCapNhat: Date | string
@@ -1219,9 +1219,9 @@ export type TAI_KHOANUncheckedCreateWithoutKHACH_SAN_KHACH_SAN_MaTaiKhoanDuyetTo
   MatKhau: string
   HoTen: string
   SoDienThoai: string
-  NgaySinh: Date | string
-  GioiTinh: string
-  AnhDaiDien: string
+  NgaySinh?: Date | string | null
+  GioiTinh?: string | null
+  AnhDaiDien?: string | null
   TrangThai: string
   NgayTao: Date | string
   NgayCapNhat: Date | string
@@ -1245,9 +1245,9 @@ export type TAI_KHOANCreateWithoutKHACH_SAN_KHACH_SAN_MaTaiKhoanSoHuuToTAI_KHOAN
   MatKhau: string
   HoTen: string
   SoDienThoai: string
-  NgaySinh: Date | string
-  GioiTinh: string
-  AnhDaiDien: string
+  NgaySinh?: Date | string | null
+  GioiTinh?: string | null
+  AnhDaiDien?: string | null
   TrangThai: string
   NgayTao: Date | string
   NgayCapNhat: Date | string
@@ -1269,9 +1269,9 @@ export type TAI_KHOANUncheckedCreateWithoutKHACH_SAN_KHACH_SAN_MaTaiKhoanSoHuuTo
   MatKhau: string
   HoTen: string
   SoDienThoai: string
-  NgaySinh: Date | string
-  GioiTinh: string
-  AnhDaiDien: string
+  NgaySinh?: Date | string | null
+  GioiTinh?: string | null
+  AnhDaiDien?: string | null
   TrangThai: string
   NgayTao: Date | string
   NgayCapNhat: Date | string
@@ -1306,9 +1306,9 @@ export type TAI_KHOANUpdateWithoutKHACH_SAN_KHACH_SAN_MaTaiKhoanDuyetToTAI_KHOAN
   MatKhau?: Prisma.StringFieldUpdateOperationsInput | string
   HoTen?: Prisma.StringFieldUpdateOperationsInput | string
   SoDienThoai?: Prisma.StringFieldUpdateOperationsInput | string
-  NgaySinh?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  GioiTinh?: Prisma.StringFieldUpdateOperationsInput | string
-  AnhDaiDien?: Prisma.StringFieldUpdateOperationsInput | string
+  NgaySinh?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  GioiTinh?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  AnhDaiDien?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
   NgayTao?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   NgayCapNhat?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1330,9 +1330,9 @@ export type TAI_KHOANUncheckedUpdateWithoutKHACH_SAN_KHACH_SAN_MaTaiKhoanDuyetTo
   MatKhau?: Prisma.StringFieldUpdateOperationsInput | string
   HoTen?: Prisma.StringFieldUpdateOperationsInput | string
   SoDienThoai?: Prisma.StringFieldUpdateOperationsInput | string
-  NgaySinh?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  GioiTinh?: Prisma.StringFieldUpdateOperationsInput | string
-  AnhDaiDien?: Prisma.StringFieldUpdateOperationsInput | string
+  NgaySinh?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  GioiTinh?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  AnhDaiDien?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
   NgayTao?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   NgayCapNhat?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1362,9 +1362,9 @@ export type TAI_KHOANUpdateWithoutKHACH_SAN_KHACH_SAN_MaTaiKhoanSoHuuToTAI_KHOAN
   MatKhau?: Prisma.StringFieldUpdateOperationsInput | string
   HoTen?: Prisma.StringFieldUpdateOperationsInput | string
   SoDienThoai?: Prisma.StringFieldUpdateOperationsInput | string
-  NgaySinh?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  GioiTinh?: Prisma.StringFieldUpdateOperationsInput | string
-  AnhDaiDien?: Prisma.StringFieldUpdateOperationsInput | string
+  NgaySinh?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  GioiTinh?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  AnhDaiDien?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
   NgayTao?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   NgayCapNhat?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1386,9 +1386,9 @@ export type TAI_KHOANUncheckedUpdateWithoutKHACH_SAN_KHACH_SAN_MaTaiKhoanSoHuuTo
   MatKhau?: Prisma.StringFieldUpdateOperationsInput | string
   HoTen?: Prisma.StringFieldUpdateOperationsInput | string
   SoDienThoai?: Prisma.StringFieldUpdateOperationsInput | string
-  NgaySinh?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  GioiTinh?: Prisma.StringFieldUpdateOperationsInput | string
-  AnhDaiDien?: Prisma.StringFieldUpdateOperationsInput | string
+  NgaySinh?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  GioiTinh?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  AnhDaiDien?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
   NgayTao?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   NgayCapNhat?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1407,9 +1407,9 @@ export type TAI_KHOANCreateWithoutVAI_TROInput = {
   MatKhau: string
   HoTen: string
   SoDienThoai: string
-  NgaySinh: Date | string
-  GioiTinh: string
-  AnhDaiDien: string
+  NgaySinh?: Date | string | null
+  GioiTinh?: string | null
+  AnhDaiDien?: string | null
   TrangThai: string
   NgayTao: Date | string
   NgayCapNhat: Date | string
@@ -1430,9 +1430,9 @@ export type TAI_KHOANUncheckedCreateWithoutVAI_TROInput = {
   MatKhau: string
   HoTen: string
   SoDienThoai: string
-  NgaySinh: Date | string
-  GioiTinh: string
-  AnhDaiDien: string
+  NgaySinh?: Date | string | null
+  GioiTinh?: string | null
+  AnhDaiDien?: string | null
   TrangThai: string
   NgayTao: Date | string
   NgayCapNhat: Date | string
@@ -1482,9 +1482,9 @@ export type TAI_KHOANScalarWhereInput = {
   MatKhau?: Prisma.StringFilter<"TAI_KHOAN"> | string
   HoTen?: Prisma.StringFilter<"TAI_KHOAN"> | string
   SoDienThoai?: Prisma.StringFilter<"TAI_KHOAN"> | string
-  NgaySinh?: Prisma.DateTimeFilter<"TAI_KHOAN"> | Date | string
-  GioiTinh?: Prisma.StringFilter<"TAI_KHOAN"> | string
-  AnhDaiDien?: Prisma.StringFilter<"TAI_KHOAN"> | string
+  NgaySinh?: Prisma.DateTimeNullableFilter<"TAI_KHOAN"> | Date | string | null
+  GioiTinh?: Prisma.StringNullableFilter<"TAI_KHOAN"> | string | null
+  AnhDaiDien?: Prisma.StringNullableFilter<"TAI_KHOAN"> | string | null
   TrangThai?: Prisma.StringFilter<"TAI_KHOAN"> | string
   NgayTao?: Prisma.DateTimeFilter<"TAI_KHOAN"> | Date | string
   NgayCapNhat?: Prisma.DateTimeFilter<"TAI_KHOAN"> | Date | string
@@ -1496,9 +1496,9 @@ export type TAI_KHOANCreateWithoutYEU_CAU_HO_TRO_YEU_CAU_HO_TRO_MaTaiKhoanKhachH
   MatKhau: string
   HoTen: string
   SoDienThoai: string
-  NgaySinh: Date | string
-  GioiTinh: string
-  AnhDaiDien: string
+  NgaySinh?: Date | string | null
+  GioiTinh?: string | null
+  AnhDaiDien?: string | null
   TrangThai: string
   NgayTao: Date | string
   NgayCapNhat: Date | string
@@ -1520,9 +1520,9 @@ export type TAI_KHOANUncheckedCreateWithoutYEU_CAU_HO_TRO_YEU_CAU_HO_TRO_MaTaiKh
   MatKhau: string
   HoTen: string
   SoDienThoai: string
-  NgaySinh: Date | string
-  GioiTinh: string
-  AnhDaiDien: string
+  NgaySinh?: Date | string | null
+  GioiTinh?: string | null
+  AnhDaiDien?: string | null
   TrangThai: string
   NgayTao: Date | string
   NgayCapNhat: Date | string
@@ -1546,9 +1546,9 @@ export type TAI_KHOANCreateWithoutYEU_CAU_HO_TRO_YEU_CAU_HO_TRO_MaTaiKhoanXuLyTo
   MatKhau: string
   HoTen: string
   SoDienThoai: string
-  NgaySinh: Date | string
-  GioiTinh: string
-  AnhDaiDien: string
+  NgaySinh?: Date | string | null
+  GioiTinh?: string | null
+  AnhDaiDien?: string | null
   TrangThai: string
   NgayTao: Date | string
   NgayCapNhat: Date | string
@@ -1570,9 +1570,9 @@ export type TAI_KHOANUncheckedCreateWithoutYEU_CAU_HO_TRO_YEU_CAU_HO_TRO_MaTaiKh
   MatKhau: string
   HoTen: string
   SoDienThoai: string
-  NgaySinh: Date | string
-  GioiTinh: string
-  AnhDaiDien: string
+  NgaySinh?: Date | string | null
+  GioiTinh?: string | null
+  AnhDaiDien?: string | null
   TrangThai: string
   NgayTao: Date | string
   NgayCapNhat: Date | string
@@ -1607,9 +1607,9 @@ export type TAI_KHOANUpdateWithoutYEU_CAU_HO_TRO_YEU_CAU_HO_TRO_MaTaiKhoanKhachH
   MatKhau?: Prisma.StringFieldUpdateOperationsInput | string
   HoTen?: Prisma.StringFieldUpdateOperationsInput | string
   SoDienThoai?: Prisma.StringFieldUpdateOperationsInput | string
-  NgaySinh?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  GioiTinh?: Prisma.StringFieldUpdateOperationsInput | string
-  AnhDaiDien?: Prisma.StringFieldUpdateOperationsInput | string
+  NgaySinh?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  GioiTinh?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  AnhDaiDien?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
   NgayTao?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   NgayCapNhat?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1631,9 +1631,9 @@ export type TAI_KHOANUncheckedUpdateWithoutYEU_CAU_HO_TRO_YEU_CAU_HO_TRO_MaTaiKh
   MatKhau?: Prisma.StringFieldUpdateOperationsInput | string
   HoTen?: Prisma.StringFieldUpdateOperationsInput | string
   SoDienThoai?: Prisma.StringFieldUpdateOperationsInput | string
-  NgaySinh?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  GioiTinh?: Prisma.StringFieldUpdateOperationsInput | string
-  AnhDaiDien?: Prisma.StringFieldUpdateOperationsInput | string
+  NgaySinh?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  GioiTinh?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  AnhDaiDien?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
   NgayTao?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   NgayCapNhat?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1663,9 +1663,9 @@ export type TAI_KHOANUpdateWithoutYEU_CAU_HO_TRO_YEU_CAU_HO_TRO_MaTaiKhoanXuLyTo
   MatKhau?: Prisma.StringFieldUpdateOperationsInput | string
   HoTen?: Prisma.StringFieldUpdateOperationsInput | string
   SoDienThoai?: Prisma.StringFieldUpdateOperationsInput | string
-  NgaySinh?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  GioiTinh?: Prisma.StringFieldUpdateOperationsInput | string
-  AnhDaiDien?: Prisma.StringFieldUpdateOperationsInput | string
+  NgaySinh?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  GioiTinh?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  AnhDaiDien?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
   NgayTao?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   NgayCapNhat?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1687,9 +1687,9 @@ export type TAI_KHOANUncheckedUpdateWithoutYEU_CAU_HO_TRO_YEU_CAU_HO_TRO_MaTaiKh
   MatKhau?: Prisma.StringFieldUpdateOperationsInput | string
   HoTen?: Prisma.StringFieldUpdateOperationsInput | string
   SoDienThoai?: Prisma.StringFieldUpdateOperationsInput | string
-  NgaySinh?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  GioiTinh?: Prisma.StringFieldUpdateOperationsInput | string
-  AnhDaiDien?: Prisma.StringFieldUpdateOperationsInput | string
+  NgaySinh?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  GioiTinh?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  AnhDaiDien?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
   NgayTao?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   NgayCapNhat?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1708,9 +1708,9 @@ export type TAI_KHOANCreateManyVAI_TROInput = {
   MatKhau: string
   HoTen: string
   SoDienThoai: string
-  NgaySinh: Date | string
-  GioiTinh: string
-  AnhDaiDien: string
+  NgaySinh?: Date | string | null
+  GioiTinh?: string | null
+  AnhDaiDien?: string | null
   TrangThai: string
   NgayTao: Date | string
   NgayCapNhat: Date | string
@@ -1722,9 +1722,9 @@ export type TAI_KHOANUpdateWithoutVAI_TROInput = {
   MatKhau?: Prisma.StringFieldUpdateOperationsInput | string
   HoTen?: Prisma.StringFieldUpdateOperationsInput | string
   SoDienThoai?: Prisma.StringFieldUpdateOperationsInput | string
-  NgaySinh?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  GioiTinh?: Prisma.StringFieldUpdateOperationsInput | string
-  AnhDaiDien?: Prisma.StringFieldUpdateOperationsInput | string
+  NgaySinh?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  GioiTinh?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  AnhDaiDien?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
   NgayTao?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   NgayCapNhat?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1745,9 +1745,9 @@ export type TAI_KHOANUncheckedUpdateWithoutVAI_TROInput = {
   MatKhau?: Prisma.StringFieldUpdateOperationsInput | string
   HoTen?: Prisma.StringFieldUpdateOperationsInput | string
   SoDienThoai?: Prisma.StringFieldUpdateOperationsInput | string
-  NgaySinh?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  GioiTinh?: Prisma.StringFieldUpdateOperationsInput | string
-  AnhDaiDien?: Prisma.StringFieldUpdateOperationsInput | string
+  NgaySinh?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  GioiTinh?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  AnhDaiDien?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
   NgayTao?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   NgayCapNhat?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1768,9 +1768,9 @@ export type TAI_KHOANUncheckedUpdateManyWithoutVAI_TROInput = {
   MatKhau?: Prisma.StringFieldUpdateOperationsInput | string
   HoTen?: Prisma.StringFieldUpdateOperationsInput | string
   SoDienThoai?: Prisma.StringFieldUpdateOperationsInput | string
-  NgaySinh?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  GioiTinh?: Prisma.StringFieldUpdateOperationsInput | string
-  AnhDaiDien?: Prisma.StringFieldUpdateOperationsInput | string
+  NgaySinh?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  GioiTinh?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  AnhDaiDien?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   TrangThai?: Prisma.StringFieldUpdateOperationsInput | string
   NgayTao?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   NgayCapNhat?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1949,9 +1949,9 @@ export type $TAI_KHOANPayload<ExtArgs extends runtime.Types.Extensions.InternalA
     MatKhau: string
     HoTen: string
     SoDienThoai: string
-    NgaySinh: Date
-    GioiTinh: string
-    AnhDaiDien: string
+    NgaySinh: Date | null
+    GioiTinh: string | null
+    AnhDaiDien: string | null
     TrangThai: string
     NgayTao: Date
     NgayCapNhat: Date
