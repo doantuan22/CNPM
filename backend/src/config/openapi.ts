@@ -12,6 +12,61 @@ export const openApiSpec = {
     },
   ],
   paths: {
+    '/hotels': {
+      get: {
+        summary: 'Search/list active hotels with price + availability (M2 — public, no auth)',
+        tags: ['Discovery'],
+        parameters: [
+          { name: 'location', in: 'query', schema: { type: 'string' }, description: 'Matches city or province (contains)' },
+          { name: 'checkIn', in: 'query', required: true, schema: { type: 'string', format: 'date' } },
+          { name: 'checkOut', in: 'query', required: true, schema: { type: 'string', format: 'date' }, description: 'Exclusive — checkout night is not counted' },
+          { name: 'guests', in: 'query', schema: { type: 'integer', default: 1 } },
+          { name: 'minPrice', in: 'query', schema: { type: 'number' } },
+          { name: 'maxPrice', in: 'query', schema: { type: 'number' } },
+          { name: 'starRating', in: 'query', schema: { type: 'integer', minimum: 1, maximum: 5 }, description: 'Minimum star rating' },
+          { name: 'amenities', in: 'query', schema: { type: 'string' }, description: 'Comma-separated MaTienNghi ids' },
+          { name: 'page', in: 'query', schema: { type: 'integer', default: 1 } },
+          { name: 'limit', in: 'query', schema: { type: 'integer', default: 12 } },
+          { name: 'sort', in: 'query', schema: { type: 'string', enum: ['price_asc', 'price_desc', 'star_desc', 'newest'] } },
+        ],
+        responses: {
+          '200': { description: 'Paginated hotel search results' },
+          '400': { description: 'Invalid query (e.g. checkOut <= checkIn)' },
+        },
+      },
+    },
+    '/hotels/{id}': {
+      get: {
+        summary: 'Hotel detail — info, images, amenities (no dates required)',
+        tags: ['Discovery'],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: { '200': { description: 'Hotel detail' }, '404': { description: 'Not found or not active' } },
+      },
+    },
+    '/hotels/{id}/rooms': {
+      get: {
+        summary: 'Room types for a hotel with price + availability for a date range (BE-4, read-only)',
+        tags: ['Discovery'],
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'integer' } },
+          { name: 'checkIn', in: 'query', required: true, schema: { type: 'string', format: 'date' } },
+          { name: 'checkOut', in: 'query', required: true, schema: { type: 'string', format: 'date' } },
+          { name: 'guests', in: 'query', schema: { type: 'integer' }, description: 'Filters out room types with SucChua < guests' },
+        ],
+        responses: {
+          '200': { description: 'Room types with GiaTheoDem/TongTien/SoPhongConLai/ConHang' },
+          '400': { description: 'Invalid date range' },
+          '404': { description: 'Hotel not found or not active' },
+        },
+      },
+    },
+    '/amenities': {
+      get: {
+        summary: 'List all amenities (public) — supports the search filter UI',
+        tags: ['Discovery'],
+        responses: { '200': { description: 'List of amenities' } },
+      },
+    },
     '/auth/register': {
       post: {
         summary: 'Register a new customer account',

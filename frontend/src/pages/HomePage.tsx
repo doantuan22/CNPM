@@ -1,16 +1,28 @@
-import { Hotel, Search, ShieldCheck, Sparkles, Activity } from 'lucide-react';
+import { Hotel, ShieldCheck, Sparkles, Activity } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useHealth } from '../hooks/useHealth';
-import { Button } from '../components/common/Button';
-import { Link } from 'react-router-dom';
+import { SearchForm } from '../components/hotels/SearchForm';
+import type { SearchFormValues } from '../features/hotels/schemas';
 
 export default function HomePage() {
   const { data: health, isLoading, isError } = useHealth();
+  const navigate = useNavigate();
+
+  const handleSearch = (values: SearchFormValues) => {
+    const params = new URLSearchParams({
+      checkIn: values.checkIn,
+      checkOut: values.checkOut,
+      guests: String(values.guests),
+      ...(values.location ? { location: values.location } : {}),
+    });
+    navigate(`/hotels?${params.toString()}`);
+  };
 
   return (
     <div className="space-y-12">
       {/* Hero Section */}
       <section className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-700 px-6 py-16 text-white shadow-xl sm:px-12 sm:py-24">
-        <div className="relative z-10 max-w-2xl space-y-6">
+        <div className="relative z-10 max-w-3xl space-y-6">
           <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-medium backdrop-blur-md">
             <Sparkles className="h-3.5 w-3.5" />
             <span>Nền tảng đặt phòng thế hệ mới</span>
@@ -22,16 +34,9 @@ export default function HomePage() {
             Khám phá hàng ngàn khách sạn, resort sang trọng với mức giá ưu đãi và dịch vụ đặt phòng
             minh bạch, nhanh chóng.
           </p>
-          <div className="flex flex-wrap gap-4 pt-2">
-            <Button size="lg" className="bg-white text-blue-700 hover:bg-blue-50 font-semibold" asChild>
-              <Link to="/hotels">
-                <Search className="mr-2 h-4 w-4" /> Khám phá khách sạn
-              </Link>
-            </Button>
-            <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10" asChild>
-              <Link to="/register">Đăng ký thành viên</Link>
-            </Button>
-          </div>
+        </div>
+        <div className="relative z-10 mt-8 max-w-3xl">
+          <SearchForm onSubmit={handleSearch} compact />
         </div>
       </section>
 

@@ -1,0 +1,198 @@
+import { HotelsRepository } from './hotels.repository';
+import {
+  enumerateNights,
+  computeRoomTypeAvailability,
+  buildBookedByDate,
+  toDateKey,
+  type NightlyRate,
+} from './availability';
+import { AppError } from '../../common/errors/app-error';
+import type { SearchHotelsQuery, HotelRoomsQuery } from './hotels.schemas';
+import type { ApiPaginationMeta } from '../../common/types/api-response';
+
+interface RoomTypeWithRates {
+  MaLoaiPhong: number;
+  TenLoaiPhong: string;
+  SoGiuong: number;
+  SucChua: number;
+  DienTich: unknown;
+  LoaiGiuong: string;
+  MoTa: string | null;
+  HINH_ANH_LOAI_PHONG: Array<{ MaHinhAnhLoaiPhong: number; URL: string; LaAnhDaiDien: boolean }>;
+  LOAI_PHONG_TIEN_NGHI: Array<{ TIEN_NGHI: { MaTienNghi: number; TenTienNghi: string; BieuTuong: string | null } }>;
+  QUY_PHONG_GIA: Array<{ NgayApDung: Date; GiaPhong: unknown; SoLuongPhong: number }>;
+  CHI_TIET_DAT_PHONG: Array<{ SoLuongPhong: number; DAT_PHONG: { NgayNhanPhong: Date; NgayTraPhong: Date } }>;
+}
+
+const toNumber = (value: unknown): number => Number(value);
+
+/** Shared by search/detail/rooms: runs the availability computation for one room type. */
+const priceRoomType = (roomType: RoomTypeWithRates, nightKeys: string[]) => {
+  const ratesByDate = new Map<string, NightlyRate>(
+    roomType.QUY_PHONG_GIA.map((r) => [
+      toDateKey(r.NgayApDung),
+      { giaPhong: toNumber(r.GiaPhong), soLuongPhong: r.SoLuongPhong },
+    ])
+  );
+  const bookedByDate = buildBookedByDate(
+    roomType.CHI_TIET_DAT_PHONG.map((c) => ({
+      ngayNhanPhong: c.DAT_PHONG.NgayNhanPhong,
+      ngayTraPhong: c.DAT_PHONG.NgayTraPhong,
+      soLuongPhong: c.SoLuongPhong,
+    }))
+  );
+  return computeRoomTypeAvailability(nightKeys, ratesByDate, bookedByDate);
+};
+
+export interface HotelSearchItem {
+  MaKhachSan: number;
+  TenKhachSan: string;
+  DiaChiChiTiet: string;
+  HangSao: number;
+  DiaPhuong: { MaDiaPhuong: number; TenThanhPho: string; TenTinh: string; QuocGia: string };
+  AnhDaiDien: string | null;
+  GiaTuDauTu: number | null;
+  ConPhong: boolean;
+}
+
+export class HotelsService {
+  constructor(private readonly hotelsRepository: HotelsRepository = new HotelsRepository()) {}
+
+  async search(query: SearchHotelsQuery): Promise<{ items: HotelSearchItem[]; pagination: ApiPaginationMeta }> {
+    const nightKeys = enumerateNights(query.checkIn, query.checkOut);
+
+    const hotels = await this.hotelsRepository.findCandidateHotels({
+      location: query.location,
+      starRating: query.starRating,
+      amenityIds: query.amenities,
+      guests: query.guests,
+      checkIn: query.checkIn,
+      checkOut: query.checkOut,
+    });
+
+    let items: HotelSearchItem[] = hotels.map((hotel) => {
+      const priced = hotel.LOAI_PHONG.map((rt) => priceRoomType(rt, nightKeys));
+      const availablePrices = priced
+        .filter((p) => p.available > 0 && p.totalPrice !== null)
+        .map((p) => (p.totalPrice as number) / p.nights);
+      const conPhong = availablePrices.length > 0;
+      const giaTuDauTu = conPhong ? Math.min(...availablePrices) : null;
+      const anhDaiDien =
+        hotel.HINH_ANH_KHACH_SAN.find((img) => img.AnhDaiDien)?.URL ??
+        hotel.HINH_ANH_KHACH_SAN[0]?.URL ??
+        null;
+
+      return {
+        MaKhachSan: hotel.MaKhachSan,
+        TenKhachSan: hotel.TenKhachSan,
+        DiaChiChiTiet: hotel.DiaChiChiTiet,
+        HangSao: hotel.HangSao,
+        DiaPhuong: hotel.DIA_PHUONG,
+        AnhDaiDien: anhDaiDien,
+        GiaTuDauTu: giaTuDauTu,
+        ConPhong: conPhong,
+      };
+    });
+
+    // Price filtering depends on computed availability, so it happens here,
+    // in-memory, after the DB query — see hotels.repository.ts for the note
+    // on why this scales fine for M2 (dev-scale candidate sets) but would
+    // need query-level filtering at real production scale.
+    if (query.minPrice !== undefined) {
+      items = items.filter((h) => h.GiaTuDauTu !== null && h.GiaTuDauTu >= query.minPrice!);
+    }
+    if (query.maxPrice !== undefined) {
+      items = items.filter((h) => h.GiaTuDauTu !== null && h.GiaTuDauTu <= query.maxPrice!);
+    }
+
+    items = this.sortHotels(items, query.sort);
+
+    const total = items.length;
+    const start = (query.page - 1) * query.limit;
+    const paged = items.slice(start, start + query.limit);
+
+    return {
+      items: paged,
+      pagination: {
+        page: query.page,
+        limit: query.limit,
+        total,
+        totalPages: Math.max(1, Math.ceil(total / query.limit)),
+      },
+    };
+  }
+
+  private sortHotels(items: HotelSearchItem[], sort: SearchHotelsQuery['sort']): HotelSearchItem[] {
+    const withPrice = (h: HotelSearchItem) => h.GiaTuDauTu ?? Number.POSITIVE_INFINITY;
+    switch (sort) {
+      case 'price_desc':
+        return [...items].sort((a, b) => (b.GiaTuDauTu ?? -1) - (a.GiaTuDauTu ?? -1));
+      case 'star_desc':
+        return [...items].sort((a, b) => b.HangSao - a.HangSao);
+      case 'newest':
+        return [...items].sort((a, b) => b.MaKhachSan - a.MaKhachSan);
+      case 'price_asc':
+      default:
+        return [...items].sort((a, b) => withPrice(a) - withPrice(b));
+    }
+  }
+
+  async getDetail(maKhachSan: number) {
+    const hotel = await this.hotelsRepository.findActiveHotelById(maKhachSan);
+    if (!hotel) throw AppError.notFound('Không tìm thấy khách sạn');
+
+    return {
+      MaKhachSan: hotel.MaKhachSan,
+      TenKhachSan: hotel.TenKhachSan,
+      DiaChiChiTiet: hotel.DiaChiChiTiet,
+      MoTa: hotel.MoTa,
+      HangSao: hotel.HangSao,
+      GioNhanPhong: hotel.GioNhanPhong,
+      GioTraPhong: hotel.GioTraPhong,
+      DiaPhuong: hotel.DIA_PHUONG,
+      HinhAnh: hotel.HINH_ANH_KHACH_SAN.map((img) => ({
+        MaHinhAnh: img.MaHinhAnh,
+        URL: img.URL,
+        AnhDaiDien: img.AnhDaiDien,
+      })),
+      TienNghi: hotel.KHACH_SAN_TIEN_NGHI.map((kt) => kt.TIEN_NGHI),
+    };
+  }
+
+  async getRooms(maKhachSan: number, query: HotelRoomsQuery) {
+    const exists = await this.hotelsRepository.hotelExists(maKhachSan);
+    if (!exists) throw AppError.notFound('Không tìm thấy khách sạn');
+
+    const nightKeys = enumerateNights(query.checkIn, query.checkOut);
+    const roomTypes = await this.hotelsRepository.findRoomTypesForHotel(
+      maKhachSan,
+      query.checkIn,
+      query.checkOut,
+      query.guests
+    );
+
+    return roomTypes.map((rt) => {
+      const priced = priceRoomType(rt, nightKeys);
+      return {
+        MaLoaiPhong: rt.MaLoaiPhong,
+        TenLoaiPhong: rt.TenLoaiPhong,
+        SoGiuong: rt.SoGiuong,
+        SucChua: rt.SucChua,
+        DienTich: toNumber(rt.DienTich),
+        LoaiGiuong: rt.LoaiGiuong,
+        MoTa: rt.MoTa,
+        HinhAnh: rt.HINH_ANH_LOAI_PHONG.map((img) => ({
+          MaHinhAnhLoaiPhong: img.MaHinhAnhLoaiPhong,
+          URL: img.URL,
+          LaAnhDaiDien: img.LaAnhDaiDien,
+        })),
+        TienNghi: rt.LOAI_PHONG_TIEN_NGHI.map((lt) => lt.TIEN_NGHI),
+        GiaTheoDem: priced.totalPrice !== null ? Math.round(priced.totalPrice / priced.nights) : null,
+        TongTien: priced.totalPrice,
+        SoDem: priced.nights,
+        SoPhongConLai: priced.available,
+        ConHang: priced.available > 0,
+      };
+    });
+  }
+}

@@ -1,23 +1,75 @@
-/**
- * Hotel Feature Domain Types (Foundation Definition)
- * Business use cases will be implemented in subsequent phases.
- */
-
-export interface Hotel {
-  id: string;
-  name: string;
-  description?: string;
-  address: string;
-  city: string;
-  rating?: number;
-  starLevel?: number;
-  featuredImageUrl?: string;
+export interface DiaPhuong {
+  MaDiaPhuong: number;
+  TenThanhPho: string;
+  TenTinh: string;
+  QuocGia: string;
 }
 
-export interface RoomType {
-  id: string;
-  hotelId: string;
-  name: string;
-  capacity: number;
-  basePrice: number;
+export interface Amenity {
+  MaTienNghi: number;
+  TenTienNghi: string;
+  BieuTuong: string | null;
+}
+
+export interface HotelSearchItem {
+  MaKhachSan: number;
+  TenKhachSan: string;
+  DiaChiChiTiet: string;
+  HangSao: number;
+  DiaPhuong: DiaPhuong;
+  AnhDaiDien: string | null;
+  GiaTuDauTu: number | null;
+  ConPhong: boolean;
+}
+
+export interface HotelDetail {
+  MaKhachSan: number;
+  TenKhachSan: string;
+  DiaChiChiTiet: string;
+  MoTa: string | null;
+  HangSao: number;
+  GioNhanPhong: string;
+  GioTraPhong: string;
+  DiaPhuong: DiaPhuong;
+  HinhAnh: Array<{ MaHinhAnh: number; URL: string; AnhDaiDien: boolean }>;
+  TienNghi: Amenity[];
+}
+
+export interface RoomTypeWithAvailability {
+  MaLoaiPhong: number;
+  TenLoaiPhong: string;
+  SoGiuong: number;
+  SucChua: number;
+  DienTich: number;
+  LoaiGiuong: string;
+  MoTa: string | null;
+  HinhAnh: Array<{ MaHinhAnhLoaiPhong: number; URL: string; LaAnhDaiDien: boolean }>;
+  TienNghi: Amenity[];
+  GiaTheoDem: number | null;
+  TongTien: number | null;
+  SoDem: number;
+  SoPhongConLai: number;
+  ConHang: boolean;
+}
+
+export type SortOption = 'price_asc' | 'price_desc' | 'star_desc' | 'newest';
+
+export interface HotelSearchParams {
+  location?: string;
+  checkIn: string;
+  checkOut: string;
+  guests: number;
+  minPrice?: number;
+  maxPrice?: number;
+  starRating?: number;
+  amenities?: number[];
+  page: number;
+  limit: number;
+  sort: SortOption;
+}
+
+export interface RoomsQueryParams {
+  checkIn: string;
+  checkOut: string;
+  guests?: number;
 }

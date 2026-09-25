@@ -14,7 +14,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "prisma:generate": "prisma generate",
-    "prisma:validate": "prisma validate"
+    "prisma:validate": "prisma validate",
+    "seed:discovery": "tsx prisma/seed-discovery.ts"
   },
   "keywords": [
     "hotel-booking",

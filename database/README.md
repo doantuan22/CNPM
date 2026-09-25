@@ -64,3 +64,7 @@ Xem `database/docs/db0-report.md` để biết kết quả chạy thực tế. D
 ## DB-1 seed (M1)
 
 `database/seed/001_roles.sql` nạp 3 vai trò baseline (`Khách hàng`, `Chủ khách sạn`, `Quản trị hệ thống`) vào `VAI_TRO`, idempotent (dùng `MERGE`, chạy lại không tạo trùng). Guest/anonymous không phải tài khoản DB nên không có role row. Không seed CSKH/Employee/HotelStaff/Moderator (G0-09).
+
+## DB-2 dev/demo data (M2 — Discovery)
+
+`backend/prisma/seed-discovery.ts` (chạy bằng `npm run seed:discovery` trong `backend/`) nạp dữ liệu demo cho search/hotel-detail/room/availability: 4 khách sạn tại 3 địa phương, 9 loại phòng, 8 tiện nghi, 45 ngày `QUY_PHONG_GIA` mỗi loại phòng, 1 chính sách hủy hệ thống, và 3 đơn đặt phòng mẫu (một phần chỗ, hết chỗ, và một đơn đã hủy để xác nhận không bị overcount). Đây là script TypeScript (không phải `.sql`) vì `TAI_KHOAN.MatKhau` cần băm bcrypt thật — T-SQL không làm được việc này — nên script dùng chung Prisma Client/`hashPassword()` với ứng dụng. Idempotent: an toàn chạy lại nhiều lần (kiểm tra tồn tại trước khi insert, `upsert` cho `QUY_PHONG_GIA`).
