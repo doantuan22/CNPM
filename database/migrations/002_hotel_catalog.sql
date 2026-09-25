@@ -1,0 +1,76 @@
+-- =====================================================================
+-- DB-0 Baseline Migration 002: Hotel Catalog
+-- Tables: KHACH_SAN, HINH_ANH_KHACH_SAN, TIEN_NGHI, KHACH_SAN_TIEN_NGHI
+-- Depends on: 001_core_identity.sql (TAI_KHOAN, DIA_PHUONG)
+-- =====================================================================
+
+-- -----------------------------------------------------------------
+-- KHACH_SAN (Bảng 6.5)
+-- -----------------------------------------------------------------
+CREATE TABLE KHACH_SAN (
+    MaKhachSan        INT IDENTITY(1,1) NOT NULL,
+    MaTaiKhoanSoHuu   INT               NOT NULL,
+    MaDiaPhuong       INT               NOT NULL,
+    MaTaiKhoanDuyet   INT               NULL,
+    TenKhachSan       NVARCHAR(255)     NOT NULL,
+    DiaChiChiTiet     NVARCHAR(500)     NOT NULL,
+    HangSao           TINYINT           NOT NULL,
+    MoTa              NVARCHAR(MAX)     NOT NULL,
+    GioNhanPhong      TIME              NOT NULL,
+    GioTraPhong       TIME              NOT NULL,
+    TrangThai         NVARCHAR(30)      NOT NULL,
+    NgayDangKy        DATETIME2         NOT NULL,
+    NgayDuyet         DATETIME2         NULL,
+    NgayCapNhat       DATETIME2         NOT NULL,
+    CONSTRAINT PK_KHACH_SAN PRIMARY KEY (MaKhachSan),
+    CONSTRAINT FK_KHACH_SAN_TAI_KHOAN_SoHuu FOREIGN KEY (MaTaiKhoanSoHuu)
+        REFERENCES TAI_KHOAN (MaTaiKhoan) ON DELETE NO ACTION,
+    CONSTRAINT FK_KHACH_SAN_TAI_KHOAN_Duyet FOREIGN KEY (MaTaiKhoanDuyet)
+        REFERENCES TAI_KHOAN (MaTaiKhoan) ON DELETE NO ACTION,
+    CONSTRAINT FK_KHACH_SAN_DIA_PHUONG FOREIGN KEY (MaDiaPhuong)
+        REFERENCES DIA_PHUONG (MaDiaPhuong) ON DELETE NO ACTION,
+    CONSTRAINT CK_KHACH_SAN_HangSao CHECK (HangSao BETWEEN 1 AND 5),
+    CONSTRAINT CK_KHACH_SAN_NgayDuyet CHECK (NgayDuyet IS NULL OR NgayDuyet >= NgayDangKy),
+    CONSTRAINT CK_KHACH_SAN_NgayCapNhat CHECK (NgayCapNhat >= NgayDangKy)
+);
+GO
+
+-- -----------------------------------------------------------------
+-- HINH_ANH_KHACH_SAN (Bảng 6.6)
+-- -----------------------------------------------------------------
+CREATE TABLE HINH_ANH_KHACH_SAN (
+    MaHinhAnh    INT IDENTITY(1,1) NOT NULL,
+    MaKhachSan   INT               NOT NULL,
+    URL          NVARCHAR(500)     NOT NULL,
+    AnhDaiDien   BIT               NOT NULL,
+    CONSTRAINT PK_HINH_ANH_KHACH_SAN PRIMARY KEY (MaHinhAnh),
+    CONSTRAINT FK_HINH_ANH_KHACH_SAN_KHACH_SAN FOREIGN KEY (MaKhachSan)
+        REFERENCES KHACH_SAN (MaKhachSan) ON DELETE NO ACTION
+);
+GO
+
+-- -----------------------------------------------------------------
+-- TIEN_NGHI (Bảng 6.7)
+-- -----------------------------------------------------------------
+CREATE TABLE TIEN_NGHI (
+    MaTienNghi    INT IDENTITY(1,1) NOT NULL,
+    TenTienNghi   NVARCHAR(150)     NOT NULL,
+    BieuTuong     NVARCHAR(255)     NOT NULL,
+    CONSTRAINT PK_TIEN_NGHI PRIMARY KEY (MaTienNghi),
+    CONSTRAINT UQ_TIEN_NGHI_TenTienNghi UNIQUE (TenTienNghi)
+);
+GO
+
+-- -----------------------------------------------------------------
+-- KHACH_SAN_TIEN_NGHI (Bảng 6.8, khóa chính ghép)
+-- -----------------------------------------------------------------
+CREATE TABLE KHACH_SAN_TIEN_NGHI (
+    MaKhachSan   INT NOT NULL,
+    MaTienNghi   INT NOT NULL,
+    CONSTRAINT PK_KHACH_SAN_TIEN_NGHI PRIMARY KEY (MaKhachSan, MaTienNghi),
+    CONSTRAINT FK_KHACH_SAN_TIEN_NGHI_KHACH_SAN FOREIGN KEY (MaKhachSan)
+        REFERENCES KHACH_SAN (MaKhachSan) ON DELETE NO ACTION,
+    CONSTRAINT FK_KHACH_SAN_TIEN_NGHI_TIEN_NGHI FOREIGN KEY (MaTienNghi)
+        REFERENCES TIEN_NGHI (MaTienNghi) ON DELETE NO ACTION
+);
+GO

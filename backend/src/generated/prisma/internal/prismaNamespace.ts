@@ -397,7 +397,28 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 
 
 export const ModelName = {
-
+  CHI_TIET_CHINH_SACH_HUY: 'CHI_TIET_CHINH_SACH_HUY',
+  CHI_TIET_DAT_PHONG: 'CHI_TIET_DAT_PHONG',
+  CHINH_SACH_HUY: 'CHINH_SACH_HUY',
+  DANH_GIA: 'DANH_GIA',
+  DAT_PHONG: 'DAT_PHONG',
+  DIA_PHUONG: 'DIA_PHUONG',
+  HINH_ANH_DANH_GIA: 'HINH_ANH_DANH_GIA',
+  HINH_ANH_KHACH_SAN: 'HINH_ANH_KHACH_SAN',
+  HINH_ANH_LOAI_PHONG: 'HINH_ANH_LOAI_PHONG',
+  HO_SO_DOI_TAC: 'HO_SO_DOI_TAC',
+  HOAN_TIEN: 'HOAN_TIEN',
+  KHACH_SAN: 'KHACH_SAN',
+  KHACH_SAN_TIEN_NGHI: 'KHACH_SAN_TIEN_NGHI',
+  KHUYEN_MAI: 'KHUYEN_MAI',
+  LOAI_PHONG: 'LOAI_PHONG',
+  LOAI_PHONG_TIEN_NGHI: 'LOAI_PHONG_TIEN_NGHI',
+  QUY_PHONG_GIA: 'QUY_PHONG_GIA',
+  TAI_KHOAN: 'TAI_KHOAN',
+  THANH_TOAN: 'THANH_TOAN',
+  TIEN_NGHI: 'TIEN_NGHI',
+  VAI_TRO: 'VAI_TRO',
+  YEU_CAU_HO_TRO: 'YEU_CAU_HO_TRO'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -413,10 +434,1463 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: never
+    modelProps: "cHI_TIET_CHINH_SACH_HUY" | "cHI_TIET_DAT_PHONG" | "cHINH_SACH_HUY" | "dANH_GIA" | "dAT_PHONG" | "dIA_PHUONG" | "hINH_ANH_DANH_GIA" | "hINH_ANH_KHACH_SAN" | "hINH_ANH_LOAI_PHONG" | "hO_SO_DOI_TAC" | "hOAN_TIEN" | "kHACH_SAN" | "kHACH_SAN_TIEN_NGHI" | "kHUYEN_MAI" | "lOAI_PHONG" | "lOAI_PHONG_TIEN_NGHI" | "qUY_PHONG_GIA" | "tAI_KHOAN" | "tHANH_TOAN" | "tIEN_NGHI" | "vAI_TRO" | "yEU_CAU_HO_TRO"
     txIsolationLevel: TransactionIsolationLevel
   }
-  model: {}
+  model: {
+    CHI_TIET_CHINH_SACH_HUY: {
+      payload: Prisma.$CHI_TIET_CHINH_SACH_HUYPayload<ExtArgs>
+      fields: Prisma.CHI_TIET_CHINH_SACH_HUYFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CHI_TIET_CHINH_SACH_HUYFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CHI_TIET_CHINH_SACH_HUYPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CHI_TIET_CHINH_SACH_HUYFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CHI_TIET_CHINH_SACH_HUYPayload>
+        }
+        findFirst: {
+          args: Prisma.CHI_TIET_CHINH_SACH_HUYFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CHI_TIET_CHINH_SACH_HUYPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CHI_TIET_CHINH_SACH_HUYFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CHI_TIET_CHINH_SACH_HUYPayload>
+        }
+        findMany: {
+          args: Prisma.CHI_TIET_CHINH_SACH_HUYFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CHI_TIET_CHINH_SACH_HUYPayload>[]
+        }
+        create: {
+          args: Prisma.CHI_TIET_CHINH_SACH_HUYCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CHI_TIET_CHINH_SACH_HUYPayload>
+        }
+        createMany: {
+          args: Prisma.CHI_TIET_CHINH_SACH_HUYCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.CHI_TIET_CHINH_SACH_HUYDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CHI_TIET_CHINH_SACH_HUYPayload>
+        }
+        update: {
+          args: Prisma.CHI_TIET_CHINH_SACH_HUYUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CHI_TIET_CHINH_SACH_HUYPayload>
+        }
+        deleteMany: {
+          args: Prisma.CHI_TIET_CHINH_SACH_HUYDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CHI_TIET_CHINH_SACH_HUYUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.CHI_TIET_CHINH_SACH_HUYUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CHI_TIET_CHINH_SACH_HUYPayload>
+        }
+        aggregate: {
+          args: Prisma.CHI_TIET_CHINH_SACH_HUYAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCHI_TIET_CHINH_SACH_HUY>
+        }
+        groupBy: {
+          args: Prisma.CHI_TIET_CHINH_SACH_HUYGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CHI_TIET_CHINH_SACH_HUYGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CHI_TIET_CHINH_SACH_HUYCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CHI_TIET_CHINH_SACH_HUYCountAggregateOutputType> | number
+        }
+      }
+    }
+    CHI_TIET_DAT_PHONG: {
+      payload: Prisma.$CHI_TIET_DAT_PHONGPayload<ExtArgs>
+      fields: Prisma.CHI_TIET_DAT_PHONGFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CHI_TIET_DAT_PHONGFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CHI_TIET_DAT_PHONGPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CHI_TIET_DAT_PHONGFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CHI_TIET_DAT_PHONGPayload>
+        }
+        findFirst: {
+          args: Prisma.CHI_TIET_DAT_PHONGFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CHI_TIET_DAT_PHONGPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CHI_TIET_DAT_PHONGFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CHI_TIET_DAT_PHONGPayload>
+        }
+        findMany: {
+          args: Prisma.CHI_TIET_DAT_PHONGFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CHI_TIET_DAT_PHONGPayload>[]
+        }
+        create: {
+          args: Prisma.CHI_TIET_DAT_PHONGCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CHI_TIET_DAT_PHONGPayload>
+        }
+        createMany: {
+          args: Prisma.CHI_TIET_DAT_PHONGCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.CHI_TIET_DAT_PHONGDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CHI_TIET_DAT_PHONGPayload>
+        }
+        update: {
+          args: Prisma.CHI_TIET_DAT_PHONGUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CHI_TIET_DAT_PHONGPayload>
+        }
+        deleteMany: {
+          args: Prisma.CHI_TIET_DAT_PHONGDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CHI_TIET_DAT_PHONGUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.CHI_TIET_DAT_PHONGUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CHI_TIET_DAT_PHONGPayload>
+        }
+        aggregate: {
+          args: Prisma.CHI_TIET_DAT_PHONGAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCHI_TIET_DAT_PHONG>
+        }
+        groupBy: {
+          args: Prisma.CHI_TIET_DAT_PHONGGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CHI_TIET_DAT_PHONGGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CHI_TIET_DAT_PHONGCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CHI_TIET_DAT_PHONGCountAggregateOutputType> | number
+        }
+      }
+    }
+    CHINH_SACH_HUY: {
+      payload: Prisma.$CHINH_SACH_HUYPayload<ExtArgs>
+      fields: Prisma.CHINH_SACH_HUYFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CHINH_SACH_HUYFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CHINH_SACH_HUYPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CHINH_SACH_HUYFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CHINH_SACH_HUYPayload>
+        }
+        findFirst: {
+          args: Prisma.CHINH_SACH_HUYFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CHINH_SACH_HUYPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CHINH_SACH_HUYFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CHINH_SACH_HUYPayload>
+        }
+        findMany: {
+          args: Prisma.CHINH_SACH_HUYFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CHINH_SACH_HUYPayload>[]
+        }
+        create: {
+          args: Prisma.CHINH_SACH_HUYCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CHINH_SACH_HUYPayload>
+        }
+        createMany: {
+          args: Prisma.CHINH_SACH_HUYCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.CHINH_SACH_HUYDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CHINH_SACH_HUYPayload>
+        }
+        update: {
+          args: Prisma.CHINH_SACH_HUYUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CHINH_SACH_HUYPayload>
+        }
+        deleteMany: {
+          args: Prisma.CHINH_SACH_HUYDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CHINH_SACH_HUYUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.CHINH_SACH_HUYUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CHINH_SACH_HUYPayload>
+        }
+        aggregate: {
+          args: Prisma.CHINH_SACH_HUYAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCHINH_SACH_HUY>
+        }
+        groupBy: {
+          args: Prisma.CHINH_SACH_HUYGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CHINH_SACH_HUYGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CHINH_SACH_HUYCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CHINH_SACH_HUYCountAggregateOutputType> | number
+        }
+      }
+    }
+    DANH_GIA: {
+      payload: Prisma.$DANH_GIAPayload<ExtArgs>
+      fields: Prisma.DANH_GIAFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DANH_GIAFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DANH_GIAPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DANH_GIAFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DANH_GIAPayload>
+        }
+        findFirst: {
+          args: Prisma.DANH_GIAFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DANH_GIAPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DANH_GIAFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DANH_GIAPayload>
+        }
+        findMany: {
+          args: Prisma.DANH_GIAFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DANH_GIAPayload>[]
+        }
+        create: {
+          args: Prisma.DANH_GIACreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DANH_GIAPayload>
+        }
+        createMany: {
+          args: Prisma.DANH_GIACreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.DANH_GIADeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DANH_GIAPayload>
+        }
+        update: {
+          args: Prisma.DANH_GIAUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DANH_GIAPayload>
+        }
+        deleteMany: {
+          args: Prisma.DANH_GIADeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DANH_GIAUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.DANH_GIAUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DANH_GIAPayload>
+        }
+        aggregate: {
+          args: Prisma.DANH_GIAAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDANH_GIA>
+        }
+        groupBy: {
+          args: Prisma.DANH_GIAGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DANH_GIAGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DANH_GIACountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DANH_GIACountAggregateOutputType> | number
+        }
+      }
+    }
+    DAT_PHONG: {
+      payload: Prisma.$DAT_PHONGPayload<ExtArgs>
+      fields: Prisma.DAT_PHONGFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DAT_PHONGFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DAT_PHONGPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DAT_PHONGFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DAT_PHONGPayload>
+        }
+        findFirst: {
+          args: Prisma.DAT_PHONGFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DAT_PHONGPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DAT_PHONGFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DAT_PHONGPayload>
+        }
+        findMany: {
+          args: Prisma.DAT_PHONGFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DAT_PHONGPayload>[]
+        }
+        create: {
+          args: Prisma.DAT_PHONGCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DAT_PHONGPayload>
+        }
+        createMany: {
+          args: Prisma.DAT_PHONGCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.DAT_PHONGDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DAT_PHONGPayload>
+        }
+        update: {
+          args: Prisma.DAT_PHONGUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DAT_PHONGPayload>
+        }
+        deleteMany: {
+          args: Prisma.DAT_PHONGDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DAT_PHONGUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.DAT_PHONGUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DAT_PHONGPayload>
+        }
+        aggregate: {
+          args: Prisma.DAT_PHONGAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDAT_PHONG>
+        }
+        groupBy: {
+          args: Prisma.DAT_PHONGGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DAT_PHONGGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DAT_PHONGCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DAT_PHONGCountAggregateOutputType> | number
+        }
+      }
+    }
+    DIA_PHUONG: {
+      payload: Prisma.$DIA_PHUONGPayload<ExtArgs>
+      fields: Prisma.DIA_PHUONGFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DIA_PHUONGFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DIA_PHUONGPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DIA_PHUONGFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DIA_PHUONGPayload>
+        }
+        findFirst: {
+          args: Prisma.DIA_PHUONGFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DIA_PHUONGPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DIA_PHUONGFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DIA_PHUONGPayload>
+        }
+        findMany: {
+          args: Prisma.DIA_PHUONGFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DIA_PHUONGPayload>[]
+        }
+        create: {
+          args: Prisma.DIA_PHUONGCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DIA_PHUONGPayload>
+        }
+        createMany: {
+          args: Prisma.DIA_PHUONGCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.DIA_PHUONGDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DIA_PHUONGPayload>
+        }
+        update: {
+          args: Prisma.DIA_PHUONGUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DIA_PHUONGPayload>
+        }
+        deleteMany: {
+          args: Prisma.DIA_PHUONGDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DIA_PHUONGUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.DIA_PHUONGUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DIA_PHUONGPayload>
+        }
+        aggregate: {
+          args: Prisma.DIA_PHUONGAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDIA_PHUONG>
+        }
+        groupBy: {
+          args: Prisma.DIA_PHUONGGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DIA_PHUONGGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DIA_PHUONGCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DIA_PHUONGCountAggregateOutputType> | number
+        }
+      }
+    }
+    HINH_ANH_DANH_GIA: {
+      payload: Prisma.$HINH_ANH_DANH_GIAPayload<ExtArgs>
+      fields: Prisma.HINH_ANH_DANH_GIAFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.HINH_ANH_DANH_GIAFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HINH_ANH_DANH_GIAPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.HINH_ANH_DANH_GIAFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HINH_ANH_DANH_GIAPayload>
+        }
+        findFirst: {
+          args: Prisma.HINH_ANH_DANH_GIAFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HINH_ANH_DANH_GIAPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.HINH_ANH_DANH_GIAFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HINH_ANH_DANH_GIAPayload>
+        }
+        findMany: {
+          args: Prisma.HINH_ANH_DANH_GIAFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HINH_ANH_DANH_GIAPayload>[]
+        }
+        create: {
+          args: Prisma.HINH_ANH_DANH_GIACreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HINH_ANH_DANH_GIAPayload>
+        }
+        createMany: {
+          args: Prisma.HINH_ANH_DANH_GIACreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.HINH_ANH_DANH_GIADeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HINH_ANH_DANH_GIAPayload>
+        }
+        update: {
+          args: Prisma.HINH_ANH_DANH_GIAUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HINH_ANH_DANH_GIAPayload>
+        }
+        deleteMany: {
+          args: Prisma.HINH_ANH_DANH_GIADeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.HINH_ANH_DANH_GIAUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.HINH_ANH_DANH_GIAUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HINH_ANH_DANH_GIAPayload>
+        }
+        aggregate: {
+          args: Prisma.HINH_ANH_DANH_GIAAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateHINH_ANH_DANH_GIA>
+        }
+        groupBy: {
+          args: Prisma.HINH_ANH_DANH_GIAGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HINH_ANH_DANH_GIAGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.HINH_ANH_DANH_GIACountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HINH_ANH_DANH_GIACountAggregateOutputType> | number
+        }
+      }
+    }
+    HINH_ANH_KHACH_SAN: {
+      payload: Prisma.$HINH_ANH_KHACH_SANPayload<ExtArgs>
+      fields: Prisma.HINH_ANH_KHACH_SANFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.HINH_ANH_KHACH_SANFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HINH_ANH_KHACH_SANPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.HINH_ANH_KHACH_SANFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HINH_ANH_KHACH_SANPayload>
+        }
+        findFirst: {
+          args: Prisma.HINH_ANH_KHACH_SANFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HINH_ANH_KHACH_SANPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.HINH_ANH_KHACH_SANFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HINH_ANH_KHACH_SANPayload>
+        }
+        findMany: {
+          args: Prisma.HINH_ANH_KHACH_SANFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HINH_ANH_KHACH_SANPayload>[]
+        }
+        create: {
+          args: Prisma.HINH_ANH_KHACH_SANCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HINH_ANH_KHACH_SANPayload>
+        }
+        createMany: {
+          args: Prisma.HINH_ANH_KHACH_SANCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.HINH_ANH_KHACH_SANDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HINH_ANH_KHACH_SANPayload>
+        }
+        update: {
+          args: Prisma.HINH_ANH_KHACH_SANUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HINH_ANH_KHACH_SANPayload>
+        }
+        deleteMany: {
+          args: Prisma.HINH_ANH_KHACH_SANDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.HINH_ANH_KHACH_SANUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.HINH_ANH_KHACH_SANUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HINH_ANH_KHACH_SANPayload>
+        }
+        aggregate: {
+          args: Prisma.HINH_ANH_KHACH_SANAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateHINH_ANH_KHACH_SAN>
+        }
+        groupBy: {
+          args: Prisma.HINH_ANH_KHACH_SANGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HINH_ANH_KHACH_SANGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.HINH_ANH_KHACH_SANCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HINH_ANH_KHACH_SANCountAggregateOutputType> | number
+        }
+      }
+    }
+    HINH_ANH_LOAI_PHONG: {
+      payload: Prisma.$HINH_ANH_LOAI_PHONGPayload<ExtArgs>
+      fields: Prisma.HINH_ANH_LOAI_PHONGFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.HINH_ANH_LOAI_PHONGFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HINH_ANH_LOAI_PHONGPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.HINH_ANH_LOAI_PHONGFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HINH_ANH_LOAI_PHONGPayload>
+        }
+        findFirst: {
+          args: Prisma.HINH_ANH_LOAI_PHONGFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HINH_ANH_LOAI_PHONGPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.HINH_ANH_LOAI_PHONGFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HINH_ANH_LOAI_PHONGPayload>
+        }
+        findMany: {
+          args: Prisma.HINH_ANH_LOAI_PHONGFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HINH_ANH_LOAI_PHONGPayload>[]
+        }
+        create: {
+          args: Prisma.HINH_ANH_LOAI_PHONGCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HINH_ANH_LOAI_PHONGPayload>
+        }
+        createMany: {
+          args: Prisma.HINH_ANH_LOAI_PHONGCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.HINH_ANH_LOAI_PHONGDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HINH_ANH_LOAI_PHONGPayload>
+        }
+        update: {
+          args: Prisma.HINH_ANH_LOAI_PHONGUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HINH_ANH_LOAI_PHONGPayload>
+        }
+        deleteMany: {
+          args: Prisma.HINH_ANH_LOAI_PHONGDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.HINH_ANH_LOAI_PHONGUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.HINH_ANH_LOAI_PHONGUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HINH_ANH_LOAI_PHONGPayload>
+        }
+        aggregate: {
+          args: Prisma.HINH_ANH_LOAI_PHONGAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateHINH_ANH_LOAI_PHONG>
+        }
+        groupBy: {
+          args: Prisma.HINH_ANH_LOAI_PHONGGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HINH_ANH_LOAI_PHONGGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.HINH_ANH_LOAI_PHONGCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HINH_ANH_LOAI_PHONGCountAggregateOutputType> | number
+        }
+      }
+    }
+    HO_SO_DOI_TAC: {
+      payload: Prisma.$HO_SO_DOI_TACPayload<ExtArgs>
+      fields: Prisma.HO_SO_DOI_TACFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.HO_SO_DOI_TACFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HO_SO_DOI_TACPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.HO_SO_DOI_TACFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HO_SO_DOI_TACPayload>
+        }
+        findFirst: {
+          args: Prisma.HO_SO_DOI_TACFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HO_SO_DOI_TACPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.HO_SO_DOI_TACFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HO_SO_DOI_TACPayload>
+        }
+        findMany: {
+          args: Prisma.HO_SO_DOI_TACFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HO_SO_DOI_TACPayload>[]
+        }
+        create: {
+          args: Prisma.HO_SO_DOI_TACCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HO_SO_DOI_TACPayload>
+        }
+        createMany: {
+          args: Prisma.HO_SO_DOI_TACCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.HO_SO_DOI_TACDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HO_SO_DOI_TACPayload>
+        }
+        update: {
+          args: Prisma.HO_SO_DOI_TACUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HO_SO_DOI_TACPayload>
+        }
+        deleteMany: {
+          args: Prisma.HO_SO_DOI_TACDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.HO_SO_DOI_TACUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.HO_SO_DOI_TACUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HO_SO_DOI_TACPayload>
+        }
+        aggregate: {
+          args: Prisma.HO_SO_DOI_TACAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateHO_SO_DOI_TAC>
+        }
+        groupBy: {
+          args: Prisma.HO_SO_DOI_TACGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HO_SO_DOI_TACGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.HO_SO_DOI_TACCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HO_SO_DOI_TACCountAggregateOutputType> | number
+        }
+      }
+    }
+    HOAN_TIEN: {
+      payload: Prisma.$HOAN_TIENPayload<ExtArgs>
+      fields: Prisma.HOAN_TIENFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.HOAN_TIENFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HOAN_TIENPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.HOAN_TIENFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HOAN_TIENPayload>
+        }
+        findFirst: {
+          args: Prisma.HOAN_TIENFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HOAN_TIENPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.HOAN_TIENFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HOAN_TIENPayload>
+        }
+        findMany: {
+          args: Prisma.HOAN_TIENFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HOAN_TIENPayload>[]
+        }
+        create: {
+          args: Prisma.HOAN_TIENCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HOAN_TIENPayload>
+        }
+        createMany: {
+          args: Prisma.HOAN_TIENCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.HOAN_TIENDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HOAN_TIENPayload>
+        }
+        update: {
+          args: Prisma.HOAN_TIENUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HOAN_TIENPayload>
+        }
+        deleteMany: {
+          args: Prisma.HOAN_TIENDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.HOAN_TIENUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.HOAN_TIENUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HOAN_TIENPayload>
+        }
+        aggregate: {
+          args: Prisma.HOAN_TIENAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateHOAN_TIEN>
+        }
+        groupBy: {
+          args: Prisma.HOAN_TIENGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HOAN_TIENGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.HOAN_TIENCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HOAN_TIENCountAggregateOutputType> | number
+        }
+      }
+    }
+    KHACH_SAN: {
+      payload: Prisma.$KHACH_SANPayload<ExtArgs>
+      fields: Prisma.KHACH_SANFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.KHACH_SANFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KHACH_SANPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.KHACH_SANFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KHACH_SANPayload>
+        }
+        findFirst: {
+          args: Prisma.KHACH_SANFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KHACH_SANPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.KHACH_SANFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KHACH_SANPayload>
+        }
+        findMany: {
+          args: Prisma.KHACH_SANFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KHACH_SANPayload>[]
+        }
+        create: {
+          args: Prisma.KHACH_SANCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KHACH_SANPayload>
+        }
+        createMany: {
+          args: Prisma.KHACH_SANCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.KHACH_SANDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KHACH_SANPayload>
+        }
+        update: {
+          args: Prisma.KHACH_SANUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KHACH_SANPayload>
+        }
+        deleteMany: {
+          args: Prisma.KHACH_SANDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.KHACH_SANUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.KHACH_SANUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KHACH_SANPayload>
+        }
+        aggregate: {
+          args: Prisma.KHACH_SANAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateKHACH_SAN>
+        }
+        groupBy: {
+          args: Prisma.KHACH_SANGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.KHACH_SANGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.KHACH_SANCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.KHACH_SANCountAggregateOutputType> | number
+        }
+      }
+    }
+    KHACH_SAN_TIEN_NGHI: {
+      payload: Prisma.$KHACH_SAN_TIEN_NGHIPayload<ExtArgs>
+      fields: Prisma.KHACH_SAN_TIEN_NGHIFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.KHACH_SAN_TIEN_NGHIFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KHACH_SAN_TIEN_NGHIPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.KHACH_SAN_TIEN_NGHIFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KHACH_SAN_TIEN_NGHIPayload>
+        }
+        findFirst: {
+          args: Prisma.KHACH_SAN_TIEN_NGHIFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KHACH_SAN_TIEN_NGHIPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.KHACH_SAN_TIEN_NGHIFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KHACH_SAN_TIEN_NGHIPayload>
+        }
+        findMany: {
+          args: Prisma.KHACH_SAN_TIEN_NGHIFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KHACH_SAN_TIEN_NGHIPayload>[]
+        }
+        create: {
+          args: Prisma.KHACH_SAN_TIEN_NGHICreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KHACH_SAN_TIEN_NGHIPayload>
+        }
+        createMany: {
+          args: Prisma.KHACH_SAN_TIEN_NGHICreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.KHACH_SAN_TIEN_NGHIDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KHACH_SAN_TIEN_NGHIPayload>
+        }
+        update: {
+          args: Prisma.KHACH_SAN_TIEN_NGHIUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KHACH_SAN_TIEN_NGHIPayload>
+        }
+        deleteMany: {
+          args: Prisma.KHACH_SAN_TIEN_NGHIDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.KHACH_SAN_TIEN_NGHIUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.KHACH_SAN_TIEN_NGHIUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KHACH_SAN_TIEN_NGHIPayload>
+        }
+        aggregate: {
+          args: Prisma.KHACH_SAN_TIEN_NGHIAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateKHACH_SAN_TIEN_NGHI>
+        }
+        groupBy: {
+          args: Prisma.KHACH_SAN_TIEN_NGHIGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.KHACH_SAN_TIEN_NGHIGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.KHACH_SAN_TIEN_NGHICountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.KHACH_SAN_TIEN_NGHICountAggregateOutputType> | number
+        }
+      }
+    }
+    KHUYEN_MAI: {
+      payload: Prisma.$KHUYEN_MAIPayload<ExtArgs>
+      fields: Prisma.KHUYEN_MAIFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.KHUYEN_MAIFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KHUYEN_MAIPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.KHUYEN_MAIFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KHUYEN_MAIPayload>
+        }
+        findFirst: {
+          args: Prisma.KHUYEN_MAIFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KHUYEN_MAIPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.KHUYEN_MAIFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KHUYEN_MAIPayload>
+        }
+        findMany: {
+          args: Prisma.KHUYEN_MAIFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KHUYEN_MAIPayload>[]
+        }
+        create: {
+          args: Prisma.KHUYEN_MAICreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KHUYEN_MAIPayload>
+        }
+        createMany: {
+          args: Prisma.KHUYEN_MAICreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.KHUYEN_MAIDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KHUYEN_MAIPayload>
+        }
+        update: {
+          args: Prisma.KHUYEN_MAIUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KHUYEN_MAIPayload>
+        }
+        deleteMany: {
+          args: Prisma.KHUYEN_MAIDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.KHUYEN_MAIUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.KHUYEN_MAIUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KHUYEN_MAIPayload>
+        }
+        aggregate: {
+          args: Prisma.KHUYEN_MAIAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateKHUYEN_MAI>
+        }
+        groupBy: {
+          args: Prisma.KHUYEN_MAIGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.KHUYEN_MAIGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.KHUYEN_MAICountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.KHUYEN_MAICountAggregateOutputType> | number
+        }
+      }
+    }
+    LOAI_PHONG: {
+      payload: Prisma.$LOAI_PHONGPayload<ExtArgs>
+      fields: Prisma.LOAI_PHONGFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.LOAI_PHONGFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LOAI_PHONGPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.LOAI_PHONGFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LOAI_PHONGPayload>
+        }
+        findFirst: {
+          args: Prisma.LOAI_PHONGFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LOAI_PHONGPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.LOAI_PHONGFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LOAI_PHONGPayload>
+        }
+        findMany: {
+          args: Prisma.LOAI_PHONGFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LOAI_PHONGPayload>[]
+        }
+        create: {
+          args: Prisma.LOAI_PHONGCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LOAI_PHONGPayload>
+        }
+        createMany: {
+          args: Prisma.LOAI_PHONGCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.LOAI_PHONGDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LOAI_PHONGPayload>
+        }
+        update: {
+          args: Prisma.LOAI_PHONGUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LOAI_PHONGPayload>
+        }
+        deleteMany: {
+          args: Prisma.LOAI_PHONGDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.LOAI_PHONGUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.LOAI_PHONGUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LOAI_PHONGPayload>
+        }
+        aggregate: {
+          args: Prisma.LOAI_PHONGAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateLOAI_PHONG>
+        }
+        groupBy: {
+          args: Prisma.LOAI_PHONGGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.LOAI_PHONGGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.LOAI_PHONGCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.LOAI_PHONGCountAggregateOutputType> | number
+        }
+      }
+    }
+    LOAI_PHONG_TIEN_NGHI: {
+      payload: Prisma.$LOAI_PHONG_TIEN_NGHIPayload<ExtArgs>
+      fields: Prisma.LOAI_PHONG_TIEN_NGHIFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.LOAI_PHONG_TIEN_NGHIFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LOAI_PHONG_TIEN_NGHIPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.LOAI_PHONG_TIEN_NGHIFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LOAI_PHONG_TIEN_NGHIPayload>
+        }
+        findFirst: {
+          args: Prisma.LOAI_PHONG_TIEN_NGHIFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LOAI_PHONG_TIEN_NGHIPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.LOAI_PHONG_TIEN_NGHIFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LOAI_PHONG_TIEN_NGHIPayload>
+        }
+        findMany: {
+          args: Prisma.LOAI_PHONG_TIEN_NGHIFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LOAI_PHONG_TIEN_NGHIPayload>[]
+        }
+        create: {
+          args: Prisma.LOAI_PHONG_TIEN_NGHICreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LOAI_PHONG_TIEN_NGHIPayload>
+        }
+        createMany: {
+          args: Prisma.LOAI_PHONG_TIEN_NGHICreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.LOAI_PHONG_TIEN_NGHIDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LOAI_PHONG_TIEN_NGHIPayload>
+        }
+        update: {
+          args: Prisma.LOAI_PHONG_TIEN_NGHIUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LOAI_PHONG_TIEN_NGHIPayload>
+        }
+        deleteMany: {
+          args: Prisma.LOAI_PHONG_TIEN_NGHIDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.LOAI_PHONG_TIEN_NGHIUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.LOAI_PHONG_TIEN_NGHIUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LOAI_PHONG_TIEN_NGHIPayload>
+        }
+        aggregate: {
+          args: Prisma.LOAI_PHONG_TIEN_NGHIAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateLOAI_PHONG_TIEN_NGHI>
+        }
+        groupBy: {
+          args: Prisma.LOAI_PHONG_TIEN_NGHIGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.LOAI_PHONG_TIEN_NGHIGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.LOAI_PHONG_TIEN_NGHICountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.LOAI_PHONG_TIEN_NGHICountAggregateOutputType> | number
+        }
+      }
+    }
+    QUY_PHONG_GIA: {
+      payload: Prisma.$QUY_PHONG_GIAPayload<ExtArgs>
+      fields: Prisma.QUY_PHONG_GIAFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.QUY_PHONG_GIAFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$QUY_PHONG_GIAPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.QUY_PHONG_GIAFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$QUY_PHONG_GIAPayload>
+        }
+        findFirst: {
+          args: Prisma.QUY_PHONG_GIAFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$QUY_PHONG_GIAPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.QUY_PHONG_GIAFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$QUY_PHONG_GIAPayload>
+        }
+        findMany: {
+          args: Prisma.QUY_PHONG_GIAFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$QUY_PHONG_GIAPayload>[]
+        }
+        create: {
+          args: Prisma.QUY_PHONG_GIACreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$QUY_PHONG_GIAPayload>
+        }
+        createMany: {
+          args: Prisma.QUY_PHONG_GIACreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.QUY_PHONG_GIADeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$QUY_PHONG_GIAPayload>
+        }
+        update: {
+          args: Prisma.QUY_PHONG_GIAUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$QUY_PHONG_GIAPayload>
+        }
+        deleteMany: {
+          args: Prisma.QUY_PHONG_GIADeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.QUY_PHONG_GIAUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.QUY_PHONG_GIAUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$QUY_PHONG_GIAPayload>
+        }
+        aggregate: {
+          args: Prisma.QUY_PHONG_GIAAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateQUY_PHONG_GIA>
+        }
+        groupBy: {
+          args: Prisma.QUY_PHONG_GIAGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.QUY_PHONG_GIAGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.QUY_PHONG_GIACountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.QUY_PHONG_GIACountAggregateOutputType> | number
+        }
+      }
+    }
+    TAI_KHOAN: {
+      payload: Prisma.$TAI_KHOANPayload<ExtArgs>
+      fields: Prisma.TAI_KHOANFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.TAI_KHOANFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TAI_KHOANPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.TAI_KHOANFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TAI_KHOANPayload>
+        }
+        findFirst: {
+          args: Prisma.TAI_KHOANFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TAI_KHOANPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.TAI_KHOANFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TAI_KHOANPayload>
+        }
+        findMany: {
+          args: Prisma.TAI_KHOANFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TAI_KHOANPayload>[]
+        }
+        create: {
+          args: Prisma.TAI_KHOANCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TAI_KHOANPayload>
+        }
+        createMany: {
+          args: Prisma.TAI_KHOANCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.TAI_KHOANDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TAI_KHOANPayload>
+        }
+        update: {
+          args: Prisma.TAI_KHOANUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TAI_KHOANPayload>
+        }
+        deleteMany: {
+          args: Prisma.TAI_KHOANDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.TAI_KHOANUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.TAI_KHOANUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TAI_KHOANPayload>
+        }
+        aggregate: {
+          args: Prisma.TAI_KHOANAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateTAI_KHOAN>
+        }
+        groupBy: {
+          args: Prisma.TAI_KHOANGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TAI_KHOANGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.TAI_KHOANCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TAI_KHOANCountAggregateOutputType> | number
+        }
+      }
+    }
+    THANH_TOAN: {
+      payload: Prisma.$THANH_TOANPayload<ExtArgs>
+      fields: Prisma.THANH_TOANFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.THANH_TOANFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$THANH_TOANPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.THANH_TOANFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$THANH_TOANPayload>
+        }
+        findFirst: {
+          args: Prisma.THANH_TOANFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$THANH_TOANPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.THANH_TOANFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$THANH_TOANPayload>
+        }
+        findMany: {
+          args: Prisma.THANH_TOANFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$THANH_TOANPayload>[]
+        }
+        create: {
+          args: Prisma.THANH_TOANCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$THANH_TOANPayload>
+        }
+        createMany: {
+          args: Prisma.THANH_TOANCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.THANH_TOANDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$THANH_TOANPayload>
+        }
+        update: {
+          args: Prisma.THANH_TOANUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$THANH_TOANPayload>
+        }
+        deleteMany: {
+          args: Prisma.THANH_TOANDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.THANH_TOANUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.THANH_TOANUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$THANH_TOANPayload>
+        }
+        aggregate: {
+          args: Prisma.THANH_TOANAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateTHANH_TOAN>
+        }
+        groupBy: {
+          args: Prisma.THANH_TOANGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.THANH_TOANGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.THANH_TOANCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.THANH_TOANCountAggregateOutputType> | number
+        }
+      }
+    }
+    TIEN_NGHI: {
+      payload: Prisma.$TIEN_NGHIPayload<ExtArgs>
+      fields: Prisma.TIEN_NGHIFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.TIEN_NGHIFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TIEN_NGHIPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.TIEN_NGHIFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TIEN_NGHIPayload>
+        }
+        findFirst: {
+          args: Prisma.TIEN_NGHIFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TIEN_NGHIPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.TIEN_NGHIFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TIEN_NGHIPayload>
+        }
+        findMany: {
+          args: Prisma.TIEN_NGHIFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TIEN_NGHIPayload>[]
+        }
+        create: {
+          args: Prisma.TIEN_NGHICreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TIEN_NGHIPayload>
+        }
+        createMany: {
+          args: Prisma.TIEN_NGHICreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.TIEN_NGHIDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TIEN_NGHIPayload>
+        }
+        update: {
+          args: Prisma.TIEN_NGHIUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TIEN_NGHIPayload>
+        }
+        deleteMany: {
+          args: Prisma.TIEN_NGHIDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.TIEN_NGHIUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.TIEN_NGHIUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TIEN_NGHIPayload>
+        }
+        aggregate: {
+          args: Prisma.TIEN_NGHIAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateTIEN_NGHI>
+        }
+        groupBy: {
+          args: Prisma.TIEN_NGHIGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TIEN_NGHIGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.TIEN_NGHICountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TIEN_NGHICountAggregateOutputType> | number
+        }
+      }
+    }
+    VAI_TRO: {
+      payload: Prisma.$VAI_TROPayload<ExtArgs>
+      fields: Prisma.VAI_TROFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.VAI_TROFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VAI_TROPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.VAI_TROFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VAI_TROPayload>
+        }
+        findFirst: {
+          args: Prisma.VAI_TROFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VAI_TROPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.VAI_TROFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VAI_TROPayload>
+        }
+        findMany: {
+          args: Prisma.VAI_TROFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VAI_TROPayload>[]
+        }
+        create: {
+          args: Prisma.VAI_TROCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VAI_TROPayload>
+        }
+        createMany: {
+          args: Prisma.VAI_TROCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.VAI_TRODeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VAI_TROPayload>
+        }
+        update: {
+          args: Prisma.VAI_TROUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VAI_TROPayload>
+        }
+        deleteMany: {
+          args: Prisma.VAI_TRODeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.VAI_TROUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.VAI_TROUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VAI_TROPayload>
+        }
+        aggregate: {
+          args: Prisma.VAI_TROAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateVAI_TRO>
+        }
+        groupBy: {
+          args: Prisma.VAI_TROGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.VAI_TROGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.VAI_TROCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.VAI_TROCountAggregateOutputType> | number
+        }
+      }
+    }
+    YEU_CAU_HO_TRO: {
+      payload: Prisma.$YEU_CAU_HO_TROPayload<ExtArgs>
+      fields: Prisma.YEU_CAU_HO_TROFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.YEU_CAU_HO_TROFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$YEU_CAU_HO_TROPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.YEU_CAU_HO_TROFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$YEU_CAU_HO_TROPayload>
+        }
+        findFirst: {
+          args: Prisma.YEU_CAU_HO_TROFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$YEU_CAU_HO_TROPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.YEU_CAU_HO_TROFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$YEU_CAU_HO_TROPayload>
+        }
+        findMany: {
+          args: Prisma.YEU_CAU_HO_TROFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$YEU_CAU_HO_TROPayload>[]
+        }
+        create: {
+          args: Prisma.YEU_CAU_HO_TROCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$YEU_CAU_HO_TROPayload>
+        }
+        createMany: {
+          args: Prisma.YEU_CAU_HO_TROCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.YEU_CAU_HO_TRODeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$YEU_CAU_HO_TROPayload>
+        }
+        update: {
+          args: Prisma.YEU_CAU_HO_TROUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$YEU_CAU_HO_TROPayload>
+        }
+        deleteMany: {
+          args: Prisma.YEU_CAU_HO_TRODeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.YEU_CAU_HO_TROUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.YEU_CAU_HO_TROUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$YEU_CAU_HO_TROPayload>
+        }
+        aggregate: {
+          args: Prisma.YEU_CAU_HO_TROAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateYEU_CAU_HO_TRO>
+        }
+        groupBy: {
+          args: Prisma.YEU_CAU_HO_TROGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.YEU_CAU_HO_TROGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.YEU_CAU_HO_TROCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.YEU_CAU_HO_TROCountAggregateOutputType> | number
+        }
+      }
+    }
+  }
 } & {
   other: {
     payload: any
@@ -456,7 +1930,350 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
 
 
+export const CHI_TIET_CHINH_SACH_HUYScalarFieldEnum = {
+  MaChiTietChinhSach: 'MaChiTietChinhSach',
+  MaChinhSachHuy: 'MaChinhSachHuy',
+  SoGioTruocNhanPhong: 'SoGioTruocNhanPhong',
+  TyLeHoanTien: 'TyLeHoanTien'
+} as const
 
+export type CHI_TIET_CHINH_SACH_HUYScalarFieldEnum = (typeof CHI_TIET_CHINH_SACH_HUYScalarFieldEnum)[keyof typeof CHI_TIET_CHINH_SACH_HUYScalarFieldEnum]
+
+
+export const CHI_TIET_DAT_PHONGScalarFieldEnum = {
+  MaChiTietDatPhong: 'MaChiTietDatPhong',
+  MaDatPhong: 'MaDatPhong',
+  MaLoaiPhong: 'MaLoaiPhong',
+  SoLuongPhong: 'SoLuongPhong'
+} as const
+
+export type CHI_TIET_DAT_PHONGScalarFieldEnum = (typeof CHI_TIET_DAT_PHONGScalarFieldEnum)[keyof typeof CHI_TIET_DAT_PHONGScalarFieldEnum]
+
+
+export const CHINH_SACH_HUYScalarFieldEnum = {
+  MaChinhSachHuy: 'MaChinhSachHuy',
+  TenChinhSach: 'TenChinhSach',
+  MoTa: 'MoTa',
+  TrangThai: 'TrangThai',
+  NgayTao: 'NgayTao'
+} as const
+
+export type CHINH_SACH_HUYScalarFieldEnum = (typeof CHINH_SACH_HUYScalarFieldEnum)[keyof typeof CHINH_SACH_HUYScalarFieldEnum]
+
+
+export const DANH_GIAScalarFieldEnum = {
+  MaDanhGia: 'MaDanhGia',
+  MaDatPhong: 'MaDatPhong',
+  MaKhachHang: 'MaKhachHang',
+  MaKhachSan: 'MaKhachSan',
+  DiemDanhGia: 'DiemDanhGia',
+  NoiDung: 'NoiDung',
+  TrangThai: 'TrangThai'
+} as const
+
+export type DANH_GIAScalarFieldEnum = (typeof DANH_GIAScalarFieldEnum)[keyof typeof DANH_GIAScalarFieldEnum]
+
+
+export const DAT_PHONGScalarFieldEnum = {
+  MaDatPhong: 'MaDatPhong',
+  MaXacNhanDatPhong: 'MaXacNhanDatPhong',
+  MaTaiKhoanKhachHang: 'MaTaiKhoanKhachHang',
+  MaKhachSan: 'MaKhachSan',
+  MaKhuyenMai: 'MaKhuyenMai',
+  MaChinhSachHuy: 'MaChinhSachHuy',
+  NgayNhanPhong: 'NgayNhanPhong',
+  NgayTraPhong: 'NgayTraPhong',
+  TongTienPhong: 'TongTienPhong',
+  SoTienGiam: 'SoTienGiam',
+  TongTienThanhToan: 'TongTienThanhToan',
+  GhiChu: 'GhiChu',
+  TrangThai: 'TrangThai',
+  NgayTao: 'NgayTao',
+  NgayCapNhat: 'NgayCapNhat'
+} as const
+
+export type DAT_PHONGScalarFieldEnum = (typeof DAT_PHONGScalarFieldEnum)[keyof typeof DAT_PHONGScalarFieldEnum]
+
+
+export const DIA_PHUONGScalarFieldEnum = {
+  MaDiaPhuong: 'MaDiaPhuong',
+  TenThanhPho: 'TenThanhPho',
+  TenTinh: 'TenTinh',
+  QuocGia: 'QuocGia'
+} as const
+
+export type DIA_PHUONGScalarFieldEnum = (typeof DIA_PHUONGScalarFieldEnum)[keyof typeof DIA_PHUONGScalarFieldEnum]
+
+
+export const HINH_ANH_DANH_GIAScalarFieldEnum = {
+  MaHinhAnhDanhGia: 'MaHinhAnhDanhGia',
+  MaDanhGia: 'MaDanhGia',
+  URL: 'URL'
+} as const
+
+export type HINH_ANH_DANH_GIAScalarFieldEnum = (typeof HINH_ANH_DANH_GIAScalarFieldEnum)[keyof typeof HINH_ANH_DANH_GIAScalarFieldEnum]
+
+
+export const HINH_ANH_KHACH_SANScalarFieldEnum = {
+  MaHinhAnh: 'MaHinhAnh',
+  MaKhachSan: 'MaKhachSan',
+  URL: 'URL',
+  AnhDaiDien: 'AnhDaiDien'
+} as const
+
+export type HINH_ANH_KHACH_SANScalarFieldEnum = (typeof HINH_ANH_KHACH_SANScalarFieldEnum)[keyof typeof HINH_ANH_KHACH_SANScalarFieldEnum]
+
+
+export const HINH_ANH_LOAI_PHONGScalarFieldEnum = {
+  MaHinhAnhLoaiPhong: 'MaHinhAnhLoaiPhong',
+  MaLoaiPhong: 'MaLoaiPhong',
+  URL: 'URL',
+  LaAnhDaiDien: 'LaAnhDaiDien'
+} as const
+
+export type HINH_ANH_LOAI_PHONGScalarFieldEnum = (typeof HINH_ANH_LOAI_PHONGScalarFieldEnum)[keyof typeof HINH_ANH_LOAI_PHONGScalarFieldEnum]
+
+
+export const HO_SO_DOI_TACScalarFieldEnum = {
+  MaHoSoDoiTac: 'MaHoSoDoiTac',
+  MaTaiKhoan: 'MaTaiKhoan',
+  SoCCCD: 'SoCCCD',
+  SoGiayPhepKinhDoanh: 'SoGiayPhepKinhDoanh',
+  MaSoThue: 'MaSoThue',
+  TepGiayTo: 'TepGiayTo',
+  TrangThaiDuyet: 'TrangThaiDuyet',
+  LyDoTuChoi: 'LyDoTuChoi',
+  NgayNop: 'NgayNop',
+  NgayDuyet: 'NgayDuyet',
+  MaTaiKhoanDuyet: 'MaTaiKhoanDuyet'
+} as const
+
+export type HO_SO_DOI_TACScalarFieldEnum = (typeof HO_SO_DOI_TACScalarFieldEnum)[keyof typeof HO_SO_DOI_TACScalarFieldEnum]
+
+
+export const HOAN_TIENScalarFieldEnum = {
+  MaHoanTien: 'MaHoanTien',
+  MaThanhToan: 'MaThanhToan',
+  SoTienHoan: 'SoTienHoan',
+  LyDoHoanTien: 'LyDoHoanTien',
+  MaGiaoDichDoiTac: 'MaGiaoDichDoiTac',
+  TrangThai: 'TrangThai',
+  NgayYeuCau: 'NgayYeuCau',
+  NgayHoanTien: 'NgayHoanTien'
+} as const
+
+export type HOAN_TIENScalarFieldEnum = (typeof HOAN_TIENScalarFieldEnum)[keyof typeof HOAN_TIENScalarFieldEnum]
+
+
+export const KHACH_SANScalarFieldEnum = {
+  MaKhachSan: 'MaKhachSan',
+  MaTaiKhoanSoHuu: 'MaTaiKhoanSoHuu',
+  MaDiaPhuong: 'MaDiaPhuong',
+  MaTaiKhoanDuyet: 'MaTaiKhoanDuyet',
+  TenKhachSan: 'TenKhachSan',
+  DiaChiChiTiet: 'DiaChiChiTiet',
+  HangSao: 'HangSao',
+  MoTa: 'MoTa',
+  GioNhanPhong: 'GioNhanPhong',
+  GioTraPhong: 'GioTraPhong',
+  TrangThai: 'TrangThai',
+  NgayDangKy: 'NgayDangKy',
+  NgayDuyet: 'NgayDuyet',
+  NgayCapNhat: 'NgayCapNhat'
+} as const
+
+export type KHACH_SANScalarFieldEnum = (typeof KHACH_SANScalarFieldEnum)[keyof typeof KHACH_SANScalarFieldEnum]
+
+
+export const KHACH_SAN_TIEN_NGHIScalarFieldEnum = {
+  MaKhachSan: 'MaKhachSan',
+  MaTienNghi: 'MaTienNghi'
+} as const
+
+export type KHACH_SAN_TIEN_NGHIScalarFieldEnum = (typeof KHACH_SAN_TIEN_NGHIScalarFieldEnum)[keyof typeof KHACH_SAN_TIEN_NGHIScalarFieldEnum]
+
+
+export const KHUYEN_MAIScalarFieldEnum = {
+  MaKhuyenMai: 'MaKhuyenMai',
+  MaCode: 'MaCode',
+  LoaiGiamGia: 'LoaiGiamGia',
+  GiaTriGiam: 'GiaTriGiam',
+  GiaTriDonToiThieu: 'GiaTriDonToiThieu',
+  MucGiamToiDa: 'MucGiamToiDa',
+  SoLuongGioiHan: 'SoLuongGioiHan',
+  NgayBatDau: 'NgayBatDau',
+  NgayKetThuc: 'NgayKetThuc',
+  PhamViApDung: 'PhamViApDung',
+  TrangThai: 'TrangThai'
+} as const
+
+export type KHUYEN_MAIScalarFieldEnum = (typeof KHUYEN_MAIScalarFieldEnum)[keyof typeof KHUYEN_MAIScalarFieldEnum]
+
+
+export const LOAI_PHONGScalarFieldEnum = {
+  MaLoaiPhong: 'MaLoaiPhong',
+  MaKhachSan: 'MaKhachSan',
+  TenLoaiPhong: 'TenLoaiPhong',
+  SoGiuong: 'SoGiuong',
+  SucChua: 'SucChua',
+  DienTich: 'DienTich',
+  LoaiGiuong: 'LoaiGiuong',
+  MoTa: 'MoTa',
+  TrangThai: 'TrangThai'
+} as const
+
+export type LOAI_PHONGScalarFieldEnum = (typeof LOAI_PHONGScalarFieldEnum)[keyof typeof LOAI_PHONGScalarFieldEnum]
+
+
+export const LOAI_PHONG_TIEN_NGHIScalarFieldEnum = {
+  MaLoaiPhong: 'MaLoaiPhong',
+  MaTienNghi: 'MaTienNghi'
+} as const
+
+export type LOAI_PHONG_TIEN_NGHIScalarFieldEnum = (typeof LOAI_PHONG_TIEN_NGHIScalarFieldEnum)[keyof typeof LOAI_PHONG_TIEN_NGHIScalarFieldEnum]
+
+
+export const QUY_PHONG_GIAScalarFieldEnum = {
+  MaQuyPhong: 'MaQuyPhong',
+  MaLoaiPhong: 'MaLoaiPhong',
+  NgayApDung: 'NgayApDung',
+  GiaPhong: 'GiaPhong',
+  SoLuongPhong: 'SoLuongPhong',
+  TrangThai: 'TrangThai'
+} as const
+
+export type QUY_PHONG_GIAScalarFieldEnum = (typeof QUY_PHONG_GIAScalarFieldEnum)[keyof typeof QUY_PHONG_GIAScalarFieldEnum]
+
+
+export const TAI_KHOANScalarFieldEnum = {
+  MaTaiKhoan: 'MaTaiKhoan',
+  MaVaiTro: 'MaVaiTro',
+  TenDangNhap: 'TenDangNhap',
+  Email: 'Email',
+  MatKhau: 'MatKhau',
+  HoTen: 'HoTen',
+  SoDienThoai: 'SoDienThoai',
+  NgaySinh: 'NgaySinh',
+  GioiTinh: 'GioiTinh',
+  AnhDaiDien: 'AnhDaiDien',
+  TrangThai: 'TrangThai',
+  NgayTao: 'NgayTao',
+  NgayCapNhat: 'NgayCapNhat'
+} as const
+
+export type TAI_KHOANScalarFieldEnum = (typeof TAI_KHOANScalarFieldEnum)[keyof typeof TAI_KHOANScalarFieldEnum]
+
+
+export const THANH_TOANScalarFieldEnum = {
+  MaThanhToan: 'MaThanhToan',
+  MaDatPhong: 'MaDatPhong',
+  SoTien: 'SoTien',
+  PhuongThucThanhToan: 'PhuongThucThanhToan',
+  MaGiaoDichDoiTac: 'MaGiaoDichDoiTac',
+  TrangThai: 'TrangThai',
+  ThoiGianGiaoDich: 'ThoiGianGiaoDich'
+} as const
+
+export type THANH_TOANScalarFieldEnum = (typeof THANH_TOANScalarFieldEnum)[keyof typeof THANH_TOANScalarFieldEnum]
+
+
+export const TIEN_NGHIScalarFieldEnum = {
+  MaTienNghi: 'MaTienNghi',
+  TenTienNghi: 'TenTienNghi',
+  BieuTuong: 'BieuTuong'
+} as const
+
+export type TIEN_NGHIScalarFieldEnum = (typeof TIEN_NGHIScalarFieldEnum)[keyof typeof TIEN_NGHIScalarFieldEnum]
+
+
+export const VAI_TROScalarFieldEnum = {
+  MaVaiTro: 'MaVaiTro',
+  TenVaiTro: 'TenVaiTro',
+  MoTa: 'MoTa'
+} as const
+
+export type VAI_TROScalarFieldEnum = (typeof VAI_TROScalarFieldEnum)[keyof typeof VAI_TROScalarFieldEnum]
+
+
+export const YEU_CAU_HO_TROScalarFieldEnum = {
+  MaYeuCauHoTro: 'MaYeuCauHoTro',
+  MaTaiKhoanKhachHang: 'MaTaiKhoanKhachHang',
+  MaTaiKhoanXuLy: 'MaTaiKhoanXuLy',
+  MaDatPhong: 'MaDatPhong',
+  LoaiYeuCau: 'LoaiYeuCau',
+  TieuDe: 'TieuDe',
+  NoiDung: 'NoiDung',
+  KetQuaXuLy: 'KetQuaXuLy',
+  TrangThai: 'TrangThai',
+  NgayTao: 'NgayTao',
+  NgayXuLy: 'NgayXuLy'
+} as const
+
+export type YEU_CAU_HO_TROScalarFieldEnum = (typeof YEU_CAU_HO_TROScalarFieldEnum)[keyof typeof YEU_CAU_HO_TROScalarFieldEnum]
+
+
+export const SortOrder = {
+  asc: 'asc',
+  desc: 'desc'
+} as const
+
+export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+export const NullsOrder = {
+  first: 'first',
+  last: 'last'
+} as const
+
+export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+
+/**
+ * Field references
+ */
+
+
+/**
+ * Reference to a field of type 'Int'
+ */
+export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
+    
+
+
+/**
+ * Reference to a field of type 'Decimal'
+ */
+export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal'>
+    
+
+
+/**
+ * Reference to a field of type 'String'
+ */
+export type StringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'String'>
+    
+
+
+/**
+ * Reference to a field of type 'DateTime'
+ */
+export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
+    
+
+
+/**
+ * Reference to a field of type 'Boolean'
+ */
+export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+/**
+ * Reference to a field of type 'Float'
+ */
+export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
+    
 
 /**
  * Batch Payload for updateMany & deleteMany & createMany
@@ -608,7 +2425,30 @@ export interface PrismaClientOptionsWithAdapter extends PrismaClientBaseOptions 
  * Learn more about driver adapters: https://pris.ly/d/driver-adapters
  */
 export type PrismaClientOptions = PrismaClientOptionsWithAccelerateUrl | PrismaClientOptionsWithAdapter
-export type GlobalOmitConfig = {}
+export type GlobalOmitConfig = {
+  cHI_TIET_CHINH_SACH_HUY?: Prisma.CHI_TIET_CHINH_SACH_HUYOmit
+  cHI_TIET_DAT_PHONG?: Prisma.CHI_TIET_DAT_PHONGOmit
+  cHINH_SACH_HUY?: Prisma.CHINH_SACH_HUYOmit
+  dANH_GIA?: Prisma.DANH_GIAOmit
+  dAT_PHONG?: Prisma.DAT_PHONGOmit
+  dIA_PHUONG?: Prisma.DIA_PHUONGOmit
+  hINH_ANH_DANH_GIA?: Prisma.HINH_ANH_DANH_GIAOmit
+  hINH_ANH_KHACH_SAN?: Prisma.HINH_ANH_KHACH_SANOmit
+  hINH_ANH_LOAI_PHONG?: Prisma.HINH_ANH_LOAI_PHONGOmit
+  hO_SO_DOI_TAC?: Prisma.HO_SO_DOI_TACOmit
+  hOAN_TIEN?: Prisma.HOAN_TIENOmit
+  kHACH_SAN?: Prisma.KHACH_SANOmit
+  kHACH_SAN_TIEN_NGHI?: Prisma.KHACH_SAN_TIEN_NGHIOmit
+  kHUYEN_MAI?: Prisma.KHUYEN_MAIOmit
+  lOAI_PHONG?: Prisma.LOAI_PHONGOmit
+  lOAI_PHONG_TIEN_NGHI?: Prisma.LOAI_PHONG_TIEN_NGHIOmit
+  qUY_PHONG_GIA?: Prisma.QUY_PHONG_GIAOmit
+  tAI_KHOAN?: Prisma.TAI_KHOANOmit
+  tHANH_TOAN?: Prisma.THANH_TOANOmit
+  tIEN_NGHI?: Prisma.TIEN_NGHIOmit
+  vAI_TRO?: Prisma.VAI_TROOmit
+  yEU_CAU_HO_TRO?: Prisma.YEU_CAU_HO_TROOmit
+}
 
 /* Types for Logging */
 export type LogLevel = 'info' | 'query' | 'warn' | 'error'

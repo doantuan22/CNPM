@@ -51,7 +51,28 @@ export const AnyNull = runtime.AnyNull
 
 
 export const ModelName = {
-
+  CHI_TIET_CHINH_SACH_HUY: 'CHI_TIET_CHINH_SACH_HUY',
+  CHI_TIET_DAT_PHONG: 'CHI_TIET_DAT_PHONG',
+  CHINH_SACH_HUY: 'CHINH_SACH_HUY',
+  DANH_GIA: 'DANH_GIA',
+  DAT_PHONG: 'DAT_PHONG',
+  DIA_PHUONG: 'DIA_PHUONG',
+  HINH_ANH_DANH_GIA: 'HINH_ANH_DANH_GIA',
+  HINH_ANH_KHACH_SAN: 'HINH_ANH_KHACH_SAN',
+  HINH_ANH_LOAI_PHONG: 'HINH_ANH_LOAI_PHONG',
+  HO_SO_DOI_TAC: 'HO_SO_DOI_TAC',
+  HOAN_TIEN: 'HOAN_TIEN',
+  KHACH_SAN: 'KHACH_SAN',
+  KHACH_SAN_TIEN_NGHI: 'KHACH_SAN_TIEN_NGHI',
+  KHUYEN_MAI: 'KHUYEN_MAI',
+  LOAI_PHONG: 'LOAI_PHONG',
+  LOAI_PHONG_TIEN_NGHI: 'LOAI_PHONG_TIEN_NGHI',
+  QUY_PHONG_GIA: 'QUY_PHONG_GIA',
+  TAI_KHOAN: 'TAI_KHOAN',
+  THANH_TOAN: 'THANH_TOAN',
+  TIEN_NGHI: 'TIEN_NGHI',
+  VAI_TRO: 'VAI_TRO',
+  YEU_CAU_HO_TRO: 'YEU_CAU_HO_TRO'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -69,4 +90,302 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 } as const)
 
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
+
+
+export const CHI_TIET_CHINH_SACH_HUYScalarFieldEnum = {
+  MaChiTietChinhSach: 'MaChiTietChinhSach',
+  MaChinhSachHuy: 'MaChinhSachHuy',
+  SoGioTruocNhanPhong: 'SoGioTruocNhanPhong',
+  TyLeHoanTien: 'TyLeHoanTien'
+} as const
+
+export type CHI_TIET_CHINH_SACH_HUYScalarFieldEnum = (typeof CHI_TIET_CHINH_SACH_HUYScalarFieldEnum)[keyof typeof CHI_TIET_CHINH_SACH_HUYScalarFieldEnum]
+
+
+export const CHI_TIET_DAT_PHONGScalarFieldEnum = {
+  MaChiTietDatPhong: 'MaChiTietDatPhong',
+  MaDatPhong: 'MaDatPhong',
+  MaLoaiPhong: 'MaLoaiPhong',
+  SoLuongPhong: 'SoLuongPhong'
+} as const
+
+export type CHI_TIET_DAT_PHONGScalarFieldEnum = (typeof CHI_TIET_DAT_PHONGScalarFieldEnum)[keyof typeof CHI_TIET_DAT_PHONGScalarFieldEnum]
+
+
+export const CHINH_SACH_HUYScalarFieldEnum = {
+  MaChinhSachHuy: 'MaChinhSachHuy',
+  TenChinhSach: 'TenChinhSach',
+  MoTa: 'MoTa',
+  TrangThai: 'TrangThai',
+  NgayTao: 'NgayTao'
+} as const
+
+export type CHINH_SACH_HUYScalarFieldEnum = (typeof CHINH_SACH_HUYScalarFieldEnum)[keyof typeof CHINH_SACH_HUYScalarFieldEnum]
+
+
+export const DANH_GIAScalarFieldEnum = {
+  MaDanhGia: 'MaDanhGia',
+  MaDatPhong: 'MaDatPhong',
+  MaKhachHang: 'MaKhachHang',
+  MaKhachSan: 'MaKhachSan',
+  DiemDanhGia: 'DiemDanhGia',
+  NoiDung: 'NoiDung',
+  TrangThai: 'TrangThai'
+} as const
+
+export type DANH_GIAScalarFieldEnum = (typeof DANH_GIAScalarFieldEnum)[keyof typeof DANH_GIAScalarFieldEnum]
+
+
+export const DAT_PHONGScalarFieldEnum = {
+  MaDatPhong: 'MaDatPhong',
+  MaXacNhanDatPhong: 'MaXacNhanDatPhong',
+  MaTaiKhoanKhachHang: 'MaTaiKhoanKhachHang',
+  MaKhachSan: 'MaKhachSan',
+  MaKhuyenMai: 'MaKhuyenMai',
+  MaChinhSachHuy: 'MaChinhSachHuy',
+  NgayNhanPhong: 'NgayNhanPhong',
+  NgayTraPhong: 'NgayTraPhong',
+  TongTienPhong: 'TongTienPhong',
+  SoTienGiam: 'SoTienGiam',
+  TongTienThanhToan: 'TongTienThanhToan',
+  GhiChu: 'GhiChu',
+  TrangThai: 'TrangThai',
+  NgayTao: 'NgayTao',
+  NgayCapNhat: 'NgayCapNhat'
+} as const
+
+export type DAT_PHONGScalarFieldEnum = (typeof DAT_PHONGScalarFieldEnum)[keyof typeof DAT_PHONGScalarFieldEnum]
+
+
+export const DIA_PHUONGScalarFieldEnum = {
+  MaDiaPhuong: 'MaDiaPhuong',
+  TenThanhPho: 'TenThanhPho',
+  TenTinh: 'TenTinh',
+  QuocGia: 'QuocGia'
+} as const
+
+export type DIA_PHUONGScalarFieldEnum = (typeof DIA_PHUONGScalarFieldEnum)[keyof typeof DIA_PHUONGScalarFieldEnum]
+
+
+export const HINH_ANH_DANH_GIAScalarFieldEnum = {
+  MaHinhAnhDanhGia: 'MaHinhAnhDanhGia',
+  MaDanhGia: 'MaDanhGia',
+  URL: 'URL'
+} as const
+
+export type HINH_ANH_DANH_GIAScalarFieldEnum = (typeof HINH_ANH_DANH_GIAScalarFieldEnum)[keyof typeof HINH_ANH_DANH_GIAScalarFieldEnum]
+
+
+export const HINH_ANH_KHACH_SANScalarFieldEnum = {
+  MaHinhAnh: 'MaHinhAnh',
+  MaKhachSan: 'MaKhachSan',
+  URL: 'URL',
+  AnhDaiDien: 'AnhDaiDien'
+} as const
+
+export type HINH_ANH_KHACH_SANScalarFieldEnum = (typeof HINH_ANH_KHACH_SANScalarFieldEnum)[keyof typeof HINH_ANH_KHACH_SANScalarFieldEnum]
+
+
+export const HINH_ANH_LOAI_PHONGScalarFieldEnum = {
+  MaHinhAnhLoaiPhong: 'MaHinhAnhLoaiPhong',
+  MaLoaiPhong: 'MaLoaiPhong',
+  URL: 'URL',
+  LaAnhDaiDien: 'LaAnhDaiDien'
+} as const
+
+export type HINH_ANH_LOAI_PHONGScalarFieldEnum = (typeof HINH_ANH_LOAI_PHONGScalarFieldEnum)[keyof typeof HINH_ANH_LOAI_PHONGScalarFieldEnum]
+
+
+export const HO_SO_DOI_TACScalarFieldEnum = {
+  MaHoSoDoiTac: 'MaHoSoDoiTac',
+  MaTaiKhoan: 'MaTaiKhoan',
+  SoCCCD: 'SoCCCD',
+  SoGiayPhepKinhDoanh: 'SoGiayPhepKinhDoanh',
+  MaSoThue: 'MaSoThue',
+  TepGiayTo: 'TepGiayTo',
+  TrangThaiDuyet: 'TrangThaiDuyet',
+  LyDoTuChoi: 'LyDoTuChoi',
+  NgayNop: 'NgayNop',
+  NgayDuyet: 'NgayDuyet',
+  MaTaiKhoanDuyet: 'MaTaiKhoanDuyet'
+} as const
+
+export type HO_SO_DOI_TACScalarFieldEnum = (typeof HO_SO_DOI_TACScalarFieldEnum)[keyof typeof HO_SO_DOI_TACScalarFieldEnum]
+
+
+export const HOAN_TIENScalarFieldEnum = {
+  MaHoanTien: 'MaHoanTien',
+  MaThanhToan: 'MaThanhToan',
+  SoTienHoan: 'SoTienHoan',
+  LyDoHoanTien: 'LyDoHoanTien',
+  MaGiaoDichDoiTac: 'MaGiaoDichDoiTac',
+  TrangThai: 'TrangThai',
+  NgayYeuCau: 'NgayYeuCau',
+  NgayHoanTien: 'NgayHoanTien'
+} as const
+
+export type HOAN_TIENScalarFieldEnum = (typeof HOAN_TIENScalarFieldEnum)[keyof typeof HOAN_TIENScalarFieldEnum]
+
+
+export const KHACH_SANScalarFieldEnum = {
+  MaKhachSan: 'MaKhachSan',
+  MaTaiKhoanSoHuu: 'MaTaiKhoanSoHuu',
+  MaDiaPhuong: 'MaDiaPhuong',
+  MaTaiKhoanDuyet: 'MaTaiKhoanDuyet',
+  TenKhachSan: 'TenKhachSan',
+  DiaChiChiTiet: 'DiaChiChiTiet',
+  HangSao: 'HangSao',
+  MoTa: 'MoTa',
+  GioNhanPhong: 'GioNhanPhong',
+  GioTraPhong: 'GioTraPhong',
+  TrangThai: 'TrangThai',
+  NgayDangKy: 'NgayDangKy',
+  NgayDuyet: 'NgayDuyet',
+  NgayCapNhat: 'NgayCapNhat'
+} as const
+
+export type KHACH_SANScalarFieldEnum = (typeof KHACH_SANScalarFieldEnum)[keyof typeof KHACH_SANScalarFieldEnum]
+
+
+export const KHACH_SAN_TIEN_NGHIScalarFieldEnum = {
+  MaKhachSan: 'MaKhachSan',
+  MaTienNghi: 'MaTienNghi'
+} as const
+
+export type KHACH_SAN_TIEN_NGHIScalarFieldEnum = (typeof KHACH_SAN_TIEN_NGHIScalarFieldEnum)[keyof typeof KHACH_SAN_TIEN_NGHIScalarFieldEnum]
+
+
+export const KHUYEN_MAIScalarFieldEnum = {
+  MaKhuyenMai: 'MaKhuyenMai',
+  MaCode: 'MaCode',
+  LoaiGiamGia: 'LoaiGiamGia',
+  GiaTriGiam: 'GiaTriGiam',
+  GiaTriDonToiThieu: 'GiaTriDonToiThieu',
+  MucGiamToiDa: 'MucGiamToiDa',
+  SoLuongGioiHan: 'SoLuongGioiHan',
+  NgayBatDau: 'NgayBatDau',
+  NgayKetThuc: 'NgayKetThuc',
+  PhamViApDung: 'PhamViApDung',
+  TrangThai: 'TrangThai'
+} as const
+
+export type KHUYEN_MAIScalarFieldEnum = (typeof KHUYEN_MAIScalarFieldEnum)[keyof typeof KHUYEN_MAIScalarFieldEnum]
+
+
+export const LOAI_PHONGScalarFieldEnum = {
+  MaLoaiPhong: 'MaLoaiPhong',
+  MaKhachSan: 'MaKhachSan',
+  TenLoaiPhong: 'TenLoaiPhong',
+  SoGiuong: 'SoGiuong',
+  SucChua: 'SucChua',
+  DienTich: 'DienTich',
+  LoaiGiuong: 'LoaiGiuong',
+  MoTa: 'MoTa',
+  TrangThai: 'TrangThai'
+} as const
+
+export type LOAI_PHONGScalarFieldEnum = (typeof LOAI_PHONGScalarFieldEnum)[keyof typeof LOAI_PHONGScalarFieldEnum]
+
+
+export const LOAI_PHONG_TIEN_NGHIScalarFieldEnum = {
+  MaLoaiPhong: 'MaLoaiPhong',
+  MaTienNghi: 'MaTienNghi'
+} as const
+
+export type LOAI_PHONG_TIEN_NGHIScalarFieldEnum = (typeof LOAI_PHONG_TIEN_NGHIScalarFieldEnum)[keyof typeof LOAI_PHONG_TIEN_NGHIScalarFieldEnum]
+
+
+export const QUY_PHONG_GIAScalarFieldEnum = {
+  MaQuyPhong: 'MaQuyPhong',
+  MaLoaiPhong: 'MaLoaiPhong',
+  NgayApDung: 'NgayApDung',
+  GiaPhong: 'GiaPhong',
+  SoLuongPhong: 'SoLuongPhong',
+  TrangThai: 'TrangThai'
+} as const
+
+export type QUY_PHONG_GIAScalarFieldEnum = (typeof QUY_PHONG_GIAScalarFieldEnum)[keyof typeof QUY_PHONG_GIAScalarFieldEnum]
+
+
+export const TAI_KHOANScalarFieldEnum = {
+  MaTaiKhoan: 'MaTaiKhoan',
+  MaVaiTro: 'MaVaiTro',
+  TenDangNhap: 'TenDangNhap',
+  Email: 'Email',
+  MatKhau: 'MatKhau',
+  HoTen: 'HoTen',
+  SoDienThoai: 'SoDienThoai',
+  NgaySinh: 'NgaySinh',
+  GioiTinh: 'GioiTinh',
+  AnhDaiDien: 'AnhDaiDien',
+  TrangThai: 'TrangThai',
+  NgayTao: 'NgayTao',
+  NgayCapNhat: 'NgayCapNhat'
+} as const
+
+export type TAI_KHOANScalarFieldEnum = (typeof TAI_KHOANScalarFieldEnum)[keyof typeof TAI_KHOANScalarFieldEnum]
+
+
+export const THANH_TOANScalarFieldEnum = {
+  MaThanhToan: 'MaThanhToan',
+  MaDatPhong: 'MaDatPhong',
+  SoTien: 'SoTien',
+  PhuongThucThanhToan: 'PhuongThucThanhToan',
+  MaGiaoDichDoiTac: 'MaGiaoDichDoiTac',
+  TrangThai: 'TrangThai',
+  ThoiGianGiaoDich: 'ThoiGianGiaoDich'
+} as const
+
+export type THANH_TOANScalarFieldEnum = (typeof THANH_TOANScalarFieldEnum)[keyof typeof THANH_TOANScalarFieldEnum]
+
+
+export const TIEN_NGHIScalarFieldEnum = {
+  MaTienNghi: 'MaTienNghi',
+  TenTienNghi: 'TenTienNghi',
+  BieuTuong: 'BieuTuong'
+} as const
+
+export type TIEN_NGHIScalarFieldEnum = (typeof TIEN_NGHIScalarFieldEnum)[keyof typeof TIEN_NGHIScalarFieldEnum]
+
+
+export const VAI_TROScalarFieldEnum = {
+  MaVaiTro: 'MaVaiTro',
+  TenVaiTro: 'TenVaiTro',
+  MoTa: 'MoTa'
+} as const
+
+export type VAI_TROScalarFieldEnum = (typeof VAI_TROScalarFieldEnum)[keyof typeof VAI_TROScalarFieldEnum]
+
+
+export const YEU_CAU_HO_TROScalarFieldEnum = {
+  MaYeuCauHoTro: 'MaYeuCauHoTro',
+  MaTaiKhoanKhachHang: 'MaTaiKhoanKhachHang',
+  MaTaiKhoanXuLy: 'MaTaiKhoanXuLy',
+  MaDatPhong: 'MaDatPhong',
+  LoaiYeuCau: 'LoaiYeuCau',
+  TieuDe: 'TieuDe',
+  NoiDung: 'NoiDung',
+  KetQuaXuLy: 'KetQuaXuLy',
+  TrangThai: 'TrangThai',
+  NgayTao: 'NgayTao',
+  NgayXuLy: 'NgayXuLy'
+} as const
+
+export type YEU_CAU_HO_TROScalarFieldEnum = (typeof YEU_CAU_HO_TROScalarFieldEnum)[keyof typeof YEU_CAU_HO_TROScalarFieldEnum]
+
+
+export const SortOrder = {
+  asc: 'asc',
+  desc: 'desc'
+} as const
+
+export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+export const NullsOrder = {
+  first: 'first',
+  last: 'last'
+} as const
+
+export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
 

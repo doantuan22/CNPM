@@ -1,0 +1,235 @@
+-- =====================================================================
+-- DB-0 verify-schema.sql
+-- Read-only verification of the baseline schema against Gate 0 rules
+-- and the 22 official tables. Run against the target database after
+-- migrations 001-006 have been applied.
+--
+-- Each check PRINTs PASS/FAIL. Exits with RAISERROR (severity 16) if
+-- any check fails, so the script can be used in CI with @@ERROR checks.
+-- =====================================================================
+
+SET NOCOUNT ON;
+DECLARE @FailCount INT = 0;
+
+-- -----------------------------------------------------------------
+-- Check 1: exactly the 22 official tables exist (no more, no less)
+-- -----------------------------------------------------------------
+DECLARE @ExpectedTables TABLE (TableName SYSNAME);
+INSERT INTO @ExpectedTables (TableName) VALUES
+    ('VAI_TRO'), ('TAI_KHOAN'), ('HO_SO_DOI_TAC'), ('DIA_PHUONG'),
+    ('KHACH_SAN'), ('HINH_ANH_KHACH_SAN'), ('TIEN_NGHI'), ('KHACH_SAN_TIEN_NGHI'),
+    ('LOAI_PHONG'), ('HINH_ANH_LOAI_PHONG'), ('LOAI_PHONG_TIEN_NGHI'), ('QUY_PHONG_GIA'),
+    ('CHINH_SACH_HUY'), ('CHI_TIET_CHINH_SACH_HUY'), ('KHUYEN_MAI'),
+    ('DAT_PHONG'), ('CHI_TIET_DAT_PHONG'), ('THANH_TOAN'), ('HOAN_TIEN'),
+    ('DANH_GIA'), ('HINH_ANH_DANH_GIA'), ('YEU_CAU_HO_TRO');
+
+DECLARE @MissingCount INT, @ExtraCount INT, @TotalCount INT;
+
+SELECT @MissingCount = COUNT(*) FROM @ExpectedTables e
+WHERE NOT EXISTS (
+    SELECT 1 FROM sys.tables t WHERE t.name = e.TableName AND t.type = 'U'
+);
+
+SELECT @ExtraCount = COUNT(*) FROM sys.tables t
+WHERE t.type = 'U'
+  AND NOT EXISTS (SELECT 1 FROM @ExpectedTables e WHERE e.TableName = t.name);
+
+SELECT @TotalCount = COUNT(*) FROM sys.tables WHERE type = 'U';
+
+IF @MissingCount = 0 AND @TotalCount = 22
+    PRINT 'PASS: exactly 22 official tables present';
+ELSE
+BEGIN
+    PRINT 'FAIL: table count/list mismatch. Missing=' + CAST(@MissingCount AS VARCHAR) + ', Total=' + CAST(@TotalCount AS VARCHAR);
+    SET @FailCount += 1;
+END
+
+IF @ExtraCount > 0
+BEGIN
+    PRINT 'FAIL: unexpected extra tables found (see list below):';
+    SELECT t.name AS ExtraTable FROM sys.tables t
+    WHERE t.type = 'U' AND NOT EXISTS (SELECT 1 FROM @ExpectedTables e WHERE e.TableName = t.name);
+    SET @FailCount += 1;
+END
+ELSE
+    PRINT 'PASS: no unexpected extra tables';
+
+-- -----------------------------------------------------------------
+-- Check 2: G0-01 - KHUYEN_MAI_KHACH_SAN must not exist
+-- -----------------------------------------------------------------
+IF EXISTS (SELECT 1 FROM sys.tables WHERE name = 'KHUYEN_MAI_KHACH_SAN')
+BEGIN
+    PRINT 'FAIL: G0-01 violated - KHUYEN_MAI_KHACH_SAN exists';
+    SET @FailCount += 1;
+END
+ELSE
+    PRINT 'PASS: G0-01 - KHUYEN_MAI_KHACH_SAN absent';
+
+-- -----------------------------------------------------------------
+-- Check 3: G0-02 - CHI_TIET_GIA_DAT_PHONG must not exist
+-- -----------------------------------------------------------------
+IF EXISTS (SELECT 1 FROM sys.tables WHERE name = 'CHI_TIET_GIA_DAT_PHONG')
+BEGIN
+    PRINT 'FAIL: G0-02 violated - CHI_TIET_GIA_DAT_PHONG exists';
+    SET @FailCount += 1;
+END
+ELSE
+    PRINT 'PASS: G0-02 - CHI_TIET_GIA_DAT_PHONG absent';
+
+-- -----------------------------------------------------------------
+-- Check 4: G0-03 - CHINH_SACH_HUY must NOT have MaDatPhong
+-- -----------------------------------------------------------------
+IF EXISTS (
+    SELECT 1 FROM sys.columns c
+    JOIN sys.tables t ON t.object_id = c.object_id
+    WHERE t.name = 'CHINH_SACH_HUY' AND c.name = 'MaDatPhong'
+)
+BEGIN
+    PRINT 'FAIL: G0-03 violated - CHINH_SACH_HUY.MaDatPhong exists';
+    SET @FailCount += 1;
+END
+ELSE
+    PRINT 'PASS: G0-03 - CHINH_SACH_HUY has no MaDatPhong';
+
+-- -----------------------------------------------------------------
+-- Check 5: G0-04 - HO_SO_DOI_TAC must have MaTaiKhoanDuyet
+-- -----------------------------------------------------------------
+IF EXISTS (
+    SELECT 1 FROM sys.columns c
+    JOIN sys.tables t ON t.object_id = c.object_id
+    WHERE t.name = 'HO_SO_DOI_TAC' AND c.name = 'MaTaiKhoanDuyet'
+)
+    PRINT 'PASS: G0-04 - HO_SO_DOI_TAC.MaTaiKhoanDuyet exists';
+ELSE
+BEGIN
+    PRINT 'FAIL: G0-04 violated - HO_SO_DOI_TAC.MaTaiKhoanDuyet missing';
+    SET @FailCount += 1;
+END
+
+-- -----------------------------------------------------------------
+-- Check 6: DAT_PHONG -> CHINH_SACH_HUY FK via MaChinhSachHuy exists
+-- -----------------------------------------------------------------
+IF EXISTS (
+    SELECT 1
+    FROM sys.foreign_keys fk
+    JOIN sys.tables tp ON tp.object_id = fk.parent_object_id
+    JOIN sys.tables tr ON tr.object_id = fk.referenced_object_id
+    JOIN sys.foreign_key_columns fkc ON fkc.constraint_object_id = fk.object_id
+    JOIN sys.columns cp ON cp.object_id = fkc.parent_object_id AND cp.column_id = fkc.parent_column_id
+    JOIN sys.columns cr ON cr.object_id = fkc.referenced_object_id AND cr.column_id = fkc.referenced_column_id
+    WHERE tp.name = 'DAT_PHONG' AND tr.name = 'CHINH_SACH_HUY'
+      AND cp.name = 'MaChinhSachHuy' AND cr.name = 'MaChinhSachHuy'
+)
+    PRINT 'PASS: DAT_PHONG.MaChinhSachHuy -> CHINH_SACH_HUY.MaChinhSachHuy FK exists';
+ELSE
+BEGIN
+    PRINT 'FAIL: DAT_PHONG -> CHINH_SACH_HUY FK missing/incorrect';
+    SET @FailCount += 1;
+END
+
+-- -----------------------------------------------------------------
+-- Check 7: every table has a primary key
+-- -----------------------------------------------------------------
+IF EXISTS (
+    SELECT 1 FROM sys.tables t
+    WHERE t.type = 'U'
+      AND NOT EXISTS (
+        SELECT 1 FROM sys.key_constraints kc
+        WHERE kc.parent_object_id = t.object_id AND kc.type = 'PK'
+      )
+)
+BEGIN
+    PRINT 'FAIL: tables without a primary key found:';
+    SELECT t.name FROM sys.tables t
+    WHERE t.type = 'U'
+      AND NOT EXISTS (
+        SELECT 1 FROM sys.key_constraints kc
+        WHERE kc.parent_object_id = t.object_id AND kc.type = 'PK'
+      );
+    SET @FailCount += 1;
+END
+ELSE
+    PRINT 'PASS: every table has a primary key';
+
+-- -----------------------------------------------------------------
+-- Check 8: all FKs reference existing tables/columns (integrity is
+-- guaranteed by SQL Server at creation time; this re-confirms no FK
+-- is disabled/not-trusted, which would indicate NOCHECK was used)
+-- -----------------------------------------------------------------
+IF EXISTS (
+    SELECT 1 FROM sys.foreign_keys WHERE is_not_trusted = 1 OR is_disabled = 1
+)
+BEGIN
+    PRINT 'FAIL: untrusted or disabled foreign keys found:';
+    SELECT name, is_not_trusted, is_disabled FROM sys.foreign_keys
+    WHERE is_not_trusted = 1 OR is_disabled = 1;
+    SET @FailCount += 1;
+END
+ELSE
+    PRINT 'PASS: all foreign keys are trusted and enabled';
+
+-- -----------------------------------------------------------------
+-- Check 9: key UNIQUE constraints present
+-- -----------------------------------------------------------------
+IF EXISTS (SELECT 1 FROM sys.indexes i JOIN sys.tables t ON t.object_id = i.object_id
+           WHERE t.name = 'TAI_KHOAN' AND i.name = 'UQ_TAI_KHOAN_TenDangNhap' AND i.is_unique = 1)
+   AND EXISTS (SELECT 1 FROM sys.indexes i JOIN sys.tables t ON t.object_id = i.object_id
+           WHERE t.name = 'TAI_KHOAN' AND i.name = 'UQ_TAI_KHOAN_Email' AND i.is_unique = 1)
+   AND EXISTS (SELECT 1 FROM sys.indexes i JOIN sys.tables t ON t.object_id = i.object_id
+           WHERE t.name = 'KHUYEN_MAI' AND i.name = 'UQ_KHUYEN_MAI_MaCode' AND i.is_unique = 1)
+   AND EXISTS (SELECT 1 FROM sys.indexes i JOIN sys.tables t ON t.object_id = i.object_id
+           WHERE t.name = 'DAT_PHONG' AND i.name = 'UQ_DAT_PHONG_MaXacNhanDatPhong' AND i.is_unique = 1)
+   AND EXISTS (SELECT 1 FROM sys.indexes i JOIN sys.tables t ON t.object_id = i.object_id
+           WHERE t.name = 'DANH_GIA' AND i.name = 'UQ_DANH_GIA_MaDatPhong' AND i.is_unique = 1)
+    PRINT 'PASS: key UNIQUE constraints present (TAI_KHOAN, KHUYEN_MAI, DAT_PHONG, DANH_GIA)';
+ELSE
+BEGIN
+    PRINT 'FAIL: one or more expected UNIQUE constraints missing';
+    SET @FailCount += 1;
+END
+
+-- -----------------------------------------------------------------
+-- Check 10: no money column uses FLOAT/REAL
+-- -----------------------------------------------------------------
+IF EXISTS (
+    SELECT 1 FROM sys.columns c
+    JOIN sys.tables t ON t.object_id = c.object_id AND t.type = 'U'
+    JOIN sys.types ty ON ty.user_type_id = c.user_type_id
+    WHERE ty.name IN ('float', 'real')
+)
+BEGIN
+    PRINT 'FAIL: FLOAT/REAL columns found (money must use DECIMAL):';
+    SELECT t.name AS TableName, c.name AS ColumnName, ty.name AS TypeName
+    FROM sys.columns c
+    JOIN sys.tables t ON t.object_id = c.object_id AND t.type = 'U'
+    JOIN sys.types ty ON ty.user_type_id = c.user_type_id
+    WHERE ty.name IN ('float', 'real');
+    SET @FailCount += 1;
+END
+ELSE
+    PRINT 'PASS: no FLOAT/REAL columns in schema';
+
+-- -----------------------------------------------------------------
+-- Check 11: CHECK constraints exist (count sanity, expect >= 25)
+-- -----------------------------------------------------------------
+DECLARE @CheckCount INT;
+SELECT @CheckCount = COUNT(*) FROM sys.check_constraints;
+IF @CheckCount >= 25
+    PRINT 'PASS: CHECK constraints present (count=' + CAST(@CheckCount AS VARCHAR) + ')';
+ELSE
+BEGIN
+    PRINT 'FAIL: fewer CHECK constraints than expected (count=' + CAST(@CheckCount AS VARCHAR) + ')';
+    SET @FailCount += 1;
+END
+
+-- -----------------------------------------------------------------
+-- Summary
+-- -----------------------------------------------------------------
+IF @FailCount = 0
+    PRINT '=== verify-schema.sql: ALL CHECKS PASSED ===';
+ELSE
+BEGIN
+    PRINT '=== verify-schema.sql: ' + CAST(@FailCount AS VARCHAR) + ' CHECK(S) FAILED ===';
+    RAISERROR('verify-schema.sql failed with %d failing check(s)', 16, 1, @FailCount);
+END
+GO

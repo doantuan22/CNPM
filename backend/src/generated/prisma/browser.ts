@@ -17,4 +17,113 @@ import * as Prisma from './internal/prismaNamespaceBrowser'
 export { Prisma }
 export * as $Enums from './enums'
 export * from './enums';
-
+/**
+ * Model CHI_TIET_CHINH_SACH_HUY
+ * 
+ */
+export type CHI_TIET_CHINH_SACH_HUY = Prisma.CHI_TIET_CHINH_SACH_HUYModel
+/**
+ * Model CHI_TIET_DAT_PHONG
+ * 
+ */
+export type CHI_TIET_DAT_PHONG = Prisma.CHI_TIET_DAT_PHONGModel
+/**
+ * Model CHINH_SACH_HUY
+ * 
+ */
+export type CHINH_SACH_HUY = Prisma.CHINH_SACH_HUYModel
+/**
+ * Model DANH_GIA
+ * 
+ */
+export type DANH_GIA = Prisma.DANH_GIAModel
+/**
+ * Model DAT_PHONG
+ * 
+ */
+export type DAT_PHONG = Prisma.DAT_PHONGModel
+/**
+ * Model DIA_PHUONG
+ * 
+ */
+export type DIA_PHUONG = Prisma.DIA_PHUONGModel
+/**
+ * Model HINH_ANH_DANH_GIA
+ * 
+ */
+export type HINH_ANH_DANH_GIA = Prisma.HINH_ANH_DANH_GIAModel
+/**
+ * Model HINH_ANH_KHACH_SAN
+ * 
+ */
+export type HINH_ANH_KHACH_SAN = Prisma.HINH_ANH_KHACH_SANModel
+/**
+ * Model HINH_ANH_LOAI_PHONG
+ * 
+ */
+export type HINH_ANH_LOAI_PHONG = Prisma.HINH_ANH_LOAI_PHONGModel
+/**
+ * Model HO_SO_DOI_TAC
+ * 
+ */
+export type HO_SO_DOI_TAC = Prisma.HO_SO_DOI_TACModel
+/**
+ * Model HOAN_TIEN
+ * 
+ */
+export type HOAN_TIEN = Prisma.HOAN_TIENModel
+/**
+ * Model KHACH_SAN
+ * 
+ */
+export type KHACH_SAN = Prisma.KHACH_SANModel
+/**
+ * Model KHACH_SAN_TIEN_NGHI
+ * 
+ */
+export type KHACH_SAN_TIEN_NGHI = Prisma.KHACH_SAN_TIEN_NGHIModel
+/**
+ * Model KHUYEN_MAI
+ * 
+ */
+export type KHUYEN_MAI = Prisma.KHUYEN_MAIModel
+/**
+ * Model LOAI_PHONG
+ * 
+ */
+export type LOAI_PHONG = Prisma.LOAI_PHONGModel
+/**
+ * Model LOAI_PHONG_TIEN_NGHI
+ * 
+ */
+export type LOAI_PHONG_TIEN_NGHI = Prisma.LOAI_PHONG_TIEN_NGHIModel
+/**
+ * Model QUY_PHONG_GIA
+ * 
+ */
+export type QUY_PHONG_GIA = Prisma.QUY_PHONG_GIAModel
+/**
+ * Model TAI_KHOAN
+ * 
+ */
+export type TAI_KHOAN = Prisma.TAI_KHOANModel
+/**
+ * Model THANH_TOAN
+ * 
+ */
+export type THANH_TOAN = Prisma.THANH_TOANModel
+/**
+ * Model TIEN_NGHI
+ * 
+ */
+export type TIEN_NGHI = Prisma.TIEN_NGHIModel
+/**
+ * Model VAI_TRO
+ * 
+ */
+export type VAI_TRO = Prisma.VAI_TROModel
+/**
+ * Model YEU_CAU_HO_TRO
+ * 
+ */
+export type YEU_CAU_HO_TRO = Prisma.YEU_CAU_HO_TROModel

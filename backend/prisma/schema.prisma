@@ -1,13 +1,288 @@
-// Prisma schema file for Hotel Booking Platform
-// Note: Database (SQL Server) is the single source of truth.
-// Business schema will be synchronized from the database via Prisma db pull in M0/DB-0.
-// Do not modify business models manually.
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
 
 datasource db {
   provider = "sqlserver"
 }
 
-generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+model CHI_TIET_CHINH_SACH_HUY {
+  MaChiTietChinhSach  Int            @id(map: "PK_CHI_TIET_CHINH_SACH_HUY") @default(autoincrement())
+  MaChinhSachHuy      Int
+  SoGioTruocNhanPhong Int
+  TyLeHoanTien        Decimal        @db.Decimal(5, 2)
+  CHINH_SACH_HUY      CHINH_SACH_HUY @relation(fields: [MaChinhSachHuy], references: [MaChinhSachHuy], onUpdate: NoAction, map: "FK_CHI_TIET_CHINH_SACH_HUY_CHINH_SACH_HUY")
+}
+
+model CHI_TIET_DAT_PHONG {
+  MaChiTietDatPhong Int        @id(map: "PK_CHI_TIET_DAT_PHONG") @default(autoincrement())
+  MaDatPhong        Int
+  MaLoaiPhong       Int
+  SoLuongPhong      Int
+  DAT_PHONG         DAT_PHONG  @relation(fields: [MaDatPhong], references: [MaDatPhong], onUpdate: NoAction, map: "FK_CHI_TIET_DAT_PHONG_DAT_PHONG")
+  LOAI_PHONG        LOAI_PHONG @relation(fields: [MaLoaiPhong], references: [MaLoaiPhong], onUpdate: NoAction, map: "FK_CHI_TIET_DAT_PHONG_LOAI_PHONG")
+}
+
+model CHINH_SACH_HUY {
+  MaChinhSachHuy          Int                       @id(map: "PK_CHINH_SACH_HUY") @default(autoincrement())
+  TenChinhSach            String                    @db.NVarChar(150)
+  MoTa                    String                    @db.NVarChar(Max)
+  TrangThai               String                    @db.NVarChar(30)
+  NgayTao                 DateTime
+  CHI_TIET_CHINH_SACH_HUY CHI_TIET_CHINH_SACH_HUY[]
+  DAT_PHONG               DAT_PHONG[]
+}
+
+model DANH_GIA {
+  MaDanhGia         Int                 @id(map: "PK_DANH_GIA") @default(autoincrement())
+  MaDatPhong        Int                 @unique(map: "UQ_DANH_GIA_MaDatPhong")
+  MaKhachHang       Int
+  MaKhachSan        Int
+  DiemDanhGia       Int                 @db.TinyInt
+  NoiDung           String              @db.NVarChar(Max)
+  TrangThai         String              @db.NVarChar(30)
+  DAT_PHONG         DAT_PHONG           @relation(fields: [MaDatPhong], references: [MaDatPhong], onUpdate: NoAction, map: "FK_DANH_GIA_DAT_PHONG")
+  KHACH_SAN         KHACH_SAN           @relation(fields: [MaKhachSan], references: [MaKhachSan], onUpdate: NoAction, map: "FK_DANH_GIA_KHACH_SAN")
+  TAI_KHOAN         TAI_KHOAN           @relation(fields: [MaKhachHang], references: [MaTaiKhoan], onUpdate: NoAction, map: "FK_DANH_GIA_TAI_KHOAN")
+  HINH_ANH_DANH_GIA HINH_ANH_DANH_GIA[]
+}
+
+model DAT_PHONG {
+  MaDatPhong          Int                  @id(map: "PK_DAT_PHONG") @default(autoincrement())
+  MaXacNhanDatPhong   String               @unique(map: "UQ_DAT_PHONG_MaXacNhanDatPhong") @db.VarChar(20)
+  MaTaiKhoanKhachHang Int
+  MaKhachSan          Int
+  MaKhuyenMai         Int?
+  MaChinhSachHuy      Int
+  NgayNhanPhong       DateTime             @db.Date
+  NgayTraPhong        DateTime             @db.Date
+  TongTienPhong       Decimal              @db.Decimal(14, 2)
+  SoTienGiam          Decimal              @db.Decimal(14, 2)
+  TongTienThanhToan   Decimal              @db.Decimal(14, 2)
+  GhiChu              String?              @db.NVarChar(Max)
+  TrangThai           String               @db.NVarChar(30)
+  NgayTao             DateTime
+  NgayCapNhat         DateTime
+  CHI_TIET_DAT_PHONG  CHI_TIET_DAT_PHONG[]
+  DANH_GIA            DANH_GIA?
+  CHINH_SACH_HUY      CHINH_SACH_HUY       @relation(fields: [MaChinhSachHuy], references: [MaChinhSachHuy], onUpdate: NoAction, map: "FK_DAT_PHONG_CHINH_SACH_HUY")
+  KHACH_SAN           KHACH_SAN            @relation(fields: [MaKhachSan], references: [MaKhachSan], onUpdate: NoAction, map: "FK_DAT_PHONG_KHACH_SAN")
+  KHUYEN_MAI          KHUYEN_MAI?          @relation(fields: [MaKhuyenMai], references: [MaKhuyenMai], onDelete: NoAction, onUpdate: NoAction, map: "FK_DAT_PHONG_KHUYEN_MAI")
+  TAI_KHOAN           TAI_KHOAN            @relation(fields: [MaTaiKhoanKhachHang], references: [MaTaiKhoan], onUpdate: NoAction, map: "FK_DAT_PHONG_TAI_KHOAN")
+  THANH_TOAN          THANH_TOAN[]
+  YEU_CAU_HO_TRO      YEU_CAU_HO_TRO[]
+}
+
+model DIA_PHUONG {
+  MaDiaPhuong Int         @id(map: "PK_DIA_PHUONG") @default(autoincrement())
+  TenThanhPho String      @db.NVarChar(150)
+  TenTinh     String      @db.NVarChar(150)
+  QuocGia     String      @db.NVarChar(100)
+  KHACH_SAN   KHACH_SAN[]
+}
+
+model HINH_ANH_DANH_GIA {
+  MaHinhAnhDanhGia Int      @id(map: "PK_HINH_ANH_DANH_GIA") @default(autoincrement())
+  MaDanhGia        Int
+  URL              String   @db.NVarChar(500)
+  DANH_GIA         DANH_GIA @relation(fields: [MaDanhGia], references: [MaDanhGia], onUpdate: NoAction, map: "FK_HINH_ANH_DANH_GIA_DANH_GIA")
+}
+
+model HINH_ANH_KHACH_SAN {
+  MaHinhAnh  Int       @id(map: "PK_HINH_ANH_KHACH_SAN") @default(autoincrement())
+  MaKhachSan Int
+  URL        String    @db.NVarChar(500)
+  AnhDaiDien Boolean
+  KHACH_SAN  KHACH_SAN @relation(fields: [MaKhachSan], references: [MaKhachSan], onUpdate: NoAction, map: "FK_HINH_ANH_KHACH_SAN_KHACH_SAN")
+}
+
+model HINH_ANH_LOAI_PHONG {
+  MaHinhAnhLoaiPhong Int        @id(map: "PK_HINH_ANH_LOAI_PHONG") @default(autoincrement())
+  MaLoaiPhong        Int
+  URL                String     @db.NVarChar(500)
+  LaAnhDaiDien       Boolean
+  LOAI_PHONG         LOAI_PHONG @relation(fields: [MaLoaiPhong], references: [MaLoaiPhong], onUpdate: NoAction, map: "FK_HINH_ANH_LOAI_PHONG_LOAI_PHONG")
+}
+
+model HO_SO_DOI_TAC {
+  MaHoSoDoiTac                                       Int        @id(map: "PK_HO_SO_DOI_TAC") @default(autoincrement())
+  MaTaiKhoan                                         Int
+  SoCCCD                                             String     @db.VarChar(20)
+  SoGiayPhepKinhDoanh                                String     @db.VarChar(50)
+  MaSoThue                                           String     @db.VarChar(20)
+  TepGiayTo                                          String     @db.NVarChar(500)
+  TrangThaiDuyet                                     String     @db.NVarChar(20)
+  LyDoTuChoi                                         String?    @db.NVarChar(500)
+  NgayNop                                            DateTime
+  NgayDuyet                                          DateTime?
+  MaTaiKhoanDuyet                                    Int?
+  TAI_KHOAN_HO_SO_DOI_TAC_MaTaiKhoanToTAI_KHOAN      TAI_KHOAN  @relation("HO_SO_DOI_TAC_MaTaiKhoanToTAI_KHOAN", fields: [MaTaiKhoan], references: [MaTaiKhoan], onUpdate: NoAction, map: "FK_HO_SO_DOI_TAC_TAI_KHOAN")
+  TAI_KHOAN_HO_SO_DOI_TAC_MaTaiKhoanDuyetToTAI_KHOAN TAI_KHOAN? @relation("HO_SO_DOI_TAC_MaTaiKhoanDuyetToTAI_KHOAN", fields: [MaTaiKhoanDuyet], references: [MaTaiKhoan], onDelete: NoAction, onUpdate: NoAction, map: "FK_HO_SO_DOI_TAC_TAI_KHOAN_Duyet")
+}
+
+model HOAN_TIEN {
+  MaHoanTien       Int        @id(map: "PK_HOAN_TIEN") @default(autoincrement())
+  MaThanhToan      Int
+  SoTienHoan       Decimal    @db.Decimal(14, 2)
+  LyDoHoanTien     String     @db.NVarChar(500)
+  MaGiaoDichDoiTac String     @db.VarChar(100)
+  TrangThai        String     @db.NVarChar(30)
+  NgayYeuCau       DateTime
+  NgayHoanTien     DateTime?
+  THANH_TOAN       THANH_TOAN @relation(fields: [MaThanhToan], references: [MaThanhToan], onUpdate: NoAction, map: "FK_HOAN_TIEN_THANH_TOAN")
+}
+
+model KHACH_SAN {
+  MaKhachSan                                     Int                   @id(map: "PK_KHACH_SAN") @default(autoincrement())
+  MaTaiKhoanSoHuu                                Int
+  MaDiaPhuong                                    Int
+  MaTaiKhoanDuyet                                Int?
+  TenKhachSan                                    String                @db.NVarChar(255)
+  DiaChiChiTiet                                  String                @db.NVarChar(500)
+  HangSao                                        Int                   @db.TinyInt
+  MoTa                                           String                @db.NVarChar(Max)
+  GioNhanPhong                                   DateTime              @db.Time
+  GioTraPhong                                    DateTime              @db.Time
+  TrangThai                                      String                @db.NVarChar(30)
+  NgayDangKy                                     DateTime
+  NgayDuyet                                      DateTime?
+  NgayCapNhat                                    DateTime
+  DANH_GIA                                       DANH_GIA[]
+  DAT_PHONG                                      DAT_PHONG[]
+  HINH_ANH_KHACH_SAN                             HINH_ANH_KHACH_SAN[]
+  DIA_PHUONG                                     DIA_PHUONG            @relation(fields: [MaDiaPhuong], references: [MaDiaPhuong], onUpdate: NoAction, map: "FK_KHACH_SAN_DIA_PHUONG")
+  TAI_KHOAN_KHACH_SAN_MaTaiKhoanDuyetToTAI_KHOAN TAI_KHOAN?            @relation("KHACH_SAN_MaTaiKhoanDuyetToTAI_KHOAN", fields: [MaTaiKhoanDuyet], references: [MaTaiKhoan], onDelete: NoAction, onUpdate: NoAction, map: "FK_KHACH_SAN_TAI_KHOAN_Duyet")
+  TAI_KHOAN_KHACH_SAN_MaTaiKhoanSoHuuToTAI_KHOAN TAI_KHOAN             @relation("KHACH_SAN_MaTaiKhoanSoHuuToTAI_KHOAN", fields: [MaTaiKhoanSoHuu], references: [MaTaiKhoan], onUpdate: NoAction, map: "FK_KHACH_SAN_TAI_KHOAN_SoHuu")
+  KHACH_SAN_TIEN_NGHI                            KHACH_SAN_TIEN_NGHI[]
+  LOAI_PHONG                                     LOAI_PHONG[]
+}
+
+model KHACH_SAN_TIEN_NGHI {
+  MaKhachSan Int
+  MaTienNghi Int
+  KHACH_SAN  KHACH_SAN @relation(fields: [MaKhachSan], references: [MaKhachSan], onUpdate: NoAction, map: "FK_KHACH_SAN_TIEN_NGHI_KHACH_SAN")
+  TIEN_NGHI  TIEN_NGHI @relation(fields: [MaTienNghi], references: [MaTienNghi], onUpdate: NoAction, map: "FK_KHACH_SAN_TIEN_NGHI_TIEN_NGHI")
+
+  @@id([MaKhachSan, MaTienNghi], map: "PK_KHACH_SAN_TIEN_NGHI")
+}
+
+model KHUYEN_MAI {
+  MaKhuyenMai       Int         @id(map: "PK_KHUYEN_MAI") @default(autoincrement())
+  MaCode            String      @unique(map: "UQ_KHUYEN_MAI_MaCode") @db.VarChar(50)
+  LoaiGiamGia       String      @db.NVarChar(20)
+  GiaTriGiam        Decimal     @db.Decimal(14, 2)
+  GiaTriDonToiThieu Decimal     @db.Decimal(14, 2)
+  MucGiamToiDa      Decimal     @db.Decimal(14, 2)
+  SoLuongGioiHan    Int
+  NgayBatDau        DateTime    @db.Date
+  NgayKetThuc       DateTime    @db.Date
+  PhamViApDung      String      @db.NVarChar(20)
+  TrangThai         String      @db.NVarChar(30)
+  DAT_PHONG         DAT_PHONG[]
+}
+
+model LOAI_PHONG {
+  MaLoaiPhong          Int                    @id(map: "PK_LOAI_PHONG") @default(autoincrement())
+  MaKhachSan           Int
+  TenLoaiPhong         String                 @db.NVarChar(150)
+  SoGiuong             Int
+  SucChua              Int
+  DienTich             Decimal                @db.Decimal(6, 2)
+  LoaiGiuong           String                 @db.NVarChar(50)
+  MoTa                 String                 @db.NVarChar(Max)
+  TrangThai            String                 @db.NVarChar(30)
+  CHI_TIET_DAT_PHONG   CHI_TIET_DAT_PHONG[]
+  HINH_ANH_LOAI_PHONG  HINH_ANH_LOAI_PHONG[]
+  KHACH_SAN            KHACH_SAN              @relation(fields: [MaKhachSan], references: [MaKhachSan], onUpdate: NoAction, map: "FK_LOAI_PHONG_KHACH_SAN")
+  LOAI_PHONG_TIEN_NGHI LOAI_PHONG_TIEN_NGHI[]
+  QUY_PHONG_GIA        QUY_PHONG_GIA[]
+}
+
+model LOAI_PHONG_TIEN_NGHI {
+  MaLoaiPhong Int
+  MaTienNghi  Int
+  LOAI_PHONG  LOAI_PHONG @relation(fields: [MaLoaiPhong], references: [MaLoaiPhong], onUpdate: NoAction, map: "FK_LOAI_PHONG_TIEN_NGHI_LOAI_PHONG")
+  TIEN_NGHI   TIEN_NGHI  @relation(fields: [MaTienNghi], references: [MaTienNghi], onUpdate: NoAction, map: "FK_LOAI_PHONG_TIEN_NGHI_TIEN_NGHI")
+
+  @@id([MaLoaiPhong, MaTienNghi], map: "PK_LOAI_PHONG_TIEN_NGHI")
+}
+
+model QUY_PHONG_GIA {
+  MaQuyPhong   Int        @id(map: "PK_QUY_PHONG_GIA") @default(autoincrement())
+  MaLoaiPhong  Int
+  NgayApDung   DateTime   @db.Date
+  GiaPhong     Decimal    @db.Decimal(14, 2)
+  SoLuongPhong Int
+  TrangThai    String     @db.NVarChar(30)
+  LOAI_PHONG   LOAI_PHONG @relation(fields: [MaLoaiPhong], references: [MaLoaiPhong], onUpdate: NoAction, map: "FK_QUY_PHONG_GIA_LOAI_PHONG")
+}
+
+model TAI_KHOAN {
+  MaTaiKhoan                                                   Int              @id(map: "PK_TAI_KHOAN") @default(autoincrement())
+  MaVaiTro                                                     Int
+  TenDangNhap                                                  String           @unique(map: "UQ_TAI_KHOAN_TenDangNhap") @db.NVarChar(100)
+  Email                                                        String           @unique(map: "UQ_TAI_KHOAN_Email") @db.NVarChar(255)
+  MatKhau                                                      String           @db.NVarChar(255)
+  HoTen                                                        String           @db.NVarChar(150)
+  SoDienThoai                                                  String           @db.VarChar(20)
+  NgaySinh                                                     DateTime         @db.Date
+  GioiTinh                                                     String           @db.NVarChar(20)
+  AnhDaiDien                                                   String           @db.NVarChar(500)
+  TrangThai                                                    String           @db.NVarChar(30)
+  NgayTao                                                      DateTime
+  NgayCapNhat                                                  DateTime
+  DANH_GIA                                                     DANH_GIA[]
+  DAT_PHONG                                                    DAT_PHONG[]
+  HO_SO_DOI_TAC_HO_SO_DOI_TAC_MaTaiKhoanToTAI_KHOAN            HO_SO_DOI_TAC[]  @relation("HO_SO_DOI_TAC_MaTaiKhoanToTAI_KHOAN")
+  HO_SO_DOI_TAC_HO_SO_DOI_TAC_MaTaiKhoanDuyetToTAI_KHOAN       HO_SO_DOI_TAC[]  @relation("HO_SO_DOI_TAC_MaTaiKhoanDuyetToTAI_KHOAN")
+  KHACH_SAN_KHACH_SAN_MaTaiKhoanDuyetToTAI_KHOAN               KHACH_SAN[]      @relation("KHACH_SAN_MaTaiKhoanDuyetToTAI_KHOAN")
+  KHACH_SAN_KHACH_SAN_MaTaiKhoanSoHuuToTAI_KHOAN               KHACH_SAN[]      @relation("KHACH_SAN_MaTaiKhoanSoHuuToTAI_KHOAN")
+  VAI_TRO                                                      VAI_TRO          @relation(fields: [MaVaiTro], references: [MaVaiTro], onUpdate: NoAction, map: "FK_TAI_KHOAN_VAI_TRO")
+  YEU_CAU_HO_TRO_YEU_CAU_HO_TRO_MaTaiKhoanKhachHangToTAI_KHOAN YEU_CAU_HO_TRO[] @relation("YEU_CAU_HO_TRO_MaTaiKhoanKhachHangToTAI_KHOAN")
+  YEU_CAU_HO_TRO_YEU_CAU_HO_TRO_MaTaiKhoanXuLyToTAI_KHOAN      YEU_CAU_HO_TRO[] @relation("YEU_CAU_HO_TRO_MaTaiKhoanXuLyToTAI_KHOAN")
+}
+
+model THANH_TOAN {
+  MaThanhToan         Int         @id(map: "PK_THANH_TOAN") @default(autoincrement())
+  MaDatPhong          Int
+  SoTien              Decimal     @db.Decimal(14, 2)
+  PhuongThucThanhToan String      @db.NVarChar(50)
+  MaGiaoDichDoiTac    String      @db.VarChar(100)
+  TrangThai           String      @db.NVarChar(30)
+  ThoiGianGiaoDich    DateTime
+  HOAN_TIEN           HOAN_TIEN[]
+  DAT_PHONG           DAT_PHONG   @relation(fields: [MaDatPhong], references: [MaDatPhong], onUpdate: NoAction, map: "FK_THANH_TOAN_DAT_PHONG")
+}
+
+model TIEN_NGHI {
+  MaTienNghi           Int                    @id(map: "PK_TIEN_NGHI") @default(autoincrement())
+  TenTienNghi          String                 @unique(map: "UQ_TIEN_NGHI_TenTienNghi") @db.NVarChar(150)
+  BieuTuong            String                 @db.NVarChar(255)
+  KHACH_SAN_TIEN_NGHI  KHACH_SAN_TIEN_NGHI[]
+  LOAI_PHONG_TIEN_NGHI LOAI_PHONG_TIEN_NGHI[]
+}
+
+model VAI_TRO {
+  MaVaiTro  Int         @id(map: "PK_VAI_TRO") @default(autoincrement())
+  TenVaiTro String      @unique(map: "UQ_VAI_TRO_TenVaiTro") @db.NVarChar(100)
+  MoTa      String      @db.NVarChar(255)
+  TAI_KHOAN TAI_KHOAN[]
+}
+
+model YEU_CAU_HO_TRO {
+  MaYeuCauHoTro                                           Int        @id(map: "PK_YEU_CAU_HO_TRO") @default(autoincrement())
+  MaTaiKhoanKhachHang                                     Int
+  MaTaiKhoanXuLy                                          Int?
+  MaDatPhong                                              Int?
+  LoaiYeuCau                                              String     @db.NVarChar(20)
+  TieuDe                                                  String     @db.NVarChar(255)
+  NoiDung                                                 String     @db.NVarChar(Max)
+  KetQuaXuLy                                              String?    @db.NVarChar(Max)
+  TrangThai                                               String     @db.NVarChar(30)
+  NgayTao                                                 DateTime
+  NgayXuLy                                                DateTime?
+  DAT_PHONG                                               DAT_PHONG? @relation(fields: [MaDatPhong], references: [MaDatPhong], onDelete: NoAction, onUpdate: NoAction, map: "FK_YEU_CAU_HO_TRO_DAT_PHONG")
+  TAI_KHOAN_YEU_CAU_HO_TRO_MaTaiKhoanKhachHangToTAI_KHOAN TAI_KHOAN  @relation("YEU_CAU_HO_TRO_MaTaiKhoanKhachHangToTAI_KHOAN", fields: [MaTaiKhoanKhachHang], references: [MaTaiKhoan], onUpdate: NoAction, map: "FK_YEU_CAU_HO_TRO_TAI_KHOAN_KhachHang")
+  TAI_KHOAN_YEU_CAU_HO_TRO_MaTaiKhoanXuLyToTAI_KHOAN      TAI_KHOAN? @relation("YEU_CAU_HO_TRO_MaTaiKhoanXuLyToTAI_KHOAN", fields: [MaTaiKhoanXuLy], references: [MaTaiKhoan], onDelete: NoAction, onUpdate: NoAction, map: "FK_YEU_CAU_HO_TRO_TAI_KHOAN_XuLy")
 }
