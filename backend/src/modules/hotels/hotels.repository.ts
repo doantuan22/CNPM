@@ -10,7 +10,9 @@ export interface CandidateHotelParams {
   checkOut: Date;
 }
 
-const roomTypeInclude = (checkIn: Date, checkOut: Date) => ({
+/** Exported so other modules (e.g. quotes) can fetch room types with the
+ * exact same price/availability shape without duplicating this query. */
+export const roomTypeInclude = (checkIn: Date, checkOut: Date) => ({
   QUY_PHONG_GIA: {
     where: {
       NgayApDung: { gte: checkIn, lt: checkOut },

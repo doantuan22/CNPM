@@ -6,6 +6,11 @@ import accountsRoutes from '../modules/accounts/accounts.routes';
 import partnersRoutes from '../modules/partners/partners.routes';
 import hotelsRoutes from '../modules/hotels/hotels.routes';
 import amenitiesRoutes from '../modules/amenities/amenities.routes';
+import ownerHotelsRoutes from '../modules/owner/owner-hotels.routes';
+import ownerRoomTypesRoutes from '../modules/owner/owner-room-types.routes';
+import locationsRoutes from '../modules/locations/locations.routes';
+import cancellationPoliciesRoutes from '../modules/cancellation-policies/cancellation-policies.routes';
+import quotesRoutes from '../modules/quotes/quotes.routes';
 import { openApiSpec } from '../config/openapi';
 
 const router = Router();
@@ -21,7 +26,14 @@ router.use('/partners', partnersRoutes);
 
 // Discovery (M2)
 router.use('/hotels', hotelsRoutes);
+router.use('/hotels', quotesRoutes);
 router.use('/amenities', amenitiesRoutes);
+router.use('/locations', locationsRoutes);
+router.use('/cancellation-policies', cancellationPoliciesRoutes);
+
+// Owner / Supply (M3)
+router.use('/owner/hotels', ownerHotelsRoutes);
+router.use('/owner/room-types', ownerRoomTypesRoutes);
 
 // OpenAPI specification route
 router.get('/openapi.json', (_req, res) => {

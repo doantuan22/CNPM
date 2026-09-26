@@ -15,7 +15,10 @@ app.use(
     credentials: true,
   })
 );
-app.use(express.json());
+// 10mb: owner image-upload endpoints accept a base64 data URI in the JSON
+// body (reuses the existing Cloudinary integration as-is, no multer/
+// multipart parsing added) — the default 100kb limit is too small for that.
+app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 

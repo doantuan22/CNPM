@@ -60,11 +60,141 @@ export const openApiSpec = {
         },
       },
     },
+    '/hotels/{id}/quote': {
+      post: {
+        summary: 'Compute a booking quote (M4, public, read-only — no DAT_PHONG is created)',
+        tags: ['Commercial'],
+        description:
+          'Backend computes everything: per-night availability/price from QUY_PHONG_GIA (checkout night excluded), promotion validity/discount, and the applicable system-wide cancellation policy. The client cannot influence TongTienThanhToan/SoTienGiam — any such fields in the body are ignored.',
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['checkIn', 'checkOut', 'rooms'],
+                properties: {
+                  checkIn: { type: 'string', format: 'date' },
+                  checkOut: { type: 'string', format: 'date', description: 'Exclusive — checkout night not counted' },
+                  rooms: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      required: ['maLoaiPhong', 'soLuong'],
+                      properties: { maLoaiPhong: { type: 'integer' }, soLuong: { type: 'integer', minimum: 1 } },
+                    },
+                  },
+                  promoCode: { type: 'string' },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          '200': { description: 'Quote — always 200 even for an invalid/expired promo (PromoHopLe=false explains why); KhaDung=false when any room line is sold out or unpriced' },
+          '400': { description: 'Invalid date range, empty/duplicate room lines, or a room id not belonging to this hotel' },
+          '404': { description: 'Hotel not found or not active' },
+        },
+      },
+    },
+    '/cancellation-policies': {
+      get: {
+        summary: 'List active cancellation policies (public) — system-level data, no MaKhachSan/MaDatPhong',
+        tags: ['Commercial'],
+        responses: { '200': { description: 'Policies with their CHI_TIET_CHINH_SACH_HUY tiers' } },
+      },
+    },
+    '/cancellation-policies/{id}': {
+      get: {
+        summary: 'Get one cancellation policy with its tiers',
+        tags: ['Commercial'],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: { '200': { description: 'OK' }, '404': { description: 'Not found' } },
+      },
+    },
+    '/owner/hotels': {
+      get: {
+        summary: "List the authenticated owner's hotels (M3)",
+        tags: ['Owner'],
+        security: [{ BearerAuth: [] }],
+        responses: { '200': { description: 'Own hotels' }, '403': { description: 'Not a Chủ khách sạn account' } },
+      },
+      post: {
+        summary: 'Register a new hotel — always starts at "Chờ duyệt", owner cannot self-approve',
+        tags: ['Owner'],
+        security: [{ BearerAuth: [] }],
+        responses: { '201': { description: 'Created, pending admin approval' }, '400': { description: 'Invalid MaDiaPhuong or body' } },
+      },
+    },
+    '/owner/hotels/{id}': {
+      get: { summary: 'Get an owned hotel', tags: ['Owner'], security: [{ BearerAuth: [] }], parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }], responses: { '200': { description: 'OK' }, '403': { description: "Not this owner's hotel" }, '404': { description: 'Not found' } } },
+      patch: { summary: 'Update an owned hotel (TrangThai/MaTaiKhoanDuyet/MaTaiKhoanSoHuu cannot be set here)', tags: ['Owner'], security: [{ BearerAuth: [] }], parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }], responses: { '200': { description: 'Updated' }, '403': { description: 'Forbidden' } } },
+    },
+    '/owner/hotels/{id}/amenities': {
+      put: { summary: 'Replace the full amenity set for a hotel', tags: ['Owner'], security: [{ BearerAuth: [] }], parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }], responses: { '200': { description: 'Updated' } } },
+    },
+    '/owner/hotels/{id}/images': {
+      post: { summary: 'Upload a hotel image (base64 data URI, via the existing Cloudinary integration)', tags: ['Owner'], security: [{ BearerAuth: [] }], parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }], responses: { '201': { description: 'Created' } } },
+    },
+    '/owner/hotels/{id}/images/{imageId}': {
+      patch: { summary: 'Set as the primary hotel image', tags: ['Owner'], security: [{ BearerAuth: [] }], parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }, { name: 'imageId', in: 'path', required: true, schema: { type: 'integer' } }], responses: { '200': { description: 'Updated' } } },
+      delete: { summary: 'Remove a hotel image (best-effort Cloudinary delete + DB row removal)', tags: ['Owner'], security: [{ BearerAuth: [] }], parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }, { name: 'imageId', in: 'path', required: true, schema: { type: 'integer' } }], responses: { '200': { description: 'Deleted' } } },
+    },
+    '/owner/hotels/{hotelId}/room-types': {
+      get: { summary: 'List room types for an owned hotel', tags: ['Owner'], security: [{ BearerAuth: [] }], parameters: [{ name: 'hotelId', in: 'path', required: true, schema: { type: 'integer' } }], responses: { '200': { description: 'OK' } } },
+      post: { summary: 'Create a room type for an owned hotel', tags: ['Owner'], security: [{ BearerAuth: [] }], parameters: [{ name: 'hotelId', in: 'path', required: true, schema: { type: 'integer' } }], responses: { '201': { description: 'Created' } } },
+    },
+    '/owner/room-types/{id}': {
+      get: { summary: 'Get an owned room type', tags: ['Owner'], security: [{ BearerAuth: [] }], parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }], responses: { '200': { description: 'OK' }, '403': { description: 'Forbidden' }, '404': { description: 'Not found' } } },
+      patch: { summary: 'Update an owned room type (including TrangThai — open/close for sale)', tags: ['Owner'], security: [{ BearerAuth: [] }], parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }], responses: { '200': { description: 'Updated' } } },
+    },
+    '/owner/room-types/{id}/amenities': {
+      put: { summary: 'Replace the full amenity set for a room type', tags: ['Owner'], security: [{ BearerAuth: [] }], parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }], responses: { '200': { description: 'Updated' } } },
+    },
+    '/owner/room-types/{id}/images': {
+      post: { summary: 'Upload a room-type image (base64 data URI)', tags: ['Owner'], security: [{ BearerAuth: [] }], parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }], responses: { '201': { description: 'Created' } } },
+    },
+    '/owner/room-types/{id}/images/{imageId}': {
+      patch: { summary: 'Set as the primary room-type image', tags: ['Owner'], security: [{ BearerAuth: [] }], parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }, { name: 'imageId', in: 'path', required: true, schema: { type: 'integer' } }], responses: { '200': { description: 'Updated' } } },
+      delete: { summary: 'Remove a room-type image', tags: ['Owner'], security: [{ BearerAuth: [] }], parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }, { name: 'imageId', in: 'path', required: true, schema: { type: 'integer' } }], responses: { '200': { description: 'Deleted' } } },
+    },
+    '/owner/room-types/{id}/rates': {
+      get: {
+        summary: 'View QUY_PHONG_GIA for an owned room type over a date range',
+        tags: ['Owner'],
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'integer' } },
+          { name: 'from', in: 'query', required: true, schema: { type: 'string', format: 'date' } },
+          { name: 'to', in: 'query', required: true, schema: { type: 'string', format: 'date' } },
+        ],
+        responses: { '200': { description: 'Rate rows in range' } },
+      },
+      put: {
+        summary: 'Bulk create/update price + inventory per day (upsert on (MaLoaiPhong, NgayApDung) — never duplicates)',
+        tags: ['Owner'],
+        security: [{ BearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: {
+          '200': { description: 'Upserted rows' },
+          '400': { description: 'Duplicate date within the same request, or GiaPhong/SoLuongPhong < 0' },
+          '403': { description: 'Forbidden' },
+        },
+      },
+    },
     '/amenities': {
       get: {
         summary: 'List all amenities (public) — supports the search filter UI',
         tags: ['Discovery'],
         responses: { '200': { description: 'List of amenities' } },
+      },
+    },
+    '/locations': {
+      get: {
+        summary: 'List all DIA_PHUONG (public) — supports search location field and owner hotel-registration form',
+        tags: ['Discovery'],
+        responses: { '200': { description: 'List of locations' } },
       },
     },
     '/auth/register': {
