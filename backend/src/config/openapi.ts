@@ -98,6 +98,49 @@ export const openApiSpec = {
         },
       },
     },
+    '/hotels/{id}/bookings': {
+      post: {
+        summary: 'Create a real booking (M5, authenticated customer only)',
+        tags: ['Booking'],
+        security: [{ BearerAuth: [] }],
+        description:
+          'Everything (availability, per-night price, promotion, cancellation policy) is recomputed server-side inside a locked SQL Server transaction — a prior Quote is never trusted. Rows in QUY_PHONG_GIA for the requested room types/date range are locked WITH (UPDLOCK, ROWLOCK, HOLDLOCK) so two concurrent requests contending for the last room can never both commit. Booking always starts at TrangThai="Chờ thanh toán"; no payment is processed in M5.',
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['checkIn', 'checkOut', 'rooms'],
+                properties: {
+                  checkIn: { type: 'string', format: 'date' },
+                  checkOut: { type: 'string', format: 'date', description: 'Exclusive — checkout night not counted' },
+                  rooms: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      required: ['maLoaiPhong', 'soLuong'],
+                      properties: { maLoaiPhong: { type: 'integer' }, soLuong: { type: 'integer', minimum: 1 } },
+                    },
+                  },
+                  promoCode: { type: 'string' },
+                  ghiChu: { type: 'string' },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          '201': { description: 'Booking created with MaXacNhanDatPhong, server-computed totals, and the applicable cancellation policy' },
+          '400': { description: 'Invalid date range/room lines, room id not belonging to this hotel, or an invalid/expired/ineligible promo code' },
+          '401': { description: 'Not authenticated' },
+          '403': { description: 'Authenticated but not a Khách hàng account' },
+          '404': { description: 'Hotel not found or not active' },
+          '409': { description: 'Not enough rooms left (or a night became unpriced) by the time this request acquired the lock' },
+        },
+      },
+    },
     '/cancellation-policies': {
       get: {
         summary: 'List active cancellation policies (public) — system-level data, no MaKhachSan/MaDatPhong',

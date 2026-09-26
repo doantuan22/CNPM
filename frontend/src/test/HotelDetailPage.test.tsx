@@ -2,19 +2,25 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Route, Routes } from 'react-router-dom';
-import { renderWithProviders } from './testUtils';
+import { renderWithProviders, makeFakeAccessToken } from './testUtils';
 import HotelDetailPage from '../pages/HotelDetailPage';
 import * as hotelsApi from '../features/hotels/api';
 import * as quotesApi from '../features/quotes/api';
+import * as bookingsApi from '../features/bookings/api';
+import { useAuthStore } from '../lib/authStore';
+import { ROLE_NAMES } from '../lib/roles';
 import { ApiError } from '../services/apiClient';
 import type { HotelDetail, RoomTypeWithAvailability } from '../features/hotels/types';
 import type { Quote } from '../features/quotes/types';
+import type { Booking } from '../features/bookings/types';
 
 vi.mock('../features/hotels/api');
 vi.mock('../features/quotes/api');
+vi.mock('../features/bookings/api');
 
 beforeEach(() => {
   vi.clearAllMocks();
+  useAuthStore.setState({ accessToken: null, role: null, isBootstrapping: false });
 });
 
 const sampleHotel: HotelDetail = {
@@ -91,9 +97,31 @@ const renderPage = (id = '1') =>
   renderWithProviders(
     <Routes>
       <Route path="/hotels/:id" element={<HotelDetailPage />} />
+      <Route path="/login" element={<div>Login Page</div>} />
+      <Route path="/bookings" element={<div>Bookings Result Page</div>} />
     </Routes>,
     { route: `/hotels/${id}?checkIn=2026-04-01&checkOut=2026-04-03&guests=2` }
   );
+
+const sampleBooking: Booking = {
+  MaDatPhong: 42,
+  MaXacNhanDatPhong: 'BK123ABC',
+  MaKhachSan: 1,
+  NgayNhanPhong: '2026-04-01',
+  NgayTraPhong: '2026-04-03',
+  SoDem: 2,
+  ChiTietPhong: [
+    { MaLoaiPhong: 10, TenLoaiPhong: 'Standard', SoLuong: 1, GiaTheoDem: 900000, ThanhTien: 1800000 },
+  ],
+  TongTienPhong: 1800000,
+  KhuyenMai: null,
+  SoTienGiam: 0,
+  TongTienThanhToan: 1800000,
+  TrangThai: 'Chờ thanh toán',
+  GhiChu: null,
+  ChinhSachHuy: sampleQuote.ChinhSachHuy!,
+  NgayTao: '2026-03-01T00:00:00.000Z',
+};
 
 describe('HotelDetailPage', () => {
   it('shows a loading state while fetching hotel info', () => {
@@ -227,5 +255,72 @@ describe('HotelDetailPage', () => {
     await user.click(await screen.findByRole('button', { name: /standard/i }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent(/không thể tạo báo giá/i);
+  });
+
+  it('prompts an unauthenticated visitor to log in instead of offering to confirm the booking', async () => {
+    const user = userEvent.setup();
+    vi.mocked(hotelsApi.getHotelDetail).mockResolvedValueOnce(sampleHotel);
+    vi.mocked(hotelsApi.getHotelRooms).mockResolvedValueOnce([availableRoom]);
+    vi.mocked(quotesApi.createQuote).mockResolvedValueOnce(sampleQuote);
+    renderPage();
+
+    await user.click(await screen.findByRole('button', { name: /standard/i }));
+    await screen.findByText('Tổng thanh toán');
+
+    expect(screen.getByRole('button', { name: /đăng nhập để đặt phòng/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^xác nhận đặt phòng$/i })).not.toBeInTheDocument();
+  });
+
+  it('lets a logged-in customer confirm the booking and navigates to the result page', async () => {
+    useAuthStore.setState({
+      accessToken: makeFakeAccessToken({ sub: '1', role: ROLE_NAMES.CUSTOMER }),
+      role: ROLE_NAMES.CUSTOMER,
+      isBootstrapping: false,
+    });
+    const user = userEvent.setup();
+    vi.mocked(hotelsApi.getHotelDetail).mockResolvedValueOnce(sampleHotel);
+    vi.mocked(hotelsApi.getHotelRooms).mockResolvedValueOnce([availableRoom]);
+    vi.mocked(quotesApi.createQuote).mockResolvedValueOnce(sampleQuote);
+    vi.mocked(bookingsApi.createBooking).mockResolvedValueOnce(sampleBooking);
+    renderPage();
+
+    await user.click(await screen.findByRole('button', { name: /standard/i }));
+    await screen.findByText('Tổng thanh toán');
+
+    await user.click(screen.getByRole('button', { name: /^xác nhận đặt phòng$/i }));
+
+    await waitFor(() => {
+      expect(bookingsApi.createBooking).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({
+          checkIn: '2026-04-01',
+          checkOut: '2026-04-03',
+          rooms: [{ maLoaiPhong: 10, soLuong: 1 }],
+        })
+      );
+    });
+    expect(await screen.findByText('Bookings Result Page')).toBeInTheDocument();
+  });
+
+  it('shows a conflict error with a retry option when the room sells out right before confirming', async () => {
+    useAuthStore.setState({
+      accessToken: makeFakeAccessToken({ sub: '1', role: ROLE_NAMES.CUSTOMER }),
+      role: ROLE_NAMES.CUSTOMER,
+      isBootstrapping: false,
+    });
+    const user = userEvent.setup();
+    vi.mocked(hotelsApi.getHotelDetail).mockResolvedValueOnce(sampleHotel);
+    vi.mocked(hotelsApi.getHotelRooms).mockResolvedValueOnce([availableRoom]);
+    vi.mocked(quotesApi.createQuote).mockResolvedValue(sampleQuote);
+    vi.mocked(bookingsApi.createBooking).mockRejectedValueOnce(new ApiError('Không còn đủ phòng', 409));
+    renderPage();
+
+    await user.click(await screen.findByRole('button', { name: /standard/i }));
+    await screen.findByText('Tổng thanh toán');
+
+    await user.click(screen.getByRole('button', { name: /^xác nhận đặt phòng$/i }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(/không còn đủ phòng/i);
+    expect(screen.getByRole('button', { name: /làm mới báo giá/i })).toBeInTheDocument();
   });
 });

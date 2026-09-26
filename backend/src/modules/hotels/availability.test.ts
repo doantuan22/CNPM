@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   enumerateNights,
   computeRoomTypeAvailability,
+  priceRoomLine,
   buildBookedByDate,
   toDateKey,
   type NightlyRate,
@@ -110,6 +111,46 @@ describe('buildBookedByDate', () => {
     expect(map.get('2026-03-02')).toBe(4); // overlap night
     expect(map.get('2026-03-03')).toBe(3);
     expect(map.get('2026-03-04')).toBe(3);
+  });
+});
+
+describe('priceRoomLine', () => {
+  const rate = (giaPhong: number, soLuongPhong: number): NightlyRate => ({ giaPhong, soLuongPhong });
+
+  it('prices a fully-available line for the requested quantity', () => {
+    const nights = enumerateNights(d('2026-03-01'), d('2026-03-03')); // 2 nights
+    const rates = new Map([
+      ['2026-03-01', rate(500000, 5)],
+      ['2026-03-02', rate(500000, 5)],
+    ]);
+    const result = priceRoomLine(nights, rates, new Map(), 2);
+
+    expect(result.available).toBe(5);
+    expect(result.duPhong).toBe(true);
+    expect(result.coGiaDayDu).toBe(true);
+    expect(result.giaTheoDem).toBe(500000);
+    expect(result.thanhTien).toBe(2_000_000); // 500k x 2 nights x 2 rooms
+  });
+
+  it('flags DuPhong=false when requested quantity exceeds what remains', () => {
+    const nights = enumerateNights(d('2026-03-01'), d('2026-03-02'));
+    const rates = new Map([['2026-03-01', rate(500000, 1)]]);
+    const result = priceRoomLine(nights, rates, new Map(), 2);
+
+    expect(result.available).toBe(1);
+    expect(result.duPhong).toBe(false);
+    expect(result.coGiaDayDu).toBe(true); // still priced — sold-out and unpriced are distinct
+    expect(result.thanhTien).toBe(1_000_000); // price still computed for the requested quantity
+  });
+
+  it('returns null price when any night in range is unpriced', () => {
+    const nights = enumerateNights(d('2026-03-01'), d('2026-03-03'));
+    const rates = new Map([['2026-03-01', rate(500000, 5)]]); // 03-02 missing
+    const result = priceRoomLine(nights, rates, new Map(), 1);
+
+    expect(result.coGiaDayDu).toBe(false);
+    expect(result.giaTheoDem).toBeNull();
+    expect(result.thanhTien).toBeNull();
   });
 });
 

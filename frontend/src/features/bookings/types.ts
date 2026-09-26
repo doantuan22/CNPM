@@ -1,18 +1,47 @@
-/**
- * Booking Feature Domain Types (Foundation Definition)
- * Business use cases will be implemented in subsequent phases.
- */
+export interface BookingRoomLine {
+  MaLoaiPhong: number;
+  TenLoaiPhong: string;
+  SoLuong: number;
+  GiaTheoDem: number | null;
+  ThanhTien: number | null;
+}
 
-export type BookingStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed';
+export interface BookingPromotion {
+  MaKhuyenMai: number;
+  MaCode: string;
+  LoaiGiamGia: string;
+  GiaTriGiam: number;
+}
+
+export interface BookingCancellationPolicy {
+  MaChinhSachHuy: number;
+  TenChinhSach: string;
+  MoTa: string;
+  ChiTiet: Array<{ SoGioTruocNhanPhong: number; TyLeHoanTien: number }>;
+}
 
 export interface Booking {
-  id: string;
-  userId: string;
-  hotelId: string;
-  roomTypeId: string;
-  checkInDate: string;
-  checkOutDate: string;
-  totalAmount: number;
-  status: BookingStatus;
-  createdAt: string;
+  MaDatPhong: number;
+  MaXacNhanDatPhong: string;
+  MaKhachSan: number;
+  NgayNhanPhong: string;
+  NgayTraPhong: string;
+  SoDem: number;
+  ChiTietPhong: BookingRoomLine[];
+  TongTienPhong: number;
+  KhuyenMai: BookingPromotion | null;
+  SoTienGiam: number;
+  TongTienThanhToan: number;
+  TrangThai: string;
+  GhiChu: string | null;
+  ChinhSachHuy: BookingCancellationPolicy;
+  NgayTao: string;
+}
+
+export interface CreateBookingRequest {
+  checkIn: string;
+  checkOut: string;
+  rooms: Array<{ maLoaiPhong: number; soLuong: number }>;
+  promoCode?: string;
+  ghiChu?: string;
 }

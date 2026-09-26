@@ -2,12 +2,15 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useParams, useSearchParams, Link } from 'react-router-dom';
+import { useParams, useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { MapPin, Star, ArrowLeft, CheckCircle2, BedDouble, Users, Ruler, ShieldCheck, Tag } from 'lucide-react';
 import { Button } from '../components/common/Button';
 import { useHotelDetail, useHotelRooms } from '../features/hotels/hooks';
 import { defaultSearchDates } from '../features/hotels/schemas';
 import { useCreateQuote } from '../features/quotes/hooks';
+import { useCreateBooking } from '../features/bookings/hooks';
+import { useAuthStore } from '../lib/authStore';
+import { ROLE_NAMES } from '../lib/roles';
 import { ApiError } from '../services/apiClient';
 import { formatCurrencyVND, cn } from '../lib/utils';
 
@@ -23,11 +26,16 @@ type DateGuestValues = z.infer<typeof dateGuestSchema>;
 export default function HotelDetailPage() {
   const { id } = useParams<{ id: string }>();
   const hotelId = Number(id);
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
   const [selectedQuantity, setSelectedQuantity] = useState(1);
   const [promoCode, setPromoCode] = useState('');
+  const [ghiChu, setGhiChu] = useState('');
   const quoteMutation = useCreateQuote(hotelId);
+  const bookingMutation = useCreateBooking(hotelId);
+  const accessToken = useAuthStore((s) => s.accessToken);
+  const role = useAuthStore((s) => s.role);
 
   const defaults = defaultSearchDates();
   const checkIn = searchParams.get('checkIn') || defaults.checkIn;
@@ -56,11 +64,14 @@ export default function HotelDetailPage() {
     setSelectedRoomId(maLoaiPhong);
     setSelectedQuantity(1);
     setPromoCode('');
+    setGhiChu('');
     quoteMutation.reset();
+    bookingMutation.reset();
   };
 
   const requestQuote = (withPromo: boolean) => {
     if (!selectedRoomId) return;
+    bookingMutation.reset();
     quoteMutation.mutate({
       checkIn,
       checkOut,
@@ -74,6 +85,24 @@ export default function HotelDetailPage() {
     if (selectedRoomId) requestQuote(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedRoomId, selectedQuantity]);
+
+  const confirmBooking = () => {
+    if (!selectedRoomId || !quoteMutation.data) return;
+    bookingMutation.mutate(
+      {
+        checkIn,
+        checkOut,
+        rooms: [{ maLoaiPhong: selectedRoomId, soLuong: selectedQuantity }],
+        promoCode: quoteMutation.data.PromoHopLe && promoCode.trim() ? promoCode.trim() : undefined,
+        ghiChu: ghiChu.trim() || undefined,
+      },
+      {
+        onSuccess: (booking) => {
+          navigate('/bookings', { state: { booking, hotelName: hotelQuery.data?.TenKhachSan } });
+        },
+      }
+    );
+  };
 
   if (hotelQuery.isLoading) {
     return (
@@ -384,15 +413,58 @@ export default function HotelDetailPage() {
                         </ul>
                       </div>
                     )}
+
+                    <div>
+                      <label htmlFor="booking-note" className="mb-1 block text-xs font-medium text-slate-600">
+                        Ghi chú (không bắt buộc)
+                      </label>
+                      <textarea
+                        id="booking-note"
+                        rows={2}
+                        value={ghiChu}
+                        onChange={(e) => setGhiChu(e.target.value)}
+                        placeholder="Ví dụ: nhận phòng muộn, phòng tầng cao..."
+                        className="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                      />
+                    </div>
+
+                    {bookingMutation.isError && (
+                      <div role="alert" className="space-y-2 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">
+                        <p>
+                          {bookingMutation.error instanceof ApiError
+                            ? bookingMutation.error.message
+                            : 'Không thể tạo đặt phòng'}
+                        </p>
+                        {bookingMutation.error instanceof ApiError && bookingMutation.error.statusCode === 409 && (
+                          <Button type="button" size="sm" variant="outline" onClick={() => requestQuote(quoteMutation.data!.PromoHopLe)}>
+                            Làm mới báo giá
+                          </Button>
+                        )}
+                      </div>
+                    )}
+
+                    {!accessToken ? (
+                      <Button className="w-full" onClick={() => navigate('/login')}>
+                        Đăng nhập để đặt phòng
+                      </Button>
+                    ) : role !== ROLE_NAMES.CUSTOMER ? (
+                      <div className="space-y-1">
+                        <Button className="w-full" disabled>
+                          Xác nhận đặt phòng
+                        </Button>
+                        <p className="text-center text-xs text-slate-500">Chỉ tài khoản khách hàng mới có thể đặt phòng.</p>
+                      </div>
+                    ) : (
+                      <Button
+                        className="w-full"
+                        onClick={confirmBooking}
+                        disabled={!quoteMutation.data.KhaDung || bookingMutation.isPending}
+                      >
+                        {bookingMutation.isPending ? 'Đang xử lý...' : 'Xác nhận đặt phòng'}
+                      </Button>
+                    )}
                   </>
                 ) : null}
-
-                <p className="text-xs text-slate-500">
-                  Đây là báo giá tạm tính. Chức năng đặt phòng chính thức sẽ mở ở phase tiếp theo.
-                </p>
-                <Button className="w-full" disabled>
-                  Tiếp tục đặt phòng
-                </Button>
               </div>
             )}
           </div>

@@ -1,6 +1,6 @@
 import { QuotesRepository } from './quotes.repository';
 import { CancellationPoliciesRepository } from '../cancellation-policies/cancellation-policies.repository';
-import { enumerateNights, computeRoomTypeAvailability, buildBookedByDate, toDateKey, type NightlyRate } from '../hotels/availability';
+import { enumerateNights, priceRoomLine, buildBookedByDate, toDateKey, type NightlyRate } from '../hotels/availability';
 import { evaluatePromotion } from './promotion-pricing';
 import { AppError } from '../../common/errors/app-error';
 import type { QuoteRequestInput } from './quotes.schemas';
@@ -76,18 +76,17 @@ export class QuotesService {
           soLuongPhong: c.SoLuongPhong,
         }))
       );
-      const priced = computeRoomTypeAvailability(nightKeys, ratesByDate, bookedByDate);
-      const coGiaDayDu = priced.totalPrice !== null;
+      const pricing = priceRoomLine(nightKeys, ratesByDate, bookedByDate, line.soLuong);
 
       return {
         MaLoaiPhong: roomType.MaLoaiPhong,
         TenLoaiPhong: roomType.TenLoaiPhong,
         SoLuongYeuCau: line.soLuong,
-        SoPhongConLai: priced.available,
-        DuPhong: priced.available >= line.soLuong,
-        CoGiaDayDu: coGiaDayDu,
-        GiaTheoDem: coGiaDayDu ? Math.round((priced.totalPrice as number) / priced.nights) : null,
-        ThanhTien: coGiaDayDu ? Math.round((priced.totalPrice as number) * line.soLuong) : null,
+        SoPhongConLai: pricing.available,
+        DuPhong: pricing.duPhong,
+        CoGiaDayDu: pricing.coGiaDayDu,
+        GiaTheoDem: pricing.giaTheoDem,
+        ThanhTien: pricing.thanhTien,
       };
     });
 

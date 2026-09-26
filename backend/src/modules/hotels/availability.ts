@@ -85,6 +85,41 @@ export const computeRoomTypeAvailability = (
   };
 };
 
+export interface RoomLinePricing {
+  /** Rooms of this type still free across the whole stay (bottleneck night). */
+  available: number;
+  /** available >= the quantity requested for this line. */
+  duPhong: boolean;
+  /** Every night in the stay had a QUY_PHONG_GIA row (fully priceable). */
+  coGiaDayDu: boolean;
+  giaTheoDem: number | null;
+  /** Total for `soLuong` rooms across the whole stay, or null if unpriced. */
+  thanhTien: number | null;
+}
+
+/**
+ * One room line's availability + price, for `soLuong` rooms. Shared by the
+ * Quote (M4) and Booking (M5) flows so both always price a line identically —
+ * Booking still re-fetches its own rates/booked-counts independently (inside
+ * a locked transaction) rather than trusting a client-supplied quote.
+ */
+export const priceRoomLine = (
+  nightKeys: string[],
+  ratesByDate: ReadonlyMap<string, NightlyRate>,
+  bookedByDate: ReadonlyMap<string, number>,
+  soLuong: number
+): RoomLinePricing => {
+  const priced = computeRoomTypeAvailability(nightKeys, ratesByDate, bookedByDate);
+  const coGiaDayDu = priced.totalPrice !== null;
+  return {
+    available: priced.available,
+    duPhong: priced.available >= soLuong,
+    coGiaDayDu,
+    giaTheoDem: coGiaDayDu ? Math.round((priced.totalPrice as number) / priced.nights) : null,
+    thanhTien: coGiaDayDu ? Math.round((priced.totalPrice as number) * soLuong) : null,
+  };
+};
+
 /**
  * Sums, per calendar night, how many rooms of a given room type are already
  * occupied by non-cancelled bookings overlapping that night.
