@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useParams, useSearchParams, Link } from 'react-router-dom';
-import { MapPin, Star, ArrowLeft, CheckCircle2, BedDouble, Users, Ruler } from 'lucide-react';
+import { MapPin, Star, ArrowLeft, CheckCircle2, BedDouble, Users, Ruler, ShieldCheck, Tag } from 'lucide-react';
 import { Button } from '../components/common/Button';
 import { useHotelDetail, useHotelRooms } from '../features/hotels/hooks';
 import { defaultSearchDates } from '../features/hotels/schemas';
+import { useCreateQuote } from '../features/quotes/hooks';
 import { ApiError } from '../services/apiClient';
 import { formatCurrencyVND, cn } from '../lib/utils';
 
@@ -24,6 +25,9 @@ export default function HotelDetailPage() {
   const hotelId = Number(id);
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
+  const [selectedQuantity, setSelectedQuantity] = useState(1);
+  const [promoCode, setPromoCode] = useState('');
+  const quoteMutation = useCreateQuote(hotelId);
 
   const defaults = defaultSearchDates();
   const checkIn = searchParams.get('checkIn') || defaults.checkIn;
@@ -44,8 +48,32 @@ export default function HotelDetailPage() {
 
   const onDatesSubmit = (values: DateGuestValues) => {
     setSelectedRoomId(null);
+    quoteMutation.reset();
     setSearchParams({ checkIn: values.checkIn, checkOut: values.checkOut, guests: String(values.guests) });
   };
+
+  const selectRoom = (maLoaiPhong: number) => {
+    setSelectedRoomId(maLoaiPhong);
+    setSelectedQuantity(1);
+    setPromoCode('');
+    quoteMutation.reset();
+  };
+
+  const requestQuote = (withPromo: boolean) => {
+    if (!selectedRoomId) return;
+    quoteMutation.mutate({
+      checkIn,
+      checkOut,
+      rooms: [{ maLoaiPhong: selectedRoomId, soLuong: selectedQuantity }],
+      promoCode: withPromo && promoCode.trim() ? promoCode.trim() : undefined,
+    });
+  };
+
+  // Re-quote automatically once a room is selected (and whenever quantity changes).
+  useEffect(() => {
+    if (selectedRoomId) requestQuote(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedRoomId, selectedQuantity]);
 
   if (hotelQuery.isLoading) {
     return (
@@ -190,7 +218,7 @@ export default function HotelDetailPage() {
                     key={room.MaLoaiPhong}
                     type="button"
                     disabled={!room.ConHang}
-                    onClick={() => setSelectedRoomId(room.MaLoaiPhong)}
+                    onClick={() => selectRoom(room.MaLoaiPhong)}
                     className={cn(
                       'w-full rounded-xl border p-4 text-left transition',
                       !room.ConHang && 'cursor-not-allowed opacity-50',
@@ -249,24 +277,124 @@ export default function HotelDetailPage() {
 
         <div className="space-y-6">
           <div className="sticky top-20 rounded-xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
-            <h2 className="text-lg font-semibold text-slate-900">Đặt phòng ngay</h2>
-            {selectedRoom ? (
-              <div className="space-y-2 rounded-lg bg-blue-50 p-3 text-sm">
-                <p className="font-semibold text-slate-900">{selectedRoom.TenLoaiPhong}</p>
-                <p className="text-slate-600">
-                  {checkIn} → {checkOut} ({selectedRoom.SoDem} đêm)
-                </p>
-                {selectedRoom.TongTien !== null && (
-                  <p className="text-base font-bold text-blue-700">{formatCurrencyVND(selectedRoom.TongTien)}</p>
-                )}
-              </div>
+            <h2 className="text-lg font-semibold text-slate-900">Báo giá</h2>
+
+            {!selectedRoomId ? (
+              <p className="text-xs text-slate-500">Chọn một loại phòng bên trái để xem báo giá.</p>
             ) : (
-              <p className="text-xs text-slate-500">Chọn một loại phòng bên trái để xem tóm tắt.</p>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-slate-900">{selectedRoom?.TenLoaiPhong}</span>
+                  <div className="flex items-center gap-2">
+                    <label htmlFor="quote-quantity" className="text-xs text-slate-500">Số phòng</label>
+                    <input
+                      id="quote-quantity"
+                      type="number"
+                      min={1}
+                      max={selectedRoom?.SoPhongConLai || 50}
+                      value={selectedQuantity}
+                      onChange={(e) => setSelectedQuantity(Math.max(1, Number(e.target.value) || 1))}
+                      className="w-16 rounded-lg border border-slate-300 px-2 py-1 text-sm"
+                    />
+                  </div>
+                </div>
+
+                {quoteMutation.isPending ? (
+                  <div className="flex justify-center py-6" role="status" aria-live="polite">
+                    <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600" />
+                  </div>
+                ) : quoteMutation.isError ? (
+                  <div role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">
+                    {quoteMutation.error instanceof ApiError ? quoteMutation.error.message : 'Không thể tạo báo giá'}
+                  </div>
+                ) : quoteMutation.data ? (
+                  <>
+                    {!quoteMutation.data.KhaDung && (
+                      <div role="alert" className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700">
+                        {quoteMutation.data.ChiTietPhong[0]?.CoGiaDayDu === false
+                          ? 'Chưa có đủ dữ liệu giá cho khoảng ngày đã chọn.'
+                          : `Chỉ còn ${quoteMutation.data.ChiTietPhong[0]?.SoPhongConLai ?? 0} phòng — vui lòng giảm số lượng.`}
+                      </div>
+                    )}
+
+                    <div className="space-y-1 border-b border-slate-100 pb-3 text-sm">
+                      <div className="flex justify-between text-slate-600">
+                        <span>{quoteMutation.data.SoDem} đêm × {selectedQuantity} phòng</span>
+                        <span>
+                          {quoteMutation.data.ChiTietPhong[0]?.GiaTheoDem !== null
+                            ? formatCurrencyVND(quoteMutation.data.ChiTietPhong[0]!.GiaTheoDem!) + '/đêm'
+                            : '—'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between font-medium text-slate-900">
+                        <span>Tổng tiền phòng</span>
+                        <span>{formatCurrencyVND(quoteMutation.data.TongTienPhong)}</span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label htmlFor="promo-code" className="flex items-center gap-1 text-xs font-medium text-slate-600">
+                        <Tag className="h-3.5 w-3.5" /> Mã khuyến mãi
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          id="promo-code"
+                          type="text"
+                          value={promoCode}
+                          onChange={(e) => setPromoCode(e.target.value)}
+                          placeholder="Nhập mã (nếu có)"
+                          className="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm uppercase"
+                        />
+                        <Button type="button" size="sm" variant="outline" onClick={() => requestQuote(true)} disabled={!promoCode.trim()}>
+                          Áp dụng
+                        </Button>
+                      </div>
+                      {quoteMutation.data.PromoThongBao && (
+                        <p className={cn('text-xs', quoteMutation.data.PromoHopLe ? 'text-green-600' : 'text-red-600')}>
+                          {quoteMutation.data.PromoThongBao}
+                        </p>
+                      )}
+                    </div>
+
+                    {quoteMutation.data.PromoHopLe && (
+                      <div className="flex justify-between text-sm text-green-700">
+                        <span>Giảm giá ({quoteMutation.data.KhuyenMai?.MaCode})</span>
+                        <span>−{formatCurrencyVND(quoteMutation.data.SoTienGiam)}</span>
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between border-t border-slate-100 pt-3">
+                      <span className="font-semibold text-slate-900">Tổng thanh toán</span>
+                      <span className="text-xl font-bold text-blue-700">
+                        {formatCurrencyVND(quoteMutation.data.TongTienThanhToan)}
+                      </span>
+                    </div>
+
+                    {quoteMutation.data.ChinhSachHuy && (
+                      <div className="rounded-lg bg-slate-50 p-3 text-xs text-slate-600">
+                        <p className="mb-1 flex items-center gap-1 font-medium text-slate-800">
+                          <ShieldCheck className="h-3.5 w-3.5" /> {quoteMutation.data.ChinhSachHuy.TenChinhSach}
+                        </p>
+                        <ul className="space-y-0.5">
+                          {quoteMutation.data.ChinhSachHuy.ChiTiet.map((tier, i) => (
+                            <li key={i}>
+                              Hủy trước {tier.SoGioTruocNhanPhong} giờ: hoàn {tier.TyLeHoanTien}%
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </>
+                ) : null}
+
+                <p className="text-xs text-slate-500">
+                  Đây là báo giá tạm tính. Chức năng đặt phòng chính thức sẽ mở ở phase tiếp theo.
+                </p>
+                <Button className="w-full" disabled>
+                  Tiếp tục đặt phòng
+                </Button>
+              </div>
             )}
-            <p className="text-xs text-slate-500">Chức năng đặt phòng sẽ được mở trong phase tiếp theo (M3).</p>
-            <Button className="w-full" disabled>
-              Tiếp tục đặt phòng
-            </Button>
           </div>
         </div>
       </div>

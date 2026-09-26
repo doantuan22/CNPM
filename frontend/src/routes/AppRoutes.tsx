@@ -13,6 +13,9 @@ import HotelListPage from '../pages/HotelListPage';
 import HotelDetailPage from '../pages/HotelDetailPage';
 import BookingsPage from '../pages/BookingsPage';
 import OwnerDashboardPage from '../pages/OwnerDashboardPage';
+import OwnerHotelFormPage from '../pages/OwnerHotelFormPage';
+import OwnerHotelManagePage from '../pages/OwnerHotelManagePage';
+import OwnerRoomTypeManagePage from '../pages/OwnerRoomTypeManagePage';
 import AdminDashboardPage from '../pages/AdminDashboardPage';
 import AdminAccountsPage from '../pages/AdminAccountsPage';
 import AdminAccountDetailPage from '../pages/AdminAccountDetailPage';
@@ -40,6 +43,9 @@ export default function AppRoutes() {
         {/* Chủ khách sạn */}
         <Route element={<ProtectedRoute allowedRoles={[ROLE_NAMES.PARTNER]} />}>
           <Route path="/owner" element={<OwnerDashboardPage />} />
+          <Route path="/owner/hotels/new" element={<OwnerHotelFormPage />} />
+          <Route path="/owner/hotels/:id" element={<OwnerHotelManagePage />} />
+          <Route path="/owner/room-types/:id" element={<OwnerRoomTypeManagePage />} />
         </Route>
 
         {/* Quản trị hệ thống */}
