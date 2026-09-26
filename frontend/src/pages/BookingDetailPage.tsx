@@ -6,6 +6,7 @@ import { useBookingDetail, useCancelBooking } from '../features/bookings/hooks';
 import { bookingStatusBadgeClass, paymentStatusBadgeClass } from '../features/bookings/status';
 import { hoursBeforeCheckIn, selectRefundPercentPreview, computeRefundAmountPreview } from '../features/bookings/refund-preview';
 import { useCreateVnpayPayment, useRetryRefund } from '../features/payments/hooks';
+import { ReviewSection } from '../components/reviews/ReviewSection';
 import { formatCurrencyVND, cn } from '../lib/utils';
 import { ApiError } from '../services/apiClient';
 
@@ -231,6 +232,8 @@ export default function BookingDetailPage() {
           ))}
         </div>
       )}
+
+      <ReviewSection bookingId={booking.MaDatPhong} bookingStatus={booking.TrangThai} />
     </div>
   );
 }

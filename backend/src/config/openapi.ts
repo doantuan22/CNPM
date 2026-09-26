@@ -227,6 +227,166 @@ export const openApiSpec = {
         responses: { '200': { description: 'Current HOAN_TIEN state' }, '403': { description: 'Not the owning customer' }, '404': { description: 'Not found' } },
       },
     },
+    '/bookings/{id}/review': {
+      post: {
+        summary: 'Review own completed booking (M7 §1, RB9/RB26)',
+        tags: ['Review'],
+        security: [{ BearerAuth: [] }],
+        description:
+          'MaKhachHang/MaKhachSan are derived server-side from the booking, never from the client. Only allowed once DAT_PHONG.TrangThai is actually "Hoàn tất" (lazily swept from "Đã xác nhận" once NgayTraPhong has passed — see bookings/booking-completion.ts). At most one review per booking (UQ_DANH_GIA_MaDatPhong). New reviews always start "Chờ duyệt" — a customer cannot set TrangThai.',
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['diemDanhGia'],
+                properties: {
+                  diemDanhGia: { type: 'integer', minimum: 1, maximum: 5 },
+                  noiDung: { type: 'string' },
+                  hinhAnh: { type: 'array', items: { type: 'string', description: 'base64 data URI, image/*, ≤5MB, ≤6 per review' } },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          '201': { description: 'Created, TrangThai="Chờ duyệt"' },
+          '400': { description: 'Booking not yet "Hoàn tất", score outside 1–5, or an invalid image' },
+          '403': { description: 'Not the owning customer' },
+          '404': { description: 'Not found' },
+          '409': { description: 'Booking already reviewed' },
+        },
+      },
+      get: {
+        summary: "Get the caller's own review for a booking (M7 §1)",
+        tags: ['Review'],
+        security: [{ BearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: { '200': { description: 'The review, or null if not submitted yet' }, '403': { description: 'Not the owning customer' } },
+      },
+    },
+    '/admin/reviews': {
+      get: {
+        summary: 'List reviews for moderation, filter by TrangThai / search (M7 §1, admin only)',
+        tags: ['Review'],
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          { name: 'trangThai', in: 'query', schema: { type: 'string' } },
+          { name: 'search', in: 'query', schema: { type: 'string' } },
+          { name: 'page', in: 'query', schema: { type: 'integer', default: 1 } },
+          { name: 'limit', in: 'query', schema: { type: 'integer', default: 20 } },
+        ],
+        responses: { '200': { description: 'Paginated reviews' }, '403': { description: 'Not an admin' } },
+      },
+    },
+    '/admin/reviews/{id}': {
+      get: {
+        summary: 'Review detail with images + customer/hotel/booking info (admin only)',
+        tags: ['Review'],
+        security: [{ BearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: { '200': { description: 'OK' }, '403': { description: 'Not an admin' }, '404': { description: 'Not found' } },
+      },
+    },
+    '/admin/reviews/{id}/moderate': {
+      patch: {
+        summary: 'Approve / hide / flag a review (admin only)',
+        tags: ['Review'],
+        security: [{ BearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        requestBody: {
+          required: true,
+          content: { 'application/json': { schema: { type: 'object', required: ['trangThai'], properties: { trangThai: { type: 'string', enum: ['Hiển thị', 'Ẩn', 'Vi phạm'] } } } } },
+        },
+        responses: { '200': { description: 'Updated' }, '403': { description: 'Not an admin' }, '404': { description: 'Not found' } },
+      },
+    },
+    '/support': {
+      post: {
+        summary: 'Create a support/complaint request (M7 §3)',
+        tags: ['Support'],
+        security: [{ BearerAuth: [] }],
+        description: 'MaTaiKhoanKhachHang always comes from the authenticated customer. If MaDatPhong is given it must belong to that same customer (RB10) — the override from M0/G0-09 means there is no MaKhachSan column to also check.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['loaiYeuCau', 'tieuDe', 'noiDung'],
+                properties: {
+                  loaiYeuCau: { type: 'string', enum: ['Hỗ trợ', 'Khiếu nại'] },
+                  tieuDe: { type: 'string' },
+                  noiDung: { type: 'string' },
+                  maDatPhong: { type: 'integer' },
+                },
+              },
+            },
+          },
+        },
+        responses: { '201': { description: 'Created, TrangThai="Mới"' }, '400': { description: 'Invalid LoaiYeuCau, or MaDatPhong does not exist' }, '403': { description: 'MaDatPhong belongs to a different customer' } },
+      },
+      get: {
+        summary: "List the caller's own support/complaint requests (M7 §3)",
+        tags: ['Support'],
+        security: [{ BearerAuth: [] }],
+        responses: { '200': { description: 'Own requests, newest first' } },
+      },
+    },
+    '/support/{id}': {
+      get: {
+        summary: "Get one of the caller's own requests (M7 §3)",
+        tags: ['Support'],
+        security: [{ BearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: { '200': { description: 'OK' }, '403': { description: 'Not the requesting customer' }, '404': { description: 'Not found' } },
+      },
+    },
+    '/admin/support': {
+      get: {
+        summary: 'List all support/complaint requests, filter by TrangThai/LoaiYeuCau/search (admin only)',
+        tags: ['Support'],
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          { name: 'trangThai', in: 'query', schema: { type: 'string' } },
+          { name: 'loaiYeuCau', in: 'query', schema: { type: 'string' } },
+          { name: 'search', in: 'query', schema: { type: 'string' } },
+          { name: 'page', in: 'query', schema: { type: 'integer', default: 1 } },
+          { name: 'limit', in: 'query', schema: { type: 'integer', default: 20 } },
+        ],
+        responses: { '200': { description: 'Paginated requests' }, '403': { description: 'Not an admin' } },
+      },
+    },
+    '/admin/support/{id}': {
+      get: {
+        summary: 'Support request detail (admin only)',
+        tags: ['Support'],
+        security: [{ BearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: { '200': { description: 'OK' }, '403': { description: 'Not an admin' }, '404': { description: 'Not found' } },
+      },
+      patch: {
+        summary: 'Claim ("Đang xử lý") or resolve ("Đã xử lý") a request (admin only)',
+        tags: ['Support'],
+        security: [{ BearerAuth: [] }],
+        description: 'MaTaiKhoanXuLy always comes from the authenticated admin, never the request body. NgayXuLy is set only when transitioning into "Đã xử lý". Once "Đã xử lý", the request is immutable.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['trangThai'],
+                properties: { trangThai: { type: 'string', enum: ['Đang xử lý', 'Đã xử lý'] }, ketQuaXuLy: { type: 'string' } },
+              },
+            },
+          },
+        },
+        responses: { '200': { description: 'Updated' }, '400': { description: '"Đã xử lý" requires ketQuaXuLy, or the request is already resolved' }, '403': { description: 'Not an admin' }, '404': { description: 'Not found' } },
+      },
+    },
     '/cancellation-policies': {
       get: {
         summary: 'List active cancellation policies (public) — system-level data, no MaKhachSan/MaDatPhong',

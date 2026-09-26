@@ -3,6 +3,7 @@ import { BookingsRepository } from './bookings.repository';
 import { enumerateNights, priceRoomLine, buildBookedByDate, toDateKey, type NightlyRate } from '../hotels/availability';
 import { evaluatePromotion } from '../quotes/promotion-pricing';
 import { expireStalePendingBookings } from './booking-expiry';
+import { completeFinishedBookings } from './booking-completion';
 import { selectRefundPercent, computeRefundAmount } from './refund-policy';
 import { AppError } from '../../common/errors/app-error';
 import { BOOKING_STATUS } from '../../common/constants/hotel-status';
@@ -272,6 +273,7 @@ export class BookingsService {
 
   async listMyBookings(maTaiKhoanKhachHang: number): Promise<MyBookingSummary[]> {
     await expireStalePendingBookings(getPrismaClient());
+    await completeFinishedBookings(getPrismaClient());
     const rows = await this.repository.listByCustomer(maTaiKhoanKhachHang);
     return rows.map((b) => ({
       MaDatPhong: b.MaDatPhong,
@@ -287,6 +289,7 @@ export class BookingsService {
 
   async getBookingDetail(maDatPhong: number, requesterId: number): Promise<BookingDetail> {
     await expireStalePendingBookings(getPrismaClient());
+    await completeFinishedBookings(getPrismaClient());
     const booking = await this.repository.findDetailById(maDatPhong);
     if (!booking) throw AppError.notFound('Không tìm thấy đặt phòng');
     if (booking.MaTaiKhoanKhachHang !== requesterId) {
@@ -302,6 +305,7 @@ export class BookingsService {
     ipAddr: string
   ): Promise<BookingDetail> {
     await expireStalePendingBookings(getPrismaClient());
+    await completeFinishedBookings(getPrismaClient());
     const booking = await this.repository.findDetailById(maDatPhong);
     if (!booking) throw AppError.notFound('Không tìm thấy đặt phòng');
     if (booking.MaTaiKhoanKhachHang !== requesterId) {

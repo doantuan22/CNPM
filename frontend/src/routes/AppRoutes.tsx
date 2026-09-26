@@ -14,6 +14,8 @@ import HotelDetailPage from '../pages/HotelDetailPage';
 import BookingsPage from '../pages/BookingsPage';
 import BookingDetailPage from '../pages/BookingDetailPage';
 import PaymentResultPage from '../pages/PaymentResultPage';
+import SupportPage from '../pages/SupportPage';
+import SupportDetailPage from '../pages/SupportDetailPage';
 import OwnerDashboardPage from '../pages/OwnerDashboardPage';
 import OwnerHotelFormPage from '../pages/OwnerHotelFormPage';
 import OwnerHotelManagePage from '../pages/OwnerHotelManagePage';
@@ -21,6 +23,10 @@ import OwnerRoomTypeManagePage from '../pages/OwnerRoomTypeManagePage';
 import AdminDashboardPage from '../pages/AdminDashboardPage';
 import AdminAccountsPage from '../pages/AdminAccountsPage';
 import AdminAccountDetailPage from '../pages/AdminAccountDetailPage';
+import AdminReviewsPage from '../pages/AdminReviewsPage';
+import AdminReviewDetailPage from '../pages/AdminReviewDetailPage';
+import AdminSupportPage from '../pages/AdminSupportPage';
+import AdminSupportDetailPage from '../pages/AdminSupportDetailPage';
 import NotFoundPage from '../pages/NotFoundPage';
 
 export default function AppRoutes() {
@@ -42,6 +48,8 @@ export default function AppRoutes() {
           <Route path="/bookings" element={<BookingsPage />} />
           <Route path="/bookings/:id" element={<BookingDetailPage />} />
           <Route path="/payment/result" element={<PaymentResultPage />} />
+          <Route path="/support" element={<SupportPage />} />
+          <Route path="/support/:id" element={<SupportDetailPage />} />
         </Route>
 
         {/* Chủ khách sạn */}
@@ -57,6 +65,10 @@ export default function AppRoutes() {
           <Route path="/admin" element={<AdminDashboardPage />} />
           <Route path="/admin/accounts" element={<AdminAccountsPage />} />
           <Route path="/admin/accounts/:id" element={<AdminAccountDetailPage />} />
+          <Route path="/admin/reviews" element={<AdminReviewsPage />} />
+          <Route path="/admin/reviews/:id" element={<AdminReviewDetailPage />} />
+          <Route path="/admin/support" element={<AdminSupportPage />} />
+          <Route path="/admin/support/:id" element={<AdminSupportDetailPage />} />
         </Route>
 
         <Route path="*" element={<NotFoundPage />} />

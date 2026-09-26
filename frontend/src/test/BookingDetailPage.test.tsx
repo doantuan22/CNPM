@@ -6,11 +6,13 @@ import { renderWithProviders } from './testUtils';
 import BookingDetailPage from '../pages/BookingDetailPage';
 import * as bookingsApi from '../features/bookings/api';
 import * as paymentsApi from '../features/payments/api';
+import * as reviewsApi from '../features/reviews/api';
 import { ApiError } from '../services/apiClient';
 import type { BookingDetail } from '../features/bookings/types';
 
 vi.mock('../features/bookings/api');
 vi.mock('../features/payments/api');
+vi.mock('../features/reviews/api');
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -199,6 +201,62 @@ describe('BookingDetailPage', () => {
       await user.click(screen.getByRole('button', { name: /thử lại/i }));
 
       await waitFor(() => expect(paymentsApi.retryRefund).toHaveBeenCalledWith(9));
+    });
+  });
+
+  describe('review section (M7)', () => {
+    const completedBooking: BookingDetail = { ...baseBooking, TrangThai: 'Hoàn tất' };
+
+    it('is not shown for a booking that has not completed its stay', async () => {
+      vi.mocked(bookingsApi.getBookingDetail).mockResolvedValueOnce(baseBooking); // "Chờ thanh toán"
+      renderPage();
+      await screen.findByText('BK111');
+      expect(reviewsApi.getMyReview).not.toHaveBeenCalled();
+      expect(screen.queryByText('Đánh giá')).not.toBeInTheDocument();
+    });
+
+    it('shows a review form for a completed booking with no review yet, and submits it', async () => {
+      const user = userEvent.setup();
+      vi.mocked(bookingsApi.getBookingDetail).mockResolvedValue(completedBooking);
+      vi.mocked(reviewsApi.getMyReview).mockResolvedValueOnce(null);
+      vi.mocked(reviewsApi.createReview).mockResolvedValueOnce({
+        MaDanhGia: 1,
+        MaDatPhong: 1,
+        MaKhachHang: 1,
+        MaKhachSan: 5,
+        DiemDanhGia: 4,
+        NoiDung: 'Rất tốt',
+        TrangThai: 'Chờ duyệt',
+        HINH_ANH_DANH_GIA: [],
+      });
+      renderPage();
+
+      await user.click(await screen.findByRole('button', { name: '4 sao' }));
+      await user.type(screen.getByLabelText(/nhận xét/i), 'Rất tốt');
+      await user.click(screen.getByRole('button', { name: /gửi đánh giá/i }));
+
+      await waitFor(() =>
+        expect(reviewsApi.createReview).toHaveBeenCalledWith(1, { diemDanhGia: 4, noiDung: 'Rất tốt', hinhAnh: undefined })
+      );
+    });
+
+    it('shows the existing review with its moderation status instead of the form', async () => {
+      vi.mocked(bookingsApi.getBookingDetail).mockResolvedValueOnce(completedBooking);
+      vi.mocked(reviewsApi.getMyReview).mockResolvedValueOnce({
+        MaDanhGia: 1,
+        MaDatPhong: 1,
+        MaKhachHang: 1,
+        MaKhachSan: 5,
+        DiemDanhGia: 5,
+        NoiDung: 'Tuyệt vời',
+        TrangThai: 'Hiển thị',
+        HINH_ANH_DANH_GIA: [],
+      });
+      renderPage();
+
+      expect(await screen.findByText('Tuyệt vời')).toBeInTheDocument();
+      expect(screen.getByText('Hiển thị')).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /gửi đánh giá/i })).not.toBeInTheDocument();
     });
   });
 });

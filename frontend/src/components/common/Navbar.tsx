@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Hotel, CalendarCheck, User, LogIn, Menu, X, ShieldCheck, Building2, LogOut } from 'lucide-react';
+import { Hotel, CalendarCheck, User, LogIn, Menu, X, ShieldCheck, Building2, LogOut, LifeBuoy } from 'lucide-react';
 import { useUiStore } from '../../lib/store';
 import { useAuthStore } from '../../lib/authStore';
 import { useLogout, useMe } from '../../features/auth/hooks';
@@ -19,6 +19,7 @@ export function Navbar() {
     { to: '/', label: 'Trang chủ' },
     { to: '/hotels', label: 'Khách sạn', icon: Hotel },
     { to: '/bookings', label: 'Đặt phòng', icon: CalendarCheck },
+    { to: '/support', label: 'Hỗ trợ', icon: LifeBuoy },
   ];
 
   const authLinks = [
