@@ -1,6 +1,7 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider        = "prisma-client"
+  output          = "../src/generated/prisma"
+  previewFeatures = ["partialIndexes"]
 }
 
 datasource db {
@@ -22,6 +23,8 @@ model CHI_TIET_DAT_PHONG {
   SoLuongPhong      Int
   DAT_PHONG         DAT_PHONG  @relation(fields: [MaDatPhong], references: [MaDatPhong], onUpdate: NoAction, map: "FK_CHI_TIET_DAT_PHONG_DAT_PHONG")
   LOAI_PHONG        LOAI_PHONG @relation(fields: [MaLoaiPhong], references: [MaLoaiPhong], onUpdate: NoAction, map: "FK_CHI_TIET_DAT_PHONG_LOAI_PHONG")
+
+  @@index([MaLoaiPhong], map: "IX_CHI_TIET_DAT_PHONG_MaLoaiPhong")
 }
 
 model CHINH_SACH_HUY {
@@ -72,6 +75,12 @@ model DAT_PHONG {
   TAI_KHOAN           TAI_KHOAN            @relation(fields: [MaTaiKhoanKhachHang], references: [MaTaiKhoan], onUpdate: NoAction, map: "FK_DAT_PHONG_TAI_KHOAN")
   THANH_TOAN          THANH_TOAN[]
   YEU_CAU_HO_TRO      YEU_CAU_HO_TRO[]
+
+  @@index([MaKhachSan, NgayTao], map: "IX_DAT_PHONG_MaKhachSan_NgayTao")
+  @@index([MaKhuyenMai], map: "IX_DAT_PHONG_MaKhuyenMai", where: raw("([MaKhuyenMai] IS NOT NULL)"))
+  @@index([MaTaiKhoanKhachHang, NgayTao(sort: Desc)], map: "IX_DAT_PHONG_MaTaiKhoanKhachHang_NgayTao")
+  @@index([TrangThai, NgayTao], map: "IX_DAT_PHONG_TrangThai_NgayTao")
+  @@index([TrangThai, NgayTraPhong], map: "IX_DAT_PHONG_TrangThai_NgayTraPhong")
 }
 
 model DIA_PHUONG {
@@ -131,6 +140,9 @@ model HOAN_TIEN {
   NgayYeuCau       DateTime
   NgayHoanTien     DateTime?
   THANH_TOAN       THANH_TOAN @relation(fields: [MaThanhToan], references: [MaThanhToan], onUpdate: NoAction, map: "FK_HOAN_TIEN_THANH_TOAN")
+
+  @@index([MaThanhToan], map: "IX_HOAN_TIEN_MaThanhToan")
+  @@index([TrangThai, NgayHoanTien], map: "IX_HOAN_TIEN_TrangThai_NgayHoanTien")
 }
 
 model KHACH_SAN {
@@ -156,6 +168,9 @@ model KHACH_SAN {
   TAI_KHOAN_KHACH_SAN_MaTaiKhoanSoHuuToTAI_KHOAN TAI_KHOAN             @relation("KHACH_SAN_MaTaiKhoanSoHuuToTAI_KHOAN", fields: [MaTaiKhoanSoHuu], references: [MaTaiKhoan], onUpdate: NoAction, map: "FK_KHACH_SAN_TAI_KHOAN_SoHuu")
   KHACH_SAN_TIEN_NGHI                            KHACH_SAN_TIEN_NGHI[]
   LOAI_PHONG                                     LOAI_PHONG[]
+
+  @@index([MaTaiKhoanSoHuu, NgayDangKy(sort: Desc)], map: "IX_KHACH_SAN_MaTaiKhoanSoHuu_NgayDangKy")
+  @@index([TrangThai], map: "IX_KHACH_SAN_TrangThai")
 }
 
 model KHACH_SAN_TIEN_NGHI {
@@ -197,6 +212,8 @@ model LOAI_PHONG {
   KHACH_SAN            KHACH_SAN              @relation(fields: [MaKhachSan], references: [MaKhachSan], onUpdate: NoAction, map: "FK_LOAI_PHONG_KHACH_SAN")
   LOAI_PHONG_TIEN_NGHI LOAI_PHONG_TIEN_NGHI[]
   QUY_PHONG_GIA        QUY_PHONG_GIA[]
+
+  @@index([MaKhachSan, TrangThai], map: "IX_LOAI_PHONG_MaKhachSan_TrangThai")
 }
 
 model LOAI_PHONG_TIEN_NGHI {
@@ -255,6 +272,10 @@ model THANH_TOAN {
   ThoiGianGiaoDich    DateTime
   HOAN_TIEN           HOAN_TIEN[]
   DAT_PHONG           DAT_PHONG   @relation(fields: [MaDatPhong], references: [MaDatPhong], onUpdate: NoAction, map: "FK_THANH_TOAN_DAT_PHONG")
+
+  @@index([MaDatPhong], map: "IX_THANH_TOAN_MaDatPhong")
+  @@index([MaGiaoDichDoiTac], map: "IX_THANH_TOAN_MaGiaoDichDoiTac")
+  @@index([TrangThai, ThoiGianGiaoDich], map: "IX_THANH_TOAN_TrangThai_ThoiGianGiaoDich")
 }
 
 model TIEN_NGHI {
@@ -287,4 +308,6 @@ model YEU_CAU_HO_TRO {
   DAT_PHONG                                               DAT_PHONG? @relation(fields: [MaDatPhong], references: [MaDatPhong], onDelete: NoAction, onUpdate: NoAction, map: "FK_YEU_CAU_HO_TRO_DAT_PHONG")
   TAI_KHOAN_YEU_CAU_HO_TRO_MaTaiKhoanKhachHangToTAI_KHOAN TAI_KHOAN  @relation("YEU_CAU_HO_TRO_MaTaiKhoanKhachHangToTAI_KHOAN", fields: [MaTaiKhoanKhachHang], references: [MaTaiKhoan], onUpdate: NoAction, map: "FK_YEU_CAU_HO_TRO_TAI_KHOAN_KhachHang")
   TAI_KHOAN_YEU_CAU_HO_TRO_MaTaiKhoanXuLyToTAI_KHOAN      TAI_KHOAN? @relation("YEU_CAU_HO_TRO_MaTaiKhoanXuLyToTAI_KHOAN", fields: [MaTaiKhoanXuLy], references: [MaTaiKhoan], onDelete: NoAction, onUpdate: NoAction, map: "FK_YEU_CAU_HO_TRO_TAI_KHOAN_XuLy")
+
+  @@index([MaTaiKhoanKhachHang, NgayTao(sort: Desc)], map: "IX_YEU_CAU_HO_TRO_MaTaiKhoanKhachHang_NgayTao")
 }

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Star, Trash2, ImagePlus, Plus, BedDouble } from 'lucide-react';
+import { ArrowLeft, Star, Trash2, ImagePlus, Plus, BedDouble, BarChart3 } from 'lucide-react';
 import { Button } from '../components/common/Button';
 import {
   useMyHotel,
@@ -118,9 +118,16 @@ export default function OwnerHotelManagePage() {
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">{hotel.TenKhachSan}</h1>
           <p className="text-sm text-slate-500">Trạng thái: {hotel.TrangThai}</p>
         </div>
-        <span className="inline-flex items-center gap-1 rounded-lg bg-amber-50 px-3 py-1.5 text-amber-700">
-          <Star className="h-4 w-4 fill-amber-400 text-amber-400" /> {hotel.HangSao} sao
-        </span>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" asChild>
+            <Link to={`/owner/hotels/${hotelId}/analytics`}>
+              <BarChart3 className="mr-1.5 h-4 w-4" /> Xem thống kê
+            </Link>
+          </Button>
+          <span className="inline-flex items-center gap-1 rounded-lg bg-amber-50 px-3 py-1.5 text-amber-700">
+            <Star className="h-4 w-4 fill-amber-400 text-amber-400" /> {hotel.HangSao} sao
+          </span>
+        </div>
       </div>
 
       {/* Info form */}

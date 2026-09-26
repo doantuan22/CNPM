@@ -387,6 +387,106 @@ export const openApiSpec = {
         responses: { '200': { description: 'Updated' }, '400': { description: '"Đã xử lý" requires ketQuaXuLy, or the request is already resolved' }, '403': { description: 'Not an admin' }, '404': { description: 'Not found' } },
       },
     },
+    '/admin/promotions': {
+      get: {
+        summary: 'List promotions, filter by TrangThai/LoaiGiamGia, search by MaCode (M8 §1, admin only)',
+        tags: ['Promotion'],
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          { name: 'search', in: 'query', schema: { type: 'string' } },
+          { name: 'TrangThai', in: 'query', schema: { type: 'string', enum: ['Hoạt động', 'Ngừng'] } },
+          { name: 'LoaiGiamGia', in: 'query', schema: { type: 'string', enum: ['Phần trăm', 'Số tiền cố định'] } },
+          { name: 'page', in: 'query', schema: { type: 'integer', default: 1 } },
+          { name: 'limit', in: 'query', schema: { type: 'integer', default: 20 } },
+        ],
+        responses: { '200': { description: 'Paginated promotions' }, '403': { description: 'Not an admin' } },
+      },
+      post: {
+        summary: 'Create a promotion — always system-wide, always starts "Hoạt động" (M8 §1)',
+        tags: ['Promotion'],
+        security: [{ BearerAuth: [] }],
+        description:
+          'PhamViApDung is always "Toàn hệ thống" and is not even an accepted field — Gate 0 (G0-01) forbids KHUYEN_MAI_KHACH_SAN, so a "Theo phạm vi" promotion would have no data to actually scope it. TrangThai is likewise not accepted — every new promotion starts "Hoạt động".',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['MaCode', 'LoaiGiamGia', 'GiaTriGiam', 'NgayBatDau', 'NgayKetThuc'],
+                properties: {
+                  MaCode: { type: 'string' },
+                  LoaiGiamGia: { type: 'string', enum: ['Phần trăm', 'Số tiền cố định'] },
+                  GiaTriGiam: { type: 'number', description: '<= 100 when LoaiGiamGia is "Phần trăm"' },
+                  GiaTriDonToiThieu: { type: 'number', default: 0 },
+                  MucGiamToiDa: { type: 'number', default: 0, description: '0 = no cap' },
+                  SoLuongGioiHan: { type: 'integer', default: 0, description: '0 = unlimited' },
+                  NgayBatDau: { type: 'string', format: 'date' },
+                  NgayKetThuc: { type: 'string', format: 'date' },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          '201': { description: 'Created' },
+          '400': { description: 'NgayKetThuc before NgayBatDau, percent > 100, or an out-of-range field' },
+          '403': { description: 'Not an admin' },
+          '409': { description: 'MaCode already exists' },
+        },
+      },
+    },
+    '/admin/promotions/{id}': {
+      get: {
+        summary: 'Promotion detail, including SoLuongDaSuDung (usage count) (M8 §1)',
+        tags: ['Promotion'],
+        security: [{ BearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: { '200': { description: 'OK' }, '403': { description: 'Not an admin' }, '404': { description: 'Not found' } },
+      },
+      patch: {
+        summary: 'Update a promotion — cross-field checks (date order, percent cap) re-validated against the merged result (M8 §1)',
+        tags: ['Promotion'],
+        security: [{ BearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: { '200': { description: 'Updated' }, '400': { description: 'Merged fields fail validation' }, '403': { description: 'Not an admin' }, '404': { description: 'Not found' }, '409': { description: 'MaCode already exists' } },
+      },
+    },
+    '/admin/promotions/{id}/activate': {
+      post: { summary: 'Bật mã khuyến mãi (TrangThai → "Hoạt động")', tags: ['Promotion'], security: [{ BearerAuth: [] }], parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }], responses: { '200': { description: 'Updated' }, '404': { description: 'Not found' } } },
+    },
+    '/admin/promotions/{id}/deactivate': {
+      post: { summary: 'Tắt mã khuyến mãi (TrangThai → "Ngừng")', tags: ['Promotion'], security: [{ BearerAuth: [] }], parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }], responses: { '200': { description: 'Updated' }, '404': { description: 'Not found' } } },
+    },
+    '/owner/hotels/{id}/analytics': {
+      get: {
+        summary: "Owner-scoped analytics for one owned hotel (M8 §2)",
+        tags: ['Analytics'],
+        security: [{ BearerAuth: [] }],
+        description:
+          'Ownership checked before any query runs (404 unknown hotel, 403 someone else\'s). Revenue/refund figures are computed from THANH_TOAN/HOAN_TIEN status directly (never from booking status), so a cancelled or never-paid booking contributes nothing and a failed payment is excluded automatically. `to` is inclusive on the wire; TyLeLapDay is null (not 0) when there is no QUY_PHONG_GIA data at all in range.',
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'integer' } },
+          { name: 'from', in: 'query', schema: { type: 'string', format: 'date' } },
+          { name: 'to', in: 'query', schema: { type: 'string', format: 'date' }, description: 'Inclusive' },
+        ],
+        responses: { '200': { description: 'OwnerAnalytics' }, '403': { description: "Not this owner's hotel" }, '404': { description: 'Hotel not found' } },
+      },
+    },
+    '/admin/analytics': {
+      get: {
+        summary: 'System-wide analytics/reports dashboard (M8 §3, admin only)',
+        tags: ['Analytics'],
+        security: [{ BearerAuth: [] }],
+        description:
+          'from/to apply to booking/payment/refund/support counts (all have a date column to filter on). Account/hotel totals and DanhGiaTheoTrangThai are always all-time — DANH_GIA has no created-date column, so there is nothing accurate to range-filter there (see M8 report §3).',
+        parameters: [
+          { name: 'from', in: 'query', schema: { type: 'string', format: 'date' } },
+          { name: 'to', in: 'query', schema: { type: 'string', format: 'date' }, description: 'Inclusive' },
+        ],
+        responses: { '200': { description: 'AdminAnalytics' }, '403': { description: 'Not an admin' } },
+      },
+    },
     '/cancellation-policies': {
       get: {
         summary: 'List active cancellation policies (public) — system-level data, no MaKhachSan/MaDatPhong',

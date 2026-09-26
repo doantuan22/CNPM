@@ -15,6 +15,9 @@ import bookingsRoutes, { myBookingsRoutes } from '../modules/bookings/bookings.r
 import { paymentsBookingRoutes, paymentsGatewayRoutes } from '../modules/payments/payments.routes';
 import { reviewsBookingRoutes, adminReviewsRoutes } from '../modules/reviews/reviews.routes';
 import { supportRoutes, adminSupportRoutes } from '../modules/support/support.routes';
+import promotionsRoutes from '../modules/promotions/promotions.routes';
+import ownerAnalyticsRoutes from '../modules/owner/owner-analytics.routes';
+import adminAnalyticsRoutes from '../modules/analytics/admin-analytics.routes';
 import { openApiSpec } from '../config/openapi';
 
 const router = Router();
@@ -46,12 +49,17 @@ router.use('/payments', paymentsGatewayRoutes);
 // Owner / Supply (M3)
 router.use('/owner/hotels', ownerHotelsRoutes);
 router.use('/owner/room-types', ownerRoomTypesRoutes);
+router.use('/owner/hotels', ownerAnalyticsRoutes);
 
 // After-sales: review + support/complaint (M7)
 router.use('/bookings', reviewsBookingRoutes);
 router.use('/admin/reviews', adminReviewsRoutes);
 router.use('/support', supportRoutes);
 router.use('/admin/support', adminSupportRoutes);
+
+// Promotion management + analytics/reports (M8)
+router.use('/admin/promotions', promotionsRoutes);
+router.use('/admin/analytics', adminAnalyticsRoutes);
 
 // OpenAPI specification route
 router.get('/openapi.json', (_req, res) => {

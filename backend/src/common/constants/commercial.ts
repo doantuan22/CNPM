@@ -1,10 +1,17 @@
 /**
  * KHUYEN_MAI.TrangThai — open domain (Chương 6.15: "Hoạt động, Hết hạn, Ngừng,...").
  * Only ACTIVE promotions (and within their date window) can ever be applied.
+ * `INACTIVE` ("Ngừng") is M8's admin bật/tắt toggle — "Hết hạn" is deliberately
+ * not a stored value here: it's already fully derived from NgayKetThuc by
+ * evaluatePromotion() regardless of TrangThai, so persisting it would just be
+ * a second, potentially stale source of truth for the same fact.
  */
 export const PROMOTION_STATUS = {
   ACTIVE: 'Hoạt động',
+  INACTIVE: 'Ngừng',
 } as const;
+
+export type PromotionStatus = (typeof PROMOTION_STATUS)[keyof typeof PROMOTION_STATUS];
 
 /** KHUYEN_MAI.LoaiGiamGia — closed domain, enforced by CK_KHUYEN_MAI_LoaiGiamGia. */
 export const DISCOUNT_TYPE = {

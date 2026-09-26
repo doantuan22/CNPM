@@ -4,7 +4,7 @@ import { ACCOUNT_STATUS } from '../common/constants/account-status';
 import { ROLE_NAMES, RoleName } from '../common/constants/roles';
 import { HOTEL_STATUS, ROOM_TYPE_STATUS, BOOKING_STATUS } from '../common/constants/hotel-status';
 import { PROMOTION_STATUS, DISCOUNT_TYPE, CANCELLATION_POLICY_STATUS } from '../common/constants/commercial';
-import { PAYMENT_STATUS, PAYMENT_METHOD } from '../common/constants/payment';
+import { PAYMENT_STATUS, PAYMENT_METHOD, REFUND_STATUS } from '../common/constants/payment';
 
 let roleIdCache: Map<string, number> | null = null;
 
@@ -281,7 +281,8 @@ export const createTestPayment = async (
   maDatPhong: number,
   soTien: number,
   trangThai: string = PAYMENT_STATUS.SUCCESS,
-  maGiaoDichDoiTac?: string
+  maGiaoDichDoiTac?: string,
+  thoiGianGiaoDich?: Date
 ) => {
   const prisma = getPrismaClient();
   const suffix = unique();
@@ -292,7 +293,30 @@ export const createTestPayment = async (
       PhuongThucThanhToan: PAYMENT_METHOD.VNPAY,
       MaGiaoDichDoiTac: maGiaoDichDoiTac ?? `TESTPAY_${suffix}`,
       TrangThai: trangThai,
-      ThoiGianGiaoDich: new Date(),
+      ThoiGianGiaoDich: thoiGianGiaoDich ?? new Date(),
+    },
+  });
+};
+
+export const createTestRefund = async (
+  maThanhToan: number,
+  soTienHoan: number,
+  trangThai: string = REFUND_STATUS.SUCCESS,
+  ngayHoanTien?: Date | null,
+  ngayYeuCau?: Date
+) => {
+  const prisma = getPrismaClient();
+  const suffix = unique();
+  const requested = ngayYeuCau ?? new Date();
+  return prisma.hOAN_TIEN.create({
+    data: {
+      MaThanhToan: maThanhToan,
+      SoTienHoan: soTienHoan,
+      LyDoHoanTien: 'Test refund',
+      MaGiaoDichDoiTac: `TESTREFUND_${suffix}`,
+      TrangThai: trangThai,
+      NgayYeuCau: requested,
+      NgayHoanTien: ngayHoanTien === undefined ? requested : ngayHoanTien,
     },
   });
 };

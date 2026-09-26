@@ -20,7 +20,11 @@ import OwnerDashboardPage from '../pages/OwnerDashboardPage';
 import OwnerHotelFormPage from '../pages/OwnerHotelFormPage';
 import OwnerHotelManagePage from '../pages/OwnerHotelManagePage';
 import OwnerRoomTypeManagePage from '../pages/OwnerRoomTypeManagePage';
+import OwnerAnalyticsPage from '../pages/OwnerAnalyticsPage';
 import AdminDashboardPage from '../pages/AdminDashboardPage';
+import AdminAnalyticsPage from '../pages/AdminAnalyticsPage';
+import AdminPromotionsPage from '../pages/AdminPromotionsPage';
+import AdminPromotionFormPage from '../pages/AdminPromotionFormPage';
 import AdminAccountsPage from '../pages/AdminAccountsPage';
 import AdminAccountDetailPage from '../pages/AdminAccountDetailPage';
 import AdminReviewsPage from '../pages/AdminReviewsPage';
@@ -58,6 +62,7 @@ export default function AppRoutes() {
           <Route path="/owner/hotels/new" element={<OwnerHotelFormPage />} />
           <Route path="/owner/hotels/:id" element={<OwnerHotelManagePage />} />
           <Route path="/owner/room-types/:id" element={<OwnerRoomTypeManagePage />} />
+          <Route path="/owner/hotels/:id/analytics" element={<OwnerAnalyticsPage />} />
         </Route>
 
         {/* Quản trị hệ thống */}
@@ -69,6 +74,10 @@ export default function AppRoutes() {
           <Route path="/admin/reviews/:id" element={<AdminReviewDetailPage />} />
           <Route path="/admin/support" element={<AdminSupportPage />} />
           <Route path="/admin/support/:id" element={<AdminSupportDetailPage />} />
+          <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
+          <Route path="/admin/promotions" element={<AdminPromotionsPage />} />
+          <Route path="/admin/promotions/new" element={<AdminPromotionFormPage />} />
+          <Route path="/admin/promotions/:id" element={<AdminPromotionFormPage />} />
         </Route>
 
         <Route path="*" element={<NotFoundPage />} />
