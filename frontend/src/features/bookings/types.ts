@@ -45,3 +45,51 @@ export interface CreateBookingRequest {
   promoCode?: string;
   ghiChu?: string;
 }
+
+/** One row of GET /bookings (own history, newest first). */
+export interface BookingSummary {
+  MaDatPhong: number;
+  MaXacNhanDatPhong: string;
+  TenKhachSan: string;
+  NgayNhanPhong: string;
+  NgayTraPhong: string;
+  TongTienThanhToan: number;
+  TrangThai: string;
+  NgayTao: string;
+}
+
+export interface RefundView {
+  MaHoanTien: number;
+  SoTienHoan: number;
+  LyDoHoanTien: string;
+  TrangThai: string;
+  NgayYeuCau: string;
+  NgayHoanTien: string | null;
+}
+
+export interface PaymentView {
+  MaThanhToan: number;
+  SoTien: number;
+  PhuongThucThanhToan: string;
+  TrangThai: string;
+  ThoiGianGiaoDich: string;
+  HoanTien: RefundView[];
+}
+
+/**
+ * GET /bookings/:id — ChiTietPhong.GiaTheoDem/ThanhTien are always null here
+ * (unlike the just-created Booking above): CHI_TIET_DAT_PHONG only stores
+ * MaLoaiPhong + SoLuongPhong, no per-line historical price snapshot (Gate 0
+ * — no CHI_TIET_GIA_DAT_PHONG table), so only the DAT_PHONG-level totals
+ * (TongTienPhong/SoTienGiam/TongTienThanhToan) are ever reconstructable
+ * later. Render room lines as "name × qty" only, never a per-line price.
+ */
+export interface BookingDetail extends Omit<Booking, 'ChiTietPhong'> {
+  ChiTietPhong: BookingRoomLine[];
+  MaTaiKhoanKhachHang: number;
+  ThanhToan: PaymentView[];
+}
+
+export interface CancelBookingRequest {
+  ghiChu?: string;
+}

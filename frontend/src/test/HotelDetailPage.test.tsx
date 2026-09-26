@@ -98,7 +98,7 @@ const renderPage = (id = '1') =>
     <Routes>
       <Route path="/hotels/:id" element={<HotelDetailPage />} />
       <Route path="/login" element={<div>Login Page</div>} />
-      <Route path="/bookings" element={<div>Bookings Result Page</div>} />
+      <Route path="/bookings/:id" element={<div>Booking Detail Page</div>} />
     </Routes>,
     { route: `/hotels/${id}?checkIn=2026-04-01&checkOut=2026-04-03&guests=2` }
   );
@@ -299,7 +299,7 @@ describe('HotelDetailPage', () => {
         })
       );
     });
-    expect(await screen.findByText('Bookings Result Page')).toBeInTheDocument();
+    expect(await screen.findByText('Booking Detail Page')).toBeInTheDocument();
   });
 
   it('shows a conflict error with a retry option when the room sells out right before confirming', async () => {

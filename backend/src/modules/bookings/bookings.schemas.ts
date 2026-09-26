@@ -27,3 +27,15 @@ export const createBookingSchema = z
 export type CreateBookingInput = z.infer<typeof createBookingSchema>;
 
 export const hotelIdParamSchema = z.object({ id: z.coerce.number().int().positive() });
+
+export const bookingIdParamSchema = z.object({ id: z.coerce.number().int().positive() });
+
+// A cancel request legitimately has no body (e.g. a bare `fetch(url, { method: 'POST' })`)
+// — accept a missing/undefined body the same as an empty one.
+export const cancelBookingSchema = z
+  .object({
+    ghiChu: z.string().trim().max(1000).optional(),
+  })
+  .optional()
+  .default({});
+export type CancelBookingInput = z.infer<typeof cancelBookingSchema>;

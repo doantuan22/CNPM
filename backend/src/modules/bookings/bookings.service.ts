@@ -2,9 +2,17 @@ import { randomBytes } from 'node:crypto';
 import { BookingsRepository } from './bookings.repository';
 import { enumerateNights, priceRoomLine, buildBookedByDate, toDateKey, type NightlyRate } from '../hotels/availability';
 import { evaluatePromotion } from '../quotes/promotion-pricing';
+import { expireStalePendingBookings } from './booking-expiry';
+import { selectRefundPercent, computeRefundAmount } from './refund-policy';
 import { AppError } from '../../common/errors/app-error';
 import { BOOKING_STATUS } from '../../common/constants/hotel-status';
-import type { CreateBookingInput } from './bookings.schemas';
+import { REFUND_STATUS } from '../../common/constants/payment';
+import { getPrismaClient } from '../../config/prisma';
+import type { RefundGateway } from '../payments/refund-gateway';
+import { VnpayRefundGateway } from '../payments/refund-gateway';
+import { generateRefundRef } from '../payments/vnpay';
+import { attemptGatewayRefund } from '../payments/refund-helper';
+import type { CreateBookingInput, CancelBookingInput } from './bookings.schemas';
 
 const toNumber = (value: unknown): number => Number(value);
 
@@ -45,8 +53,44 @@ export interface BookingResponse {
   NgayTao: string;
 }
 
+export interface MyBookingSummary {
+  MaDatPhong: number;
+  MaXacNhanDatPhong: string;
+  TenKhachSan: string;
+  NgayNhanPhong: string;
+  NgayTraPhong: string;
+  TongTienThanhToan: number;
+  TrangThai: string;
+  NgayTao: string;
+}
+
+export interface PaymentSummary {
+  MaThanhToan: number;
+  SoTien: number;
+  PhuongThucThanhToan: string;
+  TrangThai: string;
+  ThoiGianGiaoDich: string;
+  HoanTien: Array<{
+    MaHoanTien: number;
+    SoTienHoan: number;
+    LyDoHoanTien: string;
+    TrangThai: string;
+    NgayYeuCau: string;
+    NgayHoanTien: string | null;
+  }>;
+}
+
+export interface BookingDetail extends Omit<BookingResponse, 'ChiTietPhong'> {
+  ChiTietPhong: BookingRoomLine[];
+  MaTaiKhoanKhachHang: number;
+  ThanhToan: PaymentSummary[];
+}
+
 export class BookingsService {
-  constructor(private readonly repository: BookingsRepository = new BookingsRepository()) {}
+  constructor(
+    private readonly repository: BookingsRepository = new BookingsRepository(),
+    private readonly refundGateway: RefundGateway = new VnpayRefundGateway()
+  ) {}
 
   async createBooking(
     maKhachSan: number,
@@ -69,6 +113,11 @@ export class BookingsService {
     }
 
     return this.repository.runInTransaction(async (tx) => {
+      // Free up anything abandoned in "Chờ thanh toán" past the timeout
+      // BEFORE reading booked quantities below, so an expired hold never
+      // blocks this request from seeing the room as available (M6 §2).
+      await expireStalePendingBookings(tx);
+
       // Everything below is computed fresh from the DB, inside the locked
       // transaction — the client's prior quote (if any) is never trusted.
       const rateRows = await this.repository.lockRatesForUpdate(tx, requestedIds, input.checkIn, input.checkOut);
@@ -219,5 +268,153 @@ export class BookingsService {
         NgayTao: booking.NgayTao.toISOString(),
       };
     });
+  }
+
+  async listMyBookings(maTaiKhoanKhachHang: number): Promise<MyBookingSummary[]> {
+    await expireStalePendingBookings(getPrismaClient());
+    const rows = await this.repository.listByCustomer(maTaiKhoanKhachHang);
+    return rows.map((b) => ({
+      MaDatPhong: b.MaDatPhong,
+      MaXacNhanDatPhong: b.MaXacNhanDatPhong,
+      TenKhachSan: b.KHACH_SAN.TenKhachSan,
+      NgayNhanPhong: b.NgayNhanPhong.toISOString().slice(0, 10),
+      NgayTraPhong: b.NgayTraPhong.toISOString().slice(0, 10),
+      TongTienThanhToan: toNumber(b.TongTienThanhToan),
+      TrangThai: b.TrangThai,
+      NgayTao: b.NgayTao.toISOString(),
+    }));
+  }
+
+  async getBookingDetail(maDatPhong: number, requesterId: number): Promise<BookingDetail> {
+    await expireStalePendingBookings(getPrismaClient());
+    const booking = await this.repository.findDetailById(maDatPhong);
+    if (!booking) throw AppError.notFound('Không tìm thấy đặt phòng');
+    if (booking.MaTaiKhoanKhachHang !== requesterId) {
+      throw AppError.forbidden('Bạn không có quyền xem đặt phòng này');
+    }
+    return this.toBookingDetail(booking);
+  }
+
+  async cancelBooking(
+    maDatPhong: number,
+    requesterId: number,
+    input: CancelBookingInput,
+    ipAddr: string
+  ): Promise<BookingDetail> {
+    await expireStalePendingBookings(getPrismaClient());
+    const booking = await this.repository.findDetailById(maDatPhong);
+    if (!booking) throw AppError.notFound('Không tìm thấy đặt phòng');
+    if (booking.MaTaiKhoanKhachHang !== requesterId) {
+      throw AppError.forbidden('Bạn không có quyền hủy đặt phòng này');
+    }
+    if (booking.TrangThai !== BOOKING_STATUS.PENDING_PAYMENT && booking.TrangThai !== BOOKING_STATUS.CONFIRMED) {
+      throw AppError.badRequest(`Không thể hủy đặt phòng ở trạng thái "${booking.TrangThai}"`);
+    }
+
+    const now = new Date();
+    // Reference instant is check-in midnight — the same convention the
+    // frontend preview (refund-preview.ts) uses, so the number shown before
+    // confirming never disagrees with what the backend actually charges.
+    const hoursBeforeCheckIn = (booking.NgayNhanPhong.getTime() - now.getTime()) / 3_600_000;
+    const tiers = booking.CHINH_SACH_HUY.CHI_TIET_CHINH_SACH_HUY.map((c) => ({
+      soGioTruocNhanPhong: c.SoGioTruocNhanPhong,
+      tyLeHoanTien: toNumber(c.TyLeHoanTien),
+    }));
+    const refundPercent = selectRefundPercent(tiers, hoursBeforeCheckIn);
+    const note = input.ghiChu ? `Khách hủy đặt phòng: ${input.ghiChu}` : 'Khách hủy đặt phòng';
+
+    const maDatPhongAfterCancel = await this.repository.runInTransaction(async (tx) => {
+      const affected = await this.repository.cancelBooking(tx, maDatPhong, note, now);
+      if (affected === 0) {
+        throw AppError.conflict('Đặt phòng đã đổi trạng thái trước đó (có thể đã bị hủy hoặc hết hạn) — vui lòng tải lại');
+      }
+
+      // No successful payment (still PENDING_PAYMENT, never paid) → nothing
+      // to refund. Never fabricate a HOAN_TIEN for money that was never
+      // actually captured (M6 §4).
+      const successPayment = await this.repository.findSuccessfulPayment(tx, maDatPhong);
+      if (!successPayment) return maDatPhong;
+
+      const refundAmount = computeRefundAmount(toNumber(successPayment.SoTien), refundPercent);
+      if (refundAmount <= 0) return maDatPhong; // eligible for cancellation, not for any refund (0% tier)
+
+      const refundRef = generateRefundRef();
+      const refund = await this.repository.insertRefund(tx, {
+        maThanhToan: successPayment.MaThanhToan,
+        soTienHoan: refundAmount,
+        lyDoHoanTien: `Hủy đặt phòng — hoàn ${refundPercent}% theo chính sách hủy (${hoursBeforeCheckIn.toFixed(1)}h trước nhận phòng)`,
+        maGiaoDichDoiTac: refundRef,
+        trangThai: REFUND_STATUS.PENDING,
+        ngayYeuCau: now,
+      });
+
+      const outcome = await attemptGatewayRefund(this.refundGateway, successPayment.MaGiaoDichDoiTac, refundRef, refundAmount, ipAddr);
+      await this.repository.markRefundOutcome(tx, refund.MaHoanTien, outcome.success ? REFUND_STATUS.SUCCESS : REFUND_STATUS.FAILED, outcome.success ? new Date() : null);
+
+      return maDatPhong;
+    });
+
+    return this.getBookingDetail(maDatPhongAfterCancel, requesterId);
+  }
+
+  private toBookingDetail(
+    booking: NonNullable<Awaited<ReturnType<BookingsRepository['findDetailById']>>>
+  ): BookingDetail {
+    const chiTietPhong: BookingRoomLine[] = booking.CHI_TIET_DAT_PHONG.map((c) => ({
+      MaLoaiPhong: c.MaLoaiPhong,
+      TenLoaiPhong: c.LOAI_PHONG.TenLoaiPhong,
+      SoLuong: c.SoLuongPhong,
+      GiaTheoDem: null,
+      ThanhTien: null,
+    }));
+
+    return {
+      MaDatPhong: booking.MaDatPhong,
+      MaXacNhanDatPhong: booking.MaXacNhanDatPhong,
+      MaKhachSan: booking.MaKhachSan,
+      MaTaiKhoanKhachHang: booking.MaTaiKhoanKhachHang,
+      NgayNhanPhong: booking.NgayNhanPhong.toISOString().slice(0, 10),
+      NgayTraPhong: booking.NgayTraPhong.toISOString().slice(0, 10),
+      SoDem: enumerateNights(booking.NgayNhanPhong, booking.NgayTraPhong).length,
+      ChiTietPhong: chiTietPhong,
+      TongTienPhong: toNumber(booking.TongTienPhong),
+      KhuyenMai: booking.KHUYEN_MAI
+        ? {
+            MaKhuyenMai: booking.KHUYEN_MAI.MaKhuyenMai,
+            MaCode: booking.KHUYEN_MAI.MaCode,
+            LoaiGiamGia: booking.KHUYEN_MAI.LoaiGiamGia,
+            GiaTriGiam: toNumber(booking.KHUYEN_MAI.GiaTriGiam),
+          }
+        : null,
+      SoTienGiam: toNumber(booking.SoTienGiam),
+      TongTienThanhToan: toNumber(booking.TongTienThanhToan),
+      TrangThai: booking.TrangThai,
+      GhiChu: booking.GhiChu,
+      ChinhSachHuy: {
+        MaChinhSachHuy: booking.CHINH_SACH_HUY.MaChinhSachHuy,
+        TenChinhSach: booking.CHINH_SACH_HUY.TenChinhSach,
+        MoTa: booking.CHINH_SACH_HUY.MoTa,
+        ChiTiet: booking.CHINH_SACH_HUY.CHI_TIET_CHINH_SACH_HUY.map((c) => ({
+          SoGioTruocNhanPhong: c.SoGioTruocNhanPhong,
+          TyLeHoanTien: toNumber(c.TyLeHoanTien),
+        })),
+      },
+      NgayTao: booking.NgayTao.toISOString(),
+      ThanhToan: booking.THANH_TOAN.map((t) => ({
+        MaThanhToan: t.MaThanhToan,
+        SoTien: toNumber(t.SoTien),
+        PhuongThucThanhToan: t.PhuongThucThanhToan,
+        TrangThai: t.TrangThai,
+        ThoiGianGiaoDich: t.ThoiGianGiaoDich.toISOString(),
+        HoanTien: t.HOAN_TIEN.map((h) => ({
+          MaHoanTien: h.MaHoanTien,
+          SoTienHoan: toNumber(h.SoTienHoan),
+          LyDoHoanTien: h.LyDoHoanTien,
+          TrangThai: h.TrangThai,
+          NgayYeuCau: h.NgayYeuCau.toISOString(),
+          NgayHoanTien: h.NgayHoanTien ? h.NgayHoanTien.toISOString() : null,
+        })),
+      })),
+    };
   }
 }

@@ -2,8 +2,9 @@ import { getPrismaClient } from '../config/prisma';
 import { hashPassword } from '../common/utils/password';
 import { ACCOUNT_STATUS } from '../common/constants/account-status';
 import { ROLE_NAMES, RoleName } from '../common/constants/roles';
-import { HOTEL_STATUS, ROOM_TYPE_STATUS } from '../common/constants/hotel-status';
-import { PROMOTION_STATUS, DISCOUNT_TYPE } from '../common/constants/commercial';
+import { HOTEL_STATUS, ROOM_TYPE_STATUS, BOOKING_STATUS } from '../common/constants/hotel-status';
+import { PROMOTION_STATUS, DISCOUNT_TYPE, CANCELLATION_POLICY_STATUS } from '../common/constants/commercial';
+import { PAYMENT_STATUS, PAYMENT_METHOD } from '../common/constants/payment';
 
 let roleIdCache: Map<string, number> | null = null;
 
@@ -187,4 +188,111 @@ export const createTestPromotion = async (options: TestPromotionOptions = {}) =>
 export const deleteTestPromotion = async (maKhuyenMai: number): Promise<void> => {
   const prisma = getPrismaClient();
   await prisma.kHUYEN_MAI.delete({ where: { MaKhuyenMai: maKhuyenMai } }).catch(() => undefined);
+};
+
+/**
+ * A CHINH_SACH_HUY dedicated to one test — NOT the system-wide "oldest
+ * active" default that createBooking resolves (see M5 report §6 /
+ * cancellation-policies.repository.ts findActiveDefault). Attached directly
+ * to a test booking's MaChinhSachHuy so tier-selection tests get exact,
+ * known thresholds regardless of whatever the seeded default policy is.
+ */
+export const createTestCancellationPolicy = async (
+  tiers: Array<{ soGioTruocNhanPhong: number; tyLeHoanTien: number }>
+) => {
+  const prisma = getPrismaClient();
+  const suffix = unique();
+  const policy = await prisma.cHINH_SACH_HUY.create({
+    data: {
+      TenChinhSach: `Test Policy ${suffix}`,
+      MoTa: 'Test cancellation policy',
+      TrangThai: CANCELLATION_POLICY_STATUS.ACTIVE,
+      NgayTao: new Date(),
+    },
+  });
+  await prisma.cHI_TIET_CHINH_SACH_HUY.createMany({
+    data: tiers.map((t) => ({
+      MaChinhSachHuy: policy.MaChinhSachHuy,
+      SoGioTruocNhanPhong: t.soGioTruocNhanPhong,
+      TyLeHoanTien: t.tyLeHoanTien,
+    })),
+  });
+  return policy;
+};
+
+export const deleteTestCancellationPolicy = async (maChinhSachHuy: number): Promise<void> => {
+  const prisma = getPrismaClient();
+  await prisma.cHI_TIET_CHINH_SACH_HUY.deleteMany({ where: { MaChinhSachHuy: maChinhSachHuy } });
+  await prisma.cHINH_SACH_HUY.delete({ where: { MaChinhSachHuy: maChinhSachHuy } }).catch(() => undefined);
+};
+
+export interface TestBookingOptions {
+  maKhuyenMai?: number | null;
+  tongTienPhong?: number;
+  soTienGiam?: number;
+  trangThai?: string;
+  ngayTao?: Date;
+  ghiChu?: string | null;
+}
+
+/**
+ * Inserts a DAT_PHONG row directly (bypassing POST /hotels/:id/bookings) so
+ * payment/cancellation/refund tests can set up an exact starting state
+ * (a specific TrangThai, a backdated NgayTao to simulate a timed-out hold,
+ * a specific MaChinhSachHuy) without depending on real QUY_PHONG_GIA
+ * inventory or the M5 pricing/locking flow — mirrors the direct-DB-insert
+ * pattern already used for the M5 "cancelled booking" fixture (see
+ * bookings.test.ts line ~245).
+ */
+export const createTestBookingDirect = async (
+  maTaiKhoanKhachHang: number,
+  maKhachSan: number,
+  maChinhSachHuy: number,
+  ngayNhanPhong: Date,
+  ngayTraPhong: Date,
+  options: TestBookingOptions = {}
+) => {
+  const prisma = getPrismaClient();
+  const suffix = unique();
+  const now = options.ngayTao ?? new Date();
+  const tongTienPhong = options.tongTienPhong ?? 1_000_000;
+  const soTienGiam = options.soTienGiam ?? 0;
+  return prisma.dAT_PHONG.create({
+    data: {
+      MaXacNhanDatPhong: `TST${suffix}`.slice(0, 20),
+      TAI_KHOAN: { connect: { MaTaiKhoan: maTaiKhoanKhachHang } },
+      KHACH_SAN: { connect: { MaKhachSan: maKhachSan } },
+      ...(options.maKhuyenMai ? { KHUYEN_MAI: { connect: { MaKhuyenMai: options.maKhuyenMai } } } : {}),
+      CHINH_SACH_HUY: { connect: { MaChinhSachHuy: maChinhSachHuy } },
+      NgayNhanPhong: ngayNhanPhong,
+      NgayTraPhong: ngayTraPhong,
+      TongTienPhong: tongTienPhong,
+      SoTienGiam: soTienGiam,
+      TongTienThanhToan: tongTienPhong - soTienGiam,
+      GhiChu: options.ghiChu ?? null,
+      TrangThai: options.trangThai ?? BOOKING_STATUS.PENDING_PAYMENT,
+      NgayTao: now,
+      NgayCapNhat: now,
+    },
+  });
+};
+
+export const createTestPayment = async (
+  maDatPhong: number,
+  soTien: number,
+  trangThai: string = PAYMENT_STATUS.SUCCESS,
+  maGiaoDichDoiTac?: string
+) => {
+  const prisma = getPrismaClient();
+  const suffix = unique();
+  return prisma.tHANH_TOAN.create({
+    data: {
+      MaDatPhong: maDatPhong,
+      SoTien: soTien,
+      PhuongThucThanhToan: PAYMENT_METHOD.VNPAY,
+      MaGiaoDichDoiTac: maGiaoDichDoiTac ?? `TESTPAY_${suffix}`,
+      TrangThai: trangThai,
+      ThoiGianGiaoDich: new Date(),
+    },
+  });
 };

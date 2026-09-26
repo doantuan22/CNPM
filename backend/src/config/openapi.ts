@@ -141,6 +141,92 @@ export const openApiSpec = {
         },
       },
     },
+    '/bookings': {
+      get: {
+        summary: "List the authenticated customer's own bookings, newest first (M6)",
+        tags: ['Booking'],
+        security: [{ BearerAuth: [] }],
+        responses: { '200': { description: 'Own bookings' }, '401': { description: 'Not authenticated' } },
+      },
+    },
+    '/bookings/{id}': {
+      get: {
+        summary: "Booking detail — includes THANH_TOAN/HOAN_TIEN history (M6, owner only)",
+        tags: ['Booking'],
+        security: [{ BearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: { '200': { description: 'OK' }, '403': { description: 'Not the owning customer' }, '404': { description: 'Not found' } },
+      },
+    },
+    '/bookings/{id}/cancel': {
+      post: {
+        summary: 'Cancel own booking — refund tier/amount computed server-side from the CHINH_SACH_HUY saved on the booking (M6 §3/§4)',
+        tags: ['Booking'],
+        security: [{ BearerAuth: [] }],
+        description:
+          'The refund percentage is never taken from the client — it is resolved by comparing the cancellation instant to NgayNhanPhong against the CHI_TIET_CHINH_SACH_HUY tiers stored on the booking at creation time. A booking never paid (still "Chờ thanh toán") is cancelled with no HOAN_TIEN created at all.',
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: {
+          '200': { description: 'Cancelled — response includes any HOAN_TIEN created and its outcome' },
+          '400': { description: 'Not in a cancellable state (already "Đã hủy"/"Hoàn tất")' },
+          '403': { description: 'Not the owning customer' },
+          '404': { description: 'Not found' },
+          '409': { description: 'Status changed concurrently (e.g. expired) between read and the guarded update' },
+        },
+      },
+    },
+    '/bookings/{id}/payments/vnpay': {
+      post: {
+        summary: 'Create a VNPAY Sandbox payment request for own booking (M6 §1)',
+        tags: ['Payment'],
+        security: [{ BearerAuth: [] }],
+        description:
+          'The charged amount is always DAT_PHONG.TongTienThanhToan re-read server-side — the request body carries no amount field. Returns a paymentUrl to redirect the browser to (VNPAY-hosted page).',
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: {
+          '201': { description: 'THANH_TOAN created ("Chờ xử lý") + paymentUrl' },
+          '400': { description: 'Booking not in "Chờ thanh toán" (already paid/cancelled/completed)' },
+          '403': { description: 'Not the owning customer' },
+          '404': { description: 'Not found' },
+        },
+      },
+    },
+    '/bookings/{id}/payments/status': {
+      get: {
+        summary: 'Payment + refund status for own booking (M6 §1)',
+        tags: ['Payment'],
+        security: [{ BearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: { '200': { description: 'THANH_TOAN rows with nested HOAN_TIEN' }, '403': { description: 'Not the owning customer' } },
+      },
+    },
+    '/payments/vnpay-return': {
+      get: {
+        summary: "Browser redirect target after paying on VNPAY's hosted page (public — authenticated via vnp_SecureHash, not a session)",
+        tags: ['Payment'],
+        description: 'Display-only — verifies the signature, applies the same idempotent outcome as the IPN below if it has not landed yet, then 302-redirects to FRONTEND_URL/payment/result.',
+        responses: { '302': { description: 'Redirect to the frontend result page' } },
+      },
+    },
+    '/payments/vnpay-ipn': {
+      get: {
+        summary: 'Server-to-server IPN from VNPAY — the authoritative confirmation (public — authenticated via vnp_SecureHash)',
+        tags: ['Payment'],
+        description:
+          'Idempotent: a repeat IPN for an already-finalized THANH_TOAN returns RspCode 02 without re-mutating anything. On success, confirms the booking; if the booking is no longer "Chờ thanh toán" (expired/cancelled while payment was in flight), auto-creates a 100% HOAN_TIEN instead of confirming a dead booking or keeping the money.',
+        responses: { '200': { description: '{ RspCode, Message } — always 200, per VNPAY IPN contract' } },
+      },
+    },
+    '/payments/refunds/{id}/retry': {
+      post: {
+        summary: 'Retry a "Chờ xử lý"/"Thất bại" refund against the gateway (M6 §4/§6)',
+        tags: ['Payment'],
+        security: [{ BearerAuth: [] }],
+        description: 'Idempotent — a refund already "Thành công" is returned unchanged, never re-sent to the gateway.',
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: { '200': { description: 'Current HOAN_TIEN state' }, '403': { description: 'Not the owning customer' }, '404': { description: 'Not found' } },
+      },
+    },
     '/cancellation-policies': {
       get: {
         summary: 'List active cancellation policies (public) — system-level data, no MaKhachSan/MaDatPhong',

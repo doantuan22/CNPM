@@ -98,7 +98,7 @@ export default function HotelDetailPage() {
       },
       {
         onSuccess: (booking) => {
-          navigate('/bookings', { state: { booking, hotelName: hotelQuery.data?.TenKhachSan } });
+          navigate(`/bookings/${booking.MaDatPhong}`, { state: { justBooked: true } });
         },
       }
     );

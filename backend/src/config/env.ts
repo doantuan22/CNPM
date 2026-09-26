@@ -29,12 +29,19 @@ const envSchema = z.object({
   CLOUDINARY_API_KEY: z.string().optional().default(''),
   CLOUDINARY_API_SECRET: z.string().optional().default(''),
 
-  // VNPAY Sandbox (Phase 2)
+  // VNPAY Sandbox (M6)
   VNPAY_TMN_CODE: z.string().optional().default(''),
   VNPAY_HASH_SECRET: z.string().optional().default(''),
   VNPAY_PAYMENT_URL: z.string().optional().default('https://sandbox.vnpayment.vn/paymentv2/vpcpay.html'),
-  VNPAY_RETURN_URL: z.string().optional().default('http://localhost:5000/api/v1/payment/vnpay-return'),
-  VNPAY_IPN_URL: z.string().optional().default('http://localhost:5000/api/v1/payment/vnpay-ipn'),
+  VNPAY_REFUND_URL: z.string().optional().default('https://sandbox.vnpayment.vn/merchant_webapi/api/transaction'),
+  // Mounted under app.use('/api', routes) (see app.ts) — NOT /api/v1.
+  VNPAY_RETURN_URL: z.string().optional().default('http://localhost:5000/api/payments/vnpay-return'),
+  VNPAY_IPN_URL: z.string().optional().default('http://localhost:5000/api/payments/vnpay-ipn'),
+
+  // A DAT_PHONG left in "Chờ thanh toán" longer than this is treated as
+  // abandoned and auto-cancelled the next time it is touched (M6 §2) — see
+  // bookings/booking-expiry.ts.
+  PAYMENT_TIMEOUT_MINUTES: z.coerce.number().positive().default(15),
 });
 
 const parseEnv = () => {

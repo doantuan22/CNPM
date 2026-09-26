@@ -11,7 +11,8 @@ import ownerRoomTypesRoutes from '../modules/owner/owner-room-types.routes';
 import locationsRoutes from '../modules/locations/locations.routes';
 import cancellationPoliciesRoutes from '../modules/cancellation-policies/cancellation-policies.routes';
 import quotesRoutes from '../modules/quotes/quotes.routes';
-import bookingsRoutes from '../modules/bookings/bookings.routes';
+import bookingsRoutes, { myBookingsRoutes } from '../modules/bookings/bookings.routes';
+import { paymentsBookingRoutes, paymentsGatewayRoutes } from '../modules/payments/payments.routes';
 import { openApiSpec } from '../config/openapi';
 
 const router = Router();
@@ -34,6 +35,11 @@ router.use('/cancellation-policies', cancellationPoliciesRoutes);
 
 // Booking (M5)
 router.use('/hotels', bookingsRoutes);
+
+// Payment, cancellation & refund (M6)
+router.use('/bookings', myBookingsRoutes);
+router.use('/bookings', paymentsBookingRoutes);
+router.use('/payments', paymentsGatewayRoutes);
 
 // Owner / Supply (M3)
 router.use('/owner/hotels', ownerHotelsRoutes);

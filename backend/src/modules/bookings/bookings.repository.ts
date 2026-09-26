@@ -2,6 +2,7 @@ import { getPrismaClient } from '../../config/prisma';
 import { Prisma } from '../../generated/prisma/client';
 import { HOTEL_STATUS, ROOM_TYPE_STATUS, ROOM_RATE_STATUS, BOOKING_STATUS } from '../../common/constants/hotel-status';
 import { CANCELLATION_POLICY_STATUS } from '../../common/constants/commercial';
+import { PAYMENT_STATUS } from '../../common/constants/payment';
 
 export interface LockedRateRow {
   MaLoaiPhong: number;
@@ -152,5 +153,70 @@ export class BookingsRepository {
     await tx.cHI_TIET_DAT_PHONG.createMany({
       data: lines.map((l) => ({ MaDatPhong: maDatPhong, MaLoaiPhong: l.maLoaiPhong, SoLuongPhong: l.soLuong })),
     });
+  }
+
+  /** Newest first — a personal booking history list, no pagination (M6 §5, out of report/analytics scope). */
+  async listByCustomer(maTaiKhoanKhachHang: number) {
+    const prisma = getPrismaClient();
+    return prisma.dAT_PHONG.findMany({
+      where: { MaTaiKhoanKhachHang: maTaiKhoanKhachHang },
+      include: { KHACH_SAN: { select: { TenKhachSan: true } } },
+      orderBy: { NgayTao: 'desc' },
+    });
+  }
+
+  /** Fetched by id only (no owner filter) — the caller distinguishes 404 (no such booking) from 403 (not the owner), same convention as owner/hotels. */
+  async findDetailById(maDatPhong: number) {
+    const prisma = getPrismaClient();
+    return prisma.dAT_PHONG.findUnique({
+      where: { MaDatPhong: maDatPhong },
+      include: {
+        KHACH_SAN: { select: { TenKhachSan: true, GioNhanPhong: true } },
+        CHI_TIET_DAT_PHONG: { include: { LOAI_PHONG: { select: { TenLoaiPhong: true } } } },
+        CHINH_SACH_HUY: { include: { CHI_TIET_CHINH_SACH_HUY: { orderBy: { SoGioTruocNhanPhong: 'desc' } } } },
+        KHUYEN_MAI: true,
+        THANH_TOAN: { orderBy: { ThoiGianGiaoDich: 'desc' }, include: { HOAN_TIEN: { orderBy: { NgayYeuCau: 'desc' } } } },
+      },
+    });
+  }
+
+  /** Guarded transition — only succeeds if the booking is still in a cancellable state; races (double-cancel, expiry) resolve to 0 rows affected instead of corrupting state. */
+  async cancelBooking(tx: Prisma.TransactionClient, maDatPhong: number, note: string, now: Date): Promise<number> {
+    const result = await tx.$executeRaw(Prisma.sql`
+      UPDATE DAT_PHONG
+      SET TrangThai = ${BOOKING_STATUS.CANCELLED},
+          NgayCapNhat = ${now},
+          GhiChu = CASE WHEN GhiChu IS NULL THEN ${note} ELSE GhiChu + N' | ' + ${note} END
+      WHERE MaDatPhong = ${maDatPhong}
+        AND TrangThai IN (${BOOKING_STATUS.PENDING_PAYMENT}, ${BOOKING_STATUS.CONFIRMED})
+    `);
+    return Number(result);
+  }
+
+  /** The single successful payment for a booking (by design there is at most one — see payments.service.ts). */
+  async findSuccessfulPayment(tx: Prisma.TransactionClient, maDatPhong: number) {
+    return tx.tHANH_TOAN.findFirst({
+      where: { MaDatPhong: maDatPhong, TrangThai: PAYMENT_STATUS.SUCCESS },
+    });
+  }
+
+  async insertRefund(
+    tx: Prisma.TransactionClient,
+    data: { maThanhToan: number; soTienHoan: number; lyDoHoanTien: string; maGiaoDichDoiTac: string; trangThai: string; ngayYeuCau: Date }
+  ) {
+    return tx.hOAN_TIEN.create({
+      data: {
+        MaThanhToan: data.maThanhToan,
+        SoTienHoan: data.soTienHoan,
+        LyDoHoanTien: data.lyDoHoanTien,
+        MaGiaoDichDoiTac: data.maGiaoDichDoiTac,
+        TrangThai: data.trangThai,
+        NgayYeuCau: data.ngayYeuCau,
+      },
+    });
+  }
+
+  async markRefundOutcome(tx: Prisma.TransactionClient, maHoanTien: number, trangThai: string, ngayHoanTien: Date | null) {
+    return tx.hOAN_TIEN.update({ where: { MaHoanTien: maHoanTien }, data: { TrangThai: trangThai, NgayHoanTien: ngayHoanTien } });
   }
 }

@@ -12,6 +12,8 @@ import PartnerApplyPage from '../pages/PartnerApplyPage';
 import HotelListPage from '../pages/HotelListPage';
 import HotelDetailPage from '../pages/HotelDetailPage';
 import BookingsPage from '../pages/BookingsPage';
+import BookingDetailPage from '../pages/BookingDetailPage';
+import PaymentResultPage from '../pages/PaymentResultPage';
 import OwnerDashboardPage from '../pages/OwnerDashboardPage';
 import OwnerHotelFormPage from '../pages/OwnerHotelFormPage';
 import OwnerHotelManagePage from '../pages/OwnerHotelManagePage';
@@ -38,6 +40,8 @@ export default function AppRoutes() {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/partner/apply" element={<PartnerApplyPage />} />
           <Route path="/bookings" element={<BookingsPage />} />
+          <Route path="/bookings/:id" element={<BookingDetailPage />} />
+          <Route path="/payment/result" element={<PaymentResultPage />} />
         </Route>
 
         {/* Chủ khách sạn */}
