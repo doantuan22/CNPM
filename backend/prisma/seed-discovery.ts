@@ -245,11 +245,32 @@ async function ensureBooking(params: {
   trangThai: string;
   giaMotDem: number;
 }): Promise<void> {
-  const existing = await prisma.dAT_PHONG.findUnique({ where: { MaXacNhanDatPhong: params.maXacNhan } });
-  if (existing) return;
-
   const nights = Math.round((params.checkOut.getTime() - params.checkIn.getTime()) / 86_400_000);
   const tongTienPhong = params.giaMotDem * nights * params.soLuongPhong;
+
+  const existing = await prisma.dAT_PHONG.findUnique({ where: { MaXacNhanDatPhong: params.maXacNhan } });
+  if (existing) {
+    // Re-anchor the booking window to "today" on every re-run — these fixtures are
+    // consumed by date-relative availability tests (addDays(N) from *test* run time),
+    // so a frozen historical date silently drifts out of the tests' query window.
+    await prisma.dAT_PHONG.update({
+      where: { MaDatPhong: existing.MaDatPhong },
+      data: {
+        NgayNhanPhong: params.checkIn,
+        NgayTraPhong: params.checkOut,
+        TongTienPhong: tongTienPhong,
+        SoTienGiam: 0,
+        TongTienThanhToan: tongTienPhong,
+        TrangThai: params.trangThai,
+        NgayCapNhat: new Date(),
+      },
+    });
+    await prisma.cHI_TIET_DAT_PHONG.updateMany({
+      where: { MaDatPhong: existing.MaDatPhong, MaLoaiPhong: params.roomTypeId },
+      data: { SoLuongPhong: params.soLuongPhong },
+    });
+    return;
+  }
 
   const booking = await prisma.dAT_PHONG.create({
     data: {

@@ -528,6 +528,44 @@ export const openApiSpec = {
       get: { summary: 'Get an owned hotel', tags: ['Owner'], security: [{ BearerAuth: [] }], parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }], responses: { '200': { description: 'OK' }, '403': { description: "Not this owner's hotel" }, '404': { description: 'Not found' } } },
       patch: { summary: 'Update an owned hotel (TrangThai/MaTaiKhoanDuyet/MaTaiKhoanSoHuu cannot be set here)', tags: ['Owner'], security: [{ BearerAuth: [] }], parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }], responses: { '200': { description: 'Updated' }, '403': { description: 'Forbidden' } } },
     },
+    '/owner/hotels/{id}/deactivate': {
+      post: {
+        summary: 'Deactivate an owned hotel (UC19 — soft "Ngừng hoạt động", booking/review history preserved)',
+        tags: ['Owner'],
+        security: [{ BearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: { '200': { description: 'Deactivated (idempotent)' }, '403': { description: "Not this owner's hotel" }, '404': { description: 'Not found' } },
+      },
+    },
+    '/owner/hotels/{hotelId}/bookings': {
+      get: {
+        summary: 'List bookings for an owned hotel (UC24), paginated/filterable',
+        tags: ['Owner'],
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          { name: 'hotelId', in: 'path', required: true, schema: { type: 'integer' } },
+          { name: 'page', in: 'query', schema: { type: 'integer', default: 1 } },
+          { name: 'limit', in: 'query', schema: { type: 'integer', default: 20 } },
+          { name: 'trangThai', in: 'query', schema: { type: 'string' } },
+          { name: 'from', in: 'query', schema: { type: 'string', format: 'date' } },
+          { name: 'to', in: 'query', schema: { type: 'string', format: 'date' } },
+          { name: 'search', in: 'query', schema: { type: 'string' } },
+        ],
+        responses: { '200': { description: 'Paginated booking list' }, '403': { description: "Not this owner's hotel" }, '404': { description: 'Hotel not found' } },
+      },
+    },
+    '/owner/hotels/{hotelId}/bookings/{bookingId}': {
+      get: {
+        summary: 'Get one booking under an owned hotel (UC24) — read-only',
+        tags: ['Owner'],
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          { name: 'hotelId', in: 'path', required: true, schema: { type: 'integer' } },
+          { name: 'bookingId', in: 'path', required: true, schema: { type: 'integer' } },
+        ],
+        responses: { '200': { description: 'Booking detail' }, '403': { description: "Not this owner's hotel" }, '404': { description: 'Not found' } },
+      },
+    },
     '/owner/hotels/{id}/amenities': {
       put: { summary: 'Replace the full amenity set for a hotel', tags: ['Owner'], security: [{ BearerAuth: [] }], parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }], responses: { '200': { description: 'Updated' } } },
     },
@@ -545,6 +583,15 @@ export const openApiSpec = {
     '/owner/room-types/{id}': {
       get: { summary: 'Get an owned room type', tags: ['Owner'], security: [{ BearerAuth: [] }], parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }], responses: { '200': { description: 'OK' }, '403': { description: 'Forbidden' }, '404': { description: 'Not found' } } },
       patch: { summary: 'Update an owned room type (including TrangThai — open/close for sale)', tags: ['Owner'], security: [{ BearerAuth: [] }], parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }], responses: { '200': { description: 'Updated' } } },
+    },
+    '/owner/room-types/{id}/deactivate': {
+      post: {
+        summary: 'Deactivate an owned room type (UC23 — soft "Ngừng bán", rate/booking history preserved)',
+        tags: ['Owner'],
+        security: [{ BearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: { '200': { description: 'Deactivated (idempotent)' }, '403': { description: 'Forbidden' }, '404': { description: 'Not found' } },
+      },
     },
     '/owner/room-types/{id}/amenities': {
       put: { summary: 'Replace the full amenity set for a room type', tags: ['Owner'], security: [{ BearerAuth: [] }], parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }], responses: { '200': { description: 'Updated' } } },

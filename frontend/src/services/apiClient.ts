@@ -86,7 +86,7 @@ export async function apiClient<T, TResponse extends ApiResponse<T> = ApiRespons
       useAuthStore.getState().setAccessToken(newToken);
       return apiClient<T, TResponse>(endpoint, { ...options, _retried: true });
     }
-    useAuthStore.getState().clear();
+    useAuthStore.getState().expireSession();
   }
 
   if (!response.ok || !data.success) {

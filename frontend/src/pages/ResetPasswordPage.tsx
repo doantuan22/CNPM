@@ -69,11 +69,13 @@ export default function ResetPasswordPage() {
             <input
               id="MatKhauMoi"
               type="password"
+              aria-invalid={Boolean(errors.MatKhauMoi)}
+              aria-describedby={errors.MatKhauMoi ? 'matkhaumoi-error' : undefined}
               {...register('MatKhauMoi')}
               className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               placeholder="••••••••"
             />
-            {errors.MatKhauMoi && <p className="mt-1 text-xs text-red-600">{errors.MatKhauMoi.message}</p>}
+            {errors.MatKhauMoi && <p id="matkhaumoi-error" className="mt-1 text-xs text-red-600">{errors.MatKhauMoi.message}</p>}
           </div>
           <div>
             <label htmlFor="confirmMatKhauMoi" className="block text-sm font-medium text-slate-700">
@@ -82,12 +84,14 @@ export default function ResetPasswordPage() {
             <input
               id="confirmMatKhauMoi"
               type="password"
+              aria-invalid={Boolean(errors.confirmMatKhauMoi)}
+              aria-describedby={errors.confirmMatKhauMoi ? 'confirm-matkhaumoi-error' : undefined}
               {...register('confirmMatKhauMoi')}
               className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               placeholder="••••••••"
             />
             {errors.confirmMatKhauMoi && (
-              <p className="mt-1 text-xs text-red-600">{errors.confirmMatKhauMoi.message}</p>
+              <p id="confirm-matkhaumoi-error" className="mt-1 text-xs text-red-600">{errors.confirmMatKhauMoi.message}</p>
             )}
           </div>
           <Button type="submit" className="w-full" disabled={isSubmitting || mutation.isPending}>

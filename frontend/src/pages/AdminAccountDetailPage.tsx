@@ -191,7 +191,11 @@ export default function AdminAccountDetailPage() {
           ) : (
             <Button
               variant="outline"
-              onClick={() => lockMutation.mutate(accountId)}
+              onClick={() => {
+                if (window.confirm('Khóa tài khoản này? Người dùng sẽ không thể đăng nhập cho đến khi được mở khóa.')) {
+                  lockMutation.mutate(accountId);
+                }
+              }}
               disabled={lockMutation.isPending}
             >
               {lockMutation.isPending ? 'Đang khóa...' : 'Khóa tài khoản'}

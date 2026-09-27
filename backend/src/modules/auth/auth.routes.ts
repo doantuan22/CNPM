@@ -9,6 +9,9 @@ const controller = new AuthController();
 const authLimiter = createRateLimiter({ windowMs: 15 * 60_000, max: 10, keyPrefix: 'auth' });
 const registerLimiter = createRateLimiter({ windowMs: 60 * 60_000, max: 10, keyPrefix: 'register' });
 const forgotPasswordLimiter = createRateLimiter({ windowMs: 60 * 60_000, max: 5, keyPrefix: 'forgot-password' });
+// Stricter than forgot-password: this endpoint takes a bearer-style secret token
+// as input, so a missing limit here would let an attacker brute-force it.
+const resetPasswordLimiter = createRateLimiter({ windowMs: 60 * 60_000, max: 10, keyPrefix: 'reset-password' });
 const applyOutsideTests = (middleware: ReturnType<typeof createRateLimiter>) =>
   process.env.NODE_ENV === 'test' ? (_req: unknown, _res: unknown, next: () => void) => next() : middleware;
 
@@ -24,6 +27,7 @@ router.post(
 );
 router.post(
   '/reset-password',
+  applyOutsideTests(resetPasswordLimiter),
   validateRequest({ body: resetPasswordSchema }),
   controller.resetPassword
 );

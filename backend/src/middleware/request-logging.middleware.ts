@@ -1,0 +1,35 @@
+import { randomUUID } from 'node:crypto';
+import { NextFunction, Request, Response } from 'express';
+
+const REQUEST_ID_HEADER = 'X-Request-Id';
+
+/**
+ * Structured access log: method, route, status, duration, correlation id,
+ * and an error category for 4xx/5xx — never the request body, headers, or
+ * query string, so tokens/passwords/reset codes/payment signatures never
+ * reach stdout through this path (M9 §10).
+ */
+export const requestLogging = (req: Request, res: Response, next: NextFunction): void => {
+  const requestId = String(req.headers[REQUEST_ID_HEADER.toLowerCase()] || randomUUID());
+  res.setHeader(REQUEST_ID_HEADER, requestId);
+
+  const startedAt = process.hrtime.bigint();
+  res.on('finish', () => {
+    // Vitest/supertest fire hundreds of requests per run; skip the noisy
+    // per-request line there (matches the rate-limiter test bypass convention).
+    if (process.env.NODE_ENV === 'test') return;
+    const durationMs = Number(process.hrtime.bigint() - startedAt) / 1_000_000;
+    const errorCategory = res.statusCode >= 500 ? 'server_error' : res.statusCode >= 400 ? 'client_error' : undefined;
+    const line = {
+      requestId,
+      method: req.method,
+      route: req.route?.path ? `${req.baseUrl}${req.route.path}` : req.originalUrl.split('?')[0],
+      status: res.statusCode,
+      durationMs: Math.round(durationMs * 100) / 100,
+      ...(errorCategory ? { errorCategory } : {}),
+    };
+    console.log(JSON.stringify(line));
+  });
+
+  next();
+};

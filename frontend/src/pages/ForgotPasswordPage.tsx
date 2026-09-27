@@ -43,11 +43,13 @@ export default function ForgotPasswordPage() {
                 id="Email"
                 type="email"
                 autoComplete="email"
+                aria-invalid={Boolean(errors.Email)}
+                aria-describedby={errors.Email ? 'email-error' : undefined}
                 {...register('Email')}
                 className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 placeholder="name@example.com"
               />
-              {errors.Email && <p className="mt-1 text-xs text-red-600">{errors.Email.message}</p>}
+              {errors.Email && <p id="email-error" className="mt-1 text-xs text-red-600">{errors.Email.message}</p>}
             </div>
             <Button type="submit" className="w-full" disabled={isSubmitting || mutation.isPending}>
               {isSubmitting || mutation.isPending ? 'Đang gửi...' : 'Gửi yêu cầu'}

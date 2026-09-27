@@ -218,7 +218,13 @@ export default function AdminPromotionFormPage() {
               type="button"
               variant="outline"
               disabled={statusMutation.isPending}
-              onClick={() => statusMutation.mutate({ id: promotionId, active: detailQuery.data!.TrangThai !== 'Hoạt động' })}
+              onClick={() => {
+                const activating = detailQuery.data!.TrangThai !== 'Hoạt động';
+                if (!activating && !window.confirm('Ngừng áp dụng mã khuyến mãi này? Khách hàng sẽ không thể dùng mã ngay sau đó.')) {
+                  return;
+                }
+                statusMutation.mutate({ id: promotionId, active: activating });
+              }}
             >
               {detailQuery.data.TrangThai === 'Hoạt động' ? 'Tắt mã' : 'Bật mã'}
             </Button>

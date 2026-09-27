@@ -113,6 +113,9 @@ const envSchema = z.object({
   if (value.VNPAY_PAYMENT_URL.includes('sandbox') || value.VNPAY_REFUND_URL.includes('sandbox')) {
     ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['VNPAY_PAYMENT_URL'], message: 'Production must not use VNPAY sandbox endpoints' });
   }
+  if (!/(^|;)\s*encrypt\s*=\s*true\s*(;|$)/i.test(value.DATABASE_URL)) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['DATABASE_URL'], message: 'DATABASE_URL must set encrypt=true in production' });
+  }
 });
 
 const parseEnv = () => {

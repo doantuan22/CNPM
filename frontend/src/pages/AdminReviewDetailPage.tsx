@@ -66,8 +66,8 @@ export default function AdminReviewDetailPage() {
 
         {r.HINH_ANH_DANH_GIA.length > 0 && (
           <div className="flex flex-wrap gap-2">
-            {r.HINH_ANH_DANH_GIA.map((img) => (
-              <img key={img.MaHinhAnhDanhGia} src={img.URL} alt="" className="h-24 w-24 rounded-lg object-cover" />
+            {r.HINH_ANH_DANH_GIA.map((img, index) => (
+              <img key={img.MaHinhAnhDanhGia} src={img.URL} alt={`Ảnh đánh giá ${index + 1}`} className="h-24 w-24 rounded-lg object-cover" />
             ))}
           </div>
         )}

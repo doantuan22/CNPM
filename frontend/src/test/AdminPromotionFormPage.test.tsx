@@ -119,9 +119,21 @@ describe('AdminPromotionFormPage — edit', () => {
     const user = userEvent.setup();
     vi.mocked(promotionsApi.getPromotion).mockResolvedValue(sampleDetail);
     vi.mocked(promotionsApi.deactivatePromotion).mockResolvedValueOnce({ ...sampleDetail, TrangThai: 'Ngừng' });
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
     renderEditPage();
 
     await user.click(await screen.findByRole('button', { name: /tắt mã/i }));
     await waitFor(() => expect(promotionsApi.deactivatePromotion).toHaveBeenCalledWith(1));
+    expect(window.confirm).toHaveBeenCalled();
+  });
+
+  it('does not deactivate when the confirmation is dismissed', async () => {
+    const user = userEvent.setup();
+    vi.mocked(promotionsApi.getPromotion).mockResolvedValue(sampleDetail);
+    vi.spyOn(window, 'confirm').mockReturnValue(false);
+    renderEditPage();
+
+    await user.click(await screen.findByRole('button', { name: /tắt mã/i }));
+    expect(promotionsApi.deactivatePromotion).not.toHaveBeenCalled();
   });
 });

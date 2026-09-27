@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -7,6 +8,7 @@ import { loginSchema, LoginFormValues } from '../features/auth/schemas';
 import { ApiError } from '../services/apiClient';
 import { ROLE_NAMES } from '../lib/roles';
 import { decodeAccessToken } from '../lib/jwt';
+import { useAuthStore } from '../lib/authStore';
 
 const roleHome: Record<string, string> = {
   [ROLE_NAMES.ADMIN]: '/admin',
@@ -18,6 +20,13 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation() as { state?: { from?: { pathname?: string } } };
   const loginMutation = useLogin();
+  // Captured once via the lazy initializer, before the effect below clears
+  // the store's flag — so the banner survives re-renders but doesn't
+  // reappear on a later, unrelated visit to /login (e.g. after logout).
+  const [showSessionExpired] = useState(() => useAuthStore.getState().sessionExpired);
+  useEffect(() => {
+    useAuthStore.getState().acknowledgeSessionExpired();
+  }, []);
 
   const {
     register,
@@ -44,6 +53,11 @@ export default function LoginPage() {
       </div>
 
       <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-xs">
+        {showSessionExpired && !loginMutation.isError && (
+          <div role="alert" className="mb-4 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-700">
+            Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.
+          </div>
+        )}
         {loginMutation.isError && (
           <div role="alert" className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
             {loginMutation.error instanceof ApiError

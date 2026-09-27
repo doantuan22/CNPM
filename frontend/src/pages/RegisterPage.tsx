@@ -102,11 +102,13 @@ export default function RegisterPage() {
                 id="HoTen"
                 type="text"
                 autoComplete="name"
+                aria-invalid={Boolean(errors.HoTen)}
+                aria-describedby={errors.HoTen ? 'hoten-error' : undefined}
                 {...register('HoTen')}
                 className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 placeholder="Nguyễn Văn A"
               />
-              {errors.HoTen && <p className="mt-1 text-xs text-red-600">{errors.HoTen.message}</p>}
+              {errors.HoTen && <p id="hoten-error" className="mt-1 text-xs text-red-600">{errors.HoTen.message}</p>}
             </div>
             <div>
               <label htmlFor="TenDangNhap" className="block text-sm font-medium text-slate-700">
@@ -116,12 +118,14 @@ export default function RegisterPage() {
                 id="TenDangNhap"
                 type="text"
                 autoComplete="username"
+                aria-invalid={Boolean(errors.TenDangNhap)}
+                aria-describedby={errors.TenDangNhap ? 'tendangnhap-error' : undefined}
                 {...register('TenDangNhap')}
                 className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 placeholder="nguyenvana"
               />
               {errors.TenDangNhap && (
-                <p className="mt-1 text-xs text-red-600">{errors.TenDangNhap.message}</p>
+                <p id="tendangnhap-error" className="mt-1 text-xs text-red-600">{errors.TenDangNhap.message}</p>
               )}
             </div>
           </div>
@@ -134,11 +138,13 @@ export default function RegisterPage() {
               id="Email"
               type="email"
               autoComplete="email"
+              aria-invalid={Boolean(errors.Email)}
+              aria-describedby={errors.Email ? 'email-error' : undefined}
               {...register('Email')}
               className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               placeholder="name@example.com"
             />
-            {errors.Email && <p className="mt-1 text-xs text-red-600">{errors.Email.message}</p>}
+            {errors.Email && <p id="email-error" className="mt-1 text-xs text-red-600">{errors.Email.message}</p>}
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -150,12 +156,14 @@ export default function RegisterPage() {
                 id="SoDienThoai"
                 type="tel"
                 autoComplete="tel"
+                aria-invalid={Boolean(errors.SoDienThoai)}
+                aria-describedby={errors.SoDienThoai ? 'sodienthoai-error' : undefined}
                 {...register('SoDienThoai')}
                 className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 placeholder="0912345678"
               />
               {errors.SoDienThoai && (
-                <p className="mt-1 text-xs text-red-600">{errors.SoDienThoai.message}</p>
+                <p id="sodienthoai-error" className="mt-1 text-xs text-red-600">{errors.SoDienThoai.message}</p>
               )}
             </div>
             <div>
@@ -166,10 +174,12 @@ export default function RegisterPage() {
                 id="NgaySinh"
                 type="date"
                 autoComplete="bday"
+                aria-invalid={Boolean(errors.NgaySinh)}
+                aria-describedby={errors.NgaySinh ? 'ngaysinh-error' : undefined}
                 {...register('NgaySinh')}
                 className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
-              {errors.NgaySinh && <p className="mt-1 text-xs text-red-600">{errors.NgaySinh.message}</p>}
+              {errors.NgaySinh && <p id="ngaysinh-error" className="mt-1 text-xs text-red-600">{errors.NgaySinh.message}</p>}
             </div>
           </div>
 
@@ -181,6 +191,8 @@ export default function RegisterPage() {
               id="GioiTinh"
               {...register('GioiTinh')}
               defaultValue=""
+              aria-invalid={Boolean(errors.GioiTinh)}
+              aria-describedby={errors.GioiTinh ? 'gioitinh-error' : undefined}
               className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             >
               <option value="">Không chọn</option>
@@ -188,7 +200,7 @@ export default function RegisterPage() {
               <option value="Nữ">Nữ</option>
               <option value="Khác">Khác</option>
             </select>
-            {errors.GioiTinh && <p className="mt-1 text-xs text-red-600">{errors.GioiTinh.message}</p>}
+            {errors.GioiTinh && <p id="gioitinh-error" className="mt-1 text-xs text-red-600">{errors.GioiTinh.message}</p>}
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -200,11 +212,13 @@ export default function RegisterPage() {
                 id="MatKhau"
                 type="password"
                 autoComplete="new-password"
+                aria-invalid={Boolean(errors.MatKhau)}
+                aria-describedby={errors.MatKhau ? 'matkhau-error' : undefined}
                 {...register('MatKhau')}
                 className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 placeholder="••••••••"
               />
-              {errors.MatKhau && <p className="mt-1 text-xs text-red-600">{errors.MatKhau.message}</p>}
+              {errors.MatKhau && <p id="matkhau-error" className="mt-1 text-xs text-red-600">{errors.MatKhau.message}</p>}
             </div>
             <div>
               <label htmlFor="confirmMatKhau" className="block text-sm font-medium text-slate-700">
@@ -214,12 +228,14 @@ export default function RegisterPage() {
                 id="confirmMatKhau"
                 type="password"
                 autoComplete="new-password"
+                aria-invalid={Boolean(errors.confirmMatKhau)}
+                aria-describedby={errors.confirmMatKhau ? 'confirm-matkhau-error' : undefined}
                 {...register('confirmMatKhau')}
                 className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 placeholder="••••••••"
               />
               {errors.confirmMatKhau && (
-                <p className="mt-1 text-xs text-red-600">{errors.confirmMatKhau.message}</p>
+                <p id="confirm-matkhau-error" className="mt-1 text-xs text-red-600">{errors.confirmMatKhau.message}</p>
               )}
             </div>
           </div>

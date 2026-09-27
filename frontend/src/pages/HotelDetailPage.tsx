@@ -155,8 +155,8 @@ export default function HotelDetailPage() {
                 className="col-span-4 h-72 w-full rounded-2xl object-cover sm:col-span-3"
               />
               <div className="col-span-4 grid grid-cols-4 gap-2 sm:col-span-1 sm:grid-cols-1">
-                {hotel.HinhAnh.slice(1, 4).map((img) => (
-                  <img key={img.MaHinhAnh} src={img.URL} alt="" className="h-16 w-full rounded-lg object-cover sm:h-[5.5rem]" />
+                {hotel.HinhAnh.slice(1, 4).map((img, index) => (
+                  <img key={img.MaHinhAnh} src={img.URL} alt={`${hotel.TenKhachSan} - ảnh ${index + 2}`} className="h-16 w-full rounded-lg object-cover sm:h-[5.5rem]" />
                 ))}
               </div>
             </div>

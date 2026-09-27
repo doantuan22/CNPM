@@ -6,8 +6,13 @@ interface AuthState {
   role: string | null;
   /** True until the initial silent-refresh attempt (on app load) resolves. */
   isBootstrapping: boolean;
+  /** True only when the session ended because a refresh attempt failed (not a manual logout) — lets LoginPage explain the redirect instead of bouncing the user silently. */
+  sessionExpired: boolean;
   setAccessToken: (token: string | null) => void;
   clear: () => void;
+  /** Called by apiClient when a 401 survives a refresh attempt — distinct from clear() so the UI can tell "expired" apart from "logged out". */
+  expireSession: () => void;
+  acknowledgeSessionExpired: () => void;
   finishBootstrap: () => void;
 }
 
@@ -23,9 +28,12 @@ export const useAuthStore = create<AuthState>((set) => ({
   accessToken: null,
   role: null,
   isBootstrapping: true,
+  sessionExpired: false,
   setAccessToken: (token) =>
-    set({ accessToken: token, role: token ? (decodeAccessToken(token)?.role ?? null) : null }),
-  clear: () => set({ accessToken: null, role: null }),
+    set({ accessToken: token, role: token ? (decodeAccessToken(token)?.role ?? null) : null, sessionExpired: false }),
+  clear: () => set({ accessToken: null, role: null, sessionExpired: false }),
+  expireSession: () => set({ accessToken: null, role: null, sessionExpired: true }),
+  acknowledgeSessionExpired: () => set({ sessionExpired: false }),
   finishBootstrap: () => set({ isBootstrapping: false }),
 }));
 

@@ -145,8 +145,8 @@ React Router (src/routes/AppRoutes.tsx)
 ### 3.3. Các cơ chế tích hợp trọng yếu
 1. **Xác thực JWT kép (Dual-Token Mechanism):**
    - Access Token: Ngắn hạn (15 phút), ký HMAC-SHA256 với `JWT_ACCESS_SECRET`, lưu trong bộ nhớ client (Zustand state), gửi qua header `Authorization: Bearer <token>`.
-   - Refresh Token: Dài hạn (7 ngày), ký với `JWT_REFRESH_SECRET`, lưu trong `httpOnly, secure, sameSite: 'strict'` cookie.
-   - Auto-refresh: `apiClient.ts` tự động phát hiện mã `401`, gọi `POST /api/auth/refresh` và có cờ `refreshPromise` deduplication chống race condition khi nhiều request đồng thời nhận 401.
+   - Refresh Token: Dài hạn (7 ngày), ký với `JWT_REFRESH_SECRET`, lưu trong cookie `httpOnly: true`, `secure` tự động bật khi `NODE_ENV==='production'`, `sameSite: 'lax'` (không phải `'strict'` — `'lax'` là lựa chọn có chủ đích để cookie không bị rớt trên một số luồng redirect top-level hợp lệ; xem `auth.controller.ts`).
+   - Auto-refresh: `apiClient.ts` tự động phát hiện mã `401`, gọi `POST /api/auth/refresh` và có cờ `refreshPromise` deduplication chống race condition khi nhiều request đồng thời nhận 401. Nếu refresh cũng thất bại, phiên được đánh dấu hết hạn (`expireSession`) và người dùng thấy thông báo rõ ràng ở trang đăng nhập thay vì bị chuyển hướng âm thầm (M9).
 2. **Cổng thanh toán VNPAY Sandbox:**
    - Tạo URL thanh toán an toàn: Tính checksum `vnp_SecureHash` bằng HMAC-SHA512 với `VNPAY_HASH_SECRET`.
    - Xử lý Callback trình duyệt (`GET /api/payments/vnpay-return`): Xác minh chữ ký, redirect về trang kết quả `/payment/result`.
@@ -280,6 +280,7 @@ Cơ sở dữ liệu Microsoft SQL Server là **Nguồn Chân Lý Duy Nhất (Si
 | **M6** | Payment & Cancellation | Tích hợp VNPAY Sandbox (URL, IPN, return), idempotency webhook, lazy sweep hết hạn thanh toán, hủy phòng theo chính sách, hoàn tiền. | Unit & integration tests có sẵn (`vnpay.test.ts`, `payments.test.ts`, `bookings-cancel.test.ts`). Historical tests passed. |
 | **M7** | After-sales | Đánh giá kèm upload ảnh Cloudinary, lazy sweep hoàn tất lưu trú, kiểm duyệt đánh giá Admin, cổng hỗ trợ & khiếu nại khách hàng/admin. | Integration tests có sẵn (`reviews.test.ts`, `support.test.ts`, `review-images.test.ts`). Historical tests passed. |
 | **M8** | Analytics & Indexes | Quản trị mã khuyến mãi Admin, báo cáo doanh thu & lấp đầy của Owner, báo cáo tổng thể Admin, Migration `007_indexes.sql` bổ sung 15 indexes tối ưu. | Tests có sẵn (`promotions.test.ts`, `owner-analytics.test.ts`, `admin-analytics.test.ts`). Historical tests passed. |
+| **M9** | Hardening, Regression, Security, UX & Production Readiness | Rate limit cho `reset-password`; enforce `encrypt=true` khi production; request-logging middleware (method/route/status/duration/requestId, không log secret); Cloudinary upload/delete timeout; xóa file chết (`vnpay.integration.ts`, `config/database.ts`); bổ sung 4 endpoint owner còn thiếu vào OpenAPI; fix root cause 2 test availability (stale seed fixture); frontend: xác nhận cho lock account/deactivate promotion/xóa ảnh, thông báo session-expired, `aria-invalid`/`aria-describedby` cho các form auth, alt text mô tả cho ảnh gallery/review. | Xem `docs/M9_HARDENING_REPORT.md`. Backend 32/32 file, 302/302 test; frontend 24/24 file, 118/118 test; lint/typecheck/build/`prisma validate` đều pass. Không đổi schema. |
 
 > [!NOTE]
 > **Phân loại trạng thái kiểm thử:**
@@ -559,12 +560,10 @@ Tất cả đường dẫn dưới đây là **đường dẫn thực tế** tro
 
 Khi tiếp quản dự án, lập trình viên AI cần nhận biết rõ các giới hạn sau để tránh nhầm lẫn:
 
-1. **Tập tin cũ chưa gỡ bỏ (Legacy / Unwired Integration):**
-   - Tập tin `backend/src/integrations/vnpay.integration.ts` là placeholder từ giai đoạn sơ khởi (TECH-0), bên trong throw lỗi `planned for later phase`. Mã nguồn thanh toán VNPAY thực tế nằm hoàn toàn tại `backend/src/modules/payments/vnpay.ts` và `refund-gateway.ts`. File legacy này không được sử dụng bởi bất kỳ route nào.
+1. ~~Tập tin cũ chưa gỡ bỏ (Legacy / Unwired Integration)~~ — **đã xử lý tại M9**: `backend/src/integrations/vnpay.integration.ts` (placeholder throw `planned for later phase`, không có route nào import) và `backend/src/config/database.ts` (pool `mssql` trực tiếp không dùng, đọc các biến `DB_*` không qua Zod validation) đã được xóa hoàn toàn. Mã nguồn thanh toán VNPAY thực tế vẫn nằm tại `backend/src/modules/payments/vnpay.ts` và `refund-gateway.ts`.
 2. **Môi trường Gateway VNPAY:**
    - Trong môi trường dev, các biến `VNPAY_TMN_CODE` và `VNPAY_HASH_SECRET` mang giá trị cấu hình sandbox. Các bài unit test sử dụng cơ chế fake gateway để tránh phụ thuộc vào đường truyền mạng VNPAY.
-3. **Xóa ảnh khác với xóa khách sạn/loại phòng:**
-   - Chủ khách sạn hiện đã có thể xóa hình ảnh (`DELETE .../images/:imageId`), nhưng **chưa có chức năng xóa khách sạn (UC19)** hay **xóa loại phòng (UC23)**. Tuyệt đối không nhầm lẫn hai nhóm chức năng này.
+3. ~~Xóa ảnh khác với xóa khách sạn/loại phòng~~ — **đã lỗi thời**: UC19 (`POST /owner/hotels/:id/deactivate`) và UC23 (`POST /owner/room-types/:id/deactivate`) đã hoàn thiện từ Coverage Group trước M9 (soft-deactivate, giữ lịch sử). Xem mục 8 (UC Matrix) — hai endpoint này cũng vừa được bổ sung vào OpenAPI tại M9 (trước đó bị thiếu trong spec dù đã hoạt động).
 4. **Giới hạn trường thời gian trên bảng DANH_GIA:**
    - Bảng `DANH_GIA` trong thiết kế cơ sở dữ liệu không có cột `NgayTao`. Do đó, trong báo cáo Admin Analytics, số liệu đánh giá được tổng hợp trên phạm vi **toàn thời gian** chứ không lọc theo khoảng ngày (`from`/`to`).
 

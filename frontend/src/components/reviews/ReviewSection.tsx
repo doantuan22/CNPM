@@ -71,8 +71,8 @@ export function ReviewSection({ bookingId, bookingStatus }: ReviewSectionProps) 
           {reviewQuery.data.NoiDung && <p className="text-sm text-slate-700">{reviewQuery.data.NoiDung}</p>}
           {reviewQuery.data.HINH_ANH_DANH_GIA.length > 0 && (
             <div className="flex flex-wrap gap-2">
-              {reviewQuery.data.HINH_ANH_DANH_GIA.map((img) => (
-                <img key={img.MaHinhAnhDanhGia} src={img.URL} alt="" className="h-16 w-16 rounded-lg object-cover" />
+              {reviewQuery.data.HINH_ANH_DANH_GIA.map((img, index) => (
+                <img key={img.MaHinhAnhDanhGia} src={img.URL} alt={`Ảnh đánh giá ${index + 1}`} className="h-16 w-16 rounded-lg object-cover" />
               ))}
             </div>
           )}

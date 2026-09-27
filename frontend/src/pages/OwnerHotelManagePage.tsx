@@ -220,7 +220,7 @@ export default function OwnerHotelManagePage() {
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {hotel.HINH_ANH_KHACH_SAN.map((img) => (
               <div key={img.MaHinhAnh} className="group relative overflow-hidden rounded-lg border border-slate-200">
-                <img src={img.URL} alt="" className="h-28 w-full object-cover" />
+                <img src={img.URL} alt={`Ảnh khách sạn ${hotel.TenKhachSan}`} className="h-28 w-full object-cover" />
                 {img.AnhDaiDien && (
                   <span className="absolute left-1 top-1 rounded bg-blue-600 px-1.5 py-0.5 text-[10px] font-semibold text-white">Đại diện</span>
                 )}
@@ -230,7 +230,15 @@ export default function OwnerHotelManagePage() {
                       Đặt đại diện
                     </button>
                   )}
-                  <button aria-label="Xóa ảnh" type="button" onClick={() => deleteImageMutation.mutate(img.MaHinhAnh)} disabled={deleteImageMutation.isPending} className="ml-auto text-white hover:text-red-300 disabled:opacity-50">
+                  <button
+                    aria-label="Xóa ảnh"
+                    type="button"
+                    onClick={() => {
+                      if (window.confirm('Xóa ảnh này? Không thể hoàn tác.')) deleteImageMutation.mutate(img.MaHinhAnh);
+                    }}
+                    disabled={deleteImageMutation.isPending}
+                    className="ml-auto text-white hover:text-red-300 disabled:opacity-50"
+                  >
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
                 </div>
