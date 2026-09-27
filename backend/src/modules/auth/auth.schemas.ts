@@ -6,10 +6,10 @@ export const registerSchema = z.object({
     .min(3, 'Tên đăng nhập phải có ít nhất 3 ký tự')
     .max(100)
     .regex(/^[a-zA-Z0-9_.]+$/, 'Tên đăng nhập chỉ gồm chữ, số, dấu chấm hoặc gạch dưới'),
-  Email: z.string().email('Email không đúng định dạng'),
-  MatKhau: z.string().min(6, 'Mật khẩu phải có ít nhất 6 ký tự'),
-  HoTen: z.string().min(2, 'Họ tên ít nhất 2 ký tự').max(150),
-  SoDienThoai: z.string().min(8, 'Số điện thoại không hợp lệ').max(20),
+  Email: z.string().trim().email('Email không đúng định dạng').max(255).transform((value) => value.toLowerCase()),
+  MatKhau: z.string().min(8, 'Mật khẩu phải có ít nhất 8 ký tự').max(128),
+  HoTen: z.string().trim().min(2, 'Họ tên ít nhất 2 ký tự').max(150),
+  SoDienThoai: z.string().trim().regex(/^\+?[0-9]{8,15}$/, 'Số điện thoại không hợp lệ'),
   // DDI-01 (resolved): optional at registration — nullable in the baseline.
   NgaySinh: z.coerce.date().optional(),
   GioiTinh: z.enum(['Nam', 'Nữ', 'Khác']).optional(),
@@ -17,18 +17,18 @@ export const registerSchema = z.object({
 export type RegisterInput = z.infer<typeof registerSchema>;
 
 export const loginSchema = z.object({
-  identifier: z.string().min(1, 'Vui lòng nhập email hoặc tên đăng nhập'),
-  MatKhau: z.string().min(1, 'Vui lòng nhập mật khẩu'),
+  identifier: z.string().trim().min(1, 'Vui lòng nhập email hoặc tên đăng nhập').max(255),
+  MatKhau: z.string().min(1, 'Vui lòng nhập mật khẩu').max(128),
 });
 export type LoginInput = z.infer<typeof loginSchema>;
 
 export const forgotPasswordSchema = z.object({
-  Email: z.string().email('Email không đúng định dạng'),
+  Email: z.string().trim().email('Email không đúng định dạng').max(255).transform((value) => value.toLowerCase()),
 });
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 
 export const resetPasswordSchema = z.object({
-  token: z.string().min(1, 'Thiếu token đặt lại mật khẩu'),
-  MatKhauMoi: z.string().min(6, 'Mật khẩu phải có ít nhất 6 ký tự'),
+  token: z.string().min(1, 'Thiếu token đặt lại mật khẩu').max(4096),
+  MatKhauMoi: z.string().min(8, 'Mật khẩu phải có ít nhất 8 ký tự').max(128),
 });
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;

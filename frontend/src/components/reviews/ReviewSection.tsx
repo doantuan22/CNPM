@@ -3,7 +3,7 @@ import { Star, MessageSquareText } from 'lucide-react';
 import { Button } from '../common/Button';
 import { useCreateReview, useMyReview } from '../../features/reviews/hooks';
 import { reviewStatusBadgeClass } from '../../features/reviews/status';
-import { fileToDataUrl, cn } from '../../lib/utils';
+import { fileToDataUrl, imageFileError, cn } from '../../lib/utils';
 import { ApiError } from '../../services/apiClient';
 
 const MAX_IMAGES = 6;
@@ -21,12 +21,21 @@ export function ReviewSection({ bookingId, bookingStatus }: ReviewSectionProps) 
   const [score, setScore] = useState(5);
   const [content, setContent] = useState('');
   const [files, setFiles] = useState<File[]>([]);
+  const [fileError, setFileError] = useState<string | null>(null);
 
   if (!isCompleted) return null;
 
   const onFilesSelected = (list: FileList | null) => {
     if (!list) return;
-    setFiles(Array.from(list).slice(0, MAX_IMAGES));
+    const selected = Array.from(list);
+    if (selected.length > MAX_IMAGES) {
+      setFileError(`Tối đa ${MAX_IMAGES} ảnh cho mỗi đánh giá.`);
+      setFiles([]);
+      return;
+    }
+    const validationError = selected.map(imageFileError).find(Boolean) ?? null;
+    setFileError(validationError);
+    setFiles(validationError ? [] : selected);
   };
 
   const submit = async () => {
@@ -109,12 +118,13 @@ export function ReviewSection({ bookingId, bookingStatus }: ReviewSectionProps) 
             <input
               id="review-images"
               type="file"
-              accept="image/*"
+              accept="image/jpeg,image/png,image/webp,image/gif"
               multiple
               onChange={(e) => onFilesSelected(e.target.files)}
               className="block w-full text-sm"
             />
             {files.length > 0 && <p className="mt-1 text-xs text-slate-500">Đã chọn {files.length} ảnh</p>}
+            {fileError && <p role="alert" className="mt-1 text-xs text-red-600">{fileError}</p>}
           </div>
 
           {createMutation.isError && (
@@ -123,7 +133,7 @@ export function ReviewSection({ bookingId, bookingStatus }: ReviewSectionProps) 
             </div>
           )}
 
-          <Button className="w-full" onClick={submit} disabled={createMutation.isPending}>
+          <Button className="w-full" onClick={submit} disabled={createMutation.isPending || Boolean(fileError)}>
             {createMutation.isPending ? 'Đang gửi...' : 'Gửi đánh giá'}
           </Button>
         </div>

@@ -1,5 +1,5 @@
 import { getPrismaClient } from '../../config/prisma';
-import { Prisma } from '../../generated/prisma/client';
+import { Prisma, type THANH_TOAN } from '../../generated/prisma/client';
 import { BOOKING_STATUS } from '../../common/constants/hotel-status';
 import { PAYMENT_STATUS } from '../../common/constants/payment';
 
@@ -45,7 +45,14 @@ export class PaymentsRepository {
    * callback (return vs IPN) arrives first or how many times it repeats.
    */
   async findPaymentByTxnRef(tx: Prisma.TransactionClient, txnRef: string) {
-    return tx.tHANH_TOAN.findFirst({ where: { MaGiaoDichDoiTac: { startsWith: txnRef } } });
+    const rows = await tx.$queryRaw<THANH_TOAN[]>(Prisma.sql`
+      SELECT TOP 1 *
+      FROM THANH_TOAN WITH (UPDLOCK, ROWLOCK, HOLDLOCK)
+      WHERE MaGiaoDichDoiTac = ${txnRef}
+         OR MaGiaoDichDoiTac LIKE ${`${txnRef}:%`}
+      ORDER BY MaThanhToan
+    `);
+    return rows[0] ?? null;
   }
 
   async markPaymentOutcome(tx: Prisma.TransactionClient, maThanhToan: number, trangThai: string, maGiaoDichDoiTac?: string) {
@@ -101,6 +108,19 @@ export class PaymentsRepository {
   async findRefundWithOwnership(maHoanTien: number) {
     const prisma = getPrismaClient();
     return prisma.hOAN_TIEN.findUnique({
+      where: { MaHoanTien: maHoanTien },
+      include: { THANH_TOAN: { include: { DAT_PHONG: true } } },
+    });
+  }
+
+  /** Serializes concurrent retries for one refund until the surrounding transaction commits. */
+  async lockRefundWithOwnership(tx: Prisma.TransactionClient, maHoanTien: number) {
+    await tx.$queryRaw<Array<{ MaHoanTien: number }>>(Prisma.sql`
+      SELECT MaHoanTien
+      FROM HOAN_TIEN WITH (UPDLOCK, ROWLOCK, HOLDLOCK)
+      WHERE MaHoanTien = ${maHoanTien}
+    `);
+    return tx.hOAN_TIEN.findUnique({
       where: { MaHoanTien: maHoanTien },
       include: { THANH_TOAN: { include: { DAT_PHONG: true } } },
     });

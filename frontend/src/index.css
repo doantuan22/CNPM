@@ -29,3 +29,13 @@ body {
   color: hsl(var(--foreground));
   -webkit-font-smoothing: antialiased;
 }
+
+:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+button:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
+}

@@ -18,7 +18,7 @@ import { useLocations } from '../features/locations/hooks';
 import { useAmenities } from '../features/amenities/hooks';
 import { hotelFormSchema, HotelFormSchemaValues, roomTypeFormSchema, RoomTypeFormSchemaValues } from '../features/owner/schemas';
 import { ApiError } from '../services/apiClient';
-import { fileToDataUrl, cn } from '../lib/utils';
+import { fileToDataUrl, imageFileError, cn } from '../lib/utils';
 
 export default function OwnerHotelManagePage() {
   const { id } = useParams<{ id: string }>();
@@ -35,6 +35,7 @@ export default function OwnerHotelManagePage() {
   const createRoomTypeMutation = useCreateRoomType(hotelId);
 
   const [showRoomTypeForm, setShowRoomTypeForm] = useState(false);
+  const [imageError, setImageError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
@@ -94,9 +95,16 @@ export default function OwnerHotelManagePage() {
   const onImageSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const dataUrl = await fileToDataUrl(file);
-    await uploadImageMutation.mutateAsync(dataUrl);
-    if (fileInputRef.current) fileInputRef.current.value = '';
+    const validationError = imageFileError(file);
+    if (validationError) { setImageError(validationError); e.target.value = ''; return; }
+    setImageError(null);
+    try {
+      await uploadImageMutation.mutateAsync(await fileToDataUrl(file));
+    } catch {
+      // Mutation error is rendered below.
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
   };
 
   const onCreateRoomType = async (values: RoomTypeFormSchemaValues) => {
@@ -113,7 +121,7 @@ export default function OwnerHotelManagePage() {
         </Link>
       </Button>
 
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">{hotel.TenKhachSan}</h1>
           <p className="text-sm text-slate-500">Trạng thái: {hotel.TrangThai}</p>
@@ -151,7 +159,7 @@ export default function OwnerHotelManagePage() {
             <label htmlFor="DiaChiChiTiet" className="block text-sm font-medium text-slate-700">Địa chỉ chi tiết</label>
             <input id="DiaChiChiTiet" {...register('DiaChiChiTiet')} className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label htmlFor="MaDiaPhuong" className="block text-sm font-medium text-slate-700">Địa phương</label>
               <select id="MaDiaPhuong" {...register('MaDiaPhuong')} className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
@@ -167,7 +175,7 @@ export default function OwnerHotelManagePage() {
               </select>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label htmlFor="GioNhanPhong" className="block text-sm font-medium text-slate-700">Giờ nhận phòng</label>
               <input id="GioNhanPhong" type="time" {...register('GioNhanPhong')} className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
@@ -191,13 +199,14 @@ export default function OwnerHotelManagePage() {
       <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-slate-900">Hình ảnh</h2>
-          <label className="cursor-pointer">
-            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={onImageSelected} />
-            <span className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700">
+          <div>
+            <input ref={fileInputRef} aria-label="Chọn ảnh khách sạn" type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="sr-only" onChange={onImageSelected} />
+            <Button type="button" size="sm" onClick={() => fileInputRef.current?.click()} disabled={uploadImageMutation.isPending || hotel.HINH_ANH_KHACH_SAN.length >= 20}>
               <ImagePlus className="h-4 w-4" /> {uploadImageMutation.isPending ? 'Đang tải...' : 'Tải ảnh lên'}
-            </span>
-          </label>
+            </Button>
+          </div>
         </div>
+        {(imageError || uploadImageMutation.isError) && <div role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{imageError || (uploadImageMutation.error instanceof ApiError ? uploadImageMutation.error.message : 'Không thể tải ảnh')}</div>}
         {hotel.HINH_ANH_KHACH_SAN.length === 0 ? (
           <p className="text-sm text-slate-500">Chưa có hình ảnh nào.</p>
         ) : (
@@ -208,13 +217,13 @@ export default function OwnerHotelManagePage() {
                 {img.AnhDaiDien && (
                   <span className="absolute left-1 top-1 rounded bg-blue-600 px-1.5 py-0.5 text-[10px] font-semibold text-white">Đại diện</span>
                 )}
-                <div className="absolute inset-x-0 bottom-0 flex justify-between bg-black/50 px-1.5 py-1 opacity-0 transition group-hover:opacity-100">
+                <div className="absolute inset-x-0 bottom-0 flex justify-between bg-black/60 px-1.5 py-1 opacity-0 transition group-focus-within:opacity-100 group-hover:opacity-100">
                   {!img.AnhDaiDien && (
-                    <button type="button" onClick={() => setPrimaryMutation.mutate(img.MaHinhAnh)} className="text-[10px] text-white hover:underline">
+                    <button type="button" onClick={() => setPrimaryMutation.mutate(img.MaHinhAnh)} disabled={setPrimaryMutation.isPending} className="text-xs text-white hover:underline disabled:opacity-50">
                       Đặt đại diện
                     </button>
                   )}
-                  <button type="button" onClick={() => deleteImageMutation.mutate(img.MaHinhAnh)} className="ml-auto text-white hover:text-red-300">
+                  <button aria-label="Xóa ảnh" type="button" onClick={() => deleteImageMutation.mutate(img.MaHinhAnh)} disabled={deleteImageMutation.isPending} className="ml-auto text-white hover:text-red-300 disabled:opacity-50">
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
                 </div>

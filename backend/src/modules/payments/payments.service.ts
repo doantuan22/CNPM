@@ -213,24 +213,23 @@ export class PaymentsService {
 
   /** Idempotent — a refund already "Thành công" is returned as-is, never re-sent to the gateway (M6 §6 — "retry refund không double-refund"). */
   async retryRefund(maHoanTien: number, requesterId: number, ipAddr: string): Promise<RefundView> {
-    const refund = await this.repository.findRefundWithOwnership(maHoanTien);
-    if (!refund) throw AppError.notFound('Không tìm thấy yêu cầu hoàn tiền');
-    if (refund.THANH_TOAN.DAT_PHONG.MaTaiKhoanKhachHang !== requesterId) {
-      throw AppError.forbidden('Bạn không có quyền thao tác trên yêu cầu hoàn tiền này');
-    }
-    if (refund.TrangThai === REFUND_STATUS.SUCCESS) {
-      return this.toRefundView(refund);
-    }
-
-    const outcome = await attemptGatewayRefund(
-      this.refundGateway,
-      refund.THANH_TOAN.MaGiaoDichDoiTac,
-      refund.MaGiaoDichDoiTac,
-      toNumber(refund.SoTienHoan),
-      ipAddr
-    );
-
     return this.repository.runInTransaction(async (tx) => {
+      // The row lock is held across the gateway request. A simultaneous retry
+      // waits, re-reads SUCCESS, and therefore cannot issue a second refund.
+      const refund = await this.repository.lockRefundWithOwnership(tx, maHoanTien);
+      if (!refund) throw AppError.notFound('Không tìm thấy yêu cầu hoàn tiền');
+      if (refund.THANH_TOAN.DAT_PHONG.MaTaiKhoanKhachHang !== requesterId) {
+        throw AppError.forbidden('Bạn không có quyền thao tác trên yêu cầu hoàn tiền này');
+      }
+      if (refund.TrangThai === REFUND_STATUS.SUCCESS) return this.toRefundView(refund);
+
+      const outcome = await attemptGatewayRefund(
+        this.refundGateway,
+        refund.THANH_TOAN.MaGiaoDichDoiTac,
+        refund.MaGiaoDichDoiTac,
+        toNumber(refund.SoTienHoan),
+        ipAddr
+      );
       const now = new Date();
       await this.repository.markRefundOutcome(tx, maHoanTien, outcome.success ? REFUND_STATUS.SUCCESS : REFUND_STATUS.FAILED, outcome.success ? now : null);
       return this.toRefundView({ ...refund, TrangThai: outcome.success ? REFUND_STATUS.SUCCESS : REFUND_STATUS.FAILED, NgayHoanTien: outcome.success ? now : null });

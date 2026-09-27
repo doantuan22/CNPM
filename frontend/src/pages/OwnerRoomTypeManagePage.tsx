@@ -22,7 +22,7 @@ import {
   RateBulkFormValues,
 } from '../features/owner/schemas';
 import { ApiError } from '../services/apiClient';
-import { fileToDataUrl, formatCurrencyVND, toDateInputValue } from '../lib/utils';
+import { fileToDataUrl, imageFileError, formatCurrencyVND, toDateInputValue } from '../lib/utils';
 
 export default function OwnerRoomTypeManagePage() {
   const { id } = useParams<{ id: string }>();
@@ -35,6 +35,7 @@ export default function OwnerRoomTypeManagePage() {
   const deleteImageMutation = useDeleteRoomTypeImage(roomTypeId);
   const setPrimaryMutation = useSetPrimaryRoomTypeImage(roomTypeId);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [imageError, setImageError] = useState<string | null>(null);
 
   const today = toDateInputValue(new Date());
   const twoWeeksOut = toDateInputValue(new Date(Date.now() + 13 * 86400000));
@@ -100,9 +101,16 @@ export default function OwnerRoomTypeManagePage() {
   const onImageSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const dataUrl = await fileToDataUrl(file);
-    await uploadImageMutation.mutateAsync(dataUrl);
-    if (fileInputRef.current) fileInputRef.current.value = '';
+    const validationError = imageFileError(file);
+    if (validationError) { setImageError(validationError); e.target.value = ''; return; }
+    setImageError(null);
+    try {
+      await uploadImageMutation.mutateAsync(await fileToDataUrl(file));
+    } catch {
+      // Mutation error is rendered below.
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
   };
 
   const onRateBulkSubmit = async (values: RateBulkFormValues) => {
@@ -140,7 +148,7 @@ export default function OwnerRoomTypeManagePage() {
           <div role="status" className="rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700">Cập nhật thành công</div>
         )}
         <form onSubmit={handleSubmit((v) => updateMutation.mutate(v))} noValidate className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label htmlFor="TenLoaiPhong" className="block text-sm font-medium text-slate-700">Tên loại phòng</label>
               <input id="TenLoaiPhong" {...register('TenLoaiPhong')} className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
@@ -151,7 +159,7 @@ export default function OwnerRoomTypeManagePage() {
               <input id="LoaiGiuong" {...register('LoaiGiuong')} className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div>
               <label htmlFor="SoGiuong" className="block text-sm font-medium text-slate-700">Số giường</label>
               <input id="SoGiuong" type="number" min={1} {...register('SoGiuong')} className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
@@ -188,13 +196,14 @@ export default function OwnerRoomTypeManagePage() {
       <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-slate-900">Hình ảnh</h2>
-          <label className="cursor-pointer">
-            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={onImageSelected} />
-            <span className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700">
+          <div>
+            <input ref={fileInputRef} aria-label="Chọn ảnh loại phòng" type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="sr-only" onChange={onImageSelected} />
+            <Button type="button" size="sm" onClick={() => fileInputRef.current?.click()} disabled={uploadImageMutation.isPending || roomType.HINH_ANH_LOAI_PHONG.length >= 20}>
               <ImagePlus className="h-4 w-4" /> {uploadImageMutation.isPending ? 'Đang tải...' : 'Tải ảnh lên'}
-            </span>
-          </label>
+            </Button>
+          </div>
         </div>
+        {(imageError || uploadImageMutation.isError) && <div role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{imageError || (uploadImageMutation.error instanceof ApiError ? uploadImageMutation.error.message : 'Không thể tải ảnh')}</div>}
         {roomType.HINH_ANH_LOAI_PHONG.length === 0 ? (
           <p className="text-sm text-slate-500">Chưa có hình ảnh nào.</p>
         ) : (
@@ -205,13 +214,13 @@ export default function OwnerRoomTypeManagePage() {
                 {img.LaAnhDaiDien && (
                   <span className="absolute left-1 top-1 rounded bg-blue-600 px-1.5 py-0.5 text-[10px] font-semibold text-white">Đại diện</span>
                 )}
-                <div className="absolute inset-x-0 bottom-0 flex justify-between bg-black/50 px-1.5 py-1 opacity-0 transition group-hover:opacity-100">
+                <div className="absolute inset-x-0 bottom-0 flex justify-between bg-black/60 px-1.5 py-1 opacity-0 transition group-focus-within:opacity-100 group-hover:opacity-100">
                   {!img.LaAnhDaiDien && (
-                    <button type="button" onClick={() => setPrimaryMutation.mutate(img.MaHinhAnhLoaiPhong)} className="text-[10px] text-white hover:underline">
+                    <button type="button" onClick={() => setPrimaryMutation.mutate(img.MaHinhAnhLoaiPhong)} disabled={setPrimaryMutation.isPending} className="text-xs text-white hover:underline disabled:opacity-50">
                       Đặt đại diện
                     </button>
                   )}
-                  <button type="button" onClick={() => deleteImageMutation.mutate(img.MaHinhAnhLoaiPhong)} className="ml-auto text-white hover:text-red-300">
+                  <button aria-label="Xóa ảnh" type="button" onClick={() => deleteImageMutation.mutate(img.MaHinhAnhLoaiPhong)} disabled={deleteImageMutation.isPending} className="ml-auto text-white hover:text-red-300 disabled:opacity-50">
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
                 </div>
@@ -294,8 +303,9 @@ export default function OwnerRoomTypeManagePage() {
           ) : ratesQuery.data && ratesQuery.data.length === 0 ? (
             <p className="text-sm text-slate-500">Chưa có dữ liệu giá cho khoảng ngày này.</p>
           ) : (
-            <div className="max-h-72 overflow-y-auto rounded-lg border border-slate-200">
-              <table className="w-full text-left text-sm">
+            <div className="max-h-72 overflow-auto rounded-lg border border-slate-200">
+              <table className="min-w-[640px] w-full text-left text-sm">
+                <caption className="sr-only">Giá và quỹ phòng theo ngày</caption>
                 <thead className="sticky top-0 border-b border-slate-200 bg-slate-50 text-xs uppercase text-slate-500">
                   <tr>
                     <th className="px-3 py-2">Ngày</th>

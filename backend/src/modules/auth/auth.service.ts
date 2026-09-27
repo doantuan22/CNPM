@@ -11,7 +11,6 @@ import {
 import { toSafeAccount, SafeAccount } from '../../common/utils/account-mapper';
 import { ROLE_NAMES } from '../../common/constants/roles';
 import { ACCOUNT_STATUS } from '../../common/constants/account-status';
-import { env } from '../../config/env';
 import type { RegisterInput, LoginInput, ForgotPasswordInput, ResetPasswordInput } from './auth.schemas';
 
 export interface AuthTokens {
@@ -77,16 +76,18 @@ export class AuthService {
   async login(input: LoginInput): Promise<AuthResult> {
     const account = await this.authRepository.findByEmailOrUsername(input.identifier);
     if (!account) {
+      // Keep the unknown-account path close to the same cost as a real bcrypt
+      // comparison, reducing username/email enumeration through timing.
+      await verifyPassword(input.MatKhau, '$2b$12$RDB7iar0FYW8YsEwBSPO.eUPLa/DjejjC6HiP53/P32lcFnkPoFkm');
       throw AppError.unauthorized('Email/tên đăng nhập hoặc mật khẩu không đúng');
-    }
-
-    if (account.TrangThai === ACCOUNT_STATUS.LOCKED) {
-      throw AppError.forbidden('Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên');
     }
 
     const validPassword = await verifyPassword(input.MatKhau, account.MatKhau);
     if (!validPassword) {
       throw AppError.unauthorized('Email/tên đăng nhập hoặc mật khẩu không đúng');
+    }
+    if (account.TrangThai === ACCOUNT_STATUS.LOCKED) {
+      throw AppError.forbidden('Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên');
     }
 
     const role = await this.rolesRepository.findById(account.MaVaiTro);
@@ -107,25 +108,25 @@ export class AuthService {
       throw AppError.unauthorized('Tài khoản không khả dụng');
     }
 
-    return this.issueTokens(account.MaTaiKhoan, payload.role);
+    const role = await this.rolesRepository.findById(account.MaVaiTro);
+    if (!role) throw AppError.unauthorized('Vai trò tài khoản không hợp lệ');
+    return this.issueTokens(account.MaTaiKhoan, role.TenVaiTro);
   }
 
   /**
    * DEV / FOUNDATION implementation of UC04 (no email provider wired yet).
    * Always returns a generic outcome regardless of whether the account
    * exists, to avoid account enumeration. In non-production environments
-   * the reset token is logged server-side so the flow can be exercised
-   * manually/by tests until a real email provider is integrated.
+   * a mail provider must deliver the reset token. Tokens are deliberately
+   * never logged because logs are commonly shipped to shared systems.
    */
   async forgotPassword(input: ForgotPasswordInput): Promise<void> {
     const account = await this.authRepository.findByEmail(input.Email);
     if (!account) return;
 
     const token = signPasswordResetToken(account.MaTaiKhoan, account.MatKhau);
-    if (env.NODE_ENV !== 'production') {
-      console.log(`[DEV][FOUNDATION] Password reset token for ${input.Email}: ${token}`);
-    }
-    // TODO(M2+): send `token` via a real email provider instead of logging it.
+    // TODO: send `token` via a configured email provider.
+    void token;
   }
 
   async resetPassword(input: ResetPasswordInput): Promise<void> {

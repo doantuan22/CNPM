@@ -14,4 +14,62 @@ export class PartnersRepository {
     const prisma = getPrismaClient();
     return prisma.hO_SO_DOI_TAC.create({ data });
   }
+
+  async listAdmin(query: { page: number; limit: number; trangThaiDuyet?: string }) {
+    const prisma = getPrismaClient();
+    const where: Prisma.HO_SO_DOI_TACWhereInput = query.trangThaiDuyet
+      ? { TrangThaiDuyet: query.trangThaiDuyet }
+      : {};
+    const [items, total] = await Promise.all([
+      prisma.hO_SO_DOI_TAC.findMany({
+        where,
+        orderBy: { NgayNop: 'desc' },
+        skip: (query.page - 1) * query.limit,
+        take: query.limit,
+        include: {
+          TAI_KHOAN_HO_SO_DOI_TAC_MaTaiKhoanToTAI_KHOAN: { select: { MaTaiKhoan: true, HoTen: true, Email: true } },
+          TAI_KHOAN_HO_SO_DOI_TAC_MaTaiKhoanDuyetToTAI_KHOAN: { select: { MaTaiKhoan: true, HoTen: true } },
+        },
+      }),
+      prisma.hO_SO_DOI_TAC.count({ where }),
+    ]);
+    return { items, total };
+  }
+
+  async findByIdAdmin(maHoSoDoiTac: number) {
+    const prisma = getPrismaClient();
+    return prisma.hO_SO_DOI_TAC.findUnique({
+      where: { MaHoSoDoiTac: maHoSoDoiTac },
+      include: {
+        TAI_KHOAN_HO_SO_DOI_TAC_MaTaiKhoanToTAI_KHOAN: { select: { MaTaiKhoan: true, HoTen: true, Email: true, MaVaiTro: true } },
+        TAI_KHOAN_HO_SO_DOI_TAC_MaTaiKhoanDuyetToTAI_KHOAN: { select: { MaTaiKhoan: true, HoTen: true, Email: true } },
+      },
+    });
+  }
+
+  async runInTransaction<T>(fn: (tx: Prisma.TransactionClient) => Promise<T>): Promise<T> {
+    return getPrismaClient().$transaction(fn);
+  }
+
+  async findPendingById(tx: Prisma.TransactionClient, maHoSoDoiTac: number) {
+    return tx.hO_SO_DOI_TAC.findUnique({ where: { MaHoSoDoiTac: maHoSoDoiTac } });
+  }
+
+  async updatePendingStatus(
+    tx: Prisma.TransactionClient,
+    maHoSoDoiTac: number,
+    adminId: number,
+    status: string,
+    reason: string | null,
+    now: Date
+  ) {
+    return tx.hO_SO_DOI_TAC.updateMany({
+      where: { MaHoSoDoiTac: maHoSoDoiTac, TrangThaiDuyet: 'Chờ duyệt' },
+      data: { TrangThaiDuyet: status, MaTaiKhoanDuyet: adminId, NgayDuyet: now, LyDoTuChoi: reason },
+    });
+  }
+
+  async updateAccountRole(tx: Prisma.TransactionClient, maTaiKhoan: number, maVaiTro: number, now: Date) {
+    return tx.tAI_KHOAN.update({ where: { MaTaiKhoan: maTaiKhoan }, data: { MaVaiTro: maVaiTro, NgayCapNhat: now } });
+  }
 }

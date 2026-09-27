@@ -6,11 +6,10 @@
  * retrofitting M3 (out of this task's scope).
  */
 import { AppError } from '../../common/errors/app-error';
+import { MAX_IMAGE_BYTES, validateImageDataUri } from '../../common/utils/image-upload';
 
 export const MAX_REVIEW_IMAGES = 6;
-export const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5MB
-
-const DATA_URI_RE = /^data:image\/(png|jpe?g|webp|gif);base64,([A-Za-z0-9+/]+=*)$/i;
+export { MAX_IMAGE_BYTES };
 
 /** Throws AppError.badRequest on the first invalid image; a valid/empty list passes silently. */
 export const validateReviewImages = (images: string[] | undefined): void => {
@@ -19,14 +18,6 @@ export const validateReviewImages = (images: string[] | undefined): void => {
     throw AppError.badRequest(`Tối đa ${MAX_REVIEW_IMAGES} ảnh cho mỗi đánh giá`);
   }
   for (const image of images) {
-    const match = image.match(DATA_URI_RE);
-    if (!match) {
-      throw AppError.badRequest('Ảnh phải là data URI base64 hợp lệ (JPEG/PNG/WEBP/GIF)');
-    }
-    // Base64 decodes to ~3/4 of its encoded length — good enough to reject oversized payloads without a real decode.
-    const approxBytes = Math.floor((match[2].length * 3) / 4);
-    if (approxBytes > MAX_IMAGE_BYTES) {
-      throw AppError.badRequest('Kích thước mỗi ảnh tối đa 5MB');
-    }
+    validateImageDataUri(image);
   }
 };

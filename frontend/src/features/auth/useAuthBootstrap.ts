@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useAuthStore } from '../../lib/authStore';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 /**
  * On first mount, tries once to exchange the httpOnly refresh-token cookie

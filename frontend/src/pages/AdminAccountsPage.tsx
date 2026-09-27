@@ -28,6 +28,7 @@ export default function AdminAccountsPage() {
 
       <form onSubmit={onSearchSubmit} className="flex flex-wrap gap-3">
         <input
+          aria-label="Tìm kiếm tài khoản"
           type="search"
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
@@ -35,6 +36,7 @@ export default function AdminAccountsPage() {
           className="min-w-64 flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
         />
         <select
+          aria-label="Lọc theo trạng thái tài khoản"
           value={status}
           onChange={(e) => {
             setStatus(e.target.value);
@@ -54,7 +56,7 @@ export default function AdminAccountsPage() {
         </button>
       </form>
 
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs">
+      <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-xs">
         {query.isLoading ? (
           <div className="flex justify-center py-16" role="status" aria-live="polite">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600" />
@@ -69,7 +71,8 @@ export default function AdminAccountsPage() {
           </div>
         ) : (
           <>
-            <table className="w-full text-left text-sm">
+            <table className="min-w-[720px] w-full text-left text-sm">
+              <caption className="sr-only">Danh sách tài khoản</caption>
               <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase text-slate-500">
                 <tr>
                   <th className="px-4 py-3">Tên đăng nhập</th>

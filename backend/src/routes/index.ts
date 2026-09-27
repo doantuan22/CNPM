@@ -3,7 +3,7 @@ import healthRoutes from '../modules/health/health.routes';
 import authRoutes from '../modules/auth/auth.routes';
 import profileRoutes from '../modules/profile/profile.routes';
 import accountsRoutes from '../modules/accounts/accounts.routes';
-import partnersRoutes from '../modules/partners/partners.routes';
+import partnersRoutes, { adminPartnerApplicationRoutes } from '../modules/partners/partners.routes';
 import hotelsRoutes from '../modules/hotels/hotels.routes';
 import amenitiesRoutes from '../modules/amenities/amenities.routes';
 import ownerHotelsRoutes from '../modules/owner/owner-hotels.routes';
@@ -30,6 +30,7 @@ router.use('/auth', authRoutes);
 router.use('/profile', profileRoutes);
 router.use('/admin/accounts', accountsRoutes);
 router.use('/partners', partnersRoutes);
+router.use('/admin/partner-applications', adminPartnerApplicationRoutes);
 
 // Discovery (M2)
 router.use('/hotels', hotelsRoutes);

@@ -60,6 +60,7 @@ export function Navbar() {
                   'text-sm font-medium transition-colors hover:text-blue-600',
                   isActive ? 'text-blue-600 font-semibold' : 'text-slate-600'
                 )}
+                aria-current={isActive ? 'page' : undefined}
               >
                 {link.label}
               </Link>
@@ -122,6 +123,8 @@ export function Navbar() {
           onClick={toggleSidebar}
           className="md:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100"
           aria-label="Toggle Menu"
+          aria-expanded={isSidebarOpen}
+          aria-controls="mobile-navigation"
         >
           {isSidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>
@@ -129,12 +132,13 @@ export function Navbar() {
 
       {/* Mobile dropdown */}
       {isSidebarOpen && (
-        <div className="md:hidden border-b border-slate-200 bg-white px-4 pt-2 pb-4 space-y-1">
+        <div id="mobile-navigation" className="md:hidden border-b border-slate-200 bg-white px-4 pt-2 pb-4 space-y-1">
           {navLinks.map((link) => (
             <Link
               key={link.to}
               to={link.to}
               onClick={toggleSidebar}
+              aria-current={location.pathname === link.to ? 'page' : undefined}
               className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50 hover:text-blue-600"
             >
               {link.label}
@@ -164,6 +168,7 @@ export function Navbar() {
                   toggleSidebar();
                   handleLogout();
                 }}
+                disabled={logoutMutation.isPending}
                 className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50 hover:text-blue-600"
               >
                 Đăng xuất

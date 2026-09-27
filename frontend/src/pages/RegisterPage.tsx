@@ -93,7 +93,7 @@ export default function RegisterPage() {
         )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label htmlFor="HoTen" className="block text-sm font-medium text-slate-700">
                 Họ và tên
@@ -101,6 +101,7 @@ export default function RegisterPage() {
               <input
                 id="HoTen"
                 type="text"
+                autoComplete="name"
                 {...register('HoTen')}
                 className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 placeholder="Nguyễn Văn A"
@@ -114,6 +115,7 @@ export default function RegisterPage() {
               <input
                 id="TenDangNhap"
                 type="text"
+                autoComplete="username"
                 {...register('TenDangNhap')}
                 className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 placeholder="nguyenvana"
@@ -131,6 +133,7 @@ export default function RegisterPage() {
             <input
               id="Email"
               type="email"
+              autoComplete="email"
               {...register('Email')}
               className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               placeholder="name@example.com"
@@ -138,7 +141,7 @@ export default function RegisterPage() {
             {errors.Email && <p className="mt-1 text-xs text-red-600">{errors.Email.message}</p>}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label htmlFor="SoDienThoai" className="block text-sm font-medium text-slate-700">
                 Số điện thoại
@@ -146,6 +149,7 @@ export default function RegisterPage() {
               <input
                 id="SoDienThoai"
                 type="tel"
+                autoComplete="tel"
                 {...register('SoDienThoai')}
                 className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 placeholder="0912345678"
@@ -161,6 +165,7 @@ export default function RegisterPage() {
               <input
                 id="NgaySinh"
                 type="date"
+                autoComplete="bday"
                 {...register('NgaySinh')}
                 className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
@@ -186,7 +191,7 @@ export default function RegisterPage() {
             {errors.GioiTinh && <p className="mt-1 text-xs text-red-600">{errors.GioiTinh.message}</p>}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label htmlFor="MatKhau" className="block text-sm font-medium text-slate-700">
                 Mật khẩu
@@ -194,6 +199,7 @@ export default function RegisterPage() {
               <input
                 id="MatKhau"
                 type="password"
+                autoComplete="new-password"
                 {...register('MatKhau')}
                 className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 placeholder="••••••••"
@@ -207,6 +213,7 @@ export default function RegisterPage() {
               <input
                 id="confirmMatKhau"
                 type="password"
+                autoComplete="new-password"
                 {...register('confirmMatKhau')}
                 className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 placeholder="••••••••"

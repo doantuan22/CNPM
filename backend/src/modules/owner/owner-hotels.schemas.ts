@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { validateImageDataUri } from '../../common/utils/image-upload';
 
 const timeOfDay = z
   .string()
@@ -48,6 +49,6 @@ export const uploadImageSchema = z.object({
   // multer/multipart parsing while still reusing the existing Cloudinary
   // integration exactly as-is (CloudinaryIntegration.uploadImage accepts a
   // file path OR a base64 string).
-  image: z.string().min(1, 'Thiếu dữ liệu ảnh'),
+  image: z.string().min(1, 'Thiếu dữ liệu ảnh').transform(validateImageDataUri),
 });
 export type UploadImageInput = z.infer<typeof uploadImageSchema>;

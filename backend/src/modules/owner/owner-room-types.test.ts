@@ -141,7 +141,7 @@ describe('Amenities + images for room types', () => {
     const uploadRes = await request(app)
       .post(`/api/owner/room-types/${roomType.MaLoaiPhong}/images`)
       .set('Authorization', `Bearer ${token}`)
-      .send({ image: 'data:image/png;base64,AAAA' });
+      .send({ image: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUAg1WvHmoAAAAASUVORK5CYII=' });
     expect(uploadRes.status).toBe(201);
     expect(uploadRes.body.data.LaAnhDaiDien).toBe(true);
 

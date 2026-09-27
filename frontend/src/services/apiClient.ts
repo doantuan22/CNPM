@@ -3,7 +3,7 @@ import { AuthResult } from '../types/auth';
 import { getAccessToken, useAuthStore } from '../lib/authStore';
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+  import.meta.env.VITE_API_BASE_URL || '/api';
 
 export class ApiError extends Error {
   public statusCode: number;
@@ -42,6 +42,13 @@ const refreshAccessToken = async (): Promise<string | null> => {
       });
   }
   return refreshPromise;
+};
+
+export const refreshSession = async (): Promise<boolean> => {
+  const token = await refreshAccessToken();
+  if (!token) return false;
+  useAuthStore.getState().setAccessToken(token);
+  return true;
 };
 
 interface ApiClientOptions extends RequestInit {

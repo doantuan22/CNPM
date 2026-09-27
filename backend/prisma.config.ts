@@ -9,6 +9,6 @@ export default defineConfig({
   datasource: {
     url:
       process.env.DATABASE_URL ||
-      'sqlserver://localhost:1433;database=HotelBooking;user=sa;password=YourPassword;encrypt=false;trustServerCertificate=true',
+      'sqlserver://server.invalid:1433;database=HotelBooking;user=placeholder;password=CHANGE_ME;encrypt=true',
   },
 });

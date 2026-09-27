@@ -353,6 +353,26 @@ describe('PaymentsService.retryRefund — idempotent (M6 §4/§6)', () => {
     expect(succeedingGateway.calls).toHaveLength(1);
   });
 
+  it('serializes simultaneous retries so the gateway is called only once', async () => {
+    const failingGateway = new FakeRefundGateway({ success: false, message: 'temporary outage' });
+    const bookingsService = new BookingsService(new BookingsRepository(), failingGateway);
+    const booking = await makeBooking(BOOKING_STATUS.CONFIRMED, addDays(5), addDays(6), { tongTienPhong: 1_000_000 });
+    await createTestPayment(booking.MaDatPhong, 1_000_000, PAYMENT_STATUS.SUCCESS, encodeGatewayRef('PAYTEST8', '900008', '20260101000000'));
+    const cancelled = await bookingsService.cancelBooking(booking.MaDatPhong, customerId, {}, '127.0.0.1');
+    const refundId = cancelled.ThanhToan[0].HoanTien[0].MaHoanTien;
+
+    const succeedingGateway = new FakeRefundGateway({ success: true, message: 'ok' });
+    const paymentsService = new PaymentsService(new PaymentsRepository(), succeedingGateway);
+    const [first, second] = await Promise.all([
+      paymentsService.retryRefund(refundId, customerId, '127.0.0.1'),
+      paymentsService.retryRefund(refundId, customerId, '127.0.0.1'),
+    ]);
+
+    expect(first.TrangThai).toBe(REFUND_STATUS.SUCCESS);
+    expect(second.TrangThai).toBe(REFUND_STATUS.SUCCESS);
+    expect(succeedingGateway.calls).toHaveLength(1);
+  });
+
   it('403 when a different customer tries to retry someone else\'s refund', async () => {
     const failingGateway = new FakeRefundGateway({ success: false, message: 'fail' });
     const bookingsService = new BookingsService(new BookingsRepository(), failingGateway);

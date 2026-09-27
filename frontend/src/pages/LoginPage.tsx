@@ -60,12 +60,15 @@ export default function LoginPage() {
             <input
               id="identifier"
               type="text"
+              autoComplete="username"
+              aria-invalid={Boolean(errors.identifier)}
+              aria-describedby={errors.identifier ? 'identifier-error' : undefined}
               {...register('identifier')}
               className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               placeholder="name@example.com"
             />
             {errors.identifier && (
-              <p className="mt-1 text-xs text-red-600">{errors.identifier.message}</p>
+              <p id="identifier-error" className="mt-1 text-xs text-red-600">{errors.identifier.message}</p>
             )}
           </div>
 
@@ -81,11 +84,14 @@ export default function LoginPage() {
             <input
               id="MatKhau"
               type="password"
+              autoComplete="current-password"
+              aria-invalid={Boolean(errors.MatKhau)}
+              aria-describedby={errors.MatKhau ? 'password-error' : undefined}
               {...register('MatKhau')}
               className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               placeholder="••••••••"
             />
-            {errors.MatKhau && <p className="mt-1 text-xs text-red-600">{errors.MatKhau.message}</p>}
+            {errors.MatKhau && <p id="password-error" className="mt-1 text-xs text-red-600">{errors.MatKhau.message}</p>}
           </div>
 
           <Button type="submit" className="w-full" disabled={isSubmitting || loginMutation.isPending}>

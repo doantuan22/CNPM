@@ -16,7 +16,7 @@ export const createAccountSchema = z.object({
     .max(100)
     .regex(/^[a-zA-Z0-9_.]+$/, 'Tên đăng nhập chỉ gồm chữ, số, dấu chấm hoặc gạch dưới'),
   Email: z.string().email(),
-  MatKhau: z.string().min(6, 'Mật khẩu phải có ít nhất 6 ký tự'),
+  MatKhau: z.string().min(8, 'Mật khẩu phải có ít nhất 8 ký tự').max(128),
   HoTen: z.string().min(2).max(150),
   SoDienThoai: z.string().min(8).max(20),
   // DDI-01 (resolved): nullable in the baseline, optional here too.

@@ -245,6 +245,27 @@ describe('GET /payments/vnpay-ipn', () => {
     expect(refreshed!.TrangThai).toBe(BOOKING_STATUS.CONFIRMED); // still confirmed exactly once
   });
 
+  it('serializes simultaneous duplicate IPNs without creating an erroneous refund', async () => {
+    const { booking, txnRef } = await createPendingPaymentViaApi(410_000);
+    const query = signedIpnQuery({
+      vnp_TxnRef: txnRef,
+      vnp_Amount: String(410_000 * 100),
+      vnp_ResponseCode: '00',
+      vnp_TransactionStatus: '00',
+    });
+
+    const [first, second] = await Promise.all([
+      request(app).get('/api/payments/vnpay-ipn').query(query),
+      request(app).get('/api/payments/vnpay-ipn').query(query),
+    ]);
+    expect([first.body.RspCode, second.body.RspCode].sort()).toEqual(['00', '02']);
+
+    const prisma = getPrismaClient();
+    const payment = await prisma.tHANH_TOAN.findFirstOrThrow({ where: { MaDatPhong: booking.MaDatPhong } });
+    expect(await prisma.hOAN_TIEN.count({ where: { MaThanhToan: payment.MaThanhToan } })).toBe(0);
+    expect((await prisma.dAT_PHONG.findUniqueOrThrow({ where: { MaDatPhong: booking.MaDatPhong } })).TrangThai).toBe(BOOKING_STATUS.CONFIRMED);
+  });
+
   it('97 on an invalid/tampered signature — nothing is mutated', async () => {
     const { booking, txnRef } = await createPendingPaymentViaApi(300_000);
     const query = signedIpnQuery({ vnp_TxnRef: txnRef, vnp_Amount: String(300_000 * 100), vnp_ResponseCode: '00', vnp_TransactionStatus: '00' });

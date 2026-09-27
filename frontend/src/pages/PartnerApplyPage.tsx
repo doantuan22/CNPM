@@ -4,6 +4,10 @@ import { Button } from '../components/common/Button';
 import { useApplyPartner, useMyPartnerApplication } from '../features/partners/hooks';
 import { applyPartnerSchema, ApplyPartnerFormValues } from '../features/partners/schemas';
 import { ApiError } from '../services/apiClient';
+import { refreshSession } from '../services/apiClient';
+import { useQueryClient } from '@tanstack/react-query';
+import { meQueryKey } from '../features/auth/hooks';
+import { useEffect } from 'react';
 
 const statusLabel: Record<string, { text: string; className: string }> = {
   'Chờ duyệt': { text: 'Đang chờ duyệt', className: 'bg-amber-50 text-amber-700' },
@@ -14,12 +18,20 @@ const statusLabel: Record<string, { text: string; className: string }> = {
 export default function PartnerApplyPage() {
   const applicationQuery = useMyPartnerApplication();
   const applyMutation = useApplyPartner();
+  const queryClient = useQueryClient();
 
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<ApplyPartnerFormValues>({ resolver: zodResolver(applyPartnerSchema) });
+
+  const existing = applicationQuery.data;
+  useEffect(() => {
+    if (existing?.TrangThaiDuyet === 'Đã duyệt') {
+      void refreshSession().then(() => queryClient.invalidateQueries({ queryKey: meQueryKey }));
+    }
+  }, [existing?.TrangThaiDuyet, queryClient]);
 
   if (applicationQuery.isLoading) {
     return (
@@ -28,9 +40,9 @@ export default function PartnerApplyPage() {
       </div>
     );
   }
-
-  const existing = applicationQuery.data;
-  const hasActiveApplication = existing && existing.TrangThaiDuyet !== 'Từ chối';
+  const displayedApplication = applyMutation.data ?? existing;
+  const hasActiveApplication = displayedApplication && displayedApplication.TrangThaiDuyet !== 'Từ chối';
+  const displayedStatus = displayedApplication ? statusLabel[displayedApplication.TrangThaiDuyet] : undefined;
 
   const onSubmit = (data: ApplyPartnerFormValues) => applyMutation.mutate(data);
 
@@ -44,18 +56,19 @@ export default function PartnerApplyPage() {
       </div>
 
       <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-xs">
-        {(applyMutation.data ?? existing) && hasActiveApplication ? (
+        {displayedApplication && hasActiveApplication && displayedStatus ? (
           <div className="space-y-3 text-center">
             <span
               className={`inline-block rounded-full px-3 py-1 text-sm font-semibold ${
-                statusLabel[(applyMutation.data ?? existing)!.TrangThaiDuyet].className
+                displayedStatus.className
               }`}
             >
-              {statusLabel[(applyMutation.data ?? existing)!.TrangThaiDuyet].text}
+              {displayedStatus.text}
             </span>
             <p className="text-sm text-slate-500">
-              Hồ sơ đối tác của bạn đã được ghi nhận. Chức năng duyệt hồ sơ sẽ được triển khai ở giai đoạn
-              sau.
+              {(displayedApplication.TrangThaiDuyet === 'Đã duyệt')
+                ? 'Bạn đã được cấp vai trò Chủ khách sạn. Bạn có thể bắt đầu đăng ký khách sạn.'
+                : 'Hồ sơ đối tác của bạn đã được ghi nhận và đang chờ quản trị viên xử lý.'}
             </p>
           </div>
         ) : (

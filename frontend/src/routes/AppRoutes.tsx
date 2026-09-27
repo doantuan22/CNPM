@@ -1,40 +1,45 @@
 import { Route, Routes } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
 import MainLayout from '../components/layouts/MainLayout';
 import { ProtectedRoute } from '../components/auth/ProtectedRoute';
 import { ROLE_NAMES } from '../lib/roles';
 import HomePage from '../pages/HomePage';
-import LoginPage from '../pages/LoginPage';
-import RegisterPage from '../pages/RegisterPage';
-import ForgotPasswordPage from '../pages/ForgotPasswordPage';
-import ResetPasswordPage from '../pages/ResetPasswordPage';
-import ProfilePage from '../pages/ProfilePage';
-import PartnerApplyPage from '../pages/PartnerApplyPage';
-import HotelListPage from '../pages/HotelListPage';
-import HotelDetailPage from '../pages/HotelDetailPage';
-import BookingsPage from '../pages/BookingsPage';
-import BookingDetailPage from '../pages/BookingDetailPage';
-import PaymentResultPage from '../pages/PaymentResultPage';
-import SupportPage from '../pages/SupportPage';
-import SupportDetailPage from '../pages/SupportDetailPage';
-import OwnerDashboardPage from '../pages/OwnerDashboardPage';
-import OwnerHotelFormPage from '../pages/OwnerHotelFormPage';
-import OwnerHotelManagePage from '../pages/OwnerHotelManagePage';
-import OwnerRoomTypeManagePage from '../pages/OwnerRoomTypeManagePage';
-import OwnerAnalyticsPage from '../pages/OwnerAnalyticsPage';
-import AdminDashboardPage from '../pages/AdminDashboardPage';
-import AdminAnalyticsPage from '../pages/AdminAnalyticsPage';
-import AdminPromotionsPage from '../pages/AdminPromotionsPage';
-import AdminPromotionFormPage from '../pages/AdminPromotionFormPage';
-import AdminAccountsPage from '../pages/AdminAccountsPage';
-import AdminAccountDetailPage from '../pages/AdminAccountDetailPage';
-import AdminReviewsPage from '../pages/AdminReviewsPage';
-import AdminReviewDetailPage from '../pages/AdminReviewDetailPage';
-import AdminSupportPage from '../pages/AdminSupportPage';
-import AdminSupportDetailPage from '../pages/AdminSupportDetailPage';
-import NotFoundPage from '../pages/NotFoundPage';
+
+const LoginPage = lazy(() => import('../pages/LoginPage'));
+const RegisterPage = lazy(() => import('../pages/RegisterPage'));
+const ForgotPasswordPage = lazy(() => import('../pages/ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => import('../pages/ResetPasswordPage'));
+const ProfilePage = lazy(() => import('../pages/ProfilePage'));
+const PartnerApplyPage = lazy(() => import('../pages/PartnerApplyPage'));
+const HotelListPage = lazy(() => import('../pages/HotelListPage'));
+const HotelDetailPage = lazy(() => import('../pages/HotelDetailPage'));
+const BookingsPage = lazy(() => import('../pages/BookingsPage'));
+const BookingDetailPage = lazy(() => import('../pages/BookingDetailPage'));
+const PaymentResultPage = lazy(() => import('../pages/PaymentResultPage'));
+const SupportPage = lazy(() => import('../pages/SupportPage'));
+const SupportDetailPage = lazy(() => import('../pages/SupportDetailPage'));
+const OwnerDashboardPage = lazy(() => import('../pages/OwnerDashboardPage'));
+const OwnerHotelFormPage = lazy(() => import('../pages/OwnerHotelFormPage'));
+const OwnerHotelManagePage = lazy(() => import('../pages/OwnerHotelManagePage'));
+const OwnerRoomTypeManagePage = lazy(() => import('../pages/OwnerRoomTypeManagePage'));
+const OwnerAnalyticsPage = lazy(() => import('../pages/OwnerAnalyticsPage'));
+const AdminDashboardPage = lazy(() => import('../pages/AdminDashboardPage'));
+const AdminAnalyticsPage = lazy(() => import('../pages/AdminAnalyticsPage'));
+const AdminPromotionsPage = lazy(() => import('../pages/AdminPromotionsPage'));
+const AdminPromotionFormPage = lazy(() => import('../pages/AdminPromotionFormPage'));
+const AdminAccountsPage = lazy(() => import('../pages/AdminAccountsPage'));
+const AdminAccountDetailPage = lazy(() => import('../pages/AdminAccountDetailPage'));
+const AdminReviewsPage = lazy(() => import('../pages/AdminReviewsPage'));
+const AdminReviewDetailPage = lazy(() => import('../pages/AdminReviewDetailPage'));
+const AdminSupportPage = lazy(() => import('../pages/AdminSupportPage'));
+const AdminSupportDetailPage = lazy(() => import('../pages/AdminSupportDetailPage'));
+const AdminPartnerApplicationsPage = lazy(() => import('../pages/AdminPartnerApplicationsPage'));
+const AdminPartnerApplicationDetailPage = lazy(() => import('../pages/AdminPartnerApplicationDetailPage'));
+const NotFoundPage = lazy(() => import('../pages/NotFoundPage'));
 
 export default function AppRoutes() {
   return (
+    <Suspense fallback={<div className="flex justify-center py-16" role="status" aria-live="polite"><span className="sr-only">Đang tải trang...</span><div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600" /></div>}>
     <Routes>
       <Route element={<MainLayout />}>
         <Route path="/" element={<HomePage />} />
@@ -74,6 +79,8 @@ export default function AppRoutes() {
           <Route path="/admin/reviews/:id" element={<AdminReviewDetailPage />} />
           <Route path="/admin/support" element={<AdminSupportPage />} />
           <Route path="/admin/support/:id" element={<AdminSupportDetailPage />} />
+          <Route path="/admin/partner-applications" element={<AdminPartnerApplicationsPage />} />
+          <Route path="/admin/partner-applications/:id" element={<AdminPartnerApplicationDetailPage />} />
           <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
           <Route path="/admin/promotions" element={<AdminPromotionsPage />} />
           <Route path="/admin/promotions/new" element={<AdminPromotionFormPage />} />
@@ -83,5 +90,6 @@ export default function AppRoutes() {
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
+    </Suspense>
   );
 }

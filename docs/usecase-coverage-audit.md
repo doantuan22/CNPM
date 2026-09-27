@@ -1,0 +1,139 @@
+# UC01–UC40 Coverage Audit
+
+**Audit date:** 2026-09-26  
+**Scope:** current source under `D:\CNPM`; this report is updated here only for the scoped UC03/UC32 implementation. No database schema or migration was modified.  
+**Requirement source:** the UC01–UC40 list supplied in the audit prompt is the authoritative specification. No repository UC catalog was sought or required.
+
+## Method and evidence rules
+
+- Primary evidence is the current implementation: Express route/controller/service/repository, React route/page/API client, Prisma model/SQL migration, RBAC/ownership code, and test source.
+- `COMPLETE` means the required user flow has a reachable backend implementation, reachable UI, applicable persistence/read model, applicable access control, and test source.
+- `PARTIAL` means a material portion exists but an explicit required capability is absent (for example, a form without its approval/delivery workflow).
+- `MISSING` means the required capability has no corresponding current endpoint/UI implementation.
+- **Test wording:** historical entries may say **“test source present, runtime not verified.”** For this scoped change, observable redirected command logs are used as runtime evidence where noted. Historical `m*-report.md` files are context only and are not used as runtime proof.
+- Public discovery UCs legitimately have `Public / N/A` in the RBAC column. Analytics UCs legitimately read existing tables rather than owning a separate persistence table.
+
+## Executive result
+
+| Status | Count | Share of 40 |
+|---|---:|---:|
+| COMPLETE | 31 | 77.5% |
+| PARTIAL | 3 | 7.5% |
+| MISSING | 6 | 15.0% |
+| **Implemented coverage (COMPLETE only)** | **31 / 40** | **77.5%** |
+
+## UC matrix
+
+Abbreviations: `BE` = backend route/service; `FE` = frontend route/page/API; `DB` = primary read/write tables; `TS` = test source. All listed paths are absolute.
+
+### Customer UCs (UC01–UC16)
+
+| UC | Requirement | BE evidence | FE evidence | DB evidence | RBAC / ownership | Test evidence | Status |
+|---|---|---|---|---|---|---|---|
+| UC01 | Đăng nhập | `POST /api/auth/login`, `AuthService.login` in `D:\CNPM\backend\src\modules\auth\auth.routes.ts` / `auth.service.ts` | `/login`, `LoginPage`; `D:\CNPM\frontend\src\features\auth\api.ts` | `TAI_KHOAN`, `VAI_TRO` | Public login; locked account rejected | `backend\src\modules\auth\auth.test.ts`; frontend login test source; **test source present, runtime not verified** | COMPLETE |
+| UC02 | Đăng ký tài khoản khách hàng | `POST /api/auth/register`; server assigns customer role | `/register`, `RegisterPage`; auth API | `TAI_KHOAN` FK `VAI_TRO`; unique email/username | Public registration; role is server-selected, not client-selected | `auth.test.ts`; frontend register test source; **test source present, runtime not verified** | COMPLETE |
+| UC03 | Đăng ký tài khoản đối tác | Authenticated `POST /api/partners/apply`; creates pending profile in `PartnersService.apply`; `GET /api/partners/me` returns only the caller's latest profile | Protected `/partner/apply`, `PartnerApplyPage` shows Chờ duyệt/Đã duyệt/Từ chối and rejection reason | `HO_SO_DOI_TAC` → `TAI_KHOAN` | Customer-only submission; account ID comes from token; no client-controlled status/role | `D:\CNPM\backend\src\modules\partners\partners.test.ts`: submit, own-scope, status; targeted runtime **10/10 pass** | COMPLETE |
+| UC04 | Quên mật khẩu | `POST /api/auth/forgot-password` and `/reset-password`; signed, expiring reset token | `/forgot-password`, `/reset-password`; `ForgotPasswordPage`, `ResetPasswordPage` | `TAI_KHOAN.MatKhau` updated by reset; no reset-token table is required by this design | Public generic response prevents account enumeration | `auth.test.ts` covers forgot/reset source; frontend page test source; **test source present, runtime not verified** | PARTIAL — `forgotPassword` deliberately does not deliver its generated token: `auth.service.ts` contains `TODO: send token via a configured email provider`. |
+| UC05 | Tìm kiếm thông tin khách sạn | `GET /api/hotels` with validation/filter/pagination | `/hotels`, `HotelListPage`, `features/hotels/api.ts` | `KHACH_SAN`, `DIA_PHUONG`, `LOAI_PHONG`, `QUY_PHONG_GIA`, amenities | Public | `hotels.test.ts`, `HotelListPage.test.tsx`; **test source present, runtime not verified** | COMPLETE |
+| UC06 | Cập nhật thông tin cá nhân | `GET/PATCH /api/profile/me` | Protected `/profile`, `ProfilePage`; auth API `getMe/updateMe` | `TAI_KHOAN` | `authenticate`; service updates only the authenticated account and whitelists fields | `profile.test.ts`; profile UI test source; **test source present, runtime not verified** | COMPLETE |
+| UC07 | Xem thông tin khách sạn | `GET /api/hotels/:id` | `/hotels/:id`, `HotelDetailPage` | `KHACH_SAN`, `DIA_PHUONG`, `HINH_ANH_KHACH_SAN`, `TIEN_NGHI`, `KHACH_SAN_TIEN_NGHI` | Public | `hotels.test.ts`, `HotelDetailPage.test.tsx`; **test source present, runtime not verified** | COMPLETE |
+| UC08 | Xem thông tin loại phòng | `GET /api/hotels/:id/rooms` | Hotel detail loads room availability via `getHotelRooms` | `LOAI_PHONG`, `HINH_ANH_LOAI_PHONG`, `LOAI_PHONG_TIEN_NGHI`, `QUY_PHONG_GIA` | Public | `hotels.test.ts`, `HotelDetailPage.test.tsx`; **test source present, runtime not verified** | COMPLETE |
+| UC09 | Đặt phòng | `POST /api/hotels/:id/bookings`; server recomputes price/promotion/availability in a locked transaction | Booking action in `HotelDetailPage`; `createBooking` API | `DAT_PHONG`, `CHI_TIET_DAT_PHONG`, `QUY_PHONG_GIA`, `KHUYEN_MAI`, `CHINH_SACH_HUY` | Customer role only; customer ID comes from token | `bookings.test.ts` includes price/promo/anti-overbooking source; booking UI test source; **test source present, runtime not verified** | COMPLETE |
+| UC10 | Thanh toán | Customer `POST /api/bookings/:id/payments/vnpay`; signed VNPAY return/IPN and status route | `BookingDetailPage`, `/payment/result`, `PaymentResultPage`; payments API | `THANH_TOAN`, `DAT_PHONG`; refunds use `HOAN_TIEN` | Customer role and booking ownership; gateway callbacks verify VNPAY signature | `payments.test.ts`, payment-result/booking-detail UI test source; **test source present, runtime not verified** | COMPLETE |
+| UC11 | Xem thông tin đặt phòng | `GET /api/bookings/:id` | Protected `/bookings/:id`, `BookingDetailPage` | `DAT_PHONG`, `CHI_TIET_DAT_PHONG`, hotel/room/policy/payment/refund relations | Customer role; service ownership check | `bookings-cancel.test.ts`; booking-detail UI test source; **test source present, runtime not verified** | COMPLETE |
+| UC12 | Xem lịch sử đặt phòng | `GET /api/bookings` | Protected `/bookings`, `BookingsPage` | `DAT_PHONG` and related hotel data | Customer role; `listMine` is customer-scoped | `bookings-cancel.test.ts`, `BookingsPage.test.tsx`; **test source present, runtime not verified** | COMPLETE |
+| UC13 | Hủy đặt phòng | `POST /api/bookings/:id/cancel`; cancellation/refund policy handling | Cancel flow in `BookingDetailPage` | `DAT_PHONG`, `CHI_TIET_DAT_PHONG`, `CHINH_SACH_HUY`, `CHI_TIET_CHINH_SACH_HUY`, `THANH_TOAN`, `HOAN_TIEN` | Customer role and booking ownership/state checks | `bookings-cancel.test.ts`; booking-detail UI test source; **test source present, runtime not verified** | COMPLETE |
+| UC14 | Đánh giá khách sạn | `POST/GET /api/bookings/:id/review`; completed-booking eligibility checked server-side | Review section in `BookingDetailPage`; reviews API | `DANH_GIA`, `HINH_ANH_DANH_GIA`, `DAT_PHONG` | Customer role; booking owner only; one review per booking | `reviews.test.ts`; booking-detail UI test source; **test source present, runtime not verified** | COMPLETE |
+| UC15 | Áp dụng mã khuyến mãi | Quote and booking services evaluate promo server-side; booking route accepts `promoCode` | Hotel booking flow passes promo code | `KHUYEN_MAI`, then `DAT_PHONG.MaKhuyenMai` / monetary fields | Public quote; booking application is customer-only; server does not trust totals | `promotion-pricing.test.ts`, `quotes.test.ts`, `bookings.test.ts`; booking UI test source; **test source present, runtime not verified** | COMPLETE |
+| UC16 | Gửi yêu cầu hỗ trợ/khiếu nại | `POST /api/support` | Protected `/support`, `SupportPage`; support API | `YEU_CAU_HO_TRO`, optional `DAT_PHONG` | Customer role; attached booking must belong to caller | `support.test.ts`, `SupportPage.test.tsx`; **test source present, runtime not verified** | COMPLETE |
+
+### Partner / hotel-owner UCs (UC17–UC26)
+
+| UC | Requirement | BE evidence | FE evidence | DB evidence | RBAC / ownership | Test evidence | Status |
+|---|---|---|---|---|---|---|---|
+| UC17 | Đăng ký khách sạn mới | `POST /api/owner/hotels`; `OwnerHotelsService.create` | `/owner/hotels/new`, `OwnerHotelFormPage` | `KHACH_SAN`; optional images/amenities relations | `authenticate + requireRole(PARTNER)` | `owner-hotels.test.ts`; `OwnerHotelFormPage.test.tsx`; **test source present, runtime not verified** | COMPLETE |
+| UC18 | Cập nhật thông tin khách sạn | `PATCH /api/owner/hotels/:id`, amenities/image operations | `/owner/hotels/:id`, `OwnerHotelManagePage` | `KHACH_SAN`, `HINH_ANH_KHACH_SAN`, `KHACH_SAN_TIEN_NGHI` | Partner-only; `getOwnedHotel` gives 404 unknown / 403 other owner | `owner-hotels.test.ts`; owner UI test source; **test source present, runtime not verified** | COMPLETE |
+| UC19 | Xóa khách sạn | No hotel deletion route/service exists | No hotel deletion control/API in owner UI | `KHACH_SAN` FK graph would require a defined deletion/archive policy | N/A — no action | No corresponding implementation test source | MISSING |
+| UC20 | Thêm loại phòng | `POST /api/owner/hotels/:hotelId/room-types` | Room-type creation form in `OwnerHotelManagePage` | `LOAI_PHONG` | Partner-only; parent hotel ownership checked | `owner-room-types.test.ts`; owner UI source; **test source present, runtime not verified** | COMPLETE |
+| UC21 | Cập nhật loại phòng | `PATCH /api/owner/room-types/:id`, room amenities/images | `/owner/room-types/:id`, `OwnerRoomTypeManagePage` | `LOAI_PHONG`, `HINH_ANH_LOAI_PHONG`, `LOAI_PHONG_TIEN_NGHI` | Partner-only; room type's hotel ownership checked | `owner-room-types.test.ts`; owner UI source; **test source present, runtime not verified** | COMPLETE |
+| UC22 | Cập nhật thông tin quỹ phòng | `PUT /api/owner/room-types/:id/rates` bulk upsert | Rate form/table in `OwnerRoomTypeManagePage` | `QUY_PHONG_GIA` | Partner-only; owned room type required | `owner-rates.test.ts`; owner UI source; **test source present, runtime not verified** | COMPLETE |
+| UC23 | Xóa loại phòng | No room-type deletion route/service exists | No room-type deletion control/API exists (only image deletion) | `LOAI_PHONG` has inventory/booking FK dependencies | N/A — no action | No corresponding implementation test source | MISSING |
+| UC24 | Xem danh sách đặt phòng | No owner hotel booking-list route is mounted in `backend\src\routes\index.ts` | No owner booking-list page/route in `AppRoutes.tsx` | `DAT_PHONG`, `CHI_TIET_DAT_PHONG` are available but not exposed owner-scoped | N/A — no owner action | No corresponding implementation test source | MISSING |
+| UC25 | Xem doanh thu | `GET /api/owner/hotels/:id/analytics`; computes successful payments less successful refunds | `/owner/hotels/:id/analytics`, `OwnerAnalyticsPage` | Reads `DAT_PHONG`, `CHI_TIET_DAT_PHONG`, `THANH_TOAN`, `HOAN_TIEN`, `QUY_PHONG_GIA` | Partner-only; ownership checked before aggregation | `owner-analytics.test.ts`, `OwnerAnalyticsPage.test.tsx`; **test source present, runtime not verified** | COMPLETE |
+| UC26 | Xem báo cáo thống kê | Owner analytics above; system `GET /api/admin/analytics` also exists | Owner and admin analytics pages | Booking/payment/refund/room inventory and system breakdown tables | Owner data is hotel-scoped; system report is admin-only | `owner-analytics.test.ts`, `admin-analytics.test.ts`, analytics UI test source; **test source present, runtime not verified** | COMPLETE |
+
+### Administrator UCs (UC27–UC40)
+
+| UC | Requirement | BE evidence | FE evidence | DB evidence | RBAC / ownership | Test evidence | Status |
+|---|---|---|---|---|---|---|---|
+| UC27 | Xem tài khoản | `GET /api/admin/accounts` and `/:id` | `/admin/accounts`, `/admin/accounts/:id` | `TAI_KHOAN`, `VAI_TRO` | `authenticate + requireAdmin` | `accounts.test.ts`; admin-account UI test source; **test source present, runtime not verified** | COMPLETE |
+| UC28 | Thêm tài khoản | `POST /api/admin/accounts` and `AccountsService.create` exist | No create-account API exported by `features/admin/accounts/api.ts`; no `/admin/accounts/new` route/page in `AppRoutes.tsx` | `TAI_KHOAN`, `VAI_TRO` | Backend is admin-only | `accounts.test.ts` source covers backend; no current create-account UI test source identified | PARTIAL — backend capability is not exposed through the current frontend. |
+| UC29 | Cập nhật tài khoản | `PATCH /api/admin/accounts/:id` | Account detail edit form | `TAI_KHOAN`, `VAI_TRO` | Admin-only | `accounts.test.ts`; `AdminAccountDetailPage` test source; **test source present, runtime not verified** | COMPLETE |
+| UC30 | Khóa tài khoản | `POST /api/admin/accounts/:id/lock`; login rejects locked account | Lock/unlock controls in `AdminAccountDetailPage` | `TAI_KHOAN.TrangThai` | Admin-only | `accounts.test.ts`; admin account UI source; **test source present, runtime not verified** | COMPLETE |
+| UC31 | Xóa tài khoản | `DELETE /api/admin/accounts/:id`; safe-delete hard deletes only without history, otherwise locks | Delete confirmation in `AdminAccountDetailPage` | `TAI_KHOAN` and dependent-record checks | Admin-only | `accounts.test.ts`; admin account UI source; **test source present, runtime not verified** | COMPLETE |
+| UC32 | Duyệt đăng ký kinh doanh khách sạn mới | Admin `GET /api/admin/partner-applications`, `GET /:id`, `POST /:id/approve`, `POST /:id/reject`; `PartnersService.moderate` uses guarded transaction and token admin ID | `/admin/partner-applications`, detail page, approve/reject controls with loading/error/success; dashboard link | `HO_SO_DOI_TAC`, `TAI_KHOAN`, `VAI_TRO`; no schema changes and no hotel creation | `authenticate` + `requireAdmin`; only pending records process; reject reason required; approval changes role to `Chủ khách sạn`; `NgayDuyet >= NgayNop`; no `MaTaiKhoanDuyet` body trust | `D:\CNPM\backend\src\modules\partners\partners.test.ts`: RBAC, list/detail, approve, token approver, role transition, reject, repeat-processing, rollback; targeted runtime **10/10 pass** | COMPLETE |
+| UC33 | Cập nhật thông tin khách sạn | No admin hotel-management endpoint; owner update is UC18 and cannot set approval/owner fields | No admin hotel-management UI route | `KHACH_SAN` has fields but no matching admin operation | N/A — no admin action | No corresponding implementation test source | MISSING |
+| UC34 | Đình chỉ khách sạn | No admin hotel suspend/status endpoint | No admin hotel status-management UI route | `KHACH_SAN.TrangThai` exists but is not admin-managed by a route | N/A — no action | No corresponding implementation test source | MISSING |
+| UC35 | Xem thông tin thanh toán | Customer payment status and aggregate analytics exist, but no admin payment detail/list route | No admin payment UI route | `THANH_TOAN`, `HOAN_TIEN` are read in analytics only | N/A — no admin payment-detail action | No corresponding implementation test source | MISSING |
+| UC36 | Xem chi tiết đánh giá | `GET /api/admin/reviews/:id` | `/admin/reviews/:id`, `AdminReviewDetailPage` | `DANH_GIA`, `HINH_ANH_DANH_GIA`, related booking/customer/hotel | Admin-only | `reviews.test.ts`; `AdminReviewDetailPage.test.tsx`; **test source present, runtime not verified** | COMPLETE |
+| UC37 | Xóa đánh giá vi phạm | Admin `PATCH /api/admin/reviews/:id/moderate` can mark `Vi phạm`/`Ẩn`, but has no delete operation | Admin review page exposes moderation buttons, not deletion | `DANH_GIA` remains persisted; images remain as relations | Admin-only moderation | `reviews.test.ts`; review moderation UI test source; **test source present, runtime not verified** | PARTIAL — status moderation is implemented, actual deletion required by this UC is not. |
+| UC38 | Xử lý hỗ trợ/khiếu nại | Admin `GET /api/admin/support`, `/:id`, `PATCH /:id`; assigns processing admin from token | `/admin/support`, `/admin/support/:id`, `AdminSupportDetailPage` | `YEU_CAU_HO_TRO`, optional `DAT_PHONG`, `TAI_KHOAN` | Admin-only; processor identity cannot be supplied by client; resolved items immutable | `support.test.ts`; admin support UI test source; **test source present, runtime not verified** | COMPLETE |
+| UC39 | Thêm mã khuyến mãi | `POST /api/admin/promotions` | `/admin/promotions/new`, `AdminPromotionFormPage` | `KHUYEN_MAI` | Admin-only; unique code and commercial validation | `promotions.test.ts`, `AdminPromotionFormPage.test.tsx`; **test source present, runtime not verified** | COMPLETE |
+| UC40 | Ngừng khuyến mãi | `POST /api/admin/promotions/:id/deactivate` | Promotion management UI calls `deactivatePromotion` | `KHUYEN_MAI.TrangThai` | Admin-only | `promotions.test.ts`, promotion UI test source; **test source present, runtime not verified** | COMPLETE |
+
+## Database coverage: 22 tables
+
+The 22 tables are defined by `D:\CNPM\database\migrations\001_core_identity.sql` through `006_payment_after_sales.sql`; Prisma represents the same 22 models in `D:\CNPM\backend\prisma\schema.prisma`. “Covered” means the current source reads/writes the table for at least one UI/API module; it does **not** claim that migration or SQL constraint scripts were executed in this audit.
+
+| # | Table | Current source/module coverage | Relevant UCs | Key schema safeguards / audit note |
+|---:|---|---|---|---|
+| 1 | `VAI_TRO` | Auth, accounts, RBAC role lookup | 01, 02, 03, 27–31 | Unique role name; FK from account. |
+| 2 | `TAI_KHOAN` | Auth/profile/admin account, partner application, ownership | 01–04, 06, 16, 27–32, 38 | Unique username/email, role FK, date consistency. |
+| 3 | `HO_SO_DOI_TAC` | Customer partner application/status | 03, 32 | Pending/approved/rejected columns and approver fields exist; UC32 workflow is not implemented. |
+| 4 | `DIA_PHUONG` | Hotel discovery and owner hotel create/update validation | 05, 07, 17, 18 | Hotel locality FK. |
+| 5 | `KHACH_SAN` | Discovery, owner management, bookings, analytics/reviews | 05, 07, 09, 14, 17–19, 25–26, 33–34, 36 | Owner/approver/locality FKs; star/date checks. Admin approval/suspension is absent. |
+| 6 | `HINH_ANH_KHACH_SAN` | Hotel detail and owner image management | 07, 17–18 | Hotel FK; owner API can add/delete/set primary image. |
+| 7 | `TIEN_NGHI` | Hotel/room amenity lookups and validation | 05, 07–08, 18, 21 | Unique amenity name. |
+| 8 | `KHACH_SAN_TIEN_NGHI` | Hotel detail and owner amenity replacement | 05, 07, 18 | Composite PK prevents duplicate hotel–amenity links. |
+| 9 | `LOAI_PHONG` | Discovery, booking, owner room-type management | 05, 08–09, 17, 20–23, 25–26 | Hotel FK; capacity/area checks. Deletion operation absent. |
+| 10 | `HINH_ANH_LOAI_PHONG` | Room display and owner room image management | 08, 20–21 | Room-type FK. |
+| 11 | `LOAI_PHONG_TIEN_NGHI` | Room amenity management/display | 08, 20–21 | Composite PK prevents duplicate room–amenity links. |
+| 12 | `QUY_PHONG_GIA` | Search availability, quote, booking, owner rate/inventory, occupancy reporting | 05, 08–09, 15, 22, 25–26 | Non-negative price/quantity; unique `(MaLoaiPhong, NgayApDung)`. |
+| 13 | `CHINH_SACH_HUY` | Booking cancellation policy selection/display | 09, 11, 13 | Referenced by booking. |
+| 14 | `CHI_TIET_CHINH_SACH_HUY` | Refund-tier calculation | 13 | Non-negative hours and 0–100 refund percentage. |
+| 15 | `KHUYEN_MAI` | Quote/booking promo application and admin management | 09, 15, 39–40 | Unique code; discount/date/value checks. System-wide scope is enforced by current service. |
+| 16 | `DAT_PHONG` | Create/list/detail/cancel/pay/review/support/analytics | 09–16, 24–26, 35–36 | FK graph; check-in/out and server-total arithmetic constraints. Owner booking-list and admin payment-detail UCs absent. |
+| 17 | `CHI_TIET_DAT_PHONG` | Booking line items, detail, cancellation/analytics | 09, 11–13, 24–26 | Booking/room FKs; `SoLuongPhong >= 1`. |
+| 18 | `THANH_TOAN` | VNPAY creation/callback/status, cancellation/refund, analytics | 10, 13, 25–26, 35 | Booking FK; positive amount check. No admin payment detail/list endpoint. |
+| 19 | `HOAN_TIEN` | Cancellation refund/retry and revenue netting | 10, 13, 25–26 | Payment FK; non-negative refund and chronology check. |
+| 20 | `DANH_GIA` | Customer review and admin moderation/detail | 14, 36–37 | One review per booking (`UNIQUE MaDatPhong`); score 1–5. Status moderation exists, delete does not. |
+| 21 | `HINH_ANH_DANH_GIA` | Customer review images and admin review detail | 14, 36–37 | Review FK. |
+| 22 | `YEU_CAU_HO_TRO` | Customer support/complaint and admin handling/analytics | 16, 26, 38 | Customer/processor/optional booking FKs; request type and processing-date checks. |
+
+## Concrete missing and partial work
+
+1. **UC03/UC32:** implemented admin review/approve/reject for `HO_SO_DOI_TAC`, set `MaTaiKhoanDuyet`/`NgayDuyet` from the authenticated admin, activate the existing `Chủ khách sạn` role transactionally, and add admin/customer UI plus targeted tests. Approval does not create a hotel.
+2. **UC04:** connect `forgotPassword` to an email delivery provider (or another authenticated delivery channel). Current reset token is generated but discarded.
+3. **UC19:** define deletion versus archive semantics for hotels, then add partner-owned endpoint/UI/tests that respect bookings and related FK history.
+4. **UC23:** define deletion versus archive semantics for room types, then add partner-owned endpoint/UI/tests compatible with inventory and booked line items.
+5. **UC24:** add a partner-owned hotel booking list/detail read model, endpoint, UI route/page, ownership enforcement, and tests.
+6. **UC28:** add the missing admin create-account page/route and frontend API/hook; backend route already exists.
+8. **UC33–UC34:** add an explicit admin hotel management API/UI for update and suspension. Do not reuse owner update as a substitute because its ownership and permitted fields differ.
+9. **UC35:** add an admin payment list/detail endpoint and UI, including payment/refund relation visibility and admin RBAC.
+10. **UC37:** add an actual delete/retention policy and route/UI if “Xóa” is literal. If the product intends moderation-only retention, amend the requirement to “đánh dấu/ẩn đánh giá vi phạm” instead.
+
+## Surplus, legacy, and placeholder findings
+
+These are not treated as UC coverage unless mapped above.
+
+| Item | Evidence | Finding |
+|---|---|---|
+| Legacy VNPAY placeholder class | `D:\CNPM\backend\src\integrations\vnpay.integration.ts` throws “planned for later phase”; active payment routes/services/tests are under `modules\payments` | Likely obsolete/unwired duplicate implementation. It should not be selected by active routes; retain only if intentionally deprecated or remove in a separate change. |
+| Password-reset delivery placeholder | `D:\CNPM\backend\src\modules\auth\auth.service.ts`, lines 116–130 | Explicit foundation implementation: token is signed but no provider sends it. This is the UC04 gap, not merely documentation. |
+| Partner approval / hotel approval fields without workflow | `HO_SO_DOI_TAC` and `KHACH_SAN` migrations contain approval fields; `PartnersService` and owner hotel service lack admin workflow | Database support exists, but UC32–UC34 APIs/UI are absent. |
+| Admin aggregate analytics | `GET /api/admin/analytics`, `AdminAnalyticsPage` | Legitimate UC26 reporting; it is not a substitute for UC35 payment detail or UC33/34 hotel administration. |
+| Image deletion controls | Owner APIs/pages delete hotel/room **images** only | These must not be mistaken for UC19 hotel deletion or UC23 room-type deletion. |
+
+## Runtime-verification limitation
+
+For this scoped UC03/UC32 change, observable redirected logs recorded: backend lint/typecheck pass, frontend lint/typecheck/build pass, Prisma schema validation pass, and targeted partner integration tests **9/9 pass**. Full-suite and database migration/constraint script results remain outside the verified evidence for this report. No schema or migration file was changed.

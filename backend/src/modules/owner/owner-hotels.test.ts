@@ -235,7 +235,7 @@ describe('Amenities + images', () => {
     const uploadRes = await request(app)
       .post(`/api/owner/hotels/${hotel.MaKhachSan}/images`)
       .set('Authorization', `Bearer ${token}`)
-      .send({ image: 'data:image/png;base64,AAAA' });
+      .send({ image: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUAg1WvHmoAAAAASUVORK5CYII=' });
     expect(uploadRes.status).toBe(201);
     expect(uploadRes.body.data.AnhDaiDien).toBe(true); // first image becomes primary
     expect(CloudinaryIntegration.uploadImage).toHaveBeenCalled();
@@ -258,7 +258,7 @@ describe('Amenities + images', () => {
     const res = await request(app)
       .post(`/api/owner/hotels/${hotel.MaKhachSan}/images`)
       .set('Authorization', `Bearer ${ownerB.token}`)
-      .send({ image: 'data:image/png;base64,AAAA' });
+      .send({ image: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUAg1WvHmoAAAAASUVORK5CYII=' });
     expect(res.status).toBe(403);
   });
 });

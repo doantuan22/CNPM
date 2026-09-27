@@ -1,14 +1,22 @@
 import { Router } from 'express';
 import { PartnersController } from './partners.controller';
-import { authenticate } from '../../middleware/auth.middleware';
+import { authenticate, requireAdmin, requireRole } from '../../middleware/auth.middleware';
+import { ROLE_NAMES } from '../../common/constants/roles';
 import { validateRequest } from '../../middleware/validate.middleware';
-import { applyPartnerSchema } from './partners.schemas';
+import { applyPartnerSchema, adminListPartnerApplicationsQuerySchema, partnerApplicationIdParamSchema, rejectPartnerApplicationSchema } from './partners.schemas';
 
 const router = Router();
 const controller = new PartnersController();
 
 router.use(authenticate);
-router.post('/apply', validateRequest({ body: applyPartnerSchema }), controller.apply);
+router.post('/apply', requireRole(ROLE_NAMES.CUSTOMER), validateRequest({ body: applyPartnerSchema }), controller.apply);
 router.get('/me', controller.getMine);
+
+export const adminPartnerApplicationRoutes = Router();
+adminPartnerApplicationRoutes.use(authenticate, requireAdmin);
+adminPartnerApplicationRoutes.get('/', validateRequest({ query: adminListPartnerApplicationsQuerySchema }), controller.adminList);
+adminPartnerApplicationRoutes.get('/:id', validateRequest({ params: partnerApplicationIdParamSchema }), controller.adminGetById);
+adminPartnerApplicationRoutes.post('/:id/approve', validateRequest({ params: partnerApplicationIdParamSchema }), controller.approve);
+adminPartnerApplicationRoutes.post('/:id/reject', validateRequest({ params: partnerApplicationIdParamSchema, body: rejectPartnerApplicationSchema }), controller.reject);
 
 export default router;

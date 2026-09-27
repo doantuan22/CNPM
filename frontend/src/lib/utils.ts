@@ -26,3 +26,12 @@ export function fileToDataUrl(file: File): Promise<string> {
     reader.readAsDataURL(file);
   });
 }
+
+export const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+export const MAX_IMAGE_FILE_BYTES = 5 * 1024 * 1024;
+
+export function imageFileError(file: File): string | null {
+  if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) return 'Chỉ chấp nhận ảnh JPEG, PNG, WEBP hoặc GIF.';
+  if (file.size <= 0 || file.size > MAX_IMAGE_FILE_BYTES) return 'Mỗi ảnh phải lớn hơn 0 và tối đa 5MB.';
+  return null;
+}

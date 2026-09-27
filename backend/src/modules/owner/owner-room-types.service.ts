@@ -4,6 +4,7 @@ import { AppError } from '../../common/errors/app-error';
 import { CloudinaryIntegration } from '../../integrations/cloudinary.integration';
 import { extractCloudinaryPublicId } from '../../common/utils/cloudinary-url';
 import type { CreateRoomTypeInput, UpdateRoomTypeInput } from './owner-room-types.schemas';
+import { assertImageCountBelowLimit, MAX_ROOM_TYPE_IMAGES } from '../../common/utils/image-upload';
 
 const ROOM_IMAGE_FOLDER = 'hotel-booking/room-types';
 
@@ -56,8 +57,10 @@ export class OwnerRoomTypesService {
 
   async addImage(ownerId: number, maLoaiPhong: number, base64Image: string) {
     await this.getOwnedRoomType(ownerId, maLoaiPhong);
+    const imageCount = await this.repository.countImages(maLoaiPhong);
+    assertImageCountBelowLimit(imageCount, MAX_ROOM_TYPE_IMAGES);
     const uploaded = await CloudinaryIntegration.uploadImage(base64Image, ROOM_IMAGE_FOLDER);
-    const isFirst = (await this.repository.countImages(maLoaiPhong)) === 0;
+    const isFirst = imageCount === 0;
     return this.repository.addImage(maLoaiPhong, uploaded.url, isFirst);
   }
 

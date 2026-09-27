@@ -4,6 +4,7 @@ import { CloudinaryIntegration } from '../../integrations/cloudinary.integration
 import { extractCloudinaryPublicId } from '../../common/utils/cloudinary-url';
 import type { CreateHotelInput, UpdateHotelInput } from './owner-hotels.schemas';
 import type { KHACH_SAN } from '../../generated/prisma/client';
+import { assertImageCountBelowLimit, MAX_HOTEL_IMAGES } from '../../common/utils/image-upload';
 
 const HOTEL_IMAGE_FOLDER = 'hotel-booking/hotels';
 
@@ -66,8 +67,10 @@ export class OwnerHotelsService {
 
   async addImage(ownerId: number, maKhachSan: number, base64Image: string) {
     await this.getOwnedHotel(ownerId, maKhachSan);
+    const imageCount = await this.repository.countImages(maKhachSan);
+    assertImageCountBelowLimit(imageCount, MAX_HOTEL_IMAGES);
     const uploaded = await CloudinaryIntegration.uploadImage(base64Image, HOTEL_IMAGE_FOLDER);
-    const isFirst = (await this.repository.countImages(maKhachSan)) === 0;
+    const isFirst = imageCount === 0;
     return this.repository.addImage(maKhachSan, uploaded.url, isFirst);
   }
 

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ShieldAlert, Star, LifeBuoy, BarChart3, Tag } from 'lucide-react';
+import { ShieldAlert, Star, LifeBuoy, BarChart3, Tag, UserCheck } from 'lucide-react';
 
 export default function AdminDashboardPage() {
   return (
@@ -61,6 +61,19 @@ export default function AdminDashboardPage() {
             <p className="text-xs text-slate-500">Tiếp nhận và xử lý yêu cầu khách hàng</p>
           </div>
         </Link>
+
+        <Link
+          to="/admin/partner-applications"
+          className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-xs hover:border-slate-300"
+        >
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-50 text-indigo-600">
+            <UserCheck className="h-6 w-6" />
+          </div>
+          <div>
+            <h2 className="font-semibold text-slate-900">Duyệt hồ sơ đối tác</h2>
+            <p className="text-xs text-slate-500">Xem, duyệt hoặc từ chối đăng ký kinh doanh khách sạn</p>
+          </div>
+        </Link>
       </div>
 
       <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center shadow-xs">
@@ -69,7 +82,7 @@ export default function AdminDashboardPage() {
         </div>
         <h2 className="mt-4 text-lg font-semibold text-slate-900">Trung tâm kiểm soát quản trị viên</h2>
         <p className="mt-2 text-sm text-slate-500 max-w-md mx-auto">
-          Mô-đun phê duyệt khách sạn/đối tác đang trong giai đoạn chuẩn bị nền tảng (TECH-0). Chức năng chi tiết sẽ được phát triển theo lộ trình dự án.
+          Quy trình phê duyệt hồ sơ đối tác đã được bật. Việc duyệt chỉ cấp vai trò Chủ khách sạn; đăng ký khách sạn thực hiện ở luồng riêng.
         </p>
       </div>
     </div>

@@ -90,6 +90,7 @@ export interface PartnerApplication {
   LyDoTuChoi: string | null;
   NgayNop: string;
   NgayDuyet: string | null;
+  MaTaiKhoanDuyet: number | null;
 }
 
 export interface ApplyPartnerPayload {

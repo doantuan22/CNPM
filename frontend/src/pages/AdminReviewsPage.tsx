@@ -31,6 +31,7 @@ export default function AdminReviewsPage() {
 
       <form onSubmit={onSearchSubmit} className="flex flex-wrap gap-3">
         <input
+          aria-label="Tìm kiếm đánh giá"
           type="search"
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
@@ -38,6 +39,7 @@ export default function AdminReviewsPage() {
           className="min-w-64 flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
         />
         <select
+          aria-label="Lọc theo trạng thái đánh giá"
           value={status}
           onChange={(e) => { setStatus(e.target.value); setPage(1); }}
           className="rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -52,7 +54,7 @@ export default function AdminReviewsPage() {
         </button>
       </form>
 
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs">
+      <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-xs">
         {query.isLoading ? (
           <div className="flex justify-center py-16" role="status" aria-live="polite">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600" />
@@ -65,7 +67,8 @@ export default function AdminReviewsPage() {
           <div className="px-6 py-16 text-center text-sm text-slate-500">Không tìm thấy đánh giá nào phù hợp</div>
         ) : (
           <>
-            <table className="w-full text-left text-sm">
+            <table className="min-w-[720px] w-full text-left text-sm">
+              <caption className="sr-only">Danh sách đánh giá</caption>
               <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase text-slate-500">
                 <tr>
                   <th className="px-4 py-3">Khách hàng</th>

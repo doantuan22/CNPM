@@ -776,7 +776,7 @@ export const openApiSpec = {
     },
     '/partners/apply': {
       post: {
-        summary: 'Submit a partner (hotel owner) application — UC03 foundation. Role is NOT upgraded automatically; approval workflow is a later phase.',
+        summary: 'Submit a partner (hotel owner) application — creates a pending dossier; role is not upgraded automatically.',
         tags: ['Partners'],
         security: [{ BearerAuth: [] }],
         requestBody: {
@@ -795,6 +795,49 @@ export const openApiSpec = {
         tags: ['Partners'],
         security: [{ BearerAuth: [] }],
         responses: { '200': { description: 'Latest application, or null if none submitted' } },
+      },
+    },
+    '/admin/partner-applications': {
+      get: {
+        summary: 'List partner applications for admin moderation (UC32)',
+        tags: ['Admin Partner Applications'],
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          { name: 'page', in: 'query', schema: { type: 'integer', minimum: 1, default: 1 } },
+          { name: 'limit', in: 'query', schema: { type: 'integer', minimum: 1, maximum: 100, default: 20 } },
+          { name: 'trangThaiDuyet', in: 'query', schema: { type: 'string', enum: ['Chờ duyệt', 'Đã duyệt', 'Từ chối'] } },
+        ],
+        responses: { '200': { description: 'Partner application queue' }, '401': { description: 'Not authenticated' }, '403': { description: 'Admin role required' } },
+      },
+    },
+    '/admin/partner-applications/{id}': {
+      get: {
+        summary: 'Get a partner application for admin moderation',
+        tags: ['Admin Partner Applications'],
+        security: [{ BearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer', minimum: 1 } }],
+        responses: { '200': { description: 'Partner application detail' }, '403': { description: 'Admin role required' }, '404': { description: 'Application not found' } },
+      },
+    },
+    '/admin/partner-applications/{id}/approve': {
+      post: {
+        summary: 'Approve a pending partner application and assign Chủ khách sạn role',
+        description: 'Only a pending application can be approved. MaTaiKhoanDuyet is taken from the authenticated admin token, never from the request body. Approval and role assignment are transactional; no hotel is created.',
+        tags: ['Admin Partner Applications'],
+        security: [{ BearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer', minimum: 1 } }],
+        responses: { '200': { description: 'Application approved and applicant role changed to Chủ khách sạn' }, '403': { description: 'Admin role required' }, '404': { description: 'Application not found' }, '409': { description: 'Application is no longer pending' } },
+      },
+    },
+    '/admin/partner-applications/{id}/reject': {
+      post: {
+        summary: 'Reject a pending partner application',
+        description: 'Only a pending application can be rejected. LyDoTuChoi is required and MaTaiKhoanDuyet is taken from the authenticated admin token. Rejection does not change the applicant role.',
+        tags: ['Admin Partner Applications'],
+        security: [{ BearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer', minimum: 1 } }],
+        requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/RejectPartnerApplicationRequest' } } } },
+        responses: { '200': { description: 'Application rejected' }, '400': { description: 'Rejection reason is required' }, '403': { description: 'Admin role required' }, '404': { description: 'Application not found' }, '409': { description: 'Application is no longer pending' } },
       },
     },
     '/health': {
@@ -939,6 +982,11 @@ export const openApiSpec = {
             description: 'M1 foundation: URL/reference string, not a real file upload yet',
           },
         },
+      },
+      RejectPartnerApplicationRequest: {
+        type: 'object',
+        required: ['LyDoTuChoi'],
+        properties: { LyDoTuChoi: { type: 'string', minLength: 1, maxLength: 500 } },
       },
     },
   },

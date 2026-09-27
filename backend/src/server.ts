@@ -2,7 +2,7 @@ import app from './app';
 import { env } from './config/env';
 
 const server = app.listen(env.PORT, () => {
-  console.log(`🚀 Hotel Booking API listening on http://localhost:${env.PORT}/api`);
+  console.log(`Hotel Booking API listening on port ${env.PORT}`);
   console.log(`📡 Environment: ${env.NODE_ENV}`);
 });
 

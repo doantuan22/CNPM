@@ -3,6 +3,8 @@ import { createHash } from 'crypto';
 import { env } from '../../config/env';
 
 const RESET_TOKEN_TTL = '15m';
+const RESET_TOKEN_ISSUER = 'hotel-booking-api';
+const RESET_TOKEN_AUDIENCE = 'hotel-booking-password-reset';
 
 interface ResetTokenPayload {
   sub: string; // MaTaiKhoan
@@ -27,7 +29,12 @@ export const signPasswordResetToken = (maTaiKhoan: number, currentPasswordHash: 
     typ: 'pwd_reset',
     fp: fingerprint(currentPasswordHash),
   };
-  return jwt.sign(payload, env.JWT_ACCESS_SECRET, { expiresIn: RESET_TOKEN_TTL });
+  return jwt.sign(payload, env.JWT_ACCESS_SECRET, {
+    expiresIn: RESET_TOKEN_TTL,
+    algorithm: 'HS256',
+    issuer: RESET_TOKEN_ISSUER,
+    audience: RESET_TOKEN_AUDIENCE,
+  });
 };
 
 /**
@@ -36,11 +43,14 @@ export const signPasswordResetToken = (maTaiKhoan: number, currentPasswordHash: 
  * not a password-reset token.
  */
 export const decodePasswordResetToken = (token: string): { maTaiKhoan: number; fp: string } => {
-  const decoded = jwt.verify(token, env.JWT_ACCESS_SECRET) as ResetTokenPayload;
-  if (decoded.typ !== 'pwd_reset') {
+  const decoded = jwt.verify(token, env.JWT_ACCESS_SECRET, {
+    algorithms: ['HS256'], issuer: RESET_TOKEN_ISSUER, audience: RESET_TOKEN_AUDIENCE,
+  }) as ResetTokenPayload;
+  const accountId = Number(decoded.sub);
+  if (decoded.typ !== 'pwd_reset' || !Number.isSafeInteger(accountId) || accountId <= 0 || !/^[a-f0-9]{32}$/.test(decoded.fp)) {
     throw new Error('Invalid token type');
   }
-  return { maTaiKhoan: Number(decoded.sub), fp: decoded.fp };
+  return { maTaiKhoan: accountId, fp: decoded.fp };
 };
 
 /** Must be called after decodePasswordResetToken() to confirm the token is still current. */

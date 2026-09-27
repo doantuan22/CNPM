@@ -9,8 +9,7 @@
  * not a guess, it is the documented VNPAY checksum format, so a real
  * merchant account can be dropped in by only changing env vars.
  */
-import { createHmac } from 'node:crypto';
-import { randomBytes } from 'node:crypto';
+import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import { env } from '../../config/env';
 
 export type VnpayParams = Record<string, string | number>;
@@ -89,17 +88,20 @@ export const buildPaymentUrl = (input: BuildPaymentUrlInput): string => {
  * query — an unsigned/tampered callback must never move money or state.
  */
 export const verifyVnpaySignature = (query: Record<string, unknown>): boolean => {
-  const receivedHash = String(query.vnp_SecureHash ?? '');
-  if (!receivedHash) return false;
+  if (Object.keys(query).length > 50) return false;
+  const receivedHash = typeof query.vnp_SecureHash === 'string' ? query.vnp_SecureHash : '';
+  if (!/^[a-f0-9]{128}$/i.test(receivedHash)) return false;
 
   const params: VnpayParams = {};
   for (const [key, value] of Object.entries(query)) {
     if (key === 'vnp_SecureHash' || key === 'vnp_SecureHashType') continue;
     if (value === undefined) continue;
-    params[key] = Array.isArray(value) ? String(value[0]) : String(value);
+    if (!/^vnp_[A-Za-z0-9_]+$/.test(key) || (typeof value !== 'string' && typeof value !== 'number')) return false;
+    if (String(value).length > 1024) return false;
+    params[key] = value;
   }
   const expectedHash = signVnpayParams(params, env.VNPAY_HASH_SECRET);
-  return expectedHash.toLowerCase() === receivedHash.toLowerCase();
+  return timingSafeEqual(Buffer.from(expectedHash, 'hex'), Buffer.from(receivedHash, 'hex'));
 };
 
 /** VNPAY IPN response codes (fixed vocabulary defined by VNPAY, not ours). */

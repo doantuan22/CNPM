@@ -27,7 +27,11 @@ describe('validateReviewImages', () => {
   });
 
   it('rejects an oversized image (> 5MB decoded)', () => {
-    const hugeBase64 = 'A'.repeat(8_000_000); // ~6MB decoded
+    const hugeBase64 = 'iVBORw0KGgo'.padEnd(8_000_000, 'A'); // ~6MB decoded
     expect(() => validateReviewImages([`data:image/png;base64,${hugeBase64}`])).toThrow(/5MB/);
+  });
+
+  it('rejects MIME spoofing when decoded magic bytes do not match', () => {
+    expect(() => validateReviewImages(['data:image/png;base64,JVBERi0xLjQK'])).toThrow(/định dạng/i);
   });
 });
