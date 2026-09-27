@@ -5,6 +5,7 @@ import { CloudinaryIntegration } from '../../integrations/cloudinary.integration
 import { extractCloudinaryPublicId } from '../../common/utils/cloudinary-url';
 import type { CreateRoomTypeInput, UpdateRoomTypeInput } from './owner-room-types.schemas';
 import { assertImageCountBelowLimit, MAX_ROOM_TYPE_IMAGES } from '../../common/utils/image-upload';
+import { ROOM_TYPE_STATUS } from '../../common/constants/hotel-status';
 
 const ROOM_IMAGE_FOLDER = 'hotel-booking/room-types';
 
@@ -45,6 +46,12 @@ export class OwnerRoomTypesService {
   async update(ownerId: number, maLoaiPhong: number, input: UpdateRoomTypeInput) {
     await this.getOwnedRoomType(ownerId, maLoaiPhong);
     return this.repository.update(maLoaiPhong, input);
+  }
+
+  async deactivate(ownerId: number, maLoaiPhong: number) {
+    const roomType = await this.getOwnedRoomType(ownerId, maLoaiPhong);
+    if (roomType.TrangThai === ROOM_TYPE_STATUS.DISCONTINUED) return roomType;
+    return this.repository.update(maLoaiPhong, { TrangThai: ROOM_TYPE_STATUS.DISCONTINUED });
   }
 
   async replaceAmenities(ownerId: number, maLoaiPhong: number, amenityIds: number[]) {

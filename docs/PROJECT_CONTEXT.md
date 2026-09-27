@@ -313,12 +313,12 @@ Bảng đối chiếu tổng thể 40 Use Case theo tài liệu kiểm toán th�
 | **UC16** | Gửi yêu cầu hỗ trợ/khiếu nại | Khách hàng | **COMPLETE** | Tạo ticket hỗ trợ/khiếu nại, tùy chọn gắn booking |
 | **UC17** | Đăng ký khách sạn mới | Chủ khách sạn | **COMPLETE** | Tạo cơ sở khách sạn mới ở trạng thái chờ duyệt |
 | **UC18** | Cập nhật thông tin khách sạn | Chủ khách sạn | **COMPLETE** | Cập nhật thông tin, tiện nghi, upload ảnh khách sạn |
-| **UC19** | Xóa khách sạn | Chủ khách sạn | **MISSING** | Chưa có route/service/UI cho phép xóa/ngừng hoạt động khách sạn |
+| **UC19** | Xóa khách sạn | Chủ khách sạn | **COMPLETE** | Owner ngừng kinh doanh bằng soft-deactivation, giữ lịch sử booking |
 | **UC20** | Thêm loại phòng | Chủ khách sạn | **COMPLETE** | Thêm loại phòng cho khách sạn sở hữu |
 | **UC21** | Cập nhật loại phòng | Chủ khách sạn | **COMPLETE** | Cập nhật phòng, tiện nghi, ảnh, trạng thái mở/ngừng bán |
 | **UC22** | Cập nhật thông tin quỹ phòng | Chủ khách sạn | **COMPLETE** | Bulk upsert giá và số lượng phòng theo ngày vào `QUY_PHONG_GIA` |
-| **UC23** | Xóa loại phòng | Chủ khách sạn | **MISSING** | Chưa có route/service/UI cho phép xóa/ngừng bán loại phòng |
-| **UC24** | Xem danh sách đặt phòng KS | Chủ khách sạn | **MISSING** | Chưa có API/UI cho Owner xem danh sách booking thuộc KS của mình |
+| **UC23** | Xóa loại phòng | Chủ khách sạn | **COMPLETE** | Owner ngừng bán loại phòng, giữ lịch sử booking |
+| **UC24** | Xem danh sách đặt phòng KS | Chủ khách sạn | **COMPLETE** | Owner list/detail booking theo khách sạn sở hữu, có phân trang/lọc |
 | **UC25** | Xem doanh thu | Chủ khách sạn | **COMPLETE** | Thống kê doanh thu gộp, hoàn tiền, doanh thu net theo KS |
 | **UC26** | Xem báo cáo thống kê | Chủ KS / Admin | **COMPLETE** | Báo cáo tỷ lệ lấp đầy, top loại phòng, báo cáo hệ thống |
 | **UC27** | Xem tài khoản | Quản trị hệ thống | **COMPLETE** | Danh sách và chi tiết tài khoản người dùng |
@@ -337,9 +337,9 @@ Bảng đối chiếu tổng thể 40 Use Case theo tài liệu kiểm toán th�
 | **UC40** | Ngừng khuyến mãi | Quản trị hệ thống | **COMPLETE** | Hủy kích hoạt/ngừng áp dụng chương trình khuyến mãi |
 
 ### Tóm tắt tỷ lệ bao phủ:
-- **COMPLETE:** **32 / 40** (80.0%)
+- **COMPLETE:** **35 / 40** (87.5%)
 - **PARTIAL:** **2 / 40** (5.0%)
-- **MISSING:** **6 / 40** (15.0%)
+- **MISSING:** **3 / 40** (7.5%)
 
 ---
 

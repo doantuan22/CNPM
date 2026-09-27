@@ -7,6 +7,7 @@ import { Button } from '../components/common/Button';
 import {
   useRoomType,
   useUpdateRoomType,
+  useDeactivateRoomType,
   useReplaceRoomTypeAmenities,
   useUploadRoomTypeImage,
   useDeleteRoomTypeImage,
@@ -30,6 +31,7 @@ export default function OwnerRoomTypeManagePage() {
   const roomTypeQuery = useRoomType(roomTypeId);
   const amenitiesQuery = useAmenities();
   const updateMutation = useUpdateRoomType(roomTypeId);
+  const deactivateMutation = useDeactivateRoomType(roomTypeId);
   const amenitiesMutation = useReplaceRoomTypeAmenities(roomTypeId);
   const uploadImageMutation = useUploadRoomTypeImage(roomTypeId);
   const deleteImageMutation = useDeleteRoomTypeImage(roomTypeId);
@@ -181,15 +183,13 @@ export default function OwnerRoomTypeManagePage() {
             <Button type="submit" disabled={!isDirty || updateMutation.isPending}>
               {updateMutation.isPending ? 'Đang lưu...' : 'Lưu thay đổi'}
             </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => updateMutation.mutate({ TrangThai: roomType.TrangThai === 'Hoạt động' ? 'Ngừng bán' : 'Hoạt động' })}
-            >
-              {roomType.TrangThai === 'Hoạt động' ? 'Ngừng bán' : 'Mở bán lại'}
-            </Button>
+            {roomType.TrangThai === 'Hoạt động' && <Button type="button" variant="outline" disabled={deactivateMutation.isPending} onClick={() => { if (window.confirm('Ngừng bán loại phòng này? Booking lịch sử sẽ được giữ lại.')) deactivateMutation.mutate(); }}>
+              {deactivateMutation.isPending ? 'Đang xử lý...' : 'Ngừng bán'}
+            </Button>}
           </div>
         </form>
+        {deactivateMutation.isSuccess && <div role="status" className="rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700">Loại phòng đã ngừng bán; lịch sử booking được giữ lại.</div>}
+        {deactivateMutation.isError && <div role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{deactivateMutation.error instanceof ApiError ? deactivateMutation.error.message : 'Không thể ngừng bán loại phòng'}</div>}
       </section>
 
       {/* Images */}

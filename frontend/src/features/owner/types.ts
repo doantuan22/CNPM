@@ -96,3 +96,5 @@ export interface RateItemInput {
   SoLuongPhong: number;
   TrangThai?: string;
 }
+export interface OwnerBooking { MaDatPhong: number; MaXacNhanDatPhong: string; KhachHang: { MaTaiKhoan: number; HoTen: string }; NgayNhanPhong: string; NgayTraPhong: string; TongTienThanhToan: number; TrangThai: string; NgayTao: string; ChiTietPhong: Array<{ MaLoaiPhong: number; TenLoaiPhong: string; SoLuong: number }>; ThanhToan: Array<{ MaThanhToan: number; TrangThai: string; PhuongThucThanhToan: string; SoTien: number; ThoiGianGiaoDich: string }>; }
+export interface OwnerBookingsFilters { page?: number; limit?: number; trangThai?: string; search?: string; from?: string; to?: string; }

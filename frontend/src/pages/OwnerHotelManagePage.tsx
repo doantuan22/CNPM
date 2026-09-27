@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Star, Trash2, ImagePlus, Plus, BedDouble, BarChart3 } from 'lucide-react';
+import { ArrowLeft, Star, Trash2, ImagePlus, Plus, BedDouble, BarChart3, CalendarDays } from 'lucide-react';
 import { Button } from '../components/common/Button';
 import {
   useMyHotel,
@@ -13,6 +13,7 @@ import {
   useSetPrimaryHotelImage,
   useRoomTypes,
   useCreateRoomType,
+  useDeactivateHotel,
 } from '../features/owner/hooks';
 import { useLocations } from '../features/locations/hooks';
 import { useAmenities } from '../features/amenities/hooks';
@@ -33,6 +34,7 @@ export default function OwnerHotelManagePage() {
   const setPrimaryMutation = useSetPrimaryHotelImage(hotelId);
   const roomTypesQuery = useRoomTypes(hotelId);
   const createRoomTypeMutation = useCreateRoomType(hotelId);
+  const deactivateMutation = useDeactivateHotel(hotelId);
 
   const [showRoomTypeForm, setShowRoomTypeForm] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
@@ -132,11 +134,16 @@ export default function OwnerHotelManagePage() {
               <BarChart3 className="mr-1.5 h-4 w-4" /> Xem thống kê
             </Link>
           </Button>
+          <Button variant="outline" size="sm" asChild><Link to={`/owner/hotels/${hotelId}/bookings`}><CalendarDays className="mr-1.5 h-4 w-4" /> Đặt phòng</Link></Button>
+          {hotel.TrangThai !== 'Ngừng hoạt động' && <Button variant="outline" size="sm" disabled={deactivateMutation.isPending} onClick={() => { if (window.confirm('Ngừng kinh doanh khách sạn? Booking lịch sử sẽ được giữ lại.')) deactivateMutation.mutate(); }}>{deactivateMutation.isPending ? 'Đang xử lý...' : 'Ngừng kinh doanh'}</Button>}
           <span className="inline-flex items-center gap-1 rounded-lg bg-amber-50 px-3 py-1.5 text-amber-700">
             <Star className="h-4 w-4 fill-amber-400 text-amber-400" /> {hotel.HangSao} sao
           </span>
         </div>
       </div>
+
+      {deactivateMutation.isSuccess && <div role="status" className="rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700">Khách sạn đã ngừng kinh doanh; lịch sử booking được giữ lại.</div>}
+      {deactivateMutation.isError && <div role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{deactivateMutation.error instanceof ApiError ? deactivateMutation.error.message : 'Không thể ngừng kinh doanh khách sạn'}</div>}
 
       {/* Info form */}
       <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-xs">

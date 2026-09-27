@@ -23,6 +23,8 @@ const OwnerHotelFormPage = lazy(() => import('../pages/OwnerHotelFormPage'));
 const OwnerHotelManagePage = lazy(() => import('../pages/OwnerHotelManagePage'));
 const OwnerRoomTypeManagePage = lazy(() => import('../pages/OwnerRoomTypeManagePage'));
 const OwnerAnalyticsPage = lazy(() => import('../pages/OwnerAnalyticsPage'));
+const OwnerBookingsPage = lazy(() => import('../pages/OwnerBookingsPage'));
+const OwnerBookingDetailPage = lazy(() => import('../pages/OwnerBookingDetailPage'));
 const AdminDashboardPage = lazy(() => import('../pages/AdminDashboardPage'));
 const AdminAnalyticsPage = lazy(() => import('../pages/AdminAnalyticsPage'));
 const AdminPromotionsPage = lazy(() => import('../pages/AdminPromotionsPage'));
@@ -68,6 +70,8 @@ export default function AppRoutes() {
           <Route path="/owner/hotels/:id" element={<OwnerHotelManagePage />} />
           <Route path="/owner/room-types/:id" element={<OwnerRoomTypeManagePage />} />
           <Route path="/owner/hotels/:id/analytics" element={<OwnerAnalyticsPage />} />
+          <Route path="/owner/hotels/:id/bookings" element={<OwnerBookingsPage />} />
+          <Route path="/owner/hotels/:id/bookings/:bookingId" element={<OwnerBookingDetailPage />} />
         </Route>
 
         {/* Quản trị hệ thống */}

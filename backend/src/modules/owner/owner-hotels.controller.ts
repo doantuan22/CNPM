@@ -49,6 +49,16 @@ export class OwnerHotelsController {
     }
   };
 
+  deactivate = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { id } = req.params as unknown as { id: number };
+      const hotel = await this.service.deactivate(this.ownerId(req), id);
+      sendSuccess(res, hotel, 'Khách sạn đã ngừng kinh doanh; dữ liệu lịch sử được giữ lại');
+    } catch (error) {
+      next(error);
+    }
+  };
+
   replaceAmenities = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { id } = req.params as unknown as { id: number };

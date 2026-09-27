@@ -51,6 +51,16 @@ export class OwnerRoomTypesController {
     }
   };
 
+  deactivate = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { id } = req.params as unknown as { id: number };
+      const roomType = await this.service.deactivate(this.ownerId(req), id);
+      sendSuccess(res, roomType, 'Loại phòng đã ngừng bán; dữ liệu lịch sử được giữ lại');
+    } catch (error) {
+      next(error);
+    }
+  };
+
   replaceAmenities = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { id } = req.params as unknown as { id: number };

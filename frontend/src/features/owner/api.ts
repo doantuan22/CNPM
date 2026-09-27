@@ -6,6 +6,8 @@ import type {
   HotelFormValues,
   RoomTypeFormValues,
   RateItemInput,
+  OwnerBooking,
+  OwnerBookingsFilters,
 } from './types';
 
 // ---- Hotels ----
@@ -29,6 +31,7 @@ export const updateHotel = async (id: number, payload: Partial<HotelFormValues>)
   const res = await apiClient<OwnerHotel>(`/owner/hotels/${id}`, { method: 'PATCH', body: JSON.stringify(payload) });
   return res.data as OwnerHotel;
 };
+export const deactivateHotel = async (id: number): Promise<OwnerHotel> => { const res = await apiClient<OwnerHotel>(`/owner/hotels/${id}/deactivate`, { method: 'POST' }); return res.data as OwnerHotel; };
 
 export const replaceHotelAmenities = async (id: number, amenityIds: number[]): Promise<OwnerHotel> => {
   const res = await apiClient<OwnerHotel>(`/owner/hotels/${id}/amenities`, {
@@ -85,6 +88,10 @@ export const updateRoomType = async (
   });
   return res.data as OwnerRoomType;
 };
+export const deactivateRoomType = async (id: number): Promise<OwnerRoomType> => { const res = await apiClient<OwnerRoomType>(`/owner/room-types/${id}/deactivate`, { method: 'POST' }); return res.data as OwnerRoomType; };
+
+export const listOwnerBookings = async (hotelId: number, filters: OwnerBookingsFilters) => { const query = new URLSearchParams(); Object.entries(filters).forEach(([key, value]) => { if (value) query.set(key, String(value)); }); const res = await apiClient<OwnerBooking[]>(`/owner/hotels/${hotelId}/bookings?${query.toString()}`); const paginated = res as typeof res & { pagination: { page: number; limit: number; total: number; totalPages: number } }; return { items: res.data ?? [], pagination: paginated.pagination }; };
+export const getOwnerBooking = async (hotelId: number, bookingId: number): Promise<OwnerBooking> => { const res = await apiClient<OwnerBooking>(`/owner/hotels/${hotelId}/bookings/${bookingId}`); return res.data as OwnerBooking; };
 
 export const replaceRoomTypeAmenities = async (id: number, amenityIds: number[]): Promise<OwnerRoomType> => {
   const res = await apiClient<OwnerRoomType>(`/owner/room-types/${id}/amenities`, {

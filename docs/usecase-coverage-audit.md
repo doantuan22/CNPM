@@ -17,10 +17,10 @@
 
 | Status | Count | Share of 40 |
 |---|---:|---:|
-| COMPLETE | 32 | 80.0% |
+| COMPLETE | 35 | 87.5% |
 | PARTIAL | 2 | 5.0% |
-| MISSING | 6 | 15.0% |
-| **Implemented coverage (COMPLETE only)** | **32 / 40** | **80.0%** |
+| MISSING | 3 | 7.5% |
+| **Implemented coverage (COMPLETE only)** | **35 / 40** | **87.5%** |
 
 ## UC matrix
 
@@ -53,12 +53,12 @@ Abbreviations: `BE` = backend route/service; `FE` = frontend route/page/API; `DB
 |---|---|---|---|---|---|---|---|
 | UC17 | Đăng ký khách sạn mới | `POST /api/owner/hotels`; `OwnerHotelsService.create` | `/owner/hotels/new`, `OwnerHotelFormPage` | `KHACH_SAN`; optional images/amenities relations | `authenticate + requireRole(PARTNER)` | `owner-hotels.test.ts`; `OwnerHotelFormPage.test.tsx`; **test source present, runtime not verified** | COMPLETE |
 | UC18 | Cập nhật thông tin khách sạn | `PATCH /api/owner/hotels/:id`, amenities/image operations | `/owner/hotels/:id`, `OwnerHotelManagePage` | `KHACH_SAN`, `HINH_ANH_KHACH_SAN`, `KHACH_SAN_TIEN_NGHI` | Partner-only; `getOwnedHotel` gives 404 unknown / 403 other owner | `owner-hotels.test.ts`; owner UI test source; **test source present, runtime not verified** | COMPLETE |
-| UC19 | Xóa khách sạn | No hotel deletion route/service exists | No hotel deletion control/API in owner UI | `KHACH_SAN` FK graph would require a defined deletion/archive policy | N/A — no action | No corresponding implementation test source | MISSING |
+| UC19 | Xóa khách sạn | Partner `POST /api/owner/hotels/:id/deactivate`; uses existing `TrangThai='Ngừng hoạt động'` | Confirmation action in `OwnerHotelManagePage` | `KHACH_SAN` retained with all FK history | Partner ownership; inactive is idempotent and suspended hotels remain admin-controlled | Owner regression tests pass; public queries select only `Hoạt động` | COMPLETE |
 | UC20 | Thêm loại phòng | `POST /api/owner/hotels/:hotelId/room-types` | Room-type creation form in `OwnerHotelManagePage` | `LOAI_PHONG` | Partner-only; parent hotel ownership checked | `owner-room-types.test.ts`; owner UI source; **test source present, runtime not verified** | COMPLETE |
 | UC21 | Cập nhật loại phòng | `PATCH /api/owner/room-types/:id`, room amenities/images | `/owner/room-types/:id`, `OwnerRoomTypeManagePage` | `LOAI_PHONG`, `HINH_ANH_LOAI_PHONG`, `LOAI_PHONG_TIEN_NGHI` | Partner-only; room type's hotel ownership checked | `owner-room-types.test.ts`; owner UI source; **test source present, runtime not verified** | COMPLETE |
 | UC22 | Cập nhật thông tin quỹ phòng | `PUT /api/owner/room-types/:id/rates` bulk upsert | Rate form/table in `OwnerRoomTypeManagePage` | `QUY_PHONG_GIA` | Partner-only; owned room type required | `owner-rates.test.ts`; owner UI source; **test source present, runtime not verified** | COMPLETE |
-| UC23 | Xóa loại phòng | No room-type deletion route/service exists | No room-type deletion control/API exists (only image deletion) | `LOAI_PHONG` has inventory/booking FK dependencies | N/A — no action | No corresponding implementation test source | MISSING |
-| UC24 | Xem danh sách đặt phòng | No owner hotel booking-list route is mounted in `backend\src\routes\index.ts` | No owner booking-list page/route in `AppRoutes.tsx` | `DAT_PHONG`, `CHI_TIET_DAT_PHONG` are available but not exposed owner-scoped | N/A — no owner action | No corresponding implementation test source | MISSING |
+| UC23 | Xóa loại phòng | Partner `POST /api/owner/room-types/:id/deactivate`; uses `TrangThai='Ngừng bán'` | Confirmation action in `OwnerRoomTypeManagePage` | `LOAI_PHONG` and rate/booking relations retained | Parent-hotel ownership; inactive room type is excluded from public query/quote/booking | Owner regression tests pass | COMPLETE |
+| UC24 | Xem danh sách đặt phòng | `GET /api/owner/hotels/:hotelId/bookings` and `/:bookingId`, paginated/filterable read model | `/owner/hotels/:id/bookings` and detail page | Reads `DAT_PHONG`, lines, customer display name and payment status only | Partner role + hotel ownership before every query; no mutations | Backend build/typecheck and owner regression tests pass | COMPLETE |
 | UC25 | Xem doanh thu | `GET /api/owner/hotels/:id/analytics`; computes successful payments less successful refunds | `/owner/hotels/:id/analytics`, `OwnerAnalyticsPage` | Reads `DAT_PHONG`, `CHI_TIET_DAT_PHONG`, `THANH_TOAN`, `HOAN_TIEN`, `QUY_PHONG_GIA` | Partner-only; ownership checked before aggregation | `owner-analytics.test.ts`, `OwnerAnalyticsPage.test.tsx`; **test source present, runtime not verified** | COMPLETE |
 | UC26 | Xem báo cáo thống kê | Owner analytics above; system `GET /api/admin/analytics` also exists | Owner and admin analytics pages | Booking/payment/refund/room inventory and system breakdown tables | Owner data is hotel-scoped; system report is admin-only | `owner-analytics.test.ts`, `admin-analytics.test.ts`, analytics UI test source; **test source present, runtime not verified** | COMPLETE |
 

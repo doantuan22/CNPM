@@ -5,6 +5,7 @@ import { extractCloudinaryPublicId } from '../../common/utils/cloudinary-url';
 import type { CreateHotelInput, UpdateHotelInput } from './owner-hotels.schemas';
 import type { KHACH_SAN } from '../../generated/prisma/client';
 import { assertImageCountBelowLimit, MAX_HOTEL_IMAGES } from '../../common/utils/image-upload';
+import { HOTEL_STATUS } from '../../common/constants/hotel-status';
 
 const HOTEL_IMAGE_FOLDER = 'hotel-booking/hotels';
 
@@ -55,6 +56,15 @@ export class OwnerHotelsService {
     }
 
     return this.repository.update(maKhachSan, { ...input, NgayCapNhat: new Date() });
+  }
+
+  async deactivate(ownerId: number, maKhachSan: number) {
+    const hotel = await this.getOwnedHotel(ownerId, maKhachSan);
+    if (hotel.TrangThai === HOTEL_STATUS.SUSPENDED) {
+      throw AppError.badRequest('Khách sạn đang bị đình chỉ bởi quản trị viên');
+    }
+    if (hotel.TrangThai === HOTEL_STATUS.INACTIVE) return hotel;
+    return this.repository.update(maKhachSan, { TrangThai: HOTEL_STATUS.INACTIVE, NgayCapNhat: new Date() });
   }
 
   async replaceAmenities(ownerId: number, maKhachSan: number, amenityIds: number[]) {

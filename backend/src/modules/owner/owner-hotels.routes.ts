@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { OwnerHotelsController } from './owner-hotels.controller';
 import { OwnerRoomTypesController } from './owner-room-types.controller';
+import { OwnerBookingsController } from './owner-bookings.controller';
 import { authenticate, requireRole } from '../../middleware/auth.middleware';
 import { validateRequest } from '../../middleware/validate.middleware';
 import { ROLE_NAMES } from '../../common/constants/roles';
@@ -13,10 +14,12 @@ import {
   uploadImageSchema,
 } from './owner-hotels.schemas';
 import { createRoomTypeSchema, hotelIdParamSchema as roomTypeHotelIdParamSchema } from './owner-room-types.schemas';
+import { ownerBookingsQuerySchema, ownerBookingParamsSchema } from './owner-bookings.schemas';
 
 const router = Router();
 const controller = new OwnerHotelsController();
 const roomTypesController = new OwnerRoomTypesController();
+const bookingsController = new OwnerBookingsController();
 
 router.use(authenticate, requireRole(ROLE_NAMES.PARTNER));
 
@@ -28,6 +31,7 @@ router.patch(
   validateRequest({ params: hotelIdParamSchema, body: updateHotelSchema }),
   controller.update
 );
+router.post('/:id/deactivate', validateRequest({ params: hotelIdParamSchema }), controller.deactivate);
 router.put(
   '/:id/amenities',
   validateRequest({ params: hotelIdParamSchema, body: replaceAmenitiesSchema }),
@@ -37,6 +41,16 @@ router.post(
   '/:id/images',
   validateRequest({ params: hotelIdParamSchema, body: uploadImageSchema }),
   controller.addImage
+);
+router.get(
+  '/:hotelId/bookings',
+  validateRequest({ params: roomTypeHotelIdParamSchema, query: ownerBookingsQuerySchema }),
+  bookingsController.list
+);
+router.get(
+  '/:hotelId/bookings/:bookingId',
+  validateRequest({ params: ownerBookingParamsSchema }),
+  bookingsController.getOne
 );
 router.patch(
   '/:id/images/:imageId',
