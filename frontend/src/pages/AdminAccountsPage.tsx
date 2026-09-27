@@ -25,6 +25,7 @@ export default function AdminAccountsPage() {
         <h1 className="text-2xl font-bold tracking-tight text-slate-900">Quản lý tài khoản</h1>
         <p className="text-sm text-slate-500">Tìm kiếm, xem chi tiết, khóa/mở khóa tài khoản người dùng</p>
       </div>
+      <Link to="/admin/accounts/new" className="inline-block rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white">Thêm tài khoản</Link>
 
       <form onSubmit={onSearchSubmit} className="flex flex-wrap gap-3">
         <input

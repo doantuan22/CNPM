@@ -774,6 +774,77 @@ export const openApiSpec = {
         responses: { '200': { description: 'Account unlocked' } },
       },
     },
+    '/admin/hotels': {
+      get: {
+        summary: 'List/search hotels for system administration (UC33, admin only)',
+        tags: ['Admin Hotels'], security: [{ BearerAuth: [] }],
+        parameters: [
+          { name: 'page', in: 'query', schema: { type: 'integer', minimum: 1, default: 1 } },
+          { name: 'limit', in: 'query', schema: { type: 'integer', minimum: 1, maximum: 100, default: 20 } },
+          { name: 'search', in: 'query', schema: { type: 'string' } },
+          { name: 'TrangThai', in: 'query', schema: { type: 'string' } },
+        ],
+        responses: { '200': { description: 'Paginated hotel administration list' }, '401': { description: 'Not authenticated' }, '403': { description: 'Admin role required' } },
+      },
+    },
+    '/admin/hotels/{id}': {
+      get: {
+        summary: 'Get hotel administration detail (UC33, admin only)', tags: ['Admin Hotels'], security: [{ BearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer', minimum: 1 } }],
+        responses: { '200': { description: 'Hotel detail including images and amenities' }, '403': { description: 'Admin role required' }, '404': { description: 'Hotel not found' } },
+      },
+      patch: {
+        summary: 'Update whitelisted hotel operational information (UC33, admin only)',
+        description: 'Only hotel name, address, stars, description, check-in/check-out time and location may be changed. Owner, approval and state fields are not accepted.',
+        tags: ['Admin Hotels'], security: [{ BearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer', minimum: 1 } }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  TenKhachSan: { type: 'string' }, DiaChiChiTiet: { type: 'string' }, HangSao: { type: 'integer', minimum: 1, maximum: 5 }, MoTa: { type: 'string', nullable: true }, GioNhanPhong: { type: 'string', format: 'date-time' }, GioTraPhong: { type: 'string', format: 'date-time' }, MaDiaPhuong: { type: 'integer' },
+                },
+              },
+            },
+          },
+        },
+        responses: { '200': { description: 'Hotel updated' }, '400': { description: 'Invalid editable data' }, '403': { description: 'Admin role required' }, '404': { description: 'Hotel not found' } },
+      },
+    },
+    '/admin/hotels/{id}/suspend': {
+      post: {
+        summary: 'Suspend a hotel from public sellable inventory (UC34, admin only)',
+        description: 'Idempotent. A suspended hotel no longer appears in public discovery or booking flows.', tags: ['Admin Hotels'], security: [{ BearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer', minimum: 1 } }],
+        responses: { '200': { description: 'Hotel state changed to Đình chỉ' }, '403': { description: 'Admin role required' }, '404': { description: 'Hotel not found' } },
+      },
+    },
+    '/admin/hotels/{id}/reactivate': {
+      post: {
+        summary: 'Reactivate a suspended hotel (UC34, admin only)',
+        description: 'Only a currently suspended hotel can be reactivated to Hoạt động.', tags: ['Admin Hotels'], security: [{ BearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer', minimum: 1 } }],
+        responses: { '200': { description: 'Hotel reactivated' }, '400': { description: 'Hotel is not suspended' }, '403': { description: 'Admin role required' }, '404': { description: 'Hotel not found' } },
+      },
+    },
+    '/admin/payments': {
+      get: {
+        summary: 'List payment and refund operations data (UC35, admin only, read-only)',
+        description: 'Response excludes account credentials, email and payment-provider secret/signature data.', tags: ['Admin Payments'], security: [{ BearerAuth: [] }],
+        parameters: [{ name: 'page', in: 'query', schema: { type: 'integer', minimum: 1, default: 1 } }, { name: 'limit', in: 'query', schema: { type: 'integer', minimum: 1, maximum: 100, default: 20 } }, { name: 'search', in: 'query', schema: { type: 'string' }, description: 'Booking confirmation or partner transaction reference' }, { name: 'TrangThai', in: 'query', schema: { type: 'string' } }, { name: 'PhuongThucThanhToan', in: 'query', schema: { type: 'string' } }, { name: 'from', in: 'query', schema: { type: 'string', format: 'date-time' } }, { name: 'to', in: 'query', schema: { type: 'string', format: 'date-time' } }],
+        responses: { '200': { description: 'Paginated read-only payment list' }, '403': { description: 'Admin role required' } },
+      },
+    },
+    '/admin/payments/{id}': {
+      get: {
+        summary: 'Get a read-only payment with booking and refund data (UC35, admin only)',
+        tags: ['Admin Payments'], security: [{ BearerAuth: [] }], parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer', minimum: 1 } }],
+        responses: { '200': { description: 'Payment detail without sensitive fields' }, '403': { description: 'Admin role required' }, '404': { description: 'Payment not found' } },
+      },
+    },
     '/partners/apply': {
       post: {
         summary: 'Submit a partner (hotel owner) application — creates a pending dossier; role is not upgraded automatically.',

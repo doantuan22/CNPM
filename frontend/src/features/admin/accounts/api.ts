@@ -33,6 +33,7 @@ export const getAccount = async (id: number): Promise<Account> => {
   const res = await apiClient<Account>(`/admin/accounts/${id}`);
   return res.data as Account;
 };
+export const createAccount = async (payload: { TenDangNhap:string; Email:string; MatKhau:string; HoTen:string; SoDienThoai:string; MaVaiTro:number }): Promise<Account> => { const res=await apiClient<Account>('/admin/accounts',{method:'POST',body:JSON.stringify(payload)});return res.data as Account; };
 
 export const updateAccount = async (id: number, payload: UpdateAccountPayload): Promise<Account> => {
   const res = await apiClient<Account>(`/admin/accounts/${id}`, {

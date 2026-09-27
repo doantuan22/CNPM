@@ -322,14 +322,14 @@ Bảng đối chiếu tổng thể 40 Use Case theo tài liệu kiểm toán th�
 | **UC25** | Xem doanh thu | Chủ khách sạn | **COMPLETE** | Thống kê doanh thu gộp, hoàn tiền, doanh thu net theo KS |
 | **UC26** | Xem báo cáo thống kê | Chủ KS / Admin | **COMPLETE** | Báo cáo tỷ lệ lấp đầy, top loại phòng, báo cáo hệ thống |
 | **UC27** | Xem tài khoản | Quản trị hệ thống | **COMPLETE** | Danh sách và chi tiết tài khoản người dùng |
-| **UC28** | Thêm tài khoản | Quản trị hệ thống | **PARTIAL** | Backend `POST /api/admin/accounts` đã có; frontend thiếu form tạo |
+| **UC28** | Thêm tài khoản | Quản trị hệ thống | **COMPLETE** | Admin create-account form/route, backend RBAC và targeted UI/backend tests đã pass |
 | **UC29** | Cập nhật tài khoản | Quản trị hệ thống | **COMPLETE** | Chỉnh sửa thông tin tài khoản từ trang quản trị |
 | **UC30** | Khóa tài khoản | Quản trị hệ thống | **COMPLETE** | Khóa/Mở khóa tài khoản người dùng |
 | **UC31** | Xóa tài khoản | Quản trị hệ thống | **COMPLETE** | Xóa cứng an toàn nếu chưa có giao dịch, nếu có thì khóa |
 | **UC32** | Duyệt đăng ký kinh doanh KS | Quản trị hệ thống | **COMPLETE** | Phê duyệt hồ sơ đối tác, nâng role `Chủ khách sạn` trong transaction |
-| **UC33** | Admin cập nhật thông tin KS | Quản trị hệ thống | **MISSING** | Chưa có API/UI riêng cho Admin cập nhật thông tin/trạng thái KS |
-| **UC34** | Đình chỉ khách sạn | Quản trị hệ thống | **MISSING** | Chưa có API/UI cho Admin đình chỉ/kích hoạt lại hoạt động khách sạn |
-| **UC35** | Admin xem thông tin thanh toán| Quản trị hệ thống | **MISSING** | Chỉ có analytics tổng hợp, chưa có danh sách/chi tiết giao dịch thanh toán |
+| **UC33** | Admin cập nhật thông tin KS | Quản trị hệ thống | **COMPLETE** | Admin list/detail/edit hotel, RBAC và targeted tests đã pass |
+| **UC34** | Đình chỉ khách sạn | Quản trị hệ thống | **COMPLETE** | Suspend/reactivate, hotel bị loại khỏi public inventory khi suspend, targeted tests đã pass |
+| **UC35** | Admin xem thông tin thanh toán| Quản trị hệ thống | **COMPLETE** | Admin payment list/detail read-only, filter/pagination, không trả dữ liệu nhạy cảm |
 | **UC36** | Xem chi tiết đánh giá | Quản trị hệ thống | **COMPLETE** | Xem chi tiết đánh giá kèm khách hàng, khách sạn, hình ảnh |
 | **UC37** | Xóa đánh giá vi phạm | Quản trị hệ thống | **PARTIAL** | Đã có kiểm duyệt ẩn/gắn cờ vi phạm; chưa có semantics "Xóa" thực tế |
 | **UC38** | Xử lý hỗ trợ/khiếu nại | Quản trị hệ thống | **COMPLETE** | Tiếp nhận, xử lý, cập nhật trạng thái và kết quả hỗ trợ |
@@ -337,13 +337,26 @@ Bảng đối chiếu tổng thể 40 Use Case theo tài liệu kiểm toán th�
 | **UC40** | Ngừng khuyến mãi | Quản trị hệ thống | **COMPLETE** | Hủy kích hoạt/ngừng áp dụng chương trình khuyến mãi |
 
 ### Tóm tắt tỷ lệ bao phủ:
-- **COMPLETE:** **35 / 40** (87.5%)
-- **PARTIAL:** **2 / 40** (5.0%)
-- **MISSING:** **3 / 40** (7.5%)
+- **COMPLETE:** **39 / 40** (97.5%)
+- **PARTIAL:** **1 / 40** (2.5%)
+- **MISSING:** **0 / 40** (0%)
 
 ---
 
-## 9. Chi Tiết Các Use Case Đang Có Vấn Đề (Quan Trọng Nhất)
+## 9. Lưu ý về ảnh chụp backlog lịch sử
+
+Các tiểu mục chi tiết còn lại trong phần này là ảnh chụp backlog trước Coverage Group 3/4 và chỉ giữ lại để truy vết. Chúng không ghi đè bảng coverage hiện tại ở trên. UC19, UC23, UC24, UC28, UC33, UC34 và UC35 đã được hoàn thiện ở các đợt sau; UC37 là Use Case PARTIAL duy nhất còn lại.
+
+### 9.0. Coverage Group 4 (đã hoàn thành)
+
+- **UC28:** `/api/admin/accounts` được expose bằng `AdminCreateAccountPage` và route `/admin/accounts/new`; backend targeted test và frontend success/error test pass.
+- **UC33/UC34:** `/api/admin/hotels` cung cấp list/detail/update cùng suspend/reactivate; chỉ Admin truy cập. Targeted test xác nhận Customer/Owner nhận `403`, hotel suspend biến mất khỏi public detail/inventory và reactivate khôi phục được.
+- **UC35:** `/api/admin/payments` và `/:id` là read-only, có phân trang/lọc; UI list/detail không hiển thị hay API trả email, mật khẩu, signature/secret thanh toán.
+- **OpenAPI:** đầy đủ các route admin accounts create, admin hotels và admin payments. Không thay đổi database schema và không sửa UC37.
+
+Các lệnh verify đã pass: backend/frontend lint, typecheck, build; backend Group 4 targeted tests 16/16; frontend Group 4 tests 7/7.
+
+## 9 (archive). Chi Tiết Các Use Case Đang Có Vấn Đề Trước Group 3/4
 
 Phần này cung cấp phân tích chi tiết cho AI coding tiếp theo khi được giao nhiệm vụ hoàn thiện các Use Case chưa đạt chuẩn `COMPLETE`.
 

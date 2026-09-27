@@ -1,0 +1,13 @@
+import { Router } from 'express';
+import { authenticate, requireAdmin } from '../../middleware/auth.middleware';
+import { validateRequest } from '../../middleware/validate.middleware';
+import { AdminHotelsController } from './admin-hotels.controller';
+import { hotelIdSchema, listHotelsSchema, updateHotelSchema } from './admin-hotels.schemas';
+const router = Router(); const controller = new AdminHotelsController();
+router.use(authenticate, requireAdmin);
+router.get('/', validateRequest({ query: listHotelsSchema }), controller.list);
+router.get('/:id', validateRequest({ params: hotelIdSchema }), controller.getOne);
+router.patch('/:id', validateRequest({ params: hotelIdSchema, body: updateHotelSchema }), controller.update);
+router.post('/:id/suspend', validateRequest({ params: hotelIdSchema }), controller.suspend);
+router.post('/:id/reactivate', validateRequest({ params: hotelIdSchema }), controller.reactivate);
+export default router;

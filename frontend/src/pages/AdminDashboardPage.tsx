@@ -74,6 +74,36 @@ export default function AdminDashboardPage() {
             <p className="text-xs text-slate-500">Xem, duyệt hoặc từ chối đăng ký kinh doanh khách sạn</p>
           </div>
         </Link>
+
+        <Link
+          to="/admin/accounts"
+          className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-xs hover:border-slate-300"
+        >
+          <div>
+            <h2 className="font-semibold text-slate-900">Quản lý tài khoản</h2>
+            <p className="text-xs text-slate-500">Tạo và quản trị tài khoản hệ thống</p>
+          </div>
+        </Link>
+
+        <Link
+          to="/admin/hotels"
+          className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-xs hover:border-slate-300"
+        >
+          <div>
+            <h2 className="font-semibold text-slate-900">Quản lý khách sạn</h2>
+            <p className="text-xs text-slate-500">Xem, cập nhật, đình chỉ hoặc kích hoạt lại khách sạn</p>
+          </div>
+        </Link>
+
+        <Link
+          to="/admin/payments"
+          className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-xs hover:border-slate-300"
+        >
+          <div>
+            <h2 className="font-semibold text-slate-900">Theo dõi thanh toán</h2>
+            <p className="text-xs text-slate-500">Tra cứu giao dịch và hoàn tiền ở chế độ chỉ đọc</p>
+          </div>
+        </Link>
       </div>
 
       <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center shadow-xs">

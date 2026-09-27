@@ -1,0 +1,2 @@
+import { Router } from 'express'; import { authenticate,requireAdmin } from '../../middleware/auth.middleware'; import { validateRequest } from '../../middleware/validate.middleware'; import { AdminPaymentsController } from './admin-payments.controller'; import { paymentIdSchema,paymentsQuerySchema } from './admin-payments.schemas';
+const r=Router(),c=new AdminPaymentsController();r.use(authenticate,requireAdmin);r.get('/',validateRequest({query:paymentsQuerySchema}),c.list);r.get('/:id',validateRequest({params:paymentIdSchema}),c.getOne);export default r;

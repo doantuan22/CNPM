@@ -1,0 +1,8 @@
+import { apiClient } from '../../../services/apiClient';
+import type { PaginatedApiResponse } from '../../../types/api';
+export interface AdminPayment { MaThanhToan: number; SoTien: number; TrangThai: string; PhuongThucThanhToan: string; MaGiaoDichDoiTac?: string | null; ThoiGianGiaoDich: string; DAT_PHONG: { MaXacNhanDatPhong: string; TAI_KHOAN: { MaTaiKhoan: number; HoTen: string }; KHACH_SAN: { MaKhachSan: number; TenKhachSan: string } }; HOAN_TIEN: Array<{ MaHoanTien: number; SoTienHoan: number; TrangThai: string; NgayYeuCau?: string }>; }
+export interface AdminPaymentListResult { items: AdminPayment[]; pagination: { page: number; limit: number; total: number; totalPages: number }; }
+export type AdminPaymentQuery = { page: number; limit: number; search?: string; TrangThai?: string; PhuongThucThanhToan?: string };
+const queryString = (query: AdminPaymentQuery) => { const params = new URLSearchParams({ page: String(query.page), limit: String(query.limit) }); if (query.search) params.set('search', query.search); if (query.TrangThai) params.set('TrangThai', query.TrangThai); if (query.PhuongThucThanhToan) params.set('PhuongThucThanhToan', query.PhuongThucThanhToan); return params.toString(); };
+export const listAdminPayments = async (query: AdminPaymentQuery): Promise<AdminPaymentListResult> => { const result = await apiClient<AdminPayment[], PaginatedApiResponse<AdminPayment>>(`/admin/payments?${queryString(query)}`); return { items: result.data ?? [], pagination: result.pagination }; };
+export const getAdminPayment = async (id: number): Promise<AdminPayment> => (await apiClient<AdminPayment>(`/admin/payments/${id}`)).data as AdminPayment;

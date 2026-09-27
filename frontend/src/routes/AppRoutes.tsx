@@ -31,6 +31,8 @@ const AdminPromotionsPage = lazy(() => import('../pages/AdminPromotionsPage'));
 const AdminPromotionFormPage = lazy(() => import('../pages/AdminPromotionFormPage'));
 const AdminAccountsPage = lazy(() => import('../pages/AdminAccountsPage'));
 const AdminAccountDetailPage = lazy(() => import('../pages/AdminAccountDetailPage'));
+const AdminCreateAccountPage = lazy(() => import('../pages/AdminCreateAccountPage'));
+const AdminHotelsPage = lazy(() => import('../pages/AdminHotelsPage')); const AdminHotelDetailPage = lazy(() => import('../pages/AdminHotelDetailPage')); const AdminPaymentsPage = lazy(() => import('../pages/AdminPaymentsPage')); const AdminPaymentDetailPage = lazy(() => import('../pages/AdminPaymentDetailPage'));
 const AdminReviewsPage = lazy(() => import('../pages/AdminReviewsPage'));
 const AdminReviewDetailPage = lazy(() => import('../pages/AdminReviewDetailPage'));
 const AdminSupportPage = lazy(() => import('../pages/AdminSupportPage'));
@@ -78,6 +80,8 @@ export default function AppRoutes() {
         <Route element={<ProtectedRoute allowedRoles={[ROLE_NAMES.ADMIN]} />}>
           <Route path="/admin" element={<AdminDashboardPage />} />
           <Route path="/admin/accounts" element={<AdminAccountsPage />} />
+          <Route path="/admin/accounts/new" element={<AdminCreateAccountPage />} />
+          <Route path="/admin/hotels" element={<AdminHotelsPage />} /><Route path="/admin/hotels/:id" element={<AdminHotelDetailPage />} /><Route path="/admin/payments" element={<AdminPaymentsPage />} /><Route path="/admin/payments/:id" element={<AdminPaymentDetailPage />} />
           <Route path="/admin/accounts/:id" element={<AdminAccountDetailPage />} />
           <Route path="/admin/reviews" element={<AdminReviewsPage />} />
           <Route path="/admin/reviews/:id" element={<AdminReviewDetailPage />} />

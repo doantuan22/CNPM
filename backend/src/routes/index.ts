@@ -18,6 +18,8 @@ import { supportRoutes, adminSupportRoutes } from '../modules/support/support.ro
 import promotionsRoutes from '../modules/promotions/promotions.routes';
 import ownerAnalyticsRoutes from '../modules/owner/owner-analytics.routes';
 import adminAnalyticsRoutes from '../modules/analytics/admin-analytics.routes';
+import adminHotelsRoutes from '../modules/admin-hotels/admin-hotels.routes';
+import adminPaymentsRoutes from '../modules/admin-payments/admin-payments.routes';
 import { openApiSpec } from '../config/openapi';
 
 const router = Router();
@@ -61,6 +63,8 @@ router.use('/admin/support', adminSupportRoutes);
 // Promotion management + analytics/reports (M8)
 router.use('/admin/promotions', promotionsRoutes);
 router.use('/admin/analytics', adminAnalyticsRoutes);
+router.use('/admin/hotels', adminHotelsRoutes);
+router.use('/admin/payments', adminPaymentsRoutes);
 
 // OpenAPI specification route
 router.get('/openapi.json', (_req, res) => {

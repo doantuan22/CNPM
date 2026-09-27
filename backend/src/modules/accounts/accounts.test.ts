@@ -1,7 +1,7 @@
 import { describe, it, expect, afterAll } from 'vitest';
 import request from 'supertest';
 import app from '../../app';
-import { createTestAccount, deleteTestAccount } from '../../test/factories';
+import { createTestAccount, deleteTestAccount, getRoleId } from '../../test/factories';
 import { ROLE_NAMES } from '../../common/constants/roles';
 import { ACCOUNT_STATUS } from '../../common/constants/account-status';
 import { PARTNER_APPLICATION_STATUS } from '../../common/constants/account-status';
@@ -47,6 +47,37 @@ describe('RBAC on /api/admin/accounts', () => {
   it('rejects requests with no token at all', async () => {
     const res = await request(app).get('/api/admin/accounts');
     expect(res.status).toBe(401);
+  });
+});
+
+describe('POST /api/admin/accounts (UC28)', () => {
+  it('allows an admin to create an account and never returns the password hash', async () => {
+    const { token } = await makeAdminToken();
+    const suffix = `${Date.now()}${Math.floor(Math.random() * 10000)}`;
+    const res = await request(app)
+      .post('/api/admin/accounts')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        TenDangNhap: `created_admin_${suffix}`,
+        Email: `created_admin_${suffix}@example.com`,
+        MatKhau: 'Test@12345',
+        HoTen: 'Created by admin',
+        SoDienThoai: '0900000000',
+        MaVaiTro: await getRoleId(ROLE_NAMES.CUSTOMER),
+      });
+
+    expect(res.status).toBe(201);
+    expect(res.body.data).toMatchObject({ HoTen: 'Created by admin', Email: `created_admin_${suffix}@example.com` });
+    expect(JSON.stringify(res.body.data)).not.toContain('MatKhau');
+    createdAccountIds.push(res.body.data.MaTaiKhoan);
+  });
+
+  it('rejects a customer attempting to create an admin account', async () => {
+    const { account, plainPassword } = await createTestAccount({ role: ROLE_NAMES.CUSTOMER });
+    createdAccountIds.push(account.MaTaiKhoan);
+    const token = await loginAndGetToken(account.Email, plainPassword);
+    const res = await request(app).post('/api/admin/accounts').set('Authorization', `Bearer ${token}`).send({});
+    expect(res.status).toBe(403);
   });
 });
 
