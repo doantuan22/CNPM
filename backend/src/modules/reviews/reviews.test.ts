@@ -302,3 +302,40 @@ describe('Admin review moderation', () => {
     expect(res.status).toBe(404);
   });
 });
+
+describe('UC37 safe removal of a violation review', () => {
+  it('allows only admins to remove and returns 404 for an unknown review', async () => {
+    expect((await request(app).delete('/api/admin/reviews/999999999').set('Authorization', `Bearer ${customerToken}`)).status).toBe(403);
+    expect((await request(app).delete('/api/admin/reviews/999999999').set('Authorization', `Bearer ${ownerToken}`)).status).toBe(403);
+    expect((await request(app).delete('/api/admin/reviews/999999999').set('Authorization', `Bearer ${adminToken}`)).status).toBe(404);
+  });
+
+  it('soft-removes only a flagged review, retains audit relations, and is idempotent', async () => {
+    const fakeImage = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUAg1WvHmoAAAAASUVORK5CYII=';
+    const targetBooking = await makeBooking(BOOKING_STATUS.COMPLETED, addDays(-10), addDays(-8));
+    const target = await request(app).post(`/api/bookings/${targetBooking.MaDatPhong}/review`).set('Authorization', `Bearer ${customerToken}`).send({ diemDanhGia: 1, noiDung: 'UC37 removed content', hinhAnh: [fakeImage] });
+    const targetId = target.body.data.MaDanhGia as number;
+    await request(app).patch(`/api/admin/reviews/${targetId}/moderate`).set('Authorization', `Bearer ${adminToken}`).send({ trangThai: REVIEW_STATUS.VIOLATION });
+
+    const otherBooking = await makeBooking(BOOKING_STATUS.COMPLETED, addDays(-14), addDays(-12));
+    const other = await request(app).post(`/api/bookings/${otherBooking.MaDatPhong}/review`).set('Authorization', `Bearer ${customerToken}`).send({ diemDanhGia: 5, noiDung: 'UC37 other visible review' });
+    const otherId = other.body.data.MaDanhGia as number;
+    await request(app).patch(`/api/admin/reviews/${otherId}/moderate`).set('Authorization', `Bearer ${adminToken}`).send({ trangThai: REVIEW_STATUS.VISIBLE });
+
+    // The body is ignored: this endpoint always decides the safe final status.
+    const removed = await request(app).delete(`/api/admin/reviews/${targetId}`).set('Authorization', `Bearer ${adminToken}`).send({ trangThai: REVIEW_STATUS.VISIBLE });
+    expect(removed.status).toBe(200); expect(removed.body.data.TrangThai).toBe(REVIEW_STATUS.HIDDEN);
+    const prisma = getPrismaClient();
+    const retained = await prisma.dANH_GIA.findUnique({ where: { MaDanhGia: targetId }, include: { HINH_ANH_DANH_GIA: true } });
+    expect(retained).toMatchObject({ MaDanhGia: targetId, TrangThai: REVIEW_STATUS.HIDDEN }); expect(retained?.HINH_ANH_DANH_GIA).toHaveLength(1);
+    expect((await prisma.dANH_GIA.findUniqueOrThrow({ where: { MaDanhGia: otherId } })).TrangThai).toBe(REVIEW_STATUS.VISIBLE);
+
+    const publicDetail = await request(app).get(`/api/hotels/${hotelId}`);
+    expect(publicDetail.status).toBe(200); expect(JSON.stringify(publicDetail.body.data)).not.toContain('UC37 removed content');
+    // The current public hotel read model exposes neither a review list nor a rating summary.
+    expect(publicDetail.body.data).not.toHaveProperty('DANH_GIA');
+
+    const repeated = await request(app).delete(`/api/admin/reviews/${targetId}`).set('Authorization', `Bearer ${adminToken}`);
+    expect(repeated.status).toBe(200); expect(repeated.body.data.TrangThai).toBe(REVIEW_STATUS.HIDDEN);
+  });
+});

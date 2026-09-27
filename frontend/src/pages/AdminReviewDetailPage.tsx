@@ -1,7 +1,7 @@
 import { ArrowLeft, Star } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import { Button } from '../components/common/Button';
-import { useAdminReviewDetail, useModerateReview } from '../features/reviews/hooks';
+import { useAdminReviewDetail, useModerateReview, useRemoveViolationReview } from '../features/reviews/hooks';
 import { reviewStatusBadgeClass } from '../features/reviews/status';
 import { cn } from '../lib/utils';
 import { ApiError } from '../services/apiClient';
@@ -17,6 +17,7 @@ export default function AdminReviewDetailPage() {
   const reviewId = Number(id);
   const reviewQuery = useAdminReviewDetail(reviewId);
   const moderateMutation = useModerateReview();
+  const removeMutation = useRemoveViolationReview();
 
   if (reviewQuery.isLoading) {
     return (
@@ -71,6 +72,18 @@ export default function AdminReviewDetailPage() {
           </div>
         )}
 
+        {removeMutation.isError && (
+          <div role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">
+            {removeMutation.error instanceof ApiError ? removeMutation.error.message : 'Không thể gỡ đánh giá'}
+          </div>
+        )}
+
+        {removeMutation.isSuccess && (
+          <div role="status" className="rounded-lg bg-green-50 px-3 py-2 text-xs text-green-700">
+            Đánh giá đã được gỡ khỏi phần hiển thị công khai; dữ liệu và ảnh vẫn được lưu để kiểm tra.
+          </div>
+        )}
+
         {moderateMutation.isError && (
           <div role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">
             {moderateMutation.error instanceof ApiError ? moderateMutation.error.message : 'Không thể cập nhật trạng thái'}
@@ -83,12 +96,26 @@ export default function AdminReviewDetailPage() {
               key={action.trangThai}
               variant={action.variant}
               size="sm"
-              disabled={r.TrangThai === action.trangThai || moderateMutation.isPending}
+              disabled={r.TrangThai === action.trangThai || moderateMutation.isPending || removeMutation.isPending}
               onClick={() => moderateMutation.mutate({ id: reviewId, trangThai: action.trangThai })}
             >
               {action.label}
             </Button>
           ))}
+          {(r.TrangThai === 'Vi phạm' || r.TrangThai === 'Ẩn') && (
+            <Button
+              variant="danger"
+              size="sm"
+              disabled={r.TrangThai === 'Ẩn' || removeMutation.isPending}
+              onClick={() => {
+                if (window.confirm('Gỡ đánh giá vi phạm khỏi phần hiển thị công khai? Dữ liệu và ảnh sẽ vẫn được lưu để phục vụ kiểm tra.')) {
+                  removeMutation.mutate(reviewId);
+                }
+              }}
+            >
+              {removeMutation.isPending ? 'Đang gỡ...' : r.TrangThai === 'Ẩn' ? 'Đã gỡ khỏi công khai' : 'Xóa/gỡ đánh giá vi phạm'}
+            </Button>
+          )}
         </div>
       </div>
     </div>

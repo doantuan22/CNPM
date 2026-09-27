@@ -289,6 +289,14 @@ export const openApiSpec = {
         parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
         responses: { '200': { description: 'OK' }, '403': { description: 'Not an admin' }, '404': { description: 'Not found' } },
       },
+      delete: {
+        summary: 'Safely remove a flagged review from public visibility (UC37, admin only)',
+        description: 'This soft-removal endpoint accepts no body. It changes only a review marked `Vi phạm` to the existing `Ẩn` state while retaining the DANH_GIA row and HINH_ANH_DANH_GIA relations for audit. Repeating an already-hidden removal is idempotent.',
+        tags: ['Review'],
+        security: [{ BearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer', minimum: 1 } }],
+        responses: { '200': { description: 'Review hidden with history retained' }, '403': { description: 'Admin role required' }, '404': { description: 'Review not found' }, '409': { description: 'Review has not been marked as a violation' } },
+      },
     },
     '/admin/reviews/{id}/moderate': {
       patch: {

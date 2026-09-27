@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
-import { adminGetReview, adminListReviews, createReview, getMyReview, moderateReview } from './api';
+import { adminGetReview, adminListReviews, createReview, getMyReview, moderateReview, removeViolationReview } from './api';
 import type { AdminReviewListQuery, CreateReviewRequest } from './types';
 
 export function useMyReview(bookingId: number, enabled = true) {
@@ -40,6 +40,17 @@ export function useModerateReview() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, trangThai }: { id: number; trangThai: string }) => moderateReview(id, trangThai),
+    onSuccess: (review) => {
+      queryClient.setQueryData(['admin', 'reviews', 'detail', review.MaDanhGia], review);
+      queryClient.invalidateQueries({ queryKey: ['admin', 'reviews'] });
+    },
+  });
+}
+
+export function useRemoveViolationReview() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => removeViolationReview(id),
     onSuccess: (review) => {
       queryClient.setQueryData(['admin', 'reviews', 'detail', review.MaDanhGia], review);
       queryClient.invalidateQueries({ queryKey: ['admin', 'reviews'] });

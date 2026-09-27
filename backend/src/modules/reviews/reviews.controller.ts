@@ -55,4 +55,14 @@ export class ReviewsController {
       next(error);
     }
   };
+
+  remove = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { id } = req.params as unknown as { id: number };
+      const review = await this.service.removeViolation(id);
+      sendSuccess(res, review, 'Đã gỡ đánh giá vi phạm khỏi phần hiển thị công khai');
+    } catch (error) {
+      next(error);
+    }
+  };
 }

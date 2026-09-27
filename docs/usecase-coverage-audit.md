@@ -17,10 +17,10 @@
 
 | Status | Count | Share of 40 |
 |---|---:|---:|
-| COMPLETE | 35 | 87.5% |
-| PARTIAL | 2 | 5.0% |
-| MISSING | 3 | 7.5% |
-| **Implemented coverage (COMPLETE only)** | **35 / 40** | **87.5%** |
+| COMPLETE | 40 | 100% |
+| PARTIAL | 0 | 0% |
+| MISSING | 0 | 0% |
+| **Implemented coverage (COMPLETE only)** | **40 / 40** | **100%** |
 
 ## UC matrix
 
@@ -76,7 +76,7 @@ Abbreviations: `BE` = backend route/service; `FE` = frontend route/page/API; `DB
 | UC34 | Đình chỉ khách sạn | `POST /api/admin/hotels/:id/suspend`, `/reactivate` | Suspend/reactivate confirmation flow in hotel detail | Existing `KHACH_SAN.TrangThai` | Admin-only; suspension is excluded by public active inventory predicates | Targeted test proves public detail 404 while suspended and 200 after reactivation; Group 4 UI flow test | COMPLETE |
 | UC35 | Xem thông tin thanh toán | Read-only `GET /api/admin/payments` and `/:id`, pagination/filters/refunds | `/admin/payments`, `AdminPaymentDetailPage`, pagination/filter and read-only detail | `THANH_TOAN`, `DAT_PHONG`, `HOAN_TIEN` | `authenticate + requireAdmin`; response excludes password, email and provider secret/signature fields | `admin-payments.test.ts` targeted runtime and Group 4 UI tests | COMPLETE |
 | UC36 | Xem chi tiết đánh giá | `GET /api/admin/reviews/:id` | `/admin/reviews/:id`, `AdminReviewDetailPage` | `DANH_GIA`, `HINH_ANH_DANH_GIA`, related booking/customer/hotel | Admin-only | `reviews.test.ts`; `AdminReviewDetailPage.test.tsx`; **test source present, runtime not verified** | COMPLETE |
-| UC37 | Xóa đánh giá vi phạm | Admin `PATCH /api/admin/reviews/:id/moderate` can mark `Vi phạm`/`Ẩn`, but has no delete operation | Admin review page exposes moderation buttons, not deletion | `DANH_GIA` remains persisted; images remain as relations | Admin-only moderation | `reviews.test.ts`; review moderation UI test source; **test source present, runtime not verified** | PARTIAL — status moderation is implemented, actual deletion required by this UC is not. |
+| UC37 | Xóa đánh giá vi phạm | `DELETE /api/admin/reviews/:id` performs a body-less, admin-only safe removal: `Vi phạm` → existing `Ẩn`; repeat is idempotent | Explicit confirmation/action in `AdminReviewsPage` and `AdminReviewDetailPage`, with loading/success/error/disabled states | `DANH_GIA` and `HINH_ANH_DANH_GIA` are retained; no schema change | `authenticate + requireAdmin`; customer/owner 403; final state is server-decided | `reviews.test.ts` targeted runtime: RBAC, 404, retained row/image, status, public-detail regression, idempotency and unaffected review; targeted UI tests 6/6 | COMPLETE — “Xóa” is documented as safe public removal, not hard deletion. |
 | UC38 | Xử lý hỗ trợ/khiếu nại | Admin `GET /api/admin/support`, `/:id`, `PATCH /:id`; assigns processing admin from token | `/admin/support`, `/admin/support/:id`, `AdminSupportDetailPage` | `YEU_CAU_HO_TRO`, optional `DAT_PHONG`, `TAI_KHOAN` | Admin-only; processor identity cannot be supplied by client; resolved items immutable | `support.test.ts`; admin support UI test source; **test source present, runtime not verified** | COMPLETE |
 | UC39 | Thêm mã khuyến mãi | `POST /api/admin/promotions` | `/admin/promotions/new`, `AdminPromotionFormPage` | `KHUYEN_MAI` | Admin-only; unique code and commercial validation | `promotions.test.ts`, `AdminPromotionFormPage.test.tsx`; **test source present, runtime not verified** | COMPLETE |
 | UC40 | Ngừng khuyến mãi | `POST /api/admin/promotions/:id/deactivate` | Promotion management UI calls `deactivatePromotion` | `KHUYEN_MAI.TrangThai` | Admin-only | `promotions.test.ts`, promotion UI test source; **test source present, runtime not verified** | COMPLETE |
@@ -116,7 +116,6 @@ The 22 tables are defined by `D:\CNPM\database\migrations\001_core_identity.sql`
 2. **UC19:** define deletion versus archive semantics for hotels, then add partner-owned endpoint/UI/tests that respect bookings and related FK history.
 3. **UC23:** define deletion versus archive semantics for room types, then add partner-owned endpoint/UI/tests compatible with inventory and booked line items.
 4. **UC24:** add a partner-owned hotel booking list/detail read model, endpoint, UI route/page, ownership enforcement, and tests.
-5. **UC37:** add an actual delete/retention policy and route/UI if “Xóa” is literal. If the product intends moderation-only retention, amend the requirement to “đánh dấu/ẩn đánh giá vi phạm” instead.
 
 ## Surplus, legacy, and placeholder findings
 
@@ -132,4 +131,4 @@ These are not treated as UC coverage unless mapped above.
 
 ## Runtime-verification limitation
 
-For Coverage Group 4, observable command results recorded: backend `lint`, `typecheck`, `build` and targeted integration tests **16/16 pass** (`accounts`, `admin-hotels`, `admin-payments`); frontend `lint`, `typecheck`, `build` and Group 4 UI tests **7/7 pass**. The suspension test verifies the public active-inventory boundary; payment detail tests verify no password/email/provider-secret leakage. No database schema or migration file was changed, and UC37 was not modified. Full-suite results outside these targeted commands are not claimed here.
+For Coverage Group 4/5, observable command results recorded: backend `lint`, `typecheck`, `build`; Group 4 targeted integration tests **16/16 pass** (`accounts`, `admin-hotels`, `admin-payments`); UC37 review tests **18/18 pass**; frontend `lint`, `typecheck`, `build`; Group 4 UI tests **7/7 pass** and UC37 Admin Review UI tests **6/6 pass**. UC37 regression verifies retained audit rows/images, RBAC, idempotency and no removed content in the public hotel-detail read model. The current public hotel read model has no review/rating summary, so no rating aggregate is applicable. No database schema or migration file was changed. Full-suite results outside these targeted commands are not claimed here.

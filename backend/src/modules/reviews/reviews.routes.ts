@@ -37,3 +37,6 @@ adminReviewsRoutes.patch(
   validateRequest({ params: reviewIdParamSchema, body: moderateReviewSchema }),
   controller.moderate
 );
+// UC37 uses the existing `Ẩn` state as a safe removal marker. This route has
+// no request body, so the caller cannot choose its final status.
+adminReviewsRoutes.delete('/:id', validateRequest({ params: reviewIdParamSchema }), controller.remove);

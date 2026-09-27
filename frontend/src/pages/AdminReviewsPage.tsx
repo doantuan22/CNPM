@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useAdminReviewList } from '../features/reviews/hooks';
+import { useAdminReviewList, useRemoveViolationReview } from '../features/reviews/hooks';
 import { reviewStatusBadgeClass } from '../features/reviews/status';
 import { cn } from '../lib/utils';
 import { ApiError } from '../services/apiClient';
@@ -15,6 +15,7 @@ export default function AdminReviewsPage() {
   const [status, setStatus] = useState('');
 
   const query = useAdminReviewList({ page, limit: PAGE_SIZE, search: search || undefined, trangThai: status || undefined });
+  const removeMutation = useRemoveViolationReview();
 
   const onSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,6 +55,18 @@ export default function AdminReviewsPage() {
         </button>
       </form>
 
+      {removeMutation.isError && (
+        <div role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+          {removeMutation.error instanceof ApiError ? removeMutation.error.message : 'Không thể gỡ đánh giá'}
+        </div>
+      )}
+
+      {removeMutation.isSuccess && (
+        <div role="status" className="rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">
+          Đánh giá đã được gỡ khỏi phần hiển thị công khai; dữ liệu lịch sử vẫn được lưu.
+        </div>
+      )}
+
       <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-xs">
         {query.isLoading ? (
           <div className="flex justify-center py-16" role="status" aria-live="polite">
@@ -76,6 +89,7 @@ export default function AdminReviewsPage() {
                   <th className="px-4 py-3">Điểm</th>
                   <th className="px-4 py-3">Trạng thái</th>
                   <th className="px-4 py-3" />
+                  <th className="px-4 py-3" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -88,6 +102,22 @@ export default function AdminReviewsPage() {
                       <span className={cn('inline-block rounded-full px-2 py-0.5 text-xs font-medium', reviewStatusBadgeClass(r.TrangThai))}>
                         {r.TrangThai}
                       </span>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      {r.TrangThai === 'Vi phạm' && (
+                        <button
+                          type="button"
+                          disabled={removeMutation.isPending}
+                          onClick={() => {
+                            if (window.confirm('Gỡ đánh giá vi phạm khỏi phần hiển thị công khai? Dữ liệu và ảnh sẽ vẫn được lưu để phục vụ kiểm tra.')) {
+                              removeMutation.mutate(r.MaDanhGia);
+                            }
+                          }}
+                          className="text-sm font-medium text-red-700 hover:underline disabled:opacity-50"
+                        >
+                          {removeMutation.isPending ? 'Đang gỡ...' : 'Xóa/gỡ'}
+                        </button>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-right">
                       <Link to={`/admin/reviews/${r.MaDanhGia}`} className="text-sm font-medium text-blue-600 hover:underline">

@@ -331,30 +331,37 @@ Bảng đối chiếu tổng thể 40 Use Case theo tài liệu kiểm toán th�
 | **UC34** | Đình chỉ khách sạn | Quản trị hệ thống | **COMPLETE** | Suspend/reactivate, hotel bị loại khỏi public inventory khi suspend, targeted tests đã pass |
 | **UC35** | Admin xem thông tin thanh toán| Quản trị hệ thống | **COMPLETE** | Admin payment list/detail read-only, filter/pagination, không trả dữ liệu nhạy cảm |
 | **UC36** | Xem chi tiết đánh giá | Quản trị hệ thống | **COMPLETE** | Xem chi tiết đánh giá kèm khách hàng, khách sạn, hình ảnh |
-| **UC37** | Xóa đánh giá vi phạm | Quản trị hệ thống | **PARTIAL** | Đã có kiểm duyệt ẩn/gắn cờ vi phạm; chưa có semantics "Xóa" thực tế |
+| **UC37** | Xóa đánh giá vi phạm | Quản trị hệ thống | **COMPLETE** | `DELETE /api/admin/reviews/:id` safe-removes review đã gắn cờ vi phạm bằng trạng thái `Ẩn`, giữ lịch sử/ảnh audit |
 | **UC38** | Xử lý hỗ trợ/khiếu nại | Quản trị hệ thống | **COMPLETE** | Tiếp nhận, xử lý, cập nhật trạng thái và kết quả hỗ trợ |
 | **UC39** | Thêm mã khuyến mãi | Quản trị hệ thống | **COMPLETE** | Tạo mới mã khuyến mãi toàn hệ thống kèm ràng buộc ngày/% |
 | **UC40** | Ngừng khuyến mãi | Quản trị hệ thống | **COMPLETE** | Hủy kích hoạt/ngừng áp dụng chương trình khuyến mãi |
 
 ### Tóm tắt tỷ lệ bao phủ:
-- **COMPLETE:** **39 / 40** (97.5%)
-- **PARTIAL:** **1 / 40** (2.5%)
+- **COMPLETE:** **40 / 40** (100%)
+- **PARTIAL:** **0 / 40** (0%)
 - **MISSING:** **0 / 40** (0%)
 
 ---
 
 ## 9. Lưu ý về ảnh chụp backlog lịch sử
 
-Các tiểu mục chi tiết còn lại trong phần này là ảnh chụp backlog trước Coverage Group 3/4 và chỉ giữ lại để truy vết. Chúng không ghi đè bảng coverage hiện tại ở trên. UC19, UC23, UC24, UC28, UC33, UC34 và UC35 đã được hoàn thiện ở các đợt sau; UC37 là Use Case PARTIAL duy nhất còn lại.
+Các tiểu mục chi tiết còn lại trong phần này là ảnh chụp backlog trước Coverage Group 3/4/5 và chỉ giữ lại để truy vết. Chúng không ghi đè bảng coverage hiện tại ở trên. UC19, UC23, UC24, UC28, UC33, UC34, UC35 và UC37 đã được hoàn thiện ở các đợt sau.
 
 ### 9.0. Coverage Group 4 (đã hoàn thành)
 
 - **UC28:** `/api/admin/accounts` được expose bằng `AdminCreateAccountPage` và route `/admin/accounts/new`; backend targeted test và frontend success/error test pass.
 - **UC33/UC34:** `/api/admin/hotels` cung cấp list/detail/update cùng suspend/reactivate; chỉ Admin truy cập. Targeted test xác nhận Customer/Owner nhận `403`, hotel suspend biến mất khỏi public detail/inventory và reactivate khôi phục được.
 - **UC35:** `/api/admin/payments` và `/:id` là read-only, có phân trang/lọc; UI list/detail không hiển thị hay API trả email, mật khẩu, signature/secret thanh toán.
-- **OpenAPI:** đầy đủ các route admin accounts create, admin hotels và admin payments. Không thay đổi database schema và không sửa UC37.
+- **OpenAPI:** đầy đủ các route admin accounts create, admin hotels và admin payments. Không thay đổi database schema; UC37 được xử lý riêng ở Coverage Group 5.
 
 Các lệnh verify đã pass: backend/frontend lint, typecheck, build; backend Group 4 targeted tests 16/16; frontend Group 4 tests 7/7.
+
+### 9.0.1. UC37 – Xóa đánh giá vi phạm (đã hoàn thành)
+
+- **Semantics:** `DELETE /api/admin/reviews/:id` không hard-delete. Backend chỉ chuyển review đã `Vi phạm` sang trạng thái hiện có `Ẩn`; không nhận trạng thái từ request body và request lặp lại là idempotent.
+- **Audit & public behavior:** `DANH_GIA` và `HINH_ANH_DANH_GIA` được giữ nguyên. Public hotel detail hiện không có review list/rating summary; targeted regression xác nhận nội dung review bị gỡ không xuất hiện ở read model public. Customer vẫn có thể xem review của chính booking mình qua API authenticated, không phải public endpoint.
+- **UI/tests:** Admin list/detail có nút “Xóa/gỡ đánh giá vi phạm”, xác nhận trước khi thao tác và trạng thái loading/success/error/disabled. Backend review tests 18/18 và frontend UC37 tests 6/6 pass.
+- **Database:** Không thay đổi schema, migration hoặc UC khác.
 
 ## 9 (archive). Chi Tiết Các Use Case Đang Có Vấn Đề Trước Group 3/4
 

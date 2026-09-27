@@ -92,4 +92,21 @@ export class ReviewsService {
     if (!review) throw AppError.notFound('Không tìm thấy đánh giá');
     return this.repository.updateStatus(maDanhGia, trangThai);
   }
+
+  /**
+   * UC37 safe-delete. The row and review images stay available to admins for
+   * audit/history; the existing `Ẩn` state removes a flagged review from
+   * public-visible states. A second request is deliberately idempotent.
+   */
+  async removeViolation(maDanhGia: number) {
+    const review = await this.repository.findByIdAdmin(maDanhGia);
+    if (!review) throw AppError.notFound('Không tìm thấy đánh giá');
+    if (review.TrangThai === REVIEW_STATUS.HIDDEN) return review;
+    if (review.TrangThai !== REVIEW_STATUS.VIOLATION) {
+      throw AppError.conflict('Chỉ có thể gỡ đánh giá đã được đánh dấu vi phạm');
+    }
+    await this.repository.updateStatus(maDanhGia, REVIEW_STATUS.HIDDEN);
+    // Preserve the admin-detail response contract after the state transition.
+    return (await this.repository.findByIdAdmin(maDanhGia))!;
+  }
 }
