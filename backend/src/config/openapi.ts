@@ -649,7 +649,7 @@ export const openApiSpec = {
     },
     '/auth/forgot-password': {
       post: {
-        summary: 'DEV/FOUNDATION: request a password reset (UC04). No email provider wired yet.',
+        summary: 'Request a password-reset email (UC04).',
         tags: ['Auth'],
         requestBody: {
           required: true,
@@ -658,7 +658,7 @@ export const openApiSpec = {
         responses: {
           '200': {
             description:
-              'Always returns a generic success message regardless of whether the account exists (prevents enumeration). In non-production environments the reset token is logged server-side.',
+              'Always returns a generic success message regardless of whether the account exists (prevents enumeration). A configured SMTP service sends the signed, expiring reset link; neither the token nor SMTP credentials appear in the response or logs.',
           },
         },
       },

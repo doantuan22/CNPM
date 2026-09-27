@@ -2,7 +2,8 @@ import jwt from 'jsonwebtoken';
 import { createHash } from 'crypto';
 import { env } from '../../config/env';
 
-const RESET_TOKEN_TTL = '15m';
+export const PASSWORD_RESET_TOKEN_TTL_MINUTES = 15;
+const RESET_TOKEN_TTL = `${PASSWORD_RESET_TOKEN_TTL_MINUTES}m`;
 const RESET_TOKEN_ISSUER = 'hotel-booking-api';
 const RESET_TOKEN_AUDIENCE = 'hotel-booking-password-reset';
 

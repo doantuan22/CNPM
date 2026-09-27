@@ -11,6 +11,8 @@ import {
 import { toSafeAccount, SafeAccount } from '../../common/utils/account-mapper';
 import { ROLE_NAMES } from '../../common/constants/roles';
 import { ACCOUNT_STATUS } from '../../common/constants/account-status';
+import { EmailService, NodemailerEmailService } from '../email/email.service';
+import { env } from '../../config/env';
 import type { RegisterInput, LoginInput, ForgotPasswordInput, ResetPasswordInput } from './auth.schemas';
 
 export interface AuthTokens {
@@ -26,7 +28,8 @@ export interface AuthResult {
 export class AuthService {
   constructor(
     private readonly authRepository: AuthRepository = new AuthRepository(),
-    private readonly rolesRepository: RolesRepository = new RolesRepository()
+    private readonly rolesRepository: RolesRepository = new RolesRepository(),
+    private readonly emailService: EmailService = new NodemailerEmailService()
   ) {}
 
   private async issueTokens(maTaiKhoan: number, role: string): Promise<AuthTokens> {
@@ -113,20 +116,22 @@ export class AuthService {
     return this.issueTokens(account.MaTaiKhoan, role.TenVaiTro);
   }
 
-  /**
-   * DEV / FOUNDATION implementation of UC04 (no email provider wired yet).
-   * Always returns a generic outcome regardless of whether the account
-   * exists, to avoid account enumeration. In non-production environments
-   * a mail provider must deliver the reset token. Tokens are deliberately
-   * never logged because logs are commonly shipped to shared systems.
-   */
+  /** Always preserves the same observable result for known/unknown emails. */
   async forgotPassword(input: ForgotPasswordInput): Promise<void> {
     const account = await this.authRepository.findByEmail(input.Email);
     if (!account) return;
 
     const token = signPasswordResetToken(account.MaTaiKhoan, account.MatKhau);
-    // TODO: send `token` via a configured email provider.
-    void token;
+    const resetUrl = new URL('/reset-password', env.FRONTEND_URL);
+    resetUrl.searchParams.set('token', token);
+
+    try {
+      await this.emailService.sendPasswordResetEmail({ to: account.Email, resetUrl: resetUrl.toString() });
+    } catch {
+      // Do not expose delivery errors: doing so only for a known account
+      // would reintroduce account enumeration. Never log token/SMTP details.
+      console.warn('Password reset email delivery failed');
+    }
   }
 
   async resetPassword(input: ResetPasswordInput): Promise<void> {

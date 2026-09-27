@@ -10,6 +10,13 @@ cp .env.example .env   # then fill in the values
 npm run dev            # nodemon, http://localhost:5000
 ```
 
+## Password-reset email
+
+UC04 sends password-reset links through SMTP. Set `SMTP_HOST`, `SMTP_PORT`,
+`SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, and `FRONTEND_URL`
+in `.env`. SMTP may be left entirely blank in local development, but all SMTP
+values are required when `NODE_ENV=production`.
+
 ## Scripts
 
 | Script        | Description                     |

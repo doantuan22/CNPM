@@ -1,7 +1,7 @@
 # UC01–UC40 Coverage Audit
 
-**Audit date:** 2026-09-26  
-**Scope:** current source under `D:\CNPM`; this report is updated here only for the scoped UC03/UC32 implementation. No database schema or migration was modified.  
+**Audit date:** 2026-09-27
+**Scope:** current source under `D:\CNPM`; this report is updated for the scoped UC03/UC32 and UC04 implementations. No database schema or migration was modified.
 **Requirement source:** the UC01–UC40 list supplied in the audit prompt is the authoritative specification. No repository UC catalog was sought or required.
 
 ## Method and evidence rules
@@ -17,10 +17,10 @@
 
 | Status | Count | Share of 40 |
 |---|---:|---:|
-| COMPLETE | 31 | 77.5% |
-| PARTIAL | 3 | 7.5% |
+| COMPLETE | 32 | 80.0% |
+| PARTIAL | 2 | 5.0% |
 | MISSING | 6 | 15.0% |
-| **Implemented coverage (COMPLETE only)** | **31 / 40** | **77.5%** |
+| **Implemented coverage (COMPLETE only)** | **32 / 40** | **80.0%** |
 
 ## UC matrix
 
@@ -33,7 +33,7 @@ Abbreviations: `BE` = backend route/service; `FE` = frontend route/page/API; `DB
 | UC01 | Đăng nhập | `POST /api/auth/login`, `AuthService.login` in `D:\CNPM\backend\src\modules\auth\auth.routes.ts` / `auth.service.ts` | `/login`, `LoginPage`; `D:\CNPM\frontend\src\features\auth\api.ts` | `TAI_KHOAN`, `VAI_TRO` | Public login; locked account rejected | `backend\src\modules\auth\auth.test.ts`; frontend login test source; **test source present, runtime not verified** | COMPLETE |
 | UC02 | Đăng ký tài khoản khách hàng | `POST /api/auth/register`; server assigns customer role | `/register`, `RegisterPage`; auth API | `TAI_KHOAN` FK `VAI_TRO`; unique email/username | Public registration; role is server-selected, not client-selected | `auth.test.ts`; frontend register test source; **test source present, runtime not verified** | COMPLETE |
 | UC03 | Đăng ký tài khoản đối tác | Authenticated `POST /api/partners/apply`; creates pending profile in `PartnersService.apply`; `GET /api/partners/me` returns only the caller's latest profile | Protected `/partner/apply`, `PartnerApplyPage` shows Chờ duyệt/Đã duyệt/Từ chối and rejection reason | `HO_SO_DOI_TAC` → `TAI_KHOAN` | Customer-only submission; account ID comes from token; no client-controlled status/role | `D:\CNPM\backend\src\modules\partners\partners.test.ts`: submit, own-scope, status; targeted runtime **10/10 pass** | COMPLETE |
-| UC04 | Quên mật khẩu | `POST /api/auth/forgot-password` and `/reset-password`; signed, expiring reset token | `/forgot-password`, `/reset-password`; `ForgotPasswordPage`, `ResetPasswordPage` | `TAI_KHOAN.MatKhau` updated by reset; no reset-token table is required by this design | Public generic response prevents account enumeration | `auth.test.ts` covers forgot/reset source; frontend page test source; **test source present, runtime not verified** | PARTIAL — `forgotPassword` deliberately does not deliver its generated token: `auth.service.ts` contains `TODO: send token via a configured email provider`. |
+| UC04 | Quên mật khẩu | `POST /api/auth/forgot-password` creates a signed, 15-minute reset URL and sends it through the `EmailService`/Nodemailer SMTP adapter; `/reset-password` verifies it and updates the password | `/forgot-password`, `/reset-password`; `ForgotPasswordPage`, `ResetPasswordPage` | `TAI_KHOAN.MatKhau` and `NgayCapNhat` updated by reset; no reset-token table is required by this design | Public generic response prevents enumeration; used token becomes invalid because it fingerprints the former password hash; rate-limited | `auth.service.test.ts` (SMTP fake, failure, valid/invalid/expired/used token); `auth.test.ts` (API response and old/new login); `PasswordResetPages.test.tsx`; targeted tests passed | COMPLETE |
 | UC05 | Tìm kiếm thông tin khách sạn | `GET /api/hotels` with validation/filter/pagination | `/hotels`, `HotelListPage`, `features/hotels/api.ts` | `KHACH_SAN`, `DIA_PHUONG`, `LOAI_PHONG`, `QUY_PHONG_GIA`, amenities | Public | `hotels.test.ts`, `HotelListPage.test.tsx`; **test source present, runtime not verified** | COMPLETE |
 | UC06 | Cập nhật thông tin cá nhân | `GET/PATCH /api/profile/me` | Protected `/profile`, `ProfilePage`; auth API `getMe/updateMe` | `TAI_KHOAN` | `authenticate`; service updates only the authenticated account and whitelists fields | `profile.test.ts`; profile UI test source; **test source present, runtime not verified** | COMPLETE |
 | UC07 | Xem thông tin khách sạn | `GET /api/hotels/:id` | `/hotels/:id`, `HotelDetailPage` | `KHACH_SAN`, `DIA_PHUONG`, `HINH_ANH_KHACH_SAN`, `TIEN_NGHI`, `KHACH_SAN_TIEN_NGHI` | Public | `hotels.test.ts`, `HotelDetailPage.test.tsx`; **test source present, runtime not verified** | COMPLETE |
@@ -113,14 +113,13 @@ The 22 tables are defined by `D:\CNPM\database\migrations\001_core_identity.sql`
 ## Concrete missing and partial work
 
 1. **UC03/UC32:** implemented admin review/approve/reject for `HO_SO_DOI_TAC`, set `MaTaiKhoanDuyet`/`NgayDuyet` from the authenticated admin, activate the existing `Chủ khách sạn` role transactionally, and add admin/customer UI plus targeted tests. Approval does not create a hotel.
-2. **UC04:** connect `forgotPassword` to an email delivery provider (or another authenticated delivery channel). Current reset token is generated but discarded.
-3. **UC19:** define deletion versus archive semantics for hotels, then add partner-owned endpoint/UI/tests that respect bookings and related FK history.
-4. **UC23:** define deletion versus archive semantics for room types, then add partner-owned endpoint/UI/tests compatible with inventory and booked line items.
-5. **UC24:** add a partner-owned hotel booking list/detail read model, endpoint, UI route/page, ownership enforcement, and tests.
-6. **UC28:** add the missing admin create-account page/route and frontend API/hook; backend route already exists.
-8. **UC33–UC34:** add an explicit admin hotel management API/UI for update and suspension. Do not reuse owner update as a substitute because its ownership and permitted fields differ.
-9. **UC35:** add an admin payment list/detail endpoint and UI, including payment/refund relation visibility and admin RBAC.
-10. **UC37:** add an actual delete/retention policy and route/UI if “Xóa” is literal. If the product intends moderation-only retention, amend the requirement to “đánh dấu/ẩn đánh giá vi phạm” instead.
+2. **UC19:** define deletion versus archive semantics for hotels, then add partner-owned endpoint/UI/tests that respect bookings and related FK history.
+3. **UC23:** define deletion versus archive semantics for room types, then add partner-owned endpoint/UI/tests compatible with inventory and booked line items.
+4. **UC24:** add a partner-owned hotel booking list/detail read model, endpoint, UI route/page, ownership enforcement, and tests.
+5. **UC28:** add the missing admin create-account page/route and frontend API/hook; backend route already exists.
+6. **UC33–UC34:** add an explicit admin hotel management API/UI for update and suspension. Do not reuse owner update as a substitute because its ownership and permitted fields differ.
+7. **UC35:** add an admin payment list/detail endpoint and UI, including payment/refund relation visibility and admin RBAC.
+8. **UC37:** add an actual delete/retention policy and route/UI if “Xóa” is literal. If the product intends moderation-only retention, amend the requirement to “đánh dấu/ẩn đánh giá vi phạm” instead.
 
 ## Surplus, legacy, and placeholder findings
 
@@ -129,7 +128,7 @@ These are not treated as UC coverage unless mapped above.
 | Item | Evidence | Finding |
 |---|---|---|
 | Legacy VNPAY placeholder class | `D:\CNPM\backend\src\integrations\vnpay.integration.ts` throws “planned for later phase”; active payment routes/services/tests are under `modules\payments` | Likely obsolete/unwired duplicate implementation. It should not be selected by active routes; retain only if intentionally deprecated or remove in a separate change. |
-| Password-reset delivery placeholder | `D:\CNPM\backend\src\modules\auth\auth.service.ts`, lines 116–130 | Explicit foundation implementation: token is signed but no provider sends it. This is the UC04 gap, not merely documentation. |
+| Password-reset SMTP adapter | `D:\CNPM\backend\src\modules\email\email.service.ts` | Active UC04 implementation. `NodemailerEmailService` sends only when SMTP is configured; `FakeEmailService` is used by tests and makes no network request. |
 | Partner approval / hotel approval fields without workflow | `HO_SO_DOI_TAC` and `KHACH_SAN` migrations contain approval fields; `PartnersService` and owner hotel service lack admin workflow | Database support exists, but UC32–UC34 APIs/UI are absent. |
 | Admin aggregate analytics | `GET /api/admin/analytics`, `AdminAnalyticsPage` | Legitimate UC26 reporting; it is not a substitute for UC35 payment detail or UC33/34 hotel administration. |
 | Image deletion controls | Owner APIs/pages delete hotel/room **images** only | These must not be mistaken for UC19 hotel deletion or UC23 room-type deletion. |

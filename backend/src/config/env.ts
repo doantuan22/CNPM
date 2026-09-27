@@ -21,6 +21,15 @@ const envSchema = z.object({
   CORS_ORIGIN: z.string().default('http://localhost:5173'),
   TRUST_PROXY: z.enum(['true', 'false']).default('false').transform((value) => value === 'true'),
 
+  // SMTP is optional outside production so contributors can run the API
+  // without an email server. Production must configure the complete set.
+  SMTP_HOST: z.string().trim().optional().default(''),
+  SMTP_PORT: z.coerce.number().int().min(1).max(65535).default(587),
+  SMTP_SECURE: z.enum(['true', 'false']).default('false').transform((value) => value === 'true'),
+  SMTP_USER: z.string().trim().optional().default(''),
+  SMTP_PASSWORD: z.string().optional().default(''),
+  SMTP_FROM: z.string().trim().optional().default(''),
+
   // JWT
   JWT_ACCESS_SECRET: z.string().min(32).default('dev_jwt_access_secret_min_32_characters_key'),
   JWT_REFRESH_SECRET: z.string().min(32).default('dev_jwt_refresh_secret_min_32_characters_key'),
@@ -44,6 +53,28 @@ const envSchema = z.object({
   // bookings/booking-expiry.ts.
   PAYMENT_TIMEOUT_MINUTES: z.coerce.number().positive().default(15),
 }).superRefine((value, ctx) => {
+  const smtpRequiredFields = [
+    ['SMTP_HOST', value.SMTP_HOST],
+    ['SMTP_USER', value.SMTP_USER],
+    ['SMTP_PASSWORD', value.SMTP_PASSWORD],
+    ['SMTP_FROM', value.SMTP_FROM],
+  ] as const;
+  const anySmtpFieldConfigured = smtpRequiredFields.some(([, configured]) => Boolean(configured));
+  if (anySmtpFieldConfigured) {
+    for (const [key, configured] of smtpRequiredFields) {
+      if (!configured) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: [key],
+          message: `${key} must be configured when SMTP is enabled`,
+        });
+      }
+    }
+  }
+  if (value.SMTP_FROM && !z.string().email().safeParse(value.SMTP_FROM).success) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['SMTP_FROM'], message: 'SMTP_FROM must be a valid email address' });
+  }
+
   if (value.NODE_ENV !== 'production') return;
 
   const requiredProductionSecrets: Array<[keyof typeof value, string]> = [
@@ -55,6 +86,10 @@ const envSchema = z.object({
     ['CLOUDINARY_API_KEY', 'CLOUDINARY_API_KEY'],
     ['VNPAY_TMN_CODE', 'VNPAY_TMN_CODE'],
     ['VNPAY_HASH_SECRET', 'VNPAY_HASH_SECRET'],
+    ['SMTP_HOST', 'SMTP_HOST'],
+    ['SMTP_USER', 'SMTP_USER'],
+    ['SMTP_PASSWORD', 'SMTP_PASSWORD'],
+    ['SMTP_FROM', 'SMTP_FROM'],
   ];
   for (const [key, label] of requiredProductionSecrets) {
     const raw = String(value[key] ?? '');

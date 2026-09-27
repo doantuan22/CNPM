@@ -51,6 +51,7 @@ d:\CNPM\
 - **External Integrations:**
   - **Cloudinary:** Lưu trữ và quản lý CDN hình ảnh khách sạn, loại phòng, ảnh đánh giá.
   - **VNPAY Sandbox:** Cổng thanh toán trực tuyến (URL generation, checksum HMAC-SHA512, IPN & Return callback, refund gateway).
+  - **SMTP (Nodemailer):** Gửi liên kết đặt lại mật khẩu UC04; cấu hình qua biến môi trường, bắt buộc đầy đủ ở production.
 
 ### 1.4. Luồng nghiệp vụ chính theo đối tượng (End-to-End Business Flow)
 1. **Khách vãng lai (Guest / Anonymous):**
@@ -297,7 +298,7 @@ Bảng đối chiếu tổng thể 40 Use Case theo tài liệu kiểm toán th�
 | **UC01** | Đăng nhập | Guest / Public | **COMPLETE** | Login username/email + mật khẩu, sinh JWT cặp |
 | **UC02** | Đăng ký tài khoản khách hàng | Guest / Public | **COMPLETE** | Đăng ký tài khoản role Khách hàng |
 | **UC03** | Đăng ký tài khoản đối tác | Khách hàng | **COMPLETE** | Nộp hồ sơ đối tác `HO_SO_DOI_TAC`, theo dõi trạng thái |
-| **UC04** | Quên mật khẩu | Guest / Public | **PARTIAL** | Backend sinh token reset an toàn; thiếu provider gửi email thực tế |
+| **UC04** | Quên mật khẩu | Guest / Public | **COMPLETE** | Gửi reset link ký số, hết hạn 15 phút qua SMTP; token dùng một lần theo password fingerprint |
 | **UC05** | Tìm kiếm thông tin khách sạn | Guest / Public | **COMPLETE** | Bộ lọc địa phương, ngày, khách, giá, sao, tiện nghi |
 | **UC06** | Cập nhật thông tin cá nhân | Khách hàng | **COMPLETE** | Xem và cập nhật profile cá nhân |
 | **UC07** | Xem thông tin khách sạn | Guest / Public | **COMPLETE** | Chi tiết khách sạn, ảnh, tiện nghi |
@@ -336,8 +337,8 @@ Bảng đối chiếu tổng thể 40 Use Case theo tài liệu kiểm toán th�
 | **UC40** | Ngừng khuyến mãi | Quản trị hệ thống | **COMPLETE** | Hủy kích hoạt/ngừng áp dụng chương trình khuyến mãi |
 
 ### Tóm tắt tỷ lệ bao phủ:
-- **COMPLETE:** **31 / 40** (77.5%)
-- **PARTIAL:** **3 / 40** (7.5%)
+- **COMPLETE:** **32 / 40** (80.0%)
+- **PARTIAL:** **2 / 40** (5.0%)
 - **MISSING:** **6 / 40** (15.0%)
 
 ---
@@ -346,25 +347,9 @@ Bảng đối chiếu tổng thể 40 Use Case theo tài liệu kiểm toán th�
 
 Phần này cung cấp phân tích chi tiết cho AI coding tiếp theo khi được giao nhiệm vụ hoàn thiện các Use Case chưa đạt chuẩn `COMPLETE`.
 
-### 9.1. Nhóm Use Case PARTIAL (3 Use Cases)
+### 9.1. Nhóm Use Case PARTIAL (2 Use Cases)
 
-#### 1. UC04 – Quên mật khẩu
-- **Hiện đã có:**
-  - Backend: `POST /api/auth/forgot-password` và `POST /api/auth/reset-password`.
-  - Cơ chế sinh token an toàn: `signPasswordResetToken` ký JWT chứa fingerprint của mật khẩu hiện tại (`account.MatKhau`), giúp token tự động vô hiệu hóa ngay sau khi đổi mật khẩu mà không cần bảng phụ lưu token.
-  - Frontend: Các trang `/forgot-password` (`ForgotPasswordPage.tsx`) và `/reset-password` (`ResetPasswordPage.tsx`).
-- **Điểm còn thiếu:**
-  - Trong `backend/src/modules/auth/auth.service.ts` (dòng 127–129): Token được tạo ra nhưng chưa được gửi đi:
-    ```typescript
-    const token = signPasswordResetToken(account.MaTaiKhoan, account.MatKhau);
-    // TODO: send `token` via a configured email provider.
-    void token;
-    ```
-- **Hạng mục cần làm:**
-  - Tích hợp một email service/provider (hoặc mô phỏng console/delivery log có cấu hình) để chuyển `token` tới địa chỉ email của người dùng.
-- **Ràng buộc:** Giữ nguyên generic response ("Nếu email tồn tại, hướng dẫn đặt lại mật khẩu đã được gửi") để chống tấn công dò quét tài khoản (Account Enumeration).
-
-#### 2. UC28 – Thêm tài khoản (Admin)
+#### 1. UC28 – Thêm tài khoản (Admin)
 - **Hiện đã có:**
   - Backend: Tuyến `POST /api/admin/accounts` đã hiện thực hoàn chỉnh (`AccountsController.create`, `AccountsService.create`, `createAccountSchema`), bảo vệ bởi `authenticate + requireAdmin`. Đã có integration test đầy đủ trong `accounts.test.ts`.
 - **Điểm còn thiếu:**
@@ -374,7 +359,7 @@ Phần này cung cấp phân tích chi tiết cho AI coding tiếp theo khi đư
   - Bổ sung hàm gọi API `createAccount` trong frontend.
   - Thêm form/modal hoặc trang `AdminAccountCreatePage` cho phép Admin nhập họ tên, username, email, mật khẩu, số điện thoại, vai trò để tạo tài khoản mới.
 
-#### 3. UC37 – Xóa đánh giá vi phạm (Admin)
+#### 2. UC37 – Xóa đánh giá vi phạm (Admin)
 - **Hiện đã có:**
   - Tuyến `PATCH /api/admin/reviews/:id/moderate` cho phép Admin cập nhật trạng thái đánh giá thành `Hiển thị`, `Ẩn`, hoặc `Vi phạm`.
   - Frontend trang `AdminReviewDetailPage.tsx` có các nút thao tác kiểm duyệt tương ứng.
@@ -484,6 +469,7 @@ Tất cả đường dẫn dưới đây là **đường dẫn thực tế** tro
   - `src/middleware/error.middleware.ts`: Global error handler, chuẩn hóa response lỗi `AppError`.
 - **Modules nghiệp vụ (`src/modules/`):**
   - `auth/`: `auth.routes.ts`, `auth.service.ts`, `auth.controller.ts`, `auth.repository.ts`, `auth.schemas.ts`.
+  - `email/`: `email.service.ts` định nghĩa `EmailService`, SMTP adapter Nodemailer và FakeEmailService dùng cho test UC04.
   - `partners/`: Xử lý nộp và duyệt hồ sơ đối tác (UC03, UC32).
   - `accounts/`: Quản trị tài khoản hệ thống (UC27–UC31).
   - `hotels/`: Tìm kiếm và xem chi tiết khách sạn (UC05, UC07, UC08).
@@ -553,15 +539,13 @@ Tất cả đường dẫn dưới đây là **đường dẫn thực tế** tro
 
 Khi tiếp quản dự án, lập trình viên AI cần nhận biết rõ các giới hạn sau để tránh nhầm lẫn:
 
-1. **TODO Gửi Email Quên Mật Khẩu (UC04):**
-   - Tại `backend/src/modules/auth/auth.service.ts` (dòng 128), token reset được sinh ra nhưng chưa kết nối với nhà cung cấp SMTP/Email thực tế (`// TODO: send token via a configured email provider`).
-2. **Tập tin cũ chưa gỡ bỏ (Legacy / Unwired Integration):**
+1. **Tập tin cũ chưa gỡ bỏ (Legacy / Unwired Integration):**
    - Tập tin `backend/src/integrations/vnpay.integration.ts` là placeholder từ giai đoạn sơ khởi (TECH-0), bên trong throw lỗi `planned for later phase`. Mã nguồn thanh toán VNPAY thực tế nằm hoàn toàn tại `backend/src/modules/payments/vnpay.ts` và `refund-gateway.ts`. File legacy này không được sử dụng bởi bất kỳ route nào.
-3. **Môi trường Gateway VNPAY:**
+2. **Môi trường Gateway VNPAY:**
    - Trong môi trường dev, các biến `VNPAY_TMN_CODE` và `VNPAY_HASH_SECRET` mang giá trị cấu hình sandbox. Các bài unit test sử dụng cơ chế fake gateway để tránh phụ thuộc vào đường truyền mạng VNPAY.
-4. **Xóa ảnh khác với xóa khách sạn/loại phòng:**
+3. **Xóa ảnh khác với xóa khách sạn/loại phòng:**
    - Chủ khách sạn hiện đã có thể xóa hình ảnh (`DELETE .../images/:imageId`), nhưng **chưa có chức năng xóa khách sạn (UC19)** hay **xóa loại phòng (UC23)**. Tuyệt đối không nhầm lẫn hai nhóm chức năng này.
-5. **Giới hạn trường thời gian trên bảng DANH_GIA:**
+4. **Giới hạn trường thời gian trên bảng DANH_GIA:**
    - Bảng `DANH_GIA` trong thiết kế cơ sở dữ liệu không có cột `NgayTao`. Do đó, trong báo cáo Admin Analytics, số liệu đánh giá được tổng hợp trên phạm vi **toàn thời gian** chứ không lọc theo khoảng ngày (`from`/`to`).
 
 ---

@@ -5,6 +5,7 @@ import { createTestAccount, deleteTestAccount } from '../../test/factories';
 import { ACCOUNT_STATUS } from '../../common/constants/account-status';
 import { getPrismaClient } from '../../config/prisma';
 import { verifyPassword } from '../../common/utils/password';
+import { signPasswordResetToken } from '../../common/utils/password-reset-token';
 
 const createdAccountIds: number[] = [];
 
@@ -214,5 +215,28 @@ describe('POST /api/auth/forgot-password', () => {
     expect(resKnown.status).toBe(200);
     expect(resUnknown.status).toBe(200);
     expect(resKnown.body.message).toBe(resUnknown.body.message);
+    expect(resKnown.body).not.toHaveProperty('token');
+    expect(resUnknown.body).not.toHaveProperty('token');
+  });
+
+  it('accepts a valid reset token, then rejects the old password and accepts the new one', async () => {
+    const { account, plainPassword } = await createTestAccount();
+    createdAccountIds.push(account.MaTaiKhoan);
+    const token = signPasswordResetToken(account.MaTaiKhoan, account.MatKhau);
+
+    const reset = await request(app)
+      .post('/api/auth/reset-password')
+      .send({ token, MatKhauMoi: 'NewPassword@123' });
+    expect(reset.status).toBe(200);
+
+    const oldLogin = await request(app)
+      .post('/api/auth/login')
+      .send({ identifier: account.Email, MatKhau: plainPassword });
+    expect(oldLogin.status).toBe(401);
+
+    const newLogin = await request(app)
+      .post('/api/auth/login')
+      .send({ identifier: account.Email, MatKhau: 'NewPassword@123' });
+    expect(newLogin.status).toBe(200);
   });
 });
