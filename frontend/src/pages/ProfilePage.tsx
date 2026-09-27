@@ -1,14 +1,18 @@
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button } from '../components/common/Button';
-import { useMe, useUpdateProfile } from '../features/auth/hooks';
+import { Link, useNavigate } from 'react-router-dom';
+import { useMe, useUpdateProfile, useLogout } from '../features/auth/hooks';
 import { updateProfileSchema, UpdateProfileFormValues } from '../features/auth/schemas';
 import { ApiError } from '../services/apiClient';
+
+import { cn } from '../lib/utils';
 
 export default function ProfilePage() {
   const meQuery = useMe();
   const updateMutation = useUpdateProfile();
+  const navigate = useNavigate();
+  const logoutMutation = useLogout();
 
   const {
     register,
@@ -28,21 +32,10 @@ export default function ProfilePage() {
     }
   }, [meQuery.data, reset]);
 
-  if (meQuery.isLoading) {
-    return (
-      <div className="flex justify-center py-16" role="status" aria-live="polite">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600" />
-      </div>
-    );
-  }
-
-  if (meQuery.isError) {
-    return (
-      <div role="alert" className="mx-auto max-w-md rounded-lg bg-red-50 px-4 py-3 text-center text-sm text-red-700">
-        {meQuery.error instanceof ApiError ? meQuery.error.message : 'Không thể tải thông tin cá nhân'}
-      </div>
-    );
-  }
+  const handleLogout = () => {
+    logoutMutation.mutate();
+    navigate('/login');
+  };
 
   const onSubmit = (data: UpdateProfileFormValues) =>
     updateMutation.mutate({
@@ -52,102 +45,158 @@ export default function ProfilePage() {
       GioiTinh: data.GioiTinh ? data.GioiTinh : undefined,
     });
 
+  if (meQuery.isLoading) {
+    return <div className="flex justify-center py-16"><div className="spinner"></div></div>;
+  }
+
+  if (meQuery.isError) {
+    return (
+      <div role="alert" className="mx-auto max-w-md mt-8 rounded-lg bg-red-50 px-4 py-3 text-center text-sm text-red-700">
+        {meQuery.error instanceof ApiError ? meQuery.error.message : 'Không thể tải thông tin cá nhân'}
+      </div>
+    );
+  }
+
   return (
-    <div className="mx-auto max-w-lg space-y-6 pt-4">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Thông tin cá nhân</h1>
-        <p className="text-sm text-slate-500">Quản lý thông tin tài khoản của bạn</p>
-      </div>
+    <div className="bg-surface-secondary text-ink min-h-[80vh] !max-w-full !px-0 !py-0">
+      <main className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col md:flex-row gap-8">
+        
+        <aside className="w-full md:w-[250px] shrink-0 bg-white rounded-2xl border border-border shadow-sm p-4">
+          <h2 className="text-xs font-semibold text-ink-muted uppercase tracking-wider mb-4 pl-3">Hồ sơ tài khoản</h2>
+          <nav className="flex flex-col space-y-1">
+            <Link to="/profile" className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-blue-50 text-primary font-semibold transition-colors">
+              <i className="ph-fill ph-user w-5 text-center text-lg"></i>
+              <span>Hồ sơ cá nhân</span>
+            </Link>
+            <Link to="/bookings" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-ink-muted hover:bg-slate-50 hover:text-ink transition-colors">
+              <i className="ph ph-calendar-check w-5 text-center text-lg"></i>
+              <span>Đặt phòng của tôi</span>
+            </Link>
+            <Link to="/support" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-ink-muted hover:bg-slate-50 hover:text-ink transition-colors">
+              <i className="ph ph-chat-dots w-5 text-center text-lg"></i>
+              <span>Hỗ trợ/Khiếu nại</span>
+            </Link>
+          </nav>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-xs">
-        <dl className="mb-6 grid grid-cols-2 gap-3 text-sm">
-          <div>
-            <dt className="text-slate-500">Tên đăng nhập</dt>
-            <dd className="font-medium text-slate-900">{meQuery.data?.TenDangNhap}</dd>
-          </div>
-          <div>
-            <dt className="text-slate-500">Email</dt>
-            <dd className="font-medium text-slate-900">{meQuery.data?.Email}</dd>
-          </div>
-        </dl>
+          <div className="h-px bg-border my-4 mx-3"></div>
 
-        {updateMutation.isSuccess && (
-          <div role="status" className="mb-4 rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700">
-            Cập nhật thông tin thành công
-          </div>
-        )}
-        {updateMutation.isError && (
-          <div role="alert" className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
-            {updateMutation.error instanceof ApiError
-              ? updateMutation.error.message
-              : 'Cập nhật thất bại, vui lòng thử lại'}
-          </div>
-        )}
+          <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-600 hover:bg-red-50 transition-colors font-medium">
+            <i className="ph ph-sign-out w-5 text-center text-lg"></i>
+            <span>Đăng xuất</span>
+          </button>
+        </aside>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
-          <div>
-            <label htmlFor="HoTen" className="block text-sm font-medium text-slate-700">
-              Họ và tên
-            </label>
-            <input
-              id="HoTen"
-              type="text"
-              {...register('HoTen')}
-              className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
-            {errors.HoTen && <p className="mt-1 text-xs text-red-600">{errors.HoTen.message}</p>}
-          </div>
+        <div className="flex-1 min-w-0">
+          <h1 className="text-2xl font-bold text-ink mb-6">Hồ sơ cá nhân</h1>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="SoDienThoai" className="block text-sm font-medium text-slate-700">
-                Số điện thoại
-              </label>
-              <input
-                id="SoDienThoai"
-                type="tel"
-                {...register('SoDienThoai')}
-                className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              />
-              {errors.SoDienThoai && (
-                <p className="mt-1 text-xs text-red-600">{errors.SoDienThoai.message}</p>
-              )}
+          <div className="bg-white rounded-xl border border-border shadow-sm p-6 lg:p-8 mb-6">
+            <div className="flex flex-col lg:flex-row gap-10">
+              
+              <div className="flex flex-col items-center shrink-0 w-full lg:w-48">
+                <div className="relative group cursor-pointer mb-4">
+                  <div className="w-32 h-32 rounded-full border-4 border-white shadow-sm bg-blue-100 flex items-center justify-center text-primary text-4xl font-bold">
+                    {meQuery.data?.HoTen?.charAt(0) || 'U'}
+                  </div>
+                  <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <i className="ph-fill ph-camera text-white text-xl"></i>
+                  </div>
+                </div>
+                <h3 className="font-bold text-lg text-ink mb-1 text-center">{meQuery.data?.HoTen}</h3>
+                <p className="text-[13px] text-ink-muted mb-3 text-center">{meQuery.data?.TenDangNhap}</p>
+              </div>
+
+              <div className="flex-1">
+                {updateMutation.isSuccess && (
+                  <div className="mb-4 rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-700 border border-emerald-200">
+                    Cập nhật thông tin thành công!
+                  </div>
+                )}
+                {updateMutation.isError && (
+                  <div className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 border border-red-200">
+                    {updateMutation.error instanceof ApiError ? updateMutation.error.message : 'Cập nhật thất bại, vui lòng thử lại'}
+                  </div>
+                )}
+
+                <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                  
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-semibold text-ink mb-1.5">Họ và tên</label>
+                    <input 
+                      type="text" 
+                      className={cn("w-full px-3.5 py-2.5 rounded-xl border bg-white text-ink text-sm focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all", errors.HoTen ? "border-rose-500 bg-rose-50/20" : "border-border")}
+                      {...register('HoTen')} 
+                    />
+                    {errors.HoTen && <p className="text-xs text-rose-500 mt-1">{errors.HoTen.message}</p>}
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-semibold text-ink mb-1.5">Email</label>
+                    <input 
+                      type="email" 
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-slate-50 text-slate-500 text-sm cursor-not-allowed"
+                      value={meQuery.data?.Email || ''} 
+                      readOnly 
+                      disabled
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-ink mb-1.5">Số điện thoại</label>
+                    <input 
+                      type="tel" 
+                      className={cn("w-full px-3.5 py-2.5 rounded-xl border bg-white text-ink text-sm focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all", errors.SoDienThoai ? "border-rose-500 bg-rose-50/20" : "border-border")}
+                      {...register('SoDienThoai')} 
+                    />
+                    {errors.SoDienThoai && <p className="text-xs text-rose-500 mt-1">{errors.SoDienThoai.message}</p>}
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-ink mb-1.5">Ngày sinh</label>
+                    <input 
+                      type="date" 
+                      className={cn("w-full px-3.5 py-2.5 rounded-xl border bg-white text-ink text-sm focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all", errors.NgaySinh ? "border-rose-500 bg-rose-50/20" : "border-border")}
+                      {...register('NgaySinh')} 
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-ink mb-1.5">Giới tính</label>
+                    <select 
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-white text-ink text-sm focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all"
+                      {...register('GioiTinh')}
+                    >
+                      <option value="">Không chọn</option>
+                      <option value="Nam">Nam</option>
+                      <option value="Nữ">Nữ</option>
+                      <option value="Khác">Khác</option>
+                    </select>
+                  </div>
+
+                  <div className="sm:col-span-2 flex items-center gap-3 mt-4">
+                    <button type="submit" disabled={!isDirty || updateMutation.isPending} className="px-6 py-2.5 bg-primary hover:bg-primary-700 active:bg-primary-800 text-white font-medium rounded-xl transition-all shadow-md disabled:opacity-50">
+                      {updateMutation.isPending ? 'Đang lưu...' : 'Lưu thay đổi'}
+                    </button>
+                    <button type="button" onClick={() => reset()} disabled={!isDirty} className="px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-ink font-medium rounded-xl transition-colors disabled:opacity-50">
+                      Hủy
+                    </button>
+                  </div>
+                </form>
+              </div>
             </div>
+          </div>
+
+          <div className="bg-white rounded-xl border border-border shadow-sm p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <label htmlFor="NgaySinh" className="block text-sm font-medium text-slate-700">
-                Ngày sinh <span className="font-normal text-slate-400">(tùy chọn)</span>
-              </label>
-              <input
-                id="NgaySinh"
-                type="date"
-                {...register('NgaySinh')}
-                className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              />
-              {errors.NgaySinh && <p className="mt-1 text-xs text-red-600">{errors.NgaySinh.message}</p>}
+              <h3 className="font-bold text-lg text-ink">Bảo mật tài khoản</h3>
+              <p className="text-sm text-ink-muted mt-1">Cập nhật mật khẩu để bảo vệ tài khoản của bạn.</p>
             </div>
+            <Link to="/reset-password" className="px-5 py-2.5 border border-border rounded-xl text-sm font-semibold text-ink hover:bg-slate-50 transition-colors shrink-0 shadow-sm">
+              Đổi mật khẩu
+            </Link>
           </div>
 
-          <div>
-            <label htmlFor="GioiTinh" className="block text-sm font-medium text-slate-700">
-              Giới tính <span className="font-normal text-slate-400">(tùy chọn)</span>
-            </label>
-            <select
-              id="GioiTinh"
-              {...register('GioiTinh')}
-              className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            >
-              <option value="">Không chọn</option>
-              <option value="Nam">Nam</option>
-              <option value="Nữ">Nữ</option>
-              <option value="Khác">Khác</option>
-            </select>
-          </div>
-
-          <Button type="submit" disabled={!isDirty || updateMutation.isPending}>
-            {updateMutation.isPending ? 'Đang lưu...' : 'Lưu thay đổi'}
-          </Button>
-        </form>
-      </div>
+        </div>
+      </main>
     </div>
   );
 }

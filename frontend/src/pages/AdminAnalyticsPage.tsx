@@ -1,6 +1,4 @@
 import { useState } from 'react';
-import { Users, Hotel, CalendarCheck, Wallet, RotateCcw, TrendingUp, Star, LifeBuoy } from 'lucide-react';
-import { StatTile } from '../components/analytics/StatTile';
 import { BarList } from '../components/analytics/BarList';
 import { DateRangeFilter } from '../components/analytics/DateRangeFilter';
 import { useAdminAnalytics } from '../features/analytics/hooks';
@@ -16,85 +14,194 @@ export default function AdminAnalyticsPage() {
   const data = analyticsQuery.data;
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Báo cáo &amp; thống kê hệ thống</h1>
-        <p className="text-sm text-slate-500">Tổng quan toàn hệ thống — số liệu tài chính chỉ tính giao dịch/hoàn tiền đã thành công</p>
+    <div className="flex flex-col gap-6 max-w-[1200px] mx-auto w-full">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-heading">Báo cáo & thống kê hệ thống</h1>
+          <p className="text-sm text-slate-500 mt-0.5">Giám sát tổng thể hoạt động sàn, số liệu tài chính giao dịch và hoàn tiền.</p>
+        </div>
+        
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={() => analyticsQuery.refetch()} 
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-border rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-50 shadow-sm transition"
+          >
+            <i className={`ph ph-arrows-clockwise text-[16px] ${analyticsQuery.isFetching ? 'animate-spin' : ''}`}></i>
+            <span>Làm mới dữ liệu</span>
+          </button>
+        </div>
       </div>
 
-      <DateRangeFilter
-        from={fromInput}
-        to={toInput}
-        onFromChange={setFromInput}
-        onToChange={setToInput}
-        onApply={() => setAppliedRange({ from: fromInput || undefined, to: toInput || undefined })}
-        onClear={() => {
-          setFromInput('');
-          setToInput('');
-          setAppliedRange({});
-        }}
-      />
-      <p className="text-xs text-slate-500">
-        Khoảng thời gian áp dụng cho booking, thanh toán, hoàn tiền và yêu cầu hỗ trợ. Tổng tài khoản/khách sạn/đánh giá luôn là số liệu toàn thời gian
-        (không có mốc ngày tạo trong dữ liệu hiện có cho đánh giá).
-      </p>
+      <div className="bg-white rounded-[16px] border border-border shadow-sm p-5 space-y-4">
+        <div className="flex flex-col md:flex-row gap-4 items-end">
+           <div className="flex-1">
+             <DateRangeFilter
+                from={fromInput}
+                to={toInput}
+                onFromChange={setFromInput}
+                onToChange={setToInput}
+                onApply={() => setAppliedRange({ from: fromInput || undefined, to: toInput || undefined })}
+                onClear={() => {
+                  setFromInput('');
+                  setToInput('');
+                  setAppliedRange({});
+                }}
+              />
+           </div>
+           <p className="text-[11px] text-slate-500 md:max-w-xs pb-1">
+              * Khoảng thời gian áp dụng cho booking, thanh toán, hoàn tiền và hỗ trợ.
+           </p>
+        </div>
+      </div>
 
       {analyticsQuery.isLoading ? (
-        <div className="flex justify-center py-16" role="status" aria-live="polite">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600" />
-        </div>
+        <div className="flex justify-center py-16"><div className="spinner"></div></div>
       ) : analyticsQuery.isError || !data ? (
-        <div role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div role="alert" className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-sm font-medium">
           {analyticsQuery.error instanceof ApiError ? analyticsQuery.error.message : 'Không thể tải thống kê'}
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            <StatTile label="Tổng tài khoản" value={data.TongTaiKhoan.toLocaleString('vi-VN')} icon={<Users className="h-4 w-4" />} />
-            <StatTile label="Tổng khách sạn" value={data.TongKhachSan.toLocaleString('vi-VN')} icon={<Hotel className="h-4 w-4" />} />
-            <StatTile label="Tổng đặt phòng" value={data.TongSoBooking.toLocaleString('vi-VN')} icon={<CalendarCheck className="h-4 w-4" />} />
-            <StatTile label="Tổng giao dịch" value={data.TongGiaoDich.toLocaleString('vi-VN')} icon={<Wallet className="h-4 w-4" />} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* KPI 1 */}
+            <div className="bg-white p-5 rounded-2xl border border-border shadow-sm flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Tổng tài khoản</p>
+                <h3 className="text-2xl font-bold text-heading mt-1">{data.TongTaiKhoan.toLocaleString('vi-VN')}</h3>
+              </div>
+              <div className="w-11 h-11 rounded-xl bg-blue-50 text-primary-600 flex items-center justify-center font-bold">
+                <i className="ph ph-users-three text-[22px]"></i>
+              </div>
+            </div>
+
+            {/* KPI 2 */}
+            <div className="bg-white p-5 rounded-2xl border border-border shadow-sm flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Tổng khách sạn</p>
+                <h3 className="text-2xl font-bold text-heading mt-1">{data.TongKhachSan.toLocaleString('vi-VN')}</h3>
+              </div>
+              <div className="w-11 h-11 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
+                <i className="ph ph-buildings text-[22px]"></i>
+              </div>
+            </div>
+
+            {/* KPI 3 */}
+            <div className="bg-white p-5 rounded-2xl border border-border shadow-sm flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Tổng lượt booking</p>
+                <h3 className="text-2xl font-bold text-emerald-600 mt-1">{data.TongSoBooking.toLocaleString('vi-VN')}</h3>
+              </div>
+              <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+                <i className="ph ph-clipboard-text text-[22px]"></i>
+              </div>
+            </div>
+
+            {/* KPI 4 */}
+            <div className="bg-white p-5 rounded-2xl border border-border shadow-sm flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Tổng giao dịch</p>
+                <h3 className="text-2xl font-bold text-heading mt-1">{data.TongGiaoDich.toLocaleString('vi-VN')}</h3>
+              </div>
+              <div className="w-11 h-11 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
+                <i className="ph ph-credit-card text-[22px]"></i>
+              </div>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <StatTile label="Doanh thu hệ thống" value={formatCurrencyVND(data.DoanhThuHeThong)} icon={<Wallet className="h-4 w-4" />} />
-            <StatTile label="Đã hoàn tiền" value={formatCurrencyVND(data.TongHoanTien)} icon={<RotateCcw className="h-4 w-4" />} tone={data.TongHoanTien > 0 ? 'negative' : 'default'} />
-            <StatTile label="Doanh thu thực nhận" value={formatCurrencyVND(data.DoanhThuThucNhan)} icon={<TrendingUp className="h-4 w-4" />} tone="positive" />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+             <div className="bg-white p-5 rounded-2xl border border-border shadow-sm flex items-center justify-between">
+              <div>
+                <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Doanh thu hệ thống (GMV)</p>
+                <h3 className="text-xl font-black text-heading mt-1">{formatCurrencyVND(data.DoanhThuHeThong)}</h3>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-slate-50 text-slate-500 flex items-center justify-center font-bold">
+                <i className="ph ph-wallet text-[20px]"></i>
+              </div>
+            </div>
+            
+            <div className="bg-white p-5 rounded-2xl border border-border shadow-sm flex items-center justify-between">
+              <div>
+                <p className="text-[11px] font-bold text-rose-500 uppercase tracking-wider">Đã hoàn tiền</p>
+                <h3 className="text-xl font-black text-rose-600 mt-1">{formatCurrencyVND(data.TongHoanTien)}</h3>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center font-bold">
+                <i className="ph ph-arrow-u-down-left text-[20px]"></i>
+              </div>
+            </div>
+
+            <div className="bg-white p-5 rounded-2xl border border-border shadow-sm flex items-center justify-between relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-3 text-emerald-500/10">
+                 <i className="ph-fill ph-trend-up text-6xl"></i>
+              </div>
+              <div className="relative z-10">
+                <p className="text-[11px] font-bold text-emerald-600 uppercase tracking-wider">Doanh thu thực nhận (Phí sàn)</p>
+                <h3 className="text-xl font-black text-emerald-600 mt-1">{formatCurrencyVND(data.DoanhThuThucNhan)}</h3>
+              </div>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
-              <h2 className="mb-4 text-sm font-semibold text-slate-900">Tài khoản theo vai trò</h2>
-              <BarList items={data.TaiKhoanTheoVaiTro.map((r) => ({ label: r.Label, value: r.SoLuong }))} />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="bg-white rounded-2xl border border-border shadow-sm p-6 flex flex-col">
+               <h3 className="text-sm font-bold text-heading flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+                 <i className="ph-fill ph-users-three text-primary"></i> Tài khoản theo vai trò
+               </h3>
+               <div className="flex-1">
+                 <BarList items={data.TaiKhoanTheoVaiTro.map((r) => ({ label: r.Label, value: r.SoLuong }))} />
+               </div>
             </div>
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
-              <h2 className="mb-4 text-sm font-semibold text-slate-900">Khách sạn theo trạng thái</h2>
-              <BarList items={data.KhachSanTheoTrangThai.map((r) => ({ label: r.Label, value: r.SoLuong }))} />
+
+            <div className="bg-white rounded-2xl border border-border shadow-sm p-6 flex flex-col">
+               <h3 className="text-sm font-bold text-heading flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+                 <i className="ph-fill ph-buildings text-indigo-500"></i> Khách sạn theo trạng thái
+               </h3>
+               <div className="flex-1">
+                 <BarList items={data.KhachSanTheoTrangThai.map((r) => ({ label: r.Label, value: r.SoLuong }))} />
+               </div>
             </div>
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
-              <h2 className="mb-4 text-sm font-semibold text-slate-900">Đặt phòng theo trạng thái</h2>
-              <BarList items={data.BookingTheoTrangThai.map((r) => ({ label: r.TrangThai, value: r.SoLuong }))} emptyMessage="Chưa có đặt phòng nào trong khoảng thời gian này" />
+
+            <div className="bg-white rounded-2xl border border-border shadow-sm p-6 flex flex-col">
+               <h3 className="text-sm font-bold text-heading flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+                 <i className="ph-fill ph-calendar-check text-emerald-500"></i> Đặt phòng theo trạng thái
+               </h3>
+               <div className="flex-1">
+                 <BarList items={data.BookingTheoTrangThai.map((r) => ({ label: r.TrangThai, value: r.SoLuong }))} emptyMessage="Chưa có đặt phòng nào" />
+               </div>
             </div>
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
-              <h2 className="mb-4 text-sm font-semibold text-slate-900">Thanh toán theo trạng thái</h2>
-              <BarList items={data.ThanhToanTheoTrangThai.map((r) => ({ label: r.Label, value: r.SoLuong }))} emptyMessage="Chưa có giao dịch nào trong khoảng thời gian này" />
+
+            <div className="bg-white rounded-2xl border border-border shadow-sm p-6 flex flex-col">
+               <h3 className="text-sm font-bold text-heading flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+                 <i className="ph-fill ph-credit-card text-amber-500"></i> Thanh toán & Hoàn tiền
+               </h3>
+               <div className="flex-1 space-y-6">
+                 <div>
+                    <h4 className="text-xs font-semibold text-slate-500 mb-2">Trạng thái thanh toán</h4>
+                    <BarList items={data.ThanhToanTheoTrangThai.map((r) => ({ label: r.Label, value: r.SoLuong }))} emptyMessage="Chưa có giao dịch thanh toán nào" />
+                 </div>
+                 <div>
+                    <h4 className="text-xs font-semibold text-slate-500 mb-2">Trạng thái hoàn tiền</h4>
+                    <BarList items={data.HoanTienTheoTrangThai.map((r) => ({ label: r.Label, value: r.SoLuong }))} emptyMessage="Chưa có yêu cầu hoàn tiền nào" />
+                 </div>
+               </div>
             </div>
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
-              <h2 className="mb-4 text-sm font-semibold text-slate-900">Hoàn tiền theo trạng thái</h2>
-              <BarList items={data.HoanTienTheoTrangThai.map((r) => ({ label: r.Label, value: r.SoLuong }))} emptyMessage="Chưa có yêu cầu hoàn tiền nào" />
+            
+            <div className="bg-white rounded-2xl border border-border shadow-sm p-6 flex flex-col">
+               <h3 className="text-sm font-bold text-heading flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+                 <i className="ph-fill ph-star text-amber-400"></i> Đánh giá theo trạng thái (Toàn thời gian)
+               </h3>
+               <div className="flex-1">
+                 <BarList items={data.DanhGiaTheoTrangThai.map((r) => ({ label: r.Label, value: r.SoLuong }))} emptyMessage="Chưa có đánh giá nào" />
+               </div>
             </div>
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
-              <h2 className="mb-4 flex items-center gap-1.5 text-sm font-semibold text-slate-900">
-                <Star className="h-4 w-4 text-slate-400" /> Đánh giá theo trạng thái (toàn thời gian)
-              </h2>
-              <BarList items={data.DanhGiaTheoTrangThai.map((r) => ({ label: r.Label, value: r.SoLuong }))} emptyMessage="Chưa có đánh giá nào" />
+
+            <div className="bg-white rounded-2xl border border-border shadow-sm p-6 flex flex-col">
+               <h3 className="text-sm font-bold text-heading flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+                 <i className="ph-fill ph-lifebuoy text-rose-500"></i> Yêu cầu hỗ trợ/khiếu nại
+               </h3>
+               <div className="flex-1">
+                 <BarList items={data.YeuCauHoTroTheoTrangThai.map((r) => ({ label: r.Label, value: r.SoLuong }))} emptyMessage="Chưa có yêu cầu hỗ trợ nào" />
+               </div>
             </div>
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs sm:col-span-2">
-              <h2 className="mb-4 flex items-center gap-1.5 text-sm font-semibold text-slate-900">
-                <LifeBuoy className="h-4 w-4 text-slate-400" /> Yêu cầu hỗ trợ/khiếu nại theo trạng thái
-              </h2>
-              <BarList items={data.YeuCauHoTroTheoTrangThai.map((r) => ({ label: r.Label, value: r.SoLuong }))} emptyMessage="Chưa có yêu cầu nào trong khoảng thời gian này" />
-            </div>
+
           </div>
         </>
       )}

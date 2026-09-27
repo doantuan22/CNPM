@@ -1,10 +1,6 @@
 import { useEffect, useState } from 'react';
-import { ArrowLeft } from 'lucide-react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Button } from '../components/common/Button';
 import { useCreatePromotion, usePromotionDetail, useSetPromotionStatus, useUpdatePromotion } from '../features/promotions/hooks';
-import { promotionStatusBadgeClass } from '../features/promotions/status';
-import { cn } from '../lib/utils';
 import { ApiError } from '../services/apiClient';
 import type { PromotionFormValues } from '../features/promotions/types';
 
@@ -61,176 +57,187 @@ export default function AdminPromotionFormPage() {
   const mutation = isEdit ? updateMutation : createMutation;
 
   if (isEdit && detailQuery.isLoading) {
-    return (
-      <div className="flex justify-center py-16" role="status" aria-live="polite">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600" />
-      </div>
-    );
+    return <div className="flex justify-center py-16"><div className="spinner"></div></div>;
   }
 
   if (isEdit && (detailQuery.isError || !detailQuery.data)) {
-    return (
-      <div role="alert" className="mx-auto max-w-md rounded-lg bg-red-50 px-4 py-3 text-center text-sm text-red-700">
-        {detailQuery.error instanceof ApiError ? detailQuery.error.message : 'Không tìm thấy mã khuyến mãi'}
-      </div>
-    );
+    return <div role="alert" className="mx-auto max-w-md rounded-lg bg-red-50 px-4 py-3 text-center text-sm text-red-700 border border-red-200">{detailQuery.error instanceof ApiError ? detailQuery.error.message : 'Không tìm thấy mã khuyến mãi'}</div>;
   }
 
   return (
-    <div className="mx-auto max-w-xl space-y-6">
-      <Button variant="ghost" size="sm" asChild>
-        <Link to="/admin/promotions">
-          <ArrowLeft className="mr-1.5 h-4 w-4" /> Quay lại danh sách
-        </Link>
-      </Button>
+    <div className="flex flex-col gap-6 max-w-[800px] mx-auto w-full">
+      <Link to="/admin/promotions" className="breadcrumb w-fit">
+        <i className="ph ph-arrow-left"></i>
+        <span>Quay lại danh sách</span>
+      </Link>
 
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">{isEdit ? 'Chỉnh sửa mã khuyến mãi' : 'Tạo mã khuyến mãi mới'}</h1>
-        {isEdit && detailQuery.data && (
-          <span className={cn('rounded-full px-3 py-1 text-sm font-medium', promotionStatusBadgeClass(detailQuery.data.TrangThai))}>
-            {detailQuery.data.TrangThai}
-          </span>
-        )}
-      </div>
-
-      {isEdit && detailQuery.data && (
-        <p className="text-xs text-slate-500">Đã sử dụng: {detailQuery.data.SoLuongDaSuDung} lượt</p>
-      )}
-
-      <form onSubmit={submit} className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
-        <div>
-          <label htmlFor="promo-code" className="mb-1 block text-xs font-medium text-slate-600">Mã khuyến mãi</label>
-          <input
-            id="promo-code"
-            type="text"
-            required
-            value={form.MaCode}
-            onChange={(e) => setForm((f) => ({ ...f, MaCode: e.target.value.toUpperCase() }))}
-            className="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm uppercase"
-          />
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label htmlFor="promo-type" className="mb-1 block text-xs font-medium text-slate-600">Loại giảm</label>
-            <select
-              id="promo-type"
-              value={form.LoaiGiamGia}
-              onChange={(e) => setForm((f) => ({ ...f, LoaiGiamGia: e.target.value }))}
-              className="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-            >
-              {DISCOUNT_TYPES.map((t) => (
-                <option key={t} value={t}>{t}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label htmlFor="promo-value" className="mb-1 block text-xs font-medium text-slate-600">
-              Giá trị giảm {form.LoaiGiamGia === 'Phần trăm' ? '(%, tối đa 100)' : '(VNĐ)'}
-            </label>
-            <input
-              id="promo-value"
-              type="number"
-              required
-              min={1}
-              max={form.LoaiGiamGia === 'Phần trăm' ? 100 : undefined}
-              value={form.GiaTriGiam}
-              onChange={(e) => setForm((f) => ({ ...f, GiaTriGiam: Number(e.target.value) }))}
-              className="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-            />
+      <div className="bg-white border border-border rounded-[16px] shadow-sm overflow-hidden">
+        {/* Header */}
+        <div className="px-6 py-5 border-b border-border bg-slate-50 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-xl bg-primary-100 text-primary-700 flex items-center justify-center font-bold">
+              <i className="ph-fill ph-ticket text-[24px]"></i>
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-bold text-heading">{isEdit ? 'Chỉnh sửa mã khuyến mãi' : 'Tạo mã khuyến mãi mới'}</h3>
+                {isEdit && detailQuery.data && (
+                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border ${detailQuery.data.TrangThai === 'Hoạt động' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'}`}>
+                    {detailQuery.data.TrangThai}
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Thiết lập thông số và điều kiện áp dụng cho mã voucher
+              </p>
+            </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label htmlFor="promo-min" className="mb-1 block text-xs font-medium text-slate-600">Giá trị đơn tối thiểu (VNĐ)</label>
-            <input
-              id="promo-min"
-              type="number"
-              min={0}
-              value={form.GiaTriDonToiThieu}
-              onChange={(e) => setForm((f) => ({ ...f, GiaTriDonToiThieu: Number(e.target.value) }))}
-              className="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-            />
-          </div>
-          <div>
-            <label htmlFor="promo-max" className="mb-1 block text-xs font-medium text-slate-600">Mức giảm tối đa (VNĐ, 0 = không giới hạn)</label>
-            <input
-              id="promo-max"
-              type="number"
-              min={0}
-              value={form.MucGiamToiDa}
-              onChange={(e) => setForm((f) => ({ ...f, MucGiamToiDa: Number(e.target.value) }))}
-              className="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-            />
-          </div>
-        </div>
-
-        <div>
-          <label htmlFor="promo-limit" className="mb-1 block text-xs font-medium text-slate-600">Số lượng giới hạn (0 = không giới hạn)</label>
-          <input
-            id="promo-limit"
-            type="number"
-            min={0}
-            value={form.SoLuongGioiHan}
-            onChange={(e) => setForm((f) => ({ ...f, SoLuongGioiHan: Number(e.target.value) }))}
-            className="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-          />
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label htmlFor="promo-start" className="mb-1 block text-xs font-medium text-slate-600">Ngày bắt đầu</label>
-            <input
-              id="promo-start"
-              type="date"
-              required
-              value={form.NgayBatDau}
-              onChange={(e) => setForm((f) => ({ ...f, NgayBatDau: e.target.value }))}
-              className="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-            />
-          </div>
-          <div>
-            <label htmlFor="promo-end" className="mb-1 block text-xs font-medium text-slate-600">Ngày kết thúc</label>
-            <input
-              id="promo-end"
-              type="date"
-              required
-              value={form.NgayKetThuc}
-              onChange={(e) => setForm((f) => ({ ...f, NgayKetThuc: e.target.value }))}
-              className="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-            />
-          </div>
-        </div>
-
-        {mutation.isError && (
-          <div role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">
-            {mutation.error instanceof ApiError ? mutation.error.message : 'Không thể lưu mã khuyến mãi'}
-          </div>
-        )}
-
-        <div className="flex gap-2">
-          <Button type="submit" disabled={mutation.isPending}>
-            {mutation.isPending ? 'Đang lưu...' : isEdit ? 'Lưu thay đổi' : 'Tạo mã'}
-          </Button>
-          {isEdit && detailQuery.data && (
-            <Button
-              type="button"
-              variant="outline"
-              disabled={statusMutation.isPending}
-              onClick={() => {
-                const activating = detailQuery.data!.TrangThai !== 'Hoạt động';
-                if (!activating && !window.confirm('Ngừng áp dụng mã khuyến mãi này? Khách hàng sẽ không thể dùng mã ngay sau đó.')) {
-                  return;
-                }
-                statusMutation.mutate({ id: promotionId, active: activating });
-              }}
-            >
-              {detailQuery.data.TrangThai === 'Hoạt động' ? 'Tắt mã' : 'Bật mã'}
-            </Button>
+        <div className="p-6 space-y-6">
+          {mutation.isError && (
+             <div role="alert" className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-sm font-medium">
+               {mutation.error instanceof ApiError ? mutation.error.message : 'Không thể lưu mã khuyến mãi'}
+             </div>
           )}
+          {mutation.isSuccess && isEdit && (
+             <div role="status" className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-700 text-sm font-medium">
+               Lưu thay đổi thành công!
+             </div>
+          )}
+
+          <div className="bg-slate-50 border border-border rounded-2xl p-5 space-y-4">
+             <form onSubmit={submit} className="space-y-4 pt-1">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-600 block">Mã code <span className="text-rose-500">*</span></label>
+                  <input 
+                    type="text" 
+                    required 
+                    value={form.MaCode}
+                    onChange={(e) => setForm((f) => ({ ...f, MaCode: e.target.value.toUpperCase() }))}
+                    placeholder="VD: EGODEHOT"
+                    className="w-full px-3 py-2 bg-white border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition uppercase"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-600 block">Loại giảm giá <span className="text-rose-500">*</span></label>
+                    <select 
+                      required
+                      value={form.LoaiGiamGia}
+                      onChange={(e) => setForm((f) => ({ ...f, LoaiGiamGia: e.target.value }))}
+                      className="w-full px-3 py-2 bg-white border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition"
+                    >
+                      {DISCOUNT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-600 block">
+                      Giá trị giảm {form.LoaiGiamGia === 'Phần trăm' ? '(%, tối đa 100)' : '(VNĐ)'} <span className="text-rose-500">*</span>
+                    </label>
+                    <input 
+                      type="number" 
+                      required 
+                      min={1}
+                      max={form.LoaiGiamGia === 'Phần trăm' ? 100 : undefined}
+                      value={form.GiaTriGiam}
+                      onChange={(e) => setForm((f) => ({ ...f, GiaTriGiam: Number(e.target.value) }))}
+                      className="w-full px-3 py-2 bg-white border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-600 block">Giá trị đơn tối thiểu (VNĐ)</label>
+                    <input 
+                      type="number" 
+                      min={0}
+                      value={form.GiaTriDonToiThieu}
+                      onChange={(e) => setForm((f) => ({ ...f, GiaTriDonToiThieu: Number(e.target.value) }))}
+                      className="w-full px-3 py-2 bg-white border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-600 block">Mức giảm tối đa (VNĐ, 0 = không giới hạn)</label>
+                    <input 
+                      type="number" 
+                      min={0}
+                      value={form.MucGiamToiDa}
+                      onChange={(e) => setForm((f) => ({ ...f, MucGiamToiDa: Number(e.target.value) }))}
+                      className="w-full px-3 py-2 bg-white border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-600 block">Số lượng giới hạn (0 = không giới hạn)</label>
+                  <input 
+                    type="number" 
+                    min={0}
+                    value={form.SoLuongGioiHan}
+                    onChange={(e) => setForm((f) => ({ ...f, SoLuongGioiHan: Number(e.target.value) }))}
+                    className="w-full px-3 py-2 bg-white border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition"
+                  />
+                  {isEdit && detailQuery.data && (
+                    <p className="text-[11px] text-slate-500 mt-1 block">Đã sử dụng: {detailQuery.data.SoLuongDaSuDung} lượt</p>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-600 block">Ngày bắt đầu <span className="text-rose-500">*</span></label>
+                    <input 
+                      type="date" 
+                      required 
+                      value={form.NgayBatDau}
+                      onChange={(e) => setForm((f) => ({ ...f, NgayBatDau: e.target.value }))}
+                      className="w-full px-3 py-2 bg-white border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-600 block">Ngày kết thúc <span className="text-rose-500">*</span></label>
+                    <input 
+                      type="date" 
+                      required 
+                      value={form.NgayKetThuc}
+                      onChange={(e) => setForm((f) => ({ ...f, NgayKetThuc: e.target.value }))}
+                      className="w-full px-3 py-2 bg-white border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-border mt-2">
+                  <button type="submit" disabled={mutation.isPending} className="flex-1 px-4 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary-dark shadow-sm transition disabled:opacity-50">
+                    {mutation.isPending ? 'Đang lưu...' : isEdit ? 'Lưu thay đổi' : 'Tạo mã mới'}
+                  </button>
+                  
+                  {isEdit && detailQuery.data && (
+                    <button
+                      type="button"
+                      disabled={statusMutation.isPending}
+                      onClick={() => {
+                        const activating = detailQuery.data!.TrangThai !== 'Hoạt động';
+                        if (!activating && !window.confirm('Ngừng áp dụng mã khuyến mãi này? Khách hàng sẽ không thể dùng mã ngay sau đó.')) {
+                          return;
+                        }
+                        statusMutation.mutate({ id: promotionId, active: activating });
+                      }}
+                      className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-bold transition border ${
+                        detailQuery.data.TrangThai === 'Hoạt động' ? 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100' : 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                      }`}
+                    >
+                      {detailQuery.data.TrangThai === 'Hoạt động' ? 'Tắt mã' : 'Bật mã'}
+                    </button>
+                  )}
+                </div>
+
+             </form>
+          </div>
+
         </div>
-      </form>
+      </div>
     </div>
   );
 }

@@ -1,19 +1,30 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { LifeBuoy, Plus } from 'lucide-react';
-import { Button } from '../components/common/Button';
 import { useMyBookings } from '../features/bookings/hooks';
 import { useCreateSupportRequest, useMySupportRequests } from '../features/support/hooks';
-import { supportStatusBadgeClass } from '../features/support/status';
 import { cn } from '../lib/utils';
 import { ApiError } from '../services/apiClient';
 
-const SUPPORT_TYPES = ['Hỗ trợ', 'Khiếu nại'];
+const SUPPORT_TYPES = ['Hỗ trợ', 'Khiếu nại', 'Yêu cầu khác'];
+
+function getBadgeClass(status: string) {
+  switch (status) {
+    case 'Mới tiếp nhận':
+      return 'status-new';
+    case 'Đang xử lý':
+      return 'status-processing';
+    case 'Đã xử lý':
+      return 'status-resolved';
+    default:
+      return 'status-new';
+  }
+}
 
 export default function SupportPage() {
   const requestsQuery = useMySupportRequests();
   const bookingsQuery = useMyBookings();
   const createMutation = useCreateSupportRequest();
+  const formRef = useRef<HTMLDivElement>(null);
 
   const [showForm, setShowForm] = useState(false);
   const [loaiYeuCau, setLoaiYeuCau] = useState(SUPPORT_TYPES[0]);
@@ -36,134 +47,142 @@ export default function SupportPage() {
     );
   };
 
+  const scrollToForm = () => {
+    setShowForm(true);
+    setTimeout(() => {
+      formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="container" style={{ paddingTop: '32px', paddingBottom: '60px', display: 'flex', flexDirection: 'column', gap: '28px' }}>
+      
+      <div className="page-header">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Hỗ trợ & khiếu nại</h1>
-          <p className="text-sm text-slate-500">Gửi yêu cầu hỗ trợ hoặc khiếu nại và theo dõi trạng thái xử lý</p>
+          <h1>Hỗ trợ & Khiếu nại</h1>
+          <p className="page-header__desc">Trung tâm tiếp nhận thắc mắc và giải quyết khiếu nại dịch vụ khách hàng 24/7 của Egode.</p>
         </div>
-        <Button onClick={() => setShowForm((v) => !v)}>
-          <Plus className="mr-1.5 h-4 w-4" /> Tạo yêu cầu
-        </Button>
+        <button type="button" className="btn btn-primary" onClick={scrollToForm}>
+          <i className="ph ph-plus"></i> Tạo yêu cầu mới
+        </button>
       </div>
 
       {showForm && (
-        <form onSubmit={submit} className="space-y-3 rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div>
-              <label htmlFor="support-type" className="mb-1 block text-xs font-medium text-slate-600">
-                Loại yêu cầu
-              </label>
-              <select
-                id="support-type"
-                value={loaiYeuCau}
-                onChange={(e) => setLoaiYeuCau(e.target.value)}
-                className="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-              >
-                {SUPPORT_TYPES.map((t) => (
-                  <option key={t} value={t}>{t}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label htmlFor="support-booking" className="mb-1 block text-xs font-medium text-slate-600">
-                Đặt phòng liên quan (không bắt buộc)
-              </label>
-              <select
-                id="support-booking"
-                value={maDatPhong}
-                onChange={(e) => setMaDatPhong(e.target.value)}
-                className="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-              >
-                <option value="">Không liên quan đặt phòng nào</option>
-                {bookingsQuery.data?.map((b) => (
-                  <option key={b.MaDatPhong} value={b.MaDatPhong}>{b.MaXacNhanDatPhong} — {b.TenKhachSan}</option>
-                ))}
-              </select>
-            </div>
+        <div className="card card-body animate-in slide-in-from-top-4 fade-in duration-300" ref={formRef}>
+          <div className="flex justify-between items-center mb-5 pb-3.5 border-b border-border flex-wrap gap-2">
+            <h2 className="text-[17px] font-bold text-heading">Gửi yêu cầu hoặc phản ánh dịch vụ</h2>
+            <span className="text-[13px] text-muted">Thời gian phản hồi thông thường: dưới 2 giờ</span>
           </div>
 
-          <div>
-            <label htmlFor="support-title" className="mb-1 block text-xs font-medium text-slate-600">
-              Tiêu đề
-            </label>
-            <input
-              id="support-title"
-              type="text"
-              required
-              value={tieuDe}
-              onChange={(e) => setTieuDe(e.target.value)}
-              className="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="support-content" className="mb-1 block text-xs font-medium text-slate-600">
-              Nội dung
-            </label>
-            <textarea
-              id="support-content"
-              required
-              rows={4}
-              value={noiDung}
-              onChange={(e) => setNoiDung(e.target.value)}
-              className="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-            />
-          </div>
-
-          {createMutation.isError && (
-            <div role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">
-              {createMutation.error instanceof ApiError ? createMutation.error.message : 'Không thể gửi yêu cầu'}
-            </div>
-          )}
-
-          <Button type="submit" disabled={createMutation.isPending}>
-            {createMutation.isPending ? 'Đang gửi...' : 'Gửi yêu cầu'}
-          </Button>
-        </form>
-      )}
-
-      {requestsQuery.isLoading ? (
-        <div className="flex justify-center py-16" role="status" aria-live="polite">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600" />
-        </div>
-      ) : requestsQuery.isError ? (
-        <div role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
-          {requestsQuery.error instanceof ApiError ? requestsQuery.error.message : 'Không thể tải danh sách yêu cầu'}
-        </div>
-      ) : !requestsQuery.data || requestsQuery.data.length === 0 ? (
-        <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center shadow-xs">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-blue-50 text-blue-600">
-            <LifeBuoy className="h-7 w-7" />
-          </div>
-          <h2 className="mt-4 text-lg font-semibold text-slate-900">Chưa có yêu cầu nào</h2>
-          <p className="mt-2 text-sm text-slate-500">Bạn chưa gửi yêu cầu hỗ trợ hoặc khiếu nại nào.</p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {requestsQuery.data.map((r) => (
-            <Link
-              key={r.MaYeuCauHoTro}
-              to={`/support/${r.MaYeuCauHoTro}`}
-              className="flex flex-col gap-2 rounded-xl border border-slate-200 bg-white p-4 shadow-xs hover:border-slate-300 sm:flex-row sm:items-center sm:justify-between"
-            >
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-slate-900">{r.TieuDe}</span>
-                  <span className={cn('rounded-full px-2 py-0.5 text-xs font-medium', supportStatusBadgeClass(r.TrangThai))}>
-                    {r.TrangThai}
-                  </span>
-                </div>
-                <p className="mt-1 text-xs text-slate-500">
-                  {r.LoaiYeuCau} · {new Date(r.NgayTao).toLocaleDateString('vi-VN')}
-                  {r.DAT_PHONG && <> · Đơn {r.DAT_PHONG.MaXacNhanDatPhong}</>}
-                </p>
+          <form onSubmit={submit} className="flex flex-col gap-5">
+            {createMutation.isError && (
+              <div role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 border border-red-200">
+                {createMutation.error instanceof ApiError ? createMutation.error.message : 'Không thể gửi yêu cầu'}
               </div>
-            </Link>
-          ))}
+            )}
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="form-group">
+                <label className="form-label">Loại yêu cầu <span className="required">*</span></label>
+                <select className="select" required value={loaiYeuCau} onChange={e => setLoaiYeuCau(e.target.value)}>
+                  {SUPPORT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Đơn đặt phòng liên quan <span className="form-hint inline ml-1">(Không bắt buộc)</span></label>
+                <select className="select" value={maDatPhong} onChange={e => setMaDatPhong(e.target.value)}>
+                  <option value="">-- Không liên quan hoặc chọn mã đơn --</option>
+                  {bookingsQuery.data?.map(b => (
+                    <option key={b.MaDatPhong} value={b.MaDatPhong}>#{b.MaXacNhanDatPhong} - {b.TenKhachSan}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-group md:col-span-2">
+                <label className="form-label">Tiêu đề yêu cầu <span className="required">*</span></label>
+                <input 
+                  type="text" 
+                  className="input" 
+                  required 
+                  placeholder="Tóm tắt ngắn gọn vấn đề của bạn..." 
+                  value={tieuDe} 
+                  onChange={e => setTieuDe(e.target.value)} 
+                />
+              </div>
+
+              <div className="form-group md:col-span-2">
+                <label className="form-label">Nội dung chi tiết <span className="required">*</span></label>
+                <textarea 
+                  className="textarea" 
+                  required 
+                  rows={4}
+                  placeholder="Vui lòng mô tả chi tiết sự việc..." 
+                  value={noiDung} 
+                  onChange={e => setNoiDung(e.target.value)} 
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 mt-2 pt-4 border-t border-border">
+              <button type="button" className="btn btn-secondary" onClick={() => setShowForm(false)}>Hủy</button>
+              <button type="submit" className="btn btn-primary" disabled={createMutation.isPending}>
+                {createMutation.isPending ? 'Đang gửi...' : 'Gửi yêu cầu'}
+              </button>
+            </div>
+          </form>
         </div>
       )}
+
+      <div className="card card-body">
+        <div className="mb-5 pb-3.5 border-b border-border">
+          <h2 className="text-[17px] font-bold text-heading">Lịch sử yêu cầu đã gửi</h2>
+          <span className="text-[13px] text-muted block mt-1">Theo dõi tiến độ xử lý các phiếu yêu cầu của bạn</span>
+        </div>
+
+        {requestsQuery.isLoading ? (
+          <div className="flex justify-center py-10"><div className="spinner"></div></div>
+        ) : requestsQuery.isError ? (
+          <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">Lỗi tải dữ liệu</div>
+        ) : requestsQuery.data?.length === 0 ? (
+          <div className="text-center py-10 text-muted text-sm">Chưa có yêu cầu nào.</div>
+        ) : (
+          <div className="table-wrap">
+            <table className="data-table whitespace-nowrap">
+              <thead>
+                <tr>
+                  <th>Loại</th>
+                  <th>Tiêu đề & Đơn liên quan</th>
+                  <th>Ngày gửi</th>
+                  <th>Trạng thái</th>
+                  <th className="text-right">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody>
+                {requestsQuery.data?.map(r => (
+                  <tr key={r.MaYeuCauHoTro}>
+                    <td>
+                      <span className={cn("badge", r.LoaiYeuCau === 'Khiếu nại' ? 'badge-danger' : 'badge-primary')}>
+                        {r.LoaiYeuCau}
+                      </span>
+                    </td>
+                    <td>
+                      <Link to={`/support/${r.MaYeuCauHoTro}`} className="ticket-title-link">{r.TieuDe}</Link>
+                      {r.DAT_PHONG && <span className="ticket-booking-ref block mt-0.5">Đơn liên quan: #{r.DAT_PHONG.MaXacNhanDatPhong}</span>}
+                    </td>
+                    <td className="text-[13px] text-muted">{new Date(r.NgayTao).toLocaleDateString('vi-VN')}</td>
+                    <td><span className={`status-badge ${getBadgeClass(r.TrangThai)}`}>{r.TrangThai}</span></td>
+                    <td className="text-right">
+                      <Link to={`/support/${r.MaYeuCauHoTro}`} className="btn btn-outline btn-sm">Xem trao đổi</Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
     </div>
   );
 }

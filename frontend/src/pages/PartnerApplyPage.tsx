@@ -1,18 +1,18 @@
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button } from '../components/common/Button';
 import { useApplyPartner, useMyPartnerApplication } from '../features/partners/hooks';
 import { applyPartnerSchema, ApplyPartnerFormValues } from '../features/partners/schemas';
 import { ApiError } from '../services/apiClient';
 import { refreshSession } from '../services/apiClient';
 import { useQueryClient } from '@tanstack/react-query';
 import { meQueryKey } from '../features/auth/hooks';
-import { useEffect } from 'react';
+import { cn } from '../lib/utils';
 
 const statusLabel: Record<string, { text: string; className: string }> = {
-  'Chờ duyệt': { text: 'Đang chờ duyệt', className: 'bg-amber-50 text-amber-700' },
-  'Đã duyệt': { text: 'Đã được duyệt', className: 'bg-green-50 text-green-700' },
-  'Từ chối': { text: 'Đã bị từ chối', className: 'bg-red-50 text-red-700' },
+  'Chờ duyệt': { text: 'Đang chờ duyệt', className: 'text-amber-600 bg-amber-50 border-amber-200' },
+  'Đã duyệt': { text: 'Đã được duyệt', className: 'text-emerald-700 bg-emerald-50 border-emerald-200' },
+  'Từ chối': { text: 'Đã bị từ chối', className: 'text-red-700 bg-red-50 border-red-200' },
 };
 
 export default function PartnerApplyPage() {
@@ -34,11 +34,7 @@ export default function PartnerApplyPage() {
   }, [existing?.TrangThaiDuyet, queryClient]);
 
   if (applicationQuery.isLoading) {
-    return (
-      <div className="flex justify-center py-16" role="status" aria-live="polite">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600" />
-      </div>
-    );
+    return <div className="flex justify-center py-16"><div className="spinner"></div></div>;
   }
   const displayedApplication = applyMutation.data ?? existing;
   const hasActiveApplication = displayedApplication && displayedApplication.TrangThaiDuyet !== 'Từ chối';
@@ -47,111 +43,122 @@ export default function PartnerApplyPage() {
   const onSubmit = (data: ApplyPartnerFormValues) => applyMutation.mutate(data);
 
   return (
-    <div className="mx-auto max-w-lg space-y-6 pt-4">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Đăng ký đối tác</h1>
-        <p className="text-sm text-slate-500">
-          Hoàn tất hồ sơ để trở thành Chủ khách sạn trên nền tảng. Hồ sơ sẽ được quản trị viên xét duyệt.
-        </p>
-      </div>
-
-      <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-xs">
-        {displayedApplication && hasActiveApplication && displayedStatus ? (
-          <div className="space-y-3 text-center">
-            <span
-              className={`inline-block rounded-full px-3 py-1 text-sm font-semibold ${
-                displayedStatus.className
-              }`}
-            >
-              {displayedStatus.text}
-            </span>
-            <p className="text-sm text-slate-500">
-              {(displayedApplication.TrangThaiDuyet === 'Đã duyệt')
-                ? 'Bạn đã được cấp vai trò Chủ khách sạn. Bạn có thể bắt đầu đăng ký khách sạn.'
-                : 'Hồ sơ đối tác của bạn đã được ghi nhận và đang chờ quản trị viên xử lý.'}
+    <div className="bg-surface-secondary text-ink font-sans antialiased min-h-[80vh] flex flex-col !max-w-full !px-0 !py-0">
+      <main className="flex-grow w-full max-w-[800px] mx-auto px-4 sm:px-6 py-8 md:py-12 flex flex-col gap-10">
+        
+        <section className="space-y-6">
+          <div className="space-y-2 border-b border-border pb-6">
+            <h1 className="text-2xl font-bold text-ink">Đăng ký đối tác</h1>
+            <p className="text-ink-muted">
+              Hoàn tất thông tin tài khoản, đơn vị kinh doanh để đăng ký trở thành đối tác của Egode.<br className="hidden md:block" />
+              Sau khi gửi hồ sơ, hệ thống sẽ tiến hành xét duyệt trước khi cấp quyền quản lý khách sạn.
             </p>
           </div>
-        ) : (
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
-            {existing?.TrangThaiDuyet === 'Từ chối' && (
-              <div role="alert" className="rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-700">
-                Hồ sơ trước đó đã bị từ chối{existing.LyDoTuChoi ? `: ${existing.LyDoTuChoi}` : ''}. Bạn có
-                thể nộp lại hồ sơ mới bên dưới.
+
+          <div className="bg-white p-6 md:p-8 rounded-2xl border border-border shadow-sm">
+            {displayedApplication && hasActiveApplication && displayedStatus ? (
+              <div className="flex flex-col items-center text-center">
+                <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-blue-50 mb-5 text-primary text-3xl">
+                  {displayedApplication.TrangThaiDuyet === 'Đã duyệt' ? <i className="ph-fill ph-check-circle text-emerald-600"></i> : <i className="ph-fill ph-clock"></i>}
+                </div>
+                <h3 className="text-xl font-bold text-ink mb-2">Hồ sơ đã được gửi</h3>
+                <div className="bg-surface-secondary rounded-xl p-4 w-full mb-4 border border-border flex justify-between items-center max-w-sm">
+                  <span className="text-sm text-ink-muted">Trạng thái:</span>
+                  <span className={cn("flex items-center gap-1.5 text-sm font-medium px-2.5 py-1 rounded-full border", displayedStatus.className)}>
+                    {displayedApplication.TrangThaiDuyet === 'Chờ duyệt' && <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>}
+                    {displayedStatus.text}
+                  </span>
+                </div>
+                <p className="text-sm text-ink-muted mb-6">
+                  {(displayedApplication.TrangThaiDuyet === 'Đã duyệt')
+                    ? 'Bạn đã được cấp vai trò Chủ khách sạn. Bạn có thể bắt đầu đăng ký khách sạn.'
+                    : 'Hồ sơ đối tác của bạn đã được ghi nhận và đang chờ quản trị viên xử lý.'}
+                </p>
               </div>
+            ) : (
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
+                {existing?.TrangThaiDuyet === 'Từ chối' && (
+                  <div role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 border border-red-200">
+                    Hồ sơ trước đó đã bị từ chối{existing.LyDoTuChoi ? `: ${existing.LyDoTuChoi}` : ''}. Bạn có thể nộp lại hồ sơ mới bên dưới.
+                  </div>
+                )}
+                {applyMutation.isError && (
+                  <div role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 border border-red-200">
+                    {applyMutation.error instanceof ApiError ? applyMutation.error.message : 'Nộp hồ sơ thất bại, vui lòng thử lại'}
+                  </div>
+                )}
+
+                <h3 className="text-lg font-semibold text-ink mb-2">Thông tin người đăng ký</h3>
+                <p className="text-sm text-ink-muted mb-6 flex items-center gap-1.5">
+                  <i className="ph ph-info text-blue-500"></i> Thông tin này được sử dụng để xác minh người đăng ký đối tác.
+                </p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
+                  <div>
+                    <label className="form-label">Số CCCD / CMND <span className="text-red-500">*</span></label>
+                    <input 
+                      type="text" 
+                      placeholder="Nhập số CCCD" 
+                      className={cn("input", errors.SoCCCD && "border-red-500")}
+                      {...register('SoCCCD')} 
+                    />
+                    {errors.SoCCCD && <p className="text-xs text-red-500 mt-1">{errors.SoCCCD.message}</p>}
+                  </div>
+
+                  <div>
+                    <label className="form-label">Số giấy phép kinh doanh <span className="text-red-500">*</span></label>
+                    <input 
+                      type="text" 
+                      placeholder="Nhập số GPKD" 
+                      className={cn("input", errors.SoGiayPhepKinhDoanh && "border-red-500")}
+                      {...register('SoGiayPhepKinhDoanh')} 
+                    />
+                    {errors.SoGiayPhepKinhDoanh && <p className="text-xs text-red-500 mt-1">{errors.SoGiayPhepKinhDoanh.message}</p>}
+                  </div>
+
+                  <div>
+                    <label className="form-label">Mã số thuế <span className="text-red-500">*</span></label>
+                    <input 
+                      type="text" 
+                      placeholder="Nhập mã số thuế" 
+                      className={cn("input", errors.MaSoThue && "border-red-500")}
+                      {...register('MaSoThue')} 
+                    />
+                    {errors.MaSoThue && <p className="text-xs text-red-500 mt-1">{errors.MaSoThue.message}</p>}
+                  </div>
+                  
+                  <div>
+                    <label className="form-label">Đường dẫn tệp giấy tờ <span className="text-red-500">*</span></label>
+                    <input 
+                      type="text" 
+                      placeholder="https://..." 
+                      className={cn("input", errors.TepGiayTo && "border-red-500")}
+                      {...register('TepGiayTo')} 
+                    />
+                    {errors.TepGiayTo && <p className="text-xs text-red-500 mt-1">{errors.TepGiayTo.message}</p>}
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-border">
+                  <label className="flex items-start gap-3 cursor-pointer group mb-6">
+                    <div className="relative flex items-center justify-center w-5 h-5 mt-0.5">
+                      <input type="checkbox" required className="peer appearance-none w-5 h-5 border border-gray-300 rounded bg-white checked:bg-primary checked:border-primary transition-colors cursor-pointer" />
+                      <i className="ph-bold ph-check absolute text-white text-xs opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity"></i>
+                    </div>
+                    <span className="text-sm text-ink group-hover:text-black transition-colors">Tôi xác nhận các thông tin cung cấp ở trên là hoàn toàn chính xác.</span>
+                  </label>
+                  
+                  <button type="submit" disabled={isSubmitting || applyMutation.isPending} className="w-full py-3.5 px-6 bg-primary hover:bg-primary-700 text-white font-semibold rounded-xl shadow-sm transition-all flex justify-center items-center gap-2 disabled:opacity-70">
+                    {isSubmitting || applyMutation.isPending ? 'Đang gửi...' : 'Nộp hồ sơ đối tác'}
+                  </button>
+                </div>
+
+              </form>
             )}
-            {applyMutation.isError && (
-              <div role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
-                {applyMutation.error instanceof ApiError
-                  ? applyMutation.error.message
-                  : 'Nộp hồ sơ thất bại, vui lòng thử lại'}
-              </div>
-            )}
+          </div>
+        </section>
 
-            <div>
-              <label htmlFor="SoCCCD" className="block text-sm font-medium text-slate-700">
-                Số CCCD
-              </label>
-              <input
-                id="SoCCCD"
-                type="text"
-                {...register('SoCCCD')}
-                className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              />
-              {errors.SoCCCD && <p className="mt-1 text-xs text-red-600">{errors.SoCCCD.message}</p>}
-            </div>
-
-            <div>
-              <label htmlFor="SoGiayPhepKinhDoanh" className="block text-sm font-medium text-slate-700">
-                Số giấy phép kinh doanh
-              </label>
-              <input
-                id="SoGiayPhepKinhDoanh"
-                type="text"
-                {...register('SoGiayPhepKinhDoanh')}
-                className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              />
-              {errors.SoGiayPhepKinhDoanh && (
-                <p className="mt-1 text-xs text-red-600">{errors.SoGiayPhepKinhDoanh.message}</p>
-              )}
-            </div>
-
-            <div>
-              <label htmlFor="MaSoThue" className="block text-sm font-medium text-slate-700">
-                Mã số thuế
-              </label>
-              <input
-                id="MaSoThue"
-                type="text"
-                {...register('MaSoThue')}
-                className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              />
-              {errors.MaSoThue && <p className="mt-1 text-xs text-red-600">{errors.MaSoThue.message}</p>}
-            </div>
-
-            <div>
-              <label htmlFor="TepGiayTo" className="block text-sm font-medium text-slate-700">
-                Đường dẫn tệp giấy tờ
-              </label>
-              <input
-                id="TepGiayTo"
-                type="text"
-                {...register('TepGiayTo')}
-                placeholder="https://..."
-                className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              />
-              {errors.TepGiayTo && <p className="mt-1 text-xs text-red-600">{errors.TepGiayTo.message}</p>}
-              <p className="mt-1 text-xs text-slate-400">
-                Giai đoạn hiện tại yêu cầu đường dẫn tới tệp đã tải lên nơi khác; tải tệp trực tiếp sẽ được
-                hỗ trợ ở phiên bản sau.
-              </p>
-            </div>
-
-            <Button type="submit" className="w-full" disabled={isSubmitting || applyMutation.isPending}>
-              {isSubmitting || applyMutation.isPending ? 'Đang gửi...' : 'Nộp hồ sơ đối tác'}
-            </Button>
-          </form>
-        )}
-      </div>
+      </main>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Star, MessageSquareText } from 'lucide-react';
 import { Button } from '../common/Button';
+import { Textarea } from '../common/Textarea';
 import { useCreateReview, useMyReview } from '../../features/reviews/hooks';
 import { reviewStatusBadgeClass } from '../../features/reviews/status';
 import { fileToDataUrl, imageFileError, cn } from '../../lib/utils';
@@ -101,13 +102,12 @@ export function ReviewSection({ bookingId, bookingStatus }: ReviewSectionProps) 
             <label htmlFor="review-content" className="mb-1 block text-xs font-medium text-slate-600">
               Nhận xét (không bắt buộc)
             </label>
-            <textarea
+            <Textarea
               id="review-content"
               rows={3}
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="Chia sẻ trải nghiệm của bạn..."
-              className="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
             />
           </div>
 

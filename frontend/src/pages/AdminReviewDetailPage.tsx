@@ -1,16 +1,6 @@
-import { ArrowLeft, Star } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
-import { Button } from '../components/common/Button';
 import { useAdminReviewDetail, useModerateReview, useRemoveViolationReview } from '../features/reviews/hooks';
-import { reviewStatusBadgeClass } from '../features/reviews/status';
-import { cn } from '../lib/utils';
 import { ApiError } from '../services/apiClient';
-
-const ACTIONS: Array<{ trangThai: string; label: string; variant: 'primary' | 'outline' | 'danger' }> = [
-  { trangThai: 'Hiển thị', label: 'Duyệt (Hiển thị)', variant: 'primary' },
-  { trangThai: 'Ẩn', label: 'Ẩn', variant: 'outline' },
-  { trangThai: 'Vi phạm', label: 'Đánh dấu vi phạm', variant: 'danger' },
-];
 
 export default function AdminReviewDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -20,101 +10,164 @@ export default function AdminReviewDetailPage() {
   const removeMutation = useRemoveViolationReview();
 
   if (reviewQuery.isLoading) {
-    return (
-      <div className="flex justify-center py-16" role="status" aria-live="polite">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600" />
-      </div>
-    );
+    return <div className="flex justify-center py-16"><div className="spinner"></div></div>;
   }
 
   if (reviewQuery.isError || !reviewQuery.data) {
-    return (
-      <div role="alert" className="mx-auto max-w-md rounded-lg bg-red-50 px-4 py-3 text-center text-sm text-red-700">
-        {reviewQuery.error instanceof ApiError ? reviewQuery.error.message : 'Không tìm thấy đánh giá'}
-      </div>
-    );
+    return <div role="alert" className="mx-auto max-w-md rounded-lg bg-red-50 px-4 py-3 text-center text-sm text-red-700 border border-red-200">{reviewQuery.error instanceof ApiError ? reviewQuery.error.message : 'Không tìm thấy đánh giá'}</div>;
   }
 
   const r = reviewQuery.data;
 
+  const renderStars = (score: number) => {
+    const starsHTML = [];
+    for (let i = 1; i <= 5; i++) {
+      if (i <= score) {
+        starsHTML.push(<span key={i} className="text-amber-500">★</span>);
+      } else {
+        starsHTML.push(<span key={i} className="text-slate-300">★</span>);
+      }
+    }
+    return <div className="flex items-center gap-0.5 text-lg">{starsHTML}</div>;
+  };
+
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
-      <Button variant="ghost" size="sm" asChild>
-        <Link to="/admin/reviews">
-          <ArrowLeft className="mr-1.5 h-4 w-4" /> Quay lại danh sách
-        </Link>
-      </Button>
+    <div className="flex flex-col gap-6 max-w-[600px] mx-auto w-full">
+      <Link to="/admin/reviews" className="breadcrumb w-fit">
+        <i className="ph ph-arrow-left"></i>
+        <span>Quay lại danh sách</span>
+      </Link>
 
-      <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
-        <div className="flex items-start justify-between gap-3">
+      <div className="bg-white border border-border rounded-[16px] shadow-sm overflow-hidden flex flex-col">
+        {/* Header */}
+        <div className="px-6 py-5 border-b border-border bg-slate-50 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-lg">
+              ★
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-bold text-heading">Chi tiết đánh giá của du khách</h3>
+                <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold border ${
+                        r.TrangThai === 'Hiển thị' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                        r.TrangThai === 'Chờ duyệt' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                        r.TrangThai === 'Vi phạm' ? 'bg-rose-50 text-rose-700 border-rose-200' :
+                        'bg-slate-100 text-slate-600 border-slate-200'
+                      }`}>
+                  {r.TrangThai}
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-400 mt-0.5">
+                Booking: <strong className="font-mono">{r.DAT_PHONG.MaXacNhanDatPhong}</strong> • {r.DAT_PHONG.NgayNhanPhong} → {r.DAT_PHONG.NgayTraPhong}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-6 space-y-5 text-xs">
+          {moderateMutation.isError && (
+             <div role="alert" className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-sm font-medium">
+               {moderateMutation.error instanceof ApiError ? moderateMutation.error.message : 'Không thể cập nhật trạng thái'}
+             </div>
+          )}
+          {removeMutation.isError && (
+             <div role="alert" className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-sm font-medium">
+               {removeMutation.error instanceof ApiError ? removeMutation.error.message : 'Không thể gỡ đánh giá'}
+             </div>
+          )}
+          {removeMutation.isSuccess && (
+             <div role="status" className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-700 text-sm font-medium">
+               Đánh giá đã được gỡ khỏi phần hiển thị công khai; dữ liệu và ảnh vẫn được lưu để kiểm tra.
+             </div>
+          )}
+
+          <div className="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl border border-slate-200/60">
+            <div>
+              <div className="font-bold text-heading text-sm">{r.TAI_KHOAN.HoTen} <span className="font-normal text-slate-500 text-xs">({r.TAI_KHOAN.Email})</span></div>
+              <div className="text-[11px] text-slate-500 mt-1">Khách sạn: <strong className="text-slate-700">{r.KHACH_SAN.TenKhachSan}</strong></div>
+            </div>
+            <div className="flex flex-col items-end gap-1">
+              {renderStars(r.DiemDanhGia)}
+              <span className="font-bold text-amber-500 tracking-wider text-sm">{r.DiemDanhGia}.0 / 5</span>
+            </div>
+          </div>
+
           <div>
-            <h1 className="text-lg font-semibold text-slate-900">{r.KHACH_SAN.TenKhachSan}</h1>
-            <p className="mt-1 text-xs text-slate-500">
-              {r.TAI_KHOAN.HoTen} ({r.TAI_KHOAN.Email}) · Đơn {r.DAT_PHONG.MaXacNhanDatPhong} · {r.DAT_PHONG.NgayNhanPhong} → {r.DAT_PHONG.NgayTraPhong}
-            </p>
+            <label className="block font-semibold text-slate-600 mb-1.5 text-[11px] uppercase tracking-wider">Nội dung đánh giá:</label>
+            <div className="p-4 bg-white border border-border rounded-xl text-slate-700 leading-relaxed font-medium text-sm whitespace-pre-wrap shadow-sm">
+              {r.NoiDung || <span className="text-slate-400 italic">Không có nội dung bình luận</span>}
+            </div>
           </div>
-          <span className={cn('rounded-full px-3 py-1 text-sm font-medium', reviewStatusBadgeClass(r.TrangThai))}>{r.TrangThai}</span>
+
+          {r.HINH_ANH_DANH_GIA.length > 0 && (
+            <div>
+              <label className="block font-semibold text-slate-600 mb-1.5 text-[11px] uppercase tracking-wider">Hình ảnh đính kèm:</label>
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                {r.HINH_ANH_DANH_GIA.map((img) => (
+                  <a key={img.MaHinhAnhDanhGia} href={img.URL} target="_blank" rel="noreferrer" className="block aspect-square rounded-xl overflow-hidden border border-border shadow-sm hover:opacity-90 transition">
+                    <img src={img.URL} alt="Ảnh đánh giá" className="w-full h-full object-cover" />
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {r.TrangThai === 'Vi phạm' && (
+            <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 space-y-1 shadow-sm">
+              <strong className="font-bold flex items-center gap-1.5 text-rose-700 text-sm">
+                <i className="ph-fill ph-warning-circle text-lg"></i>
+                Đánh giá có dấu hiệu vi phạm
+              </strong>
+              <p className="text-[11px] leading-relaxed text-rose-700/80">
+                Cần kiểm duyệt kỹ nội dung và hình ảnh. Có thể gỡ khỏi hệ thống hiển thị công khai.
+              </p>
+            </div>
+          )}
         </div>
 
-        <div className="flex items-center gap-1 border-t border-slate-100 pt-4">
-          {Array.from({ length: 5 }, (_, i) => (
-            <Star key={i} className={cn('h-5 w-5', i < r.DiemDanhGia ? 'fill-amber-400 text-amber-400' : 'text-slate-300')} />
-          ))}
-        </div>
-
-        {r.NoiDung && <p className="whitespace-pre-wrap text-sm text-slate-700">{r.NoiDung}</p>}
-
-        {r.HINH_ANH_DANH_GIA.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {r.HINH_ANH_DANH_GIA.map((img, index) => (
-              <img key={img.MaHinhAnhDanhGia} src={img.URL} alt={`Ảnh đánh giá ${index + 1}`} className="h-24 w-24 rounded-lg object-cover" />
-            ))}
-          </div>
-        )}
-
-        {removeMutation.isError && (
-          <div role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">
-            {removeMutation.error instanceof ApiError ? removeMutation.error.message : 'Không thể gỡ đánh giá'}
-          </div>
-        )}
-
-        {removeMutation.isSuccess && (
-          <div role="status" className="rounded-lg bg-green-50 px-3 py-2 text-xs text-green-700">
-            Đánh giá đã được gỡ khỏi phần hiển thị công khai; dữ liệu và ảnh vẫn được lưu để kiểm tra.
-          </div>
-        )}
-
-        {moderateMutation.isError && (
-          <div role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">
-            {moderateMutation.error instanceof ApiError ? moderateMutation.error.message : 'Không thể cập nhật trạng thái'}
-          </div>
-        )}
-
-        <div className="flex flex-wrap gap-2 border-t border-slate-100 pt-4">
-          {ACTIONS.map((action) => (
-            <Button
-              key={action.trangThai}
-              variant={action.variant}
-              size="sm"
-              disabled={r.TrangThai === action.trangThai || moderateMutation.isPending || removeMutation.isPending}
-              onClick={() => moderateMutation.mutate({ id: reviewId, trangThai: action.trangThai })}
+        <div className="p-5 border-t border-border bg-slate-50 flex flex-col sm:flex-row items-center justify-end gap-3">
+          {r.TrangThai !== 'Hiển thị' && (
+            <button
+              disabled={moderateMutation.isPending || removeMutation.isPending}
+              onClick={() => moderateMutation.mutate({ id: reviewId, trangThai: 'Hiển thị' })}
+              className="w-full sm:w-auto px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-bold hover:bg-emerald-700 transition shadow-sm disabled:opacity-50"
             >
-              {action.label}
-            </Button>
-          ))}
+              Duyệt (Hiển thị)
+            </button>
+          )}
+          
+          {r.TrangThai !== 'Ẩn' && (
+            <button
+              disabled={moderateMutation.isPending || removeMutation.isPending}
+              onClick={() => moderateMutation.mutate({ id: reviewId, trangThai: 'Ẩn' })}
+              className="w-full sm:w-auto px-4 py-2.5 bg-white border border-border text-slate-700 rounded-xl text-sm font-bold hover:bg-slate-50 transition shadow-sm disabled:opacity-50"
+            >
+              Ẩn đánh giá
+            </button>
+          )}
+
+          {r.TrangThai !== 'Vi phạm' && (
+            <button
+              disabled={moderateMutation.isPending || removeMutation.isPending}
+              onClick={() => moderateMutation.mutate({ id: reviewId, trangThai: 'Vi phạm' })}
+              className="w-full sm:w-auto px-4 py-2.5 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-sm font-bold hover:bg-rose-100 transition disabled:opacity-50"
+            >
+              Đánh dấu vi phạm
+            </button>
+          )}
+          
           {(r.TrangThai === 'Vi phạm' || r.TrangThai === 'Ẩn') && (
-            <Button
-              variant="danger"
-              size="sm"
+            <button
               disabled={r.TrangThai === 'Ẩn' || removeMutation.isPending}
               onClick={() => {
                 if (window.confirm('Gỡ đánh giá vi phạm khỏi phần hiển thị công khai? Dữ liệu và ảnh sẽ vẫn được lưu để phục vụ kiểm tra.')) {
                   removeMutation.mutate(reviewId);
                 }
               }}
+              className="w-full sm:w-auto px-4 py-2.5 bg-rose-600 text-white rounded-xl text-sm font-bold hover:bg-rose-700 transition shadow-sm disabled:opacity-50"
             >
-              {removeMutation.isPending ? 'Đang gỡ...' : r.TrangThai === 'Ẩn' ? 'Đã gỡ khỏi công khai' : 'Xóa/gỡ đánh giá vi phạm'}
-            </Button>
+              {removeMutation.isPending ? 'Đang gỡ...' : r.TrangThai === 'Ẩn' ? 'Đã gỡ' : 'Xóa / gỡ khỏi công khai'}
+            </button>
           )}
         </div>
       </div>

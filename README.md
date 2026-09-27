@@ -12,15 +12,15 @@ project-root/
 └── backend/    # Node.js + Express REST API (prefix /api)
 ```
 
-Frontend gọi backend qua Axios với base URL lấy từ biến `VITE_API_URL`.
+Frontend gọi backend qua `fetch` (xem `frontend/src/services/apiClient.ts`) với base URL lấy từ biến `VITE_API_BASE_URL`.
 
 ## Tech stack
 
 | Thành phần     | Công nghệ                              |
 | -------------- | -------------------------------------- |
-| Frontend       | React + Vite (JavaScript), React Router, Axios |
-| Backend        | Node.js + Express                      |
-| Database       | Microsoft SQL Server (`mssql`)         |
+| Frontend       | React + Vite (TypeScript), React Router, TanStack Query |
+| Backend        | Node.js + Express (TypeScript)         |
+| Database       | Microsoft SQL Server (Prisma + `@prisma/adapter-mssql`) |
 | Image Storage  | Cloudinary (+ multer)                  |
 | Authentication | JWT (`jsonwebtoken`, `bcrypt`)         |
 
@@ -47,8 +47,10 @@ cp backend/.env.example backend/.env
 cp frontend/.env.example frontend/.env
 ```
 
-- `backend/.env`: `PORT`, thông tin SQL Server (`DB_*`), `JWT_SECRET`, `CLOUDINARY_*`, `FRONTEND_URL`.
-- `frontend/.env`: `VITE_API_URL` (mặc định `http://localhost:5000/api`).
+- `backend/.env`: `PORT`, `DATABASE_URL` (chuỗi kết nối SQL Server), `JWT_ACCESS_SECRET`/`JWT_REFRESH_SECRET`, `CLOUDINARY_*`, `VNPAY_*`, `SMTP_*`, `CORS_ORIGIN`/`FRONTEND_URL`.
+- `frontend/.env`: `VITE_API_BASE_URL` (mặc định `http://localhost:5000/api`).
+
+> Bước `cp frontend/.env.example frontend/.env` là bắt buộc — nếu thiếu, `apiClient` sẽ gọi đường dẫn tương đối `/api` vào chính cổng Vite (5173) thay vì backend, khiến toàn bộ API call thất bại với lỗi "Failed to parse response JSON" dù backend vẫn chạy bình thường.
 
 ## Chạy dự án
 

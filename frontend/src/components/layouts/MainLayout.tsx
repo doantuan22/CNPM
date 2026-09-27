@@ -1,23 +1,78 @@
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation, Link } from 'react-router-dom';
 import { Navbar } from '../common/Navbar';
 import { NavigationEffects } from '../common/NavigationEffects';
+import { DashboardNavigation, DashboardTopbar } from './DashboardNavigation';
+import { useAuthStore } from '../../lib/authStore';
+import { ROLE_NAMES } from '../../lib/roles';
 
 export function MainLayout() {
+  const location = useLocation();
+  const role = useAuthStore((state) => state.role);
+  const isDashboard = (role === ROLE_NAMES.ADMIN && location.pathname.startsWith('/admin')) || (role === ROLE_NAMES.PARTNER && location.pathname.startsWith('/owner'));
+
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900">
-      <a href="#main-content" className="sr-only z-50 rounded bg-white px-4 py-2 focus:not-sr-only focus:fixed focus:left-4 focus:top-4">
-        Chuyển đến nội dung chính
-      </a>
+    <div className={isDashboard ? 'dashboard-shell' : ''}>
+      <a href="#main-content" className="sr-only z-50 rounded bg-white px-4 py-2 focus:not-sr-only focus:fixed focus:left-4 focus:top-4">Chuyển đến nội dung chính</a>
       <NavigationEffects />
-      <Navbar />
-      <main id="main-content" tabIndex={-1} className="flex-1 mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-8 focus:outline-none">
-        <Outlet />
-      </main>
-      <footer className="border-t border-slate-200 bg-white py-6 text-center text-sm text-slate-500">
-        <div className="mx-auto max-w-7xl px-4">
-          <p>© 2026 Nền tảng đặt phòng khách sạn trực tuyến (StayHub). TECH-0 Foundation.</p>
-        </div>
-      </footer>
+      
+      {isDashboard && role ? (
+        <>
+          <DashboardNavigation role={role} />
+          <div className="dashboard-main">
+            <DashboardTopbar role={role} />
+            <main id="main-content" tabIndex={-1} className="dashboard-content focus:outline-none">
+              <Outlet />
+            </main>
+          </div>
+        </>
+      ) : (
+        <>
+          <Navbar />
+          <main id="main-content" tabIndex={-1} className="focus:outline-none min-h-[60vh]">
+            <Outlet />
+          </main>
+          <footer className="site-footer">
+            <div className="site-footer__inner">
+              <div className="site-footer__grid">
+                <div className="site-footer__col">
+                  <div className="site-footer__brand mb-4">
+                    <div className="site-header__logo-mark" style={{ width: '38px', height: '38px' }}>E</div>Egode
+                  </div>
+                  <p style={{ fontSize: '14px', color: 'var(--color-muted)', lineHeight: 1.6 }}>Nền tảng đặt phòng trực tuyến hàng đầu, mang đến trải nghiệm lưu trú hoàn hảo cho mọi chuyến đi.</p>
+                </div>
+                <div className="site-footer__col">
+                  <h4>Về Egode</h4>
+                  <Link to="/">Về chúng tôi</Link>
+                  <Link to="/">Tuyển dụng</Link>
+                  <Link to="/">Báo chí</Link>
+                  <Link to="/">Blog</Link>
+                </div>
+                <div className="site-footer__col">
+                  <h4>Hỗ trợ</h4>
+                  <Link to="/support">Trung tâm trợ giúp</Link>
+                  <Link to="/">Chính sách bảo mật</Link>
+                  <Link to="/">Điều khoản sử dụng</Link>
+                  <Link to="/">Liên hệ</Link>
+                </div>
+                <div className="site-footer__col">
+                  <h4>Đối tác</h4>
+                  <Link to="/partner/apply">Đăng ký chỗ nghỉ</Link>
+                  <Link to="/login">Đăng nhập Partner</Link>
+                  <Link to="/">Giải pháp doanh nghiệp</Link>
+                </div>
+              </div>
+              <div className="site-footer__bottom">
+                <p>&copy; 2024 Egode. All rights reserved.</p>
+                <div className="site-footer__social">
+                  <a href="#"><i className="ph-fill ph-facebook-logo"></i></a>
+                  <a href="#"><i className="ph-fill ph-instagram-logo"></i></a>
+                  <a href="#"><i className="ph-fill ph-twitter-logo"></i></a>
+                </div>
+              </div>
+            </div>
+          </footer>
+        </>
+      )}
     </div>
   );
 }

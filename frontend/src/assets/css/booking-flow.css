@@ -1,0 +1,156 @@
+/* Targeted visual refinement for the locked customer discovery and booking flow.
+   This file is deliberately scoped: partner/admin surfaces keep their current contracts. */
+.booking-flow {
+  background: var(--color-bg-secondary);
+  color: var(--color-body);
+}
+
+/* Normalize the repeated page-template card treatment without changing content order. */
+.booking-flow .bg-white.rounded-2xl,
+.booking-flow .bg-white.rounded-\[16px\],
+.booking-flow .bg-surface-secondary.rounded-2xl {
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xs);
+}
+
+.booking-flow .shadow-md,
+.booking-flow .custom-shadow {
+  box-shadow: var(--shadow-xs);
+}
+
+.booking-flow .shadow-lg:not(.site-header),
+.booking-flow .shadow-xl {
+  box-shadow: var(--shadow-sm);
+}
+
+.booking-flow .sticky-aside,
+.booking-flow .lg\:sticky {
+  box-shadow: var(--shadow-sm);
+}
+
+.booking-flow .stepper {
+  padding: 12px 0;
+}
+
+.booking-flow .stepper__circle {
+  border: 1px solid transparent;
+}
+
+.booking-flow .stepper__step:not(.active):not(.done) .stepper__circle {
+  background: #fff;
+  border-color: var(--color-border-strong);
+}
+
+.booking-flow .input:focus,
+.booking-flow .select:focus,
+.booking-flow .textarea:focus,
+.booking-flow input:focus-visible,
+.booking-flow button:focus-visible,
+.booking-flow a:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.booking-flow .form-label,
+.booking-flow label {
+  letter-spacing: 0;
+}
+
+.booking-result {
+  width: min(100% - 32px, 920px);
+  margin: 0 auto;
+  padding: clamp(32px, 6vw, 64px) 0;
+}
+
+.booking-result__panel {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  padding: clamp(24px, 4vw, 44px);
+  text-align: center;
+  overflow: hidden;
+}
+
+.booking-result__icon {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 18px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 28px;
+}
+
+.booking-result__icon--success { background: var(--color-success-light); color: var(--color-success); }
+.booking-result__icon--failure { background: var(--color-danger-light); color: var(--color-danger); }
+.booking-result__title { font-size: clamp(22px, 3vw, 28px); line-height: 1.25; margin-bottom: 8px; }
+.booking-result__lead { max-width: 560px; margin: 0 auto; color: var(--color-muted); font-size: 14px; overflow-wrap: anywhere; }
+.booking-result__reference { display: inline-block; margin: 18px 0 28px; padding: 8px 14px; border: 1px dashed var(--color-primary); border-radius: var(--radius-md); background: var(--color-primary-light); color: var(--color-primary-dark); font-weight: 800; letter-spacing: .025em; }
+.booking-result__details { margin: 0 0 28px; padding: 20px; text-align: left; border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-bg); }
+.booking-result__details-head, .booking-result__hotel, .booking-result__total, .booking-result__actions { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.booking-result__details-head { padding-bottom: 14px; border-bottom: 1px solid var(--color-border); }
+.booking-result__details-head h2 { font-size: 16px; }
+.booking-result__hotel { justify-content: flex-start; padding: 16px 0; }
+.booking-result__hotel img { width: 72px; height: 72px; border-radius: var(--radius-md); object-fit: cover; background: var(--color-bg-tertiary); }
+.booking-result__hotel h3 { font-size: 16px; margin-bottom: 4px; }
+.booking-result__hotel p { color: var(--color-muted); font-size: 13px; }
+.booking-result__facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 20px; margin: 0; padding: 16px 0; border-top: 1px solid var(--color-border); }
+.booking-result__facts div { min-width: 0; }
+.booking-result__facts dt { margin-bottom: 4px; color: var(--color-muted); font-size: 12px; }
+.booking-result__facts dd { margin: 0; color: var(--color-heading); font-size: 14px; font-weight: 600; }
+.booking-result__total { padding-top: 16px; border-top: 1px solid var(--color-border); color: var(--color-muted); font-size: 14px; }
+.booking-result__total strong { color: var(--color-primary-dark); font-size: 20px; }
+.booking-result__actions { justify-content: center; }
+.booking-result__actions .btn { min-width: 180px; }
+.booking-result__failure { max-width: 480px; margin: 0 auto; }
+
+/* The result page retains its existing button IDs and query-string behavior;
+   these selectors only calm its legacy inline presentation. */
+#successPanel .success-icon-wrapper,
+#failurePanel > div:first-child {
+  width: 60px !important;
+  height: 60px !important;
+  margin-bottom: 18px !important;
+}
+
+#successPanel > .card {
+  margin-bottom: 28px !important;
+  border-radius: var(--radius-lg);
+  box-shadow: none;
+  background: var(--color-bg-secondary);
+}
+
+#successPanel > .card .card-body { padding: 20px; }
+
+#successPanel > div:last-child {
+  display: flex !important;
+  justify-content: center;
+  gap: 12px !important;
+}
+
+#successPanel > div:last-child .btn { min-width: 180px; }
+
+@media (max-width: 640px) {
+  .booking-flow .stepper { gap: 5px; }
+  .booking-flow .stepper__step { gap: 6px; }
+  .booking-flow .stepper__label { font-size: 11px; }
+  .booking-flow .stepper__line { min-width: 12px; }
+  .booking-result { width: auto; margin: 0 12px; padding: 24px 0; }
+  .booking-result__details { padding: 16px; }
+  .booking-result__facts { grid-template-columns: 1fr; }
+  .booking-result__actions { align-items: stretch; flex-direction: column; }
+  .booking-result__actions .btn { width: 100%; }
+  #successPanel > div:last-child { flex-direction: column; }
+  #successPanel > div:last-child .btn { width: 100%; }
+}
+
+@media (max-width: 480px) {
+  .booking-flow .site-header__user > span,
+  .booking-flow .site-header__user > i { display: none; }
+  .booking-flow .site-header__user { padding: 4px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .booking-flow *, .booking-flow *::before, .booking-flow *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
+}

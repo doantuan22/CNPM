@@ -1,9 +1,9 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link } from 'react-router-dom';
-import { Button } from '../components/common/Button';
 import { useForgotPassword } from '../features/auth/hooks';
 import { forgotPasswordSchema, ForgotPasswordFormValues } from '../features/auth/schemas';
+import { cn } from '../lib/utils';
 
 export default function ForgotPasswordPage() {
   const mutation = useForgotPassword();
@@ -11,58 +11,114 @@ export default function ForgotPasswordPage() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
+    watch
   } = useForm<ForgotPasswordFormValues>({ resolver: zodResolver(forgotPasswordSchema) });
 
   const onSubmit = (data: ForgotPasswordFormValues) => mutation.mutate(data);
+  const email = watch('Email');
 
   return (
-    <div className="mx-auto max-w-md space-y-6 pt-8">
-      <div className="text-center space-y-2">
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Quên mật khẩu</h1>
-        <p className="text-sm text-slate-500">Nhập email đã đăng ký để nhận hướng dẫn đặt lại mật khẩu</p>
-      </div>
-
-      <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-xs">
-        {mutation.isSuccess ? (
-          <div role="status" className="rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700">
-            Nếu email tồn tại trong hệ thống, hướng dẫn đặt lại mật khẩu đã được gửi. Vui lòng kiểm tra hộp
-            thư của bạn.
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
-            {mutation.isError && (
-              <div role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
-                Có lỗi xảy ra, vui lòng thử lại
+    <div className="bg-surface-secondary font-sans text-ink min-h-[80vh] flex flex-col antialiased !max-w-full !px-0 !py-0">
+      
+      <main className="flex-grow flex items-center justify-center p-4 sm:p-6 lg:p-8">
+        <div className="bg-white w-full max-w-[580px] rounded-2xl shadow-lg border border-border p-6 sm:p-8 lg:p-10">
+          
+          {/* Stepper */}
+          <div className="flex items-center justify-between mb-8 relative">
+            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-[1px] bg-border -z-10"></div>
+            
+            <div className="flex items-center gap-2 bg-white pr-2">
+              <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white font-bold text-xs">
+                {mutation.isSuccess ? <i className="ph-bold ph-check text-sm"></i> : "1"}
               </div>
-            )}
-            <div>
-              <label htmlFor="Email" className="block text-sm font-medium text-slate-700">
-                Email
-              </label>
-              <input
-                id="Email"
-                type="email"
-                autoComplete="email"
-                aria-invalid={Boolean(errors.Email)}
-                aria-describedby={errors.Email ? 'email-error' : undefined}
-                {...register('Email')}
-                className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                placeholder="name@example.com"
-              />
-              {errors.Email && <p id="email-error" className="mt-1 text-xs text-red-600">{errors.Email.message}</p>}
+              <span className={cn("text-sm font-bold", !mutation.isSuccess ? "text-primary" : "text-ink hidden sm:inline")}>1. Nhập email</span>
             </div>
-            <Button type="submit" className="w-full" disabled={isSubmitting || mutation.isPending}>
-              {isSubmitting || mutation.isPending ? 'Đang gửi...' : 'Gửi yêu cầu'}
-            </Button>
-          </form>
-        )}
 
-        <div className="mt-6 text-center text-xs text-slate-500">
-          <Link to="/login" className="font-semibold text-blue-600 hover:underline">
-            Quay lại đăng nhập
-          </Link>
+            <div className="flex items-center gap-2 bg-white px-2">
+              <div className={cn("w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs border-2", mutation.isSuccess ? "bg-primary border-primary text-white" : "border-slate-300 text-slate-400")}>
+                2
+              </div>
+              <span className={cn("text-sm font-medium hidden sm:inline", mutation.isSuccess ? "text-primary font-bold" : "text-slate-400")}>2. Kiểm tra email</span>
+            </div>
+
+            <div className="flex items-center gap-2 bg-white pl-2">
+              <div className="w-6 h-6 rounded-full border-2 border-slate-300 flex items-center justify-center text-slate-400 font-bold text-xs">
+                3
+              </div>
+              <span className="text-sm font-medium text-slate-400 hidden sm:inline">3. Đặt mật khẩu mới</span>
+            </div>
+          </div>
+
+          {mutation.isSuccess ? (
+            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-5 flex gap-4 mb-8">
+              <div className="flex-shrink-0 mt-0.5">
+                <i className="ph-fill ph-check-circle text-emerald-600 text-2xl"></i>
+              </div>
+              <p className="text-sm text-emerald-800 leading-relaxed">
+                Một hướng dẫn đặt lại mật khẩu đã được gửi đến địa chỉ email: <br/>
+                <span className="font-bold text-emerald-900">{email}</span>. Vui lòng kiểm tra hộp thư đến (và thư rác).
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="text-center mb-8">
+                <div className="inline-flex justify-center items-center w-16 h-16 rounded-full bg-blue-50 mb-4 text-primary">
+                  <i className="ph-duotone ph-envelope-simple-open text-3xl"></i>
+                </div>
+                <h1 className="text-2xl font-bold text-ink mb-2">Quên mật khẩu?</h1>
+                <p className="text-sm text-ink-muted leading-relaxed max-w-md mx-auto">
+                  Vui lòng nhập địa chỉ email bạn đã sử dụng để đăng ký tài khoản. Chúng tôi sẽ gửi hướng dẫn đặt lại mật khẩu cho bạn.
+                </p>
+              </div>
+
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
+                {mutation.isError && (
+                  <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 border border-red-200">
+                    Có lỗi xảy ra, vui lòng kiểm tra lại email hoặc thử lại sau.
+                  </div>
+                )}
+                
+                <div className="space-y-1.5">
+                  <label htmlFor="Email" className="block text-sm font-semibold text-ink">Địa chỉ Email</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                      <i className="ph ph-envelope-simple text-lg"></i>
+                    </div>
+                    <input 
+                      type="email" 
+                      id="Email" 
+                      placeholder="name@example.com"
+                      className={cn("w-full pl-10 pr-4 py-3 rounded-xl border bg-white text-ink text-sm placeholder:text-slate-400 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all", errors.Email ? "border-rose-500 bg-rose-50/20" : "border-border")}
+                      {...register('Email')}
+                    />
+                  </div>
+                  {errors.Email && <p className="text-xs text-rose-500 font-medium mt-1.5 flex items-center gap-1"><i className="ph-fill ph-warning-circle"></i>{errors.Email.message}</p>}
+                </div>
+
+                <button 
+                  type="submit" 
+                  disabled={isSubmitting || mutation.isPending}
+                  className="w-full bg-primary hover:bg-primary-700 active:bg-primary-800 text-white font-bold py-3.5 px-4 rounded-xl transition-all shadow-md shadow-primary/30 mt-6 disabled:opacity-70 flex justify-center items-center gap-2"
+                >
+                  {isSubmitting || mutation.isPending ? (
+                     <>Đang gửi... <div className="spinner w-4 h-4 border-2 border-white/20 border-t-white"></div></>
+                  ) : (
+                    'Gửi hướng dẫn qua email'
+                  )}
+                </button>
+
+                <div className="text-center mt-6">
+                  <Link to="/login" className="inline-flex items-center gap-1.5 text-sm text-primary font-bold hover:underline">
+                    <i className="ph-bold ph-arrow-left"></i>
+                    Quay lại Đăng nhập
+                  </Link>
+                </div>
+              </form>
+            </>
+          )}
+
         </div>
-      </div>
+      </main>
     </div>
   );
 }

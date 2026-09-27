@@ -2,8 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Trash2, ImagePlus } from 'lucide-react';
-import { Button } from '../components/common/Button';
 import {
   useRoomType,
   useUpdateRoomType,
@@ -23,7 +21,11 @@ import {
   RateBulkFormValues,
 } from '../features/owner/schemas';
 import { ApiError } from '../services/apiClient';
-import { fileToDataUrl, imageFileError, formatCurrencyVND, toDateInputValue } from '../lib/utils';
+import { fileToDataUrl, imageFileError, formatCurrencyVND, toDateInputValue, cn } from '../lib/utils';
+
+function getStatusBadgeClass(status: string) {
+  return status === 'Hoạt động' ? 'status-active' : 'status-suspended';
+}
 
 export default function OwnerRoomTypeManagePage() {
   const { id } = useParams<{ id: string }>();
@@ -75,16 +77,12 @@ export default function OwnerRoomTypeManagePage() {
   }, [roomTypeQuery.data, reset]);
 
   if (roomTypeQuery.isLoading) {
-    return (
-      <div className="flex justify-center py-16" role="status" aria-live="polite">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600" />
-      </div>
-    );
+    return <div className="flex justify-center py-16"><div className="spinner"></div></div>;
   }
 
   if (roomTypeQuery.isError || !roomTypeQuery.data) {
     return (
-      <div role="alert" className="mx-auto max-w-md rounded-lg bg-red-50 px-4 py-3 text-center text-sm text-red-700">
+      <div role="alert" className="mx-auto max-w-md rounded-lg bg-red-50 px-4 py-3 text-center text-sm text-red-700 border border-red-200">
         {roomTypeQuery.error instanceof ApiError ? roomTypeQuery.error.message : 'Không tìm thấy loại phòng'}
       </div>
     );
@@ -109,7 +107,7 @@ export default function OwnerRoomTypeManagePage() {
     try {
       await uploadImageMutation.mutateAsync(await fileToDataUrl(file));
     } catch {
-      // Mutation error is rendered below.
+      // handled
     } finally {
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
@@ -131,127 +129,120 @@ export default function OwnerRoomTypeManagePage() {
   };
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
-      <Button variant="ghost" size="sm" asChild>
-        <Link to={`/owner/hotels/${roomType.MaKhachSan}`}>
-          <ArrowLeft className="mr-1.5 h-4 w-4" /> Quay lại khách sạn
-        </Link>
-      </Button>
+    <div className="flex flex-col gap-5 max-w-[1040px] mx-auto w-full">
+      <Link to={`/owner/hotels/${roomType.MaKhachSan}`} className="breadcrumb w-fit">
+        <i className="ph ph-arrow-left"></i>
+        <span>Quay lại khách sạn</span>
+      </Link>
 
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">{roomType.TenLoaiPhong}</h1>
-        <p className="text-sm text-slate-500">Trạng thái: {roomType.TrangThai}</p>
+      <div className="flex justify-between items-center flex-wrap gap-3 bg-white border border-border rounded-[14px] px-6 py-4">
+        <div>
+          <h1 className="text-[20px] font-bold text-heading mb-0.5">Chỉnh sửa: {roomType.TenLoaiPhong}</h1>
+          <p className="text-[13px] text-muted">Cập nhật thông số kỹ thuật, sức chứa, tiện ích và thư viện ảnh của loại phòng này.</p>
+        </div>
+        <div className={`status-badge ${getStatusBadgeClass(roomType.TrangThai)}`}>{roomType.TrangThai}</div>
       </div>
 
-      {/* Info form */}
-      <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
-        <h2 className="text-lg font-semibold text-slate-900">Thông tin loại phòng</h2>
-        {updateMutation.isSuccess && (
-          <div role="status" className="rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700">Cập nhật thành công</div>
+      <form onSubmit={handleSubmit((v) => updateMutation.mutate(v))} noValidate className="flex flex-col gap-5">
+        {updateMutation.isError && (
+          <div role="alert" className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+            {updateMutation.error instanceof ApiError ? updateMutation.error.message : 'Cập nhật thất bại'}
+          </div>
         )}
-        <form onSubmit={handleSubmit((v) => updateMutation.mutate(v))} noValidate className="space-y-4">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <label htmlFor="TenLoaiPhong" className="block text-sm font-medium text-slate-700">Tên loại phòng</label>
-              <input id="TenLoaiPhong" {...register('TenLoaiPhong')} className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-              {errors.TenLoaiPhong && <p className="mt-1 text-xs text-red-600">{errors.TenLoaiPhong.message}</p>}
-            </div>
-            <div>
-              <label htmlFor="LoaiGiuong" className="block text-sm font-medium text-slate-700">Loại giường</label>
-              <input id="LoaiGiuong" {...register('LoaiGiuong')} className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-            </div>
-          </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <div>
-              <label htmlFor="SoGiuong" className="block text-sm font-medium text-slate-700">Số giường</label>
-              <input id="SoGiuong" type="number" min={1} {...register('SoGiuong')} className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-            </div>
-            <div>
-              <label htmlFor="SucChua" className="block text-sm font-medium text-slate-700">Sức chứa</label>
-              <input id="SucChua" type="number" min={1} {...register('SucChua')} className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-            </div>
-            <div>
-              <label htmlFor="DienTich" className="block text-sm font-medium text-slate-700">Diện tích (m²)</label>
-              <input id="DienTich" type="number" min={1} step="0.1" {...register('DienTich')} className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-            </div>
-          </div>
-          <div>
-            <label htmlFor="MoTa" className="block text-sm font-medium text-slate-700">Mô tả</label>
-            <textarea id="MoTa" rows={3} {...register('MoTa')} className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-          </div>
-          <div className="flex items-center gap-3">
-            <Button type="submit" disabled={!isDirty || updateMutation.isPending}>
-              {updateMutation.isPending ? 'Đang lưu...' : 'Lưu thay đổi'}
-            </Button>
-            {roomType.TrangThai === 'Hoạt động' && <Button type="button" variant="outline" disabled={deactivateMutation.isPending} onClick={() => { if (window.confirm('Ngừng bán loại phòng này? Booking lịch sử sẽ được giữ lại.')) deactivateMutation.mutate(); }}>
-              {deactivateMutation.isPending ? 'Đang xử lý...' : 'Ngừng bán'}
-            </Button>}
-          </div>
-        </form>
-        {deactivateMutation.isSuccess && <div role="status" className="rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700">Loại phòng đã ngừng bán; lịch sử booking được giữ lại.</div>}
-        {deactivateMutation.isError && <div role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{deactivateMutation.error instanceof ApiError ? deactivateMutation.error.message : 'Không thể ngừng bán loại phòng'}</div>}
-      </section>
 
-      {/* Images */}
-      <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-slate-900">Hình ảnh</h2>
+        <section className="bg-white border border-border rounded-[16px] p-7 shadow-sm">
+          <div className="mb-6">
+            <h2 className="text-lg font-bold text-heading flex items-center gap-2 mb-1">📐 Thông số kỹ thuật & Cấu hình</h2>
+            <p className="text-sm text-muted">Tên gọi thương mại, diện tích, sức chứa và loại giường tiêu chuẩn</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div className="md:col-span-2 lg:col-span-3">
+              <label className="form-label">Tên loại phòng <span className="text-red-500">*</span></label>
+              <input type="text" className={cn("input", errors.TenLoaiPhong && "border-red-500")} {...register('TenLoaiPhong')} />
+              {errors.TenLoaiPhong && <p className="text-xs text-red-500 mt-1">{errors.TenLoaiPhong.message}</p>}
+            </div>
+
+            <div>
+              <label className="form-label">Diện tích phòng (m²) <span className="text-red-500">*</span></label>
+              <input type="number" step="0.1" className={cn("input", errors.DienTich && "border-red-500")} {...register('DienTich', { valueAsNumber: true })} />
+              {errors.DienTich && <p className="text-xs text-red-500 mt-1">{errors.DienTich.message}</p>}
+            </div>
+
+            <div>
+              <label className="form-label">Sức chứa tối đa (Khách) <span className="text-red-500">*</span></label>
+              <input type="number" className={cn("input", errors.SucChua && "border-red-500")} {...register('SucChua', { valueAsNumber: true })} />
+              {errors.SucChua && <p className="text-xs text-red-500 mt-1">{errors.SucChua.message}</p>}
+            </div>
+
+            <div className="md:col-span-2 lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div>
+                <label className="form-label">Loại giường <span className="text-red-500">*</span></label>
+                <input type="text" className={cn("input", errors.LoaiGiuong && "border-red-500")} {...register('LoaiGiuong')} />
+                {errors.LoaiGiuong && <p className="text-xs text-red-500 mt-1">{errors.LoaiGiuong.message}</p>}
+              </div>
+
+              <div>
+                <label className="form-label">Số lượng giường <span className="text-red-500">*</span></label>
+                <input type="number" className={cn("input", errors.SoGiuong && "border-red-500")} {...register('SoGiuong', { valueAsNumber: true })} />
+                {errors.SoGiuong && <p className="text-xs text-red-500 mt-1">{errors.SoGiuong.message}</p>}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-white border border-border rounded-[16px] p-7 shadow-sm">
+          <div className="mb-4">
+            <h2 className="text-lg font-bold text-heading flex items-center gap-2 mb-1">📝 Giới thiệu & Mô tả không gian</h2>
+            <p className="text-sm text-muted">Nội dung hiển thị cho du khách khi xem chi tiết loại phòng này</p>
+          </div>
           <div>
-            <input ref={fileInputRef} aria-label="Chọn ảnh loại phòng" type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="sr-only" onChange={onImageSelected} />
-            <Button type="button" size="sm" onClick={() => fileInputRef.current?.click()} disabled={uploadImageMutation.isPending || roomType.HINH_ANH_LOAI_PHONG.length >= 20}>
-              <ImagePlus className="h-4 w-4" /> {uploadImageMutation.isPending ? 'Đang tải...' : 'Tải ảnh lên'}
-            </Button>
+            <textarea rows={4} className={cn("textarea", errors.MoTa && "border-red-500")} {...register('MoTa')}></textarea>
+          </div>
+        </section>
+
+        <div className="flex justify-between items-center flex-wrap gap-3 bg-white border border-border rounded-[14px] px-6 py-4 shadow-sm">
+          <div className="flex items-center gap-3">
+            <button type="submit" disabled={!isDirty || updateMutation.isPending} className="btn btn-primary">
+              {updateMutation.isPending ? 'Đang lưu...' : 'Lưu thông tin loại phòng'}
+            </button>
+            {roomType.TrangThai === 'Hoạt động' && (
+              <button 
+                type="button" 
+                className="btn btn-danger-outline" 
+                disabled={deactivateMutation.isPending} 
+                onClick={() => { if (window.confirm('Ngừng bán loại phòng này? Booking lịch sử sẽ được giữ lại.')) deactivateMutation.mutate(); }}
+              >
+                {deactivateMutation.isPending ? 'Đang xử lý...' : 'Ngừng bán'}
+              </button>
+            )}
           </div>
         </div>
-        {(imageError || uploadImageMutation.isError) && <div role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{imageError || (uploadImageMutation.error instanceof ApiError ? uploadImageMutation.error.message : 'Không thể tải ảnh')}</div>}
-        {roomType.HINH_ANH_LOAI_PHONG.length === 0 ? (
-          <p className="text-sm text-slate-500">Chưa có hình ảnh nào.</p>
-        ) : (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {roomType.HINH_ANH_LOAI_PHONG.map((img) => (
-              <div key={img.MaHinhAnhLoaiPhong} className="group relative overflow-hidden rounded-lg border border-slate-200">
-                <img src={img.URL} alt={`Ảnh loại phòng ${roomType.TenLoaiPhong}`} className="h-28 w-full object-cover" />
-                {img.LaAnhDaiDien && (
-                  <span className="absolute left-1 top-1 rounded bg-blue-600 px-1.5 py-0.5 text-[10px] font-semibold text-white">Đại diện</span>
-                )}
-                <div className="absolute inset-x-0 bottom-0 flex justify-between bg-black/60 px-1.5 py-1 opacity-0 transition group-focus-within:opacity-100 group-hover:opacity-100">
-                  {!img.LaAnhDaiDien && (
-                    <button type="button" onClick={() => setPrimaryMutation.mutate(img.MaHinhAnhLoaiPhong)} disabled={setPrimaryMutation.isPending} className="text-xs text-white hover:underline disabled:opacity-50">
-                      Đặt đại diện
-                    </button>
-                  )}
-                  <button
-                    aria-label="Xóa ảnh"
-                    type="button"
-                    onClick={() => {
-                      if (window.confirm('Xóa ảnh này? Không thể hoàn tác.')) deleteImageMutation.mutate(img.MaHinhAnhLoaiPhong);
-                    }}
-                    disabled={deleteImageMutation.isPending}
-                    className="ml-auto text-white hover:text-red-300 disabled:opacity-50"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
+      </form>
 
-      {/* Amenities */}
-      <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
-        <h2 className="text-lg font-semibold text-slate-900">Tiện nghi</h2>
+      <section className="bg-white border border-border rounded-[16px] p-7 shadow-sm">
+        <div className="mb-6">
+          <h2 className="text-lg font-bold text-heading flex items-center gap-2 mb-1">✨ Tiện nghi phòng sẵn có</h2>
+          <p className="text-sm text-muted">Tích chọn các tiện ích được phục vụ trong loại phòng này</p>
+        </div>
+
         {amenitiesQuery.data && amenitiesQuery.data.length > 0 ? (
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {amenitiesQuery.data.map((a) => (
-              <label key={a.MaTienNghi} className="flex items-center gap-2 text-sm text-slate-700">
-                <input
-                  type="checkbox"
-                  checked={selectedAmenityIds.has(a.MaTienNghi)}
-                  onChange={() => toggleAmenity(a.MaTienNghi)}
-                  className="rounded border-slate-300"
+              <label 
+                key={a.MaTienNghi} 
+                className={cn(
+                  "flex items-center gap-2.5 p-3 rounded-lg border cursor-pointer select-none transition-all",
+                  selectedAmenityIds.has(a.MaTienNghi) ? "bg-blue-50 border-blue-200" : "bg-slate-50 border-border hover:bg-slate-100"
+                )}
+              >
+                <input 
+                  type="checkbox" 
+                  checked={selectedAmenityIds.has(a.MaTienNghi)} 
+                  onChange={() => toggleAmenity(a.MaTienNghi)} 
+                  className="w-4 h-4 accent-primary" 
                 />
-                {a.TenTienNghi}
+                <span className="text-[13px] font-medium text-heading">{a.TenTienNghi}</span>
               </label>
             ))}
           </div>
@@ -260,82 +251,123 @@ export default function OwnerRoomTypeManagePage() {
         )}
       </section>
 
-      {/* Rates / inventory */}
-      <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
-        <h2 className="text-lg font-semibold text-slate-900">Giá &amp; quỹ phòng theo ngày</h2>
+      <section className="bg-white border border-border rounded-[16px] p-7 shadow-sm">
+        <div className="flex justify-between items-start mb-6">
+          <div>
+            <h2 className="text-lg font-bold text-heading flex items-center gap-2 mb-1">📸 Thư viện hình ảnh loại phòng</h2>
+            <p className="text-sm text-muted">Ảnh độ nét cao. Ảnh đầu tiên là ảnh đại diện</p>
+          </div>
+          <div>
+            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={onImageSelected} />
+            <button type="button" className="btn btn-outline btn-sm" onClick={() => fileInputRef.current?.click()} disabled={uploadImageMutation.isPending}>
+              <i className="ph ph-upload-simple"></i> {uploadImageMutation.isPending ? 'Đang tải...' : 'Tải ảnh lên'}
+            </button>
+          </div>
+        </div>
+
+        {(imageError || uploadImageMutation.isError) && (
+          <div role="alert" className="rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700 mb-4">
+            {imageError || (uploadImageMutation.error instanceof ApiError ? uploadImageMutation.error.message : 'Không thể tải ảnh')}
+          </div>
+        )}
+
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+          {roomType.HINH_ANH_LOAI_PHONG.map((img) => (
+            <div key={img.MaHinhAnhLoaiPhong} className="relative h-[110px] rounded-lg overflow-hidden border border-border bg-slate-100 group">
+              <img src={img.URL} alt="Room img" className="w-full h-full object-cover" />
+              {img.LaAnhDaiDien && (
+                <span className="absolute top-1.5 left-1.5 bg-primary text-white text-[10px] font-bold px-1.5 py-0.5 rounded-[4px]">Ảnh đại diện</span>
+              )}
+              {!img.LaAnhDaiDien && (
+                <button type="button" onClick={() => setPrimaryMutation.mutate(img.MaHinhAnhLoaiPhong)} disabled={setPrimaryMutation.isPending} className="absolute bottom-1.5 left-1.5 bg-[#172033bf] text-white border-none text-[10px] px-1.5 py-1 rounded-[4px] cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity">
+                  Đặt làm bìa
+                </button>
+              )}
+              <button type="button" onClick={() => { if (window.confirm('Xóa ảnh này?')) deleteImageMutation.mutate(img.MaHinhAnhLoaiPhong); }} disabled={deleteImageMutation.isPending} className="absolute top-1.5 right-1.5 w-[22px] h-[22px] rounded-full bg-black/60 text-white border-none flex items-center justify-center text-[12px] cursor-pointer hover:bg-red-500">
+                <i className="ph ph-x"></i>
+              </button>
+            </div>
+          ))}
+          <div 
+            onClick={() => fileInputRef.current?.click()}
+            className="h-[110px] border-[1.5px] border-dashed border-primary bg-[#F5F9FF] rounded-lg flex flex-col items-center justify-center gap-1 cursor-pointer hover:bg-[#EBF3FF] transition-colors"
+          >
+            <i className="ph-fill ph-plus-circle text-primary text-[20px]"></i>
+            <span className="text-[12px] font-bold text-primary">Thêm ảnh</span>
+          </div>
+        </div>
+      </section>
+
+      {/* Inventory & Pricing */}
+      <section className="bg-white border border-border rounded-[16px] p-7 shadow-sm">
+        <div className="mb-6">
+          <h2 className="text-lg font-bold text-heading flex items-center gap-2 mb-1">📅 Giá & quỹ phòng theo ngày</h2>
+          <p className="text-sm text-muted">Thiết lập giá và số lượng mở bán cho từng ngày.</p>
+        </div>
 
         {bulkUpsertMutation.isSuccess && (
-          <div role="status" className="rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700">Cập nhật giá/quỹ phòng thành công</div>
-        )}
-        {bulkUpsertMutation.isError && (
-          <div role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
-            {bulkUpsertMutation.error instanceof ApiError ? bulkUpsertMutation.error.message : 'Cập nhật thất bại'}
-          </div>
+          <div role="status" className="rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700 mb-4">Cập nhật thành công</div>
         )}
 
-        <form onSubmit={handleRateSubmit(onRateBulkSubmit)} noValidate className="grid grid-cols-2 gap-3 rounded-lg bg-slate-50 p-4 sm:grid-cols-4">
+        <form onSubmit={handleRateSubmit(onRateBulkSubmit)} className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-slate-50 border border-border rounded-xl p-5 mb-6">
           <div>
-            <label htmlFor="rate-from" className="block text-xs font-medium text-slate-600">Từ ngày</label>
-            <input id="rate-from" type="date" {...registerRate('from')} className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+            <label className="form-label">Từ ngày <span className="text-red-500">*</span></label>
+            <input type="date" className={cn("input", rateErrors.from && "border-red-500")} {...registerRate('from')} />
           </div>
           <div>
-            <label htmlFor="rate-to" className="block text-xs font-medium text-slate-600">Đến ngày</label>
-            <input id="rate-to" type="date" {...registerRate('to')} className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-            {rateErrors.to && <p className="mt-1 text-xs text-red-600">{rateErrors.to.message}</p>}
+            <label className="form-label">Đến ngày <span className="text-red-500">*</span></label>
+            <input type="date" className={cn("input", rateErrors.to && "border-red-500")} {...registerRate('to')} />
           </div>
           <div>
-            <label htmlFor="rate-gia" className="block text-xs font-medium text-slate-600">Giá / đêm (đ)</label>
-            <input id="rate-gia" type="number" min={0} {...registerRate('giaPhong')} className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-            {rateErrors.giaPhong && <p className="mt-1 text-xs text-red-600">{rateErrors.giaPhong.message}</p>}
+            <label className="form-label">Giá / đêm (VND) <span className="text-red-500">*</span></label>
+            <input type="number" min="0" className={cn("input", rateErrors.giaPhong && "border-red-500")} {...registerRate('giaPhong', { valueAsNumber: true })} />
           </div>
           <div>
-            <label htmlFor="rate-soluong" className="block text-xs font-medium text-slate-600">Số phòng mở bán</label>
-            <input id="rate-soluong" type="number" min={0} {...registerRate('soLuongPhong')} className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-            {rateErrors.soLuongPhong && <p className="mt-1 text-xs text-red-600">{rateErrors.soLuongPhong.message}</p>}
+            <label className="form-label">Phòng trống bán <span className="text-red-500">*</span></label>
+            <input type="number" min="0" className={cn("input", rateErrors.soLuongPhong && "border-red-500")} {...registerRate('soLuongPhong', { valueAsNumber: true })} />
           </div>
-          <div className="col-span-2 sm:col-span-4">
-            <Button type="submit" size="sm" disabled={isRateSubmitting || bulkUpsertMutation.isPending}>
-              {bulkUpsertMutation.isPending ? 'Đang áp dụng...' : 'Áp dụng cho khoảng ngày này'}
-            </Button>
+          <div className="col-span-2 md:col-span-4 mt-2">
+            <button type="submit" disabled={isRateSubmitting || bulkUpsertMutation.isPending} className="btn btn-primary w-full md:w-auto">
+              {bulkUpsertMutation.isPending ? 'Đang áp dụng...' : 'Áp dụng đồng loạt cho khoảng ngày này'}
+            </button>
           </div>
         </form>
 
-        <div>
-          <h3 className="mb-2 text-sm font-medium text-slate-700">
-            Bảng giá hiện tại ({ratesRange.from} → {ratesRange.to})
-          </h3>
-          {ratesQuery.isLoading ? (
-            <div className="flex justify-center py-6" role="status" aria-live="polite">
-              <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600" />
-            </div>
-          ) : ratesQuery.data && ratesQuery.data.length === 0 ? (
-            <p className="text-sm text-slate-500">Chưa có dữ liệu giá cho khoảng ngày này.</p>
-          ) : (
-            <div className="max-h-72 overflow-auto rounded-lg border border-slate-200">
-              <table className="min-w-[640px] w-full text-left text-sm">
-                <caption className="sr-only">Giá và quỹ phòng theo ngày</caption>
-                <thead className="sticky top-0 border-b border-slate-200 bg-slate-50 text-xs uppercase text-slate-500">
-                  <tr>
-                    <th className="px-3 py-2">Ngày</th>
-                    <th className="px-3 py-2">Giá</th>
-                    <th className="px-3 py-2">Số lượng</th>
-                    <th className="px-3 py-2">Trạng thái</th>
+        <h3 className="mb-3 text-[15px] font-bold text-heading">
+          Lịch bán hiện tại: <span className="text-primary font-normal">{ratesRange.from} → {ratesRange.to}</span>
+        </h3>
+        {ratesQuery.isLoading ? (
+          <div className="flex justify-center py-6"><div className="spinner"></div></div>
+        ) : ratesQuery.data && ratesQuery.data.length === 0 ? (
+          <p className="text-sm text-slate-500">Chưa có dữ liệu giá cho khoảng ngày này.</p>
+        ) : (
+          <div className="overflow-auto border border-border rounded-xl max-h-[400px]">
+            <table className="w-full text-left border-collapse">
+              <thead className="sticky top-0 bg-slate-50 border-b border-border text-[12px] uppercase font-bold text-muted">
+                <tr>
+                  <th className="px-4 py-3">Ngày</th>
+                  <th className="px-4 py-3">Giá (VND)</th>
+                  <th className="px-4 py-3">Số lượng mở bán</th>
+                  <th className="px-4 py-3">Trạng thái</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {ratesQuery.data?.map((rate) => (
+                  <tr key={rate.MaQuyPhong} className="hover:bg-slate-50 transition-colors">
+                    <td className="px-4 py-3 font-medium text-heading">{rate.NgayApDung.slice(0, 10)}</td>
+                    <td className="px-4 py-3 text-primary font-semibold">{formatCurrencyVND(rate.GiaPhong)}</td>
+                    <td className="px-4 py-3 font-medium text-heading">{rate.SoLuongPhong} phòng</td>
+                    <td className="px-4 py-3">
+                      <span className={`inline-flex items-center px-2 py-1 rounded-md text-[11px] font-bold ${rate.TrangThai === 'Mở bán' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                        {rate.TrangThai}
+                      </span>
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {ratesQuery.data?.map((rate) => (
-                    <tr key={rate.MaQuyPhong}>
-                      <td className="px-3 py-2">{rate.NgayApDung.slice(0, 10)}</td>
-                      <td className="px-3 py-2">{formatCurrencyVND(rate.GiaPhong)}</td>
-                      <td className="px-3 py-2">{rate.SoLuongPhong}</td>
-                      <td className="px-3 py-2">{rate.TrangThai}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </section>
     </div>
   );

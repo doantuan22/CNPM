@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAdminSupportList } from '../features/support/hooks';
-import { supportStatusBadgeClass } from '../features/support/status';
-import { cn } from '../lib/utils';
 import { ApiError } from '../services/apiClient';
 
 const PAGE_SIZE = 10;
@@ -20,120 +18,159 @@ export default function AdminSupportPage() {
     page,
     limit: PAGE_SIZE,
     search: search || undefined,
-    trangThai: status || undefined,
+    trangThai: status === 'ALL' ? undefined : status || undefined,
     loaiYeuCau: type || undefined,
   });
 
-  const onSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSearchChange = (val: string) => {
+    setSearchInput(val);
+    setSearch(val.trim());
     setPage(1);
-    setSearch(searchInput.trim());
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Hỗ trợ & khiếu nại</h1>
-        <p className="text-sm text-slate-500">Tiếp nhận và xử lý yêu cầu từ khách hàng</p>
+    <div className="flex flex-col gap-6 max-w-[1200px] mx-auto w-full">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-heading">Hỗ trợ & Khiếu nại</h1>
+          <p className="text-sm text-slate-500 mt-0.5">Tiếp nhận yêu cầu trợ giúp, xử lý mâu thuẫn đặt phòng từ khách hàng và đối tác.</p>
+        </div>
       </div>
 
-      <form onSubmit={onSearchSubmit} className="flex flex-wrap gap-3">
-        <input
-          aria-label="Tìm kiếm yêu cầu hỗ trợ"
-          type="search"
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-          placeholder="Tìm theo tiêu đề, nội dung, khách hàng..."
-          className="min-w-64 flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-        />
-        <select
-          aria-label="Lọc theo loại yêu cầu"
-          value={type}
-          onChange={(e) => { setType(e.target.value); setPage(1); }}
-          className="rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-        >
-          <option value="">Tất cả loại</option>
-          {TYPES.map((t) => (
-            <option key={t} value={t}>{t}</option>
-          ))}
-        </select>
-        <select
-          aria-label="Lọc theo trạng thái yêu cầu"
-          value={status}
-          onChange={(e) => { setStatus(e.target.value); setPage(1); }}
-          className="rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-        >
-          <option value="">Tất cả trạng thái</option>
-          {STATUSES.map((s) => (
-            <option key={s} value={s}>{s}</option>
-          ))}
-        </select>
-        <button type="submit" className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
-          Tìm kiếm
-        </button>
-      </form>
-
-      <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-xs">
-        {query.isLoading ? (
-          <div className="flex justify-center py-16" role="status" aria-live="polite">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600" />
+      <div className="bg-white rounded-[16px] border border-border shadow-sm p-5 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-slate-100">
+          <div className="flex items-center gap-2 overflow-x-auto">
+            {['ALL', ...STATUSES].map((st) => (
+              <button
+                key={st}
+                onClick={() => { setStatus(st); setPage(1); }}
+                className={`px-4 py-2 rounded-xl text-xs transition shadow-xs whitespace-nowrap ${
+                  status === st || (st === 'ALL' && !status) 
+                    ? 'font-bold bg-primary-50 text-primary-700 border border-primary-100'
+                    : 'font-semibold text-slate-600 hover:bg-slate-50 border border-transparent'
+                }`}
+              >
+                {st === 'ALL' ? 'Tất cả ticket' : st}
+              </button>
+            ))}
           </div>
+
+          <div className="flex items-center gap-2 text-xs">
+            <span className="text-slate-400 font-medium">Phân loại:</span>
+            <select 
+              value={type} 
+              onChange={(e) => { setType(e.target.value); setPage(1); }} 
+              className="px-3 py-1.5 bg-slate-50 border border-border rounded-lg font-medium text-xs text-heading focus:outline-none focus:ring-2 focus:ring-primary/20"
+            >
+              <option value="">Tất cả phân loại</option>
+              {TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+            </select>
+          </div>
+        </div>
+
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+            <i className="ph ph-magnifying-glass text-[16px]"></i>
+          </div>
+          <input 
+            type="text" 
+            value={searchInput} 
+            onChange={(e) => handleSearchChange(e.target.value)} 
+            placeholder="Tìm mã ticket, tiêu đề hoặc khách hàng..." 
+            className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-border rounded-xl text-xs text-heading placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-medium transition"
+          />
+        </div>
+      </div>
+
+      <div className="bg-white rounded-[16px] border border-border shadow-sm overflow-hidden flex flex-col">
+        {query.isLoading ? (
+          <div className="flex justify-center py-16"><div className="spinner"></div></div>
         ) : query.isError ? (
           <div role="alert" className="px-6 py-10 text-center text-sm text-red-700">
             {query.error instanceof ApiError ? query.error.message : 'Không thể tải danh sách yêu cầu'}
           </div>
         ) : query.data && query.data.items.length === 0 ? (
-          <div className="px-6 py-16 text-center text-sm text-slate-500">Không tìm thấy yêu cầu nào phù hợp</div>
+          <div className="py-16 flex flex-col items-center justify-center text-center">
+            <div className="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
+              <i className="ph ph-chat-circle-dots text-[28px]"></i>
+            </div>
+            <h4 className="text-sm font-bold text-heading">Không tìm thấy yêu cầu nào</h4>
+            <p className="text-xs text-slate-500 max-w-sm mt-1">Chưa có ticket nào phù hợp với bộ lọc.</p>
+          </div>
         ) : (
-          <>
-            <table className="min-w-[760px] w-full text-left text-sm">
-              <caption className="sr-only">Danh sách yêu cầu hỗ trợ</caption>
-              <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase text-slate-500">
-                <tr>
-                  <th className="px-4 py-3">Tiêu đề</th>
-                  <th className="px-4 py-3">Khách hàng</th>
-                  <th className="px-4 py-3">Loại</th>
-                  <th className="px-4 py-3">Trạng thái</th>
-                  <th className="px-4 py-3" />
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse min-w-[900px]">
+              <thead>
+                <tr className="bg-slate-50/80 border-b border-border text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                  <th className="py-3.5 px-5 font-mono">Mã Ticket</th>
+                  <th className="py-3.5 px-4">Khách hàng</th>
+                  <th className="py-3.5 px-3 text-center">Phân loại</th>
+                  <th className="py-3.5 px-6">Tiêu đề yêu cầu</th>
+                  <th className="py-3.5 px-4 text-center">Trạng thái</th>
+                  <th className="py-3.5 px-4 text-center">Xử lý</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 text-xs">
                 {query.data?.items.map((r) => (
-                  <tr key={r.MaYeuCauHoTro} className="hover:bg-slate-50">
-                    <td className="px-4 py-3 font-medium text-slate-900">{r.TieuDe}</td>
-                    <td className="px-4 py-3 text-slate-700">{r.TAI_KHOAN_YEU_CAU_HO_TRO_MaTaiKhoanKhachHangToTAI_KHOAN.HoTen}</td>
-                    <td className="px-4 py-3 text-slate-700">{r.LoaiYeuCau}</td>
-                    <td className="px-4 py-3">
-                      <span className={cn('inline-block rounded-full px-2 py-0.5 text-xs font-medium', supportStatusBadgeClass(r.TrangThai))}>
+                  <tr key={r.MaYeuCauHoTro} className="hover:bg-slate-50 transition-colors">
+                    <td className="py-4 px-5">
+                      <div className="font-mono font-bold text-primary-600 text-sm">#TCK-{r.MaYeuCauHoTro}</div>
+                    </td>
+                    <td className="py-4 px-4 font-bold text-heading">
+                      {r.TAI_KHOAN_YEU_CAU_HO_TRO_MaTaiKhoanKhachHangToTAI_KHOAN.HoTen}
+                    </td>
+                    <td className="py-4 px-3 text-center">
+                      <span className="font-medium text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md text-[11px]">
+                        {r.LoaiYeuCau}
+                      </span>
+                    </td>
+                    <td className="py-4 px-6 font-medium text-slate-800">
+                      {r.TieuDe}
+                    </td>
+                    <td className="py-4 px-4 text-center">
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border ${
+                        r.TrangThai === 'Mới' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                        r.TrangThai === 'Đang xử lý' ? 'bg-primary-50 text-primary-700 border-primary-200' :
+                        'bg-emerald-50 text-emerald-700 border-emerald-200'
+                      }`}>
+                        {r.TrangThai === 'Mới' && <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>}
                         {r.TrangThai}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-right">
-                      <Link to={`/admin/support/${r.MaYeuCauHoTro}`} className="text-sm font-medium text-blue-600 hover:underline">
-                        Chi tiết
+                    <td className="py-4 px-4 text-center">
+                      <Link to={`/admin/support/${r.MaYeuCauHoTro}`} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-primary-700 bg-primary-50 hover:bg-primary-100 transition border border-primary-200/60">
+                        Phản hồi
                       </Link>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
 
-            {query.data && (
-              <div className="flex items-center justify-between border-t border-slate-200 px-4 py-3 text-sm text-slate-600">
-                <span>
-                  Trang {query.data.pagination.page}/{query.data.pagination.totalPages} — tổng {query.data.pagination.total} yêu cầu
-                </span>
-                <div className="flex gap-2">
-                  <button type="button" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))} className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-40">
-                    Trước
-                  </button>
-                  <button type="button" disabled={page >= query.data.pagination.totalPages} onClick={() => setPage((p) => p + 1)} className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-40">
-                    Sau
-                  </button>
-                </div>
-              </div>
-            )}
-          </>
+        {query.data && (
+          <div className="px-6 py-4 border-t border-border bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-xs text-slate-500">
+              Trang <strong className="text-heading">{query.data.pagination.page}</strong> / {query.data.pagination.totalPages} — Tổng <strong className="text-heading">{query.data.pagination.total}</strong> yêu cầu
+            </div>
+            <div className="flex gap-1.5">
+              <button
+                disabled={page <= 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                className="px-3 py-1.5 rounded-lg border border-border bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:hover:bg-white text-xs font-medium transition"
+              >
+                Trước
+              </button>
+              <button
+                disabled={page >= query.data.pagination.totalPages}
+                onClick={() => setPage((p) => p + 1)}
+                className="px-3 py-1.5 rounded-lg border border-border bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:hover:bg-white text-xs font-medium transition"
+              >
+                Sau
+              </button>
+            </div>
+          </div>
         )}
       </div>
     </div>

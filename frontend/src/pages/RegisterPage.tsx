@@ -2,17 +2,16 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, useNavigate } from 'react-router-dom';
-import { Button } from '../components/common/Button';
 import { useRegister } from '../features/auth/hooks';
 import { registerSchema, RegisterFormValues } from '../features/auth/schemas';
 import { ApiError } from '../services/apiClient';
 import { cn } from '../lib/utils';
 
-type RegisterIntent = 'customer' | 'partner';
+type RegisterIntent = 'customer' | 'partner' | null;
 
 export default function RegisterPage() {
   const navigate = useNavigate();
-  const [intent, setIntent] = useState<RegisterIntent>('customer');
+  const [intent, setIntent] = useState<RegisterIntent>(null);
   const registerMutation = useRegister();
 
   const {
@@ -37,225 +36,261 @@ export default function RegisterPage() {
       // surfaced via registerMutation.isError below
     }
   };
+  
+  const [showPwd, setShowPwd] = useState(false);
+  const [showConfirmPwd, setShowConfirmPwd] = useState(false);
 
   return (
-    <div className="mx-auto max-w-lg space-y-6 pt-8">
-      <div className="text-center space-y-2">
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Đăng ký tài khoản</h1>
-        <p className="text-sm text-slate-500">Tạo tài khoản để bắt đầu trải nghiệm đặt phòng dễ dàng</p>
-      </div>
+    <div className="bg-surface-secondary min-h-[80vh] flex flex-col font-sans antialiased !max-w-full !px-0 !py-0">
+      <main className="max-w-[760px] mx-auto my-10 sm:my-16 px-4 w-full">
+        
+        {intent === null ? (
+          <section id="step-role" className="animate-in fade-in zoom-in duration-300">
+            <div className="text-center mb-8">
+              <h1 className="text-2xl md:text-[28px] font-extrabold text-ink">Đăng ký tài khoản</h1>
+              <p className="mt-2 text-ink-muted">Bạn muốn sử dụng nền tảng Egode với mục đích nào?</p>
+            </div>
 
-      <div
-        role="tablist"
-        aria-label="Loại đăng ký"
-        className="grid grid-cols-2 gap-2 rounded-xl bg-slate-100 p-1"
-      >
-        <button
-          type="button"
-          role="tab"
-          aria-selected={intent === 'customer'}
-          onClick={() => setIntent('customer')}
-          className={cn(
-            'rounded-lg px-4 py-2 text-sm font-semibold transition-colors',
-            intent === 'customer' ? 'bg-white text-blue-600 shadow-xs' : 'text-slate-600'
-          )}
-        >
-          Đăng ký khách hàng
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={intent === 'partner'}
-          onClick={() => setIntent('partner')}
-          className={cn(
-            'rounded-lg px-4 py-2 text-sm font-semibold transition-colors',
-            intent === 'partner' ? 'bg-white text-blue-600 shadow-xs' : 'text-slate-600'
-          )}
-        >
-          Đăng ký đối tác
-        </button>
-      </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div 
+                className="bg-white border-2 border-primary rounded-2xl p-6 shadow-md shadow-primary/10 flex flex-col items-center text-center transition-all cursor-pointer hover:shadow-lg"
+                onClick={() => setIntent('customer')}
+              >
+                <div className="w-16 h-16 rounded-2xl bg-blue-50 text-primary flex items-center justify-center text-3xl mb-4">
+                  <i className="ph-fill ph-suitcase-rolling"></i>
+                </div>
+                <h2 className="text-lg font-bold text-ink">Khách hàng</h2>
+                <p className="text-sm mt-2 mb-6 text-ink-muted flex-1">Đặt phòng, thanh toán, quản lý chuyến đi, đánh giá khách sạn và gửi yêu cầu hỗ trợ.</p>
+                <button type="button" className="w-full bg-primary text-white font-bold py-3 px-4 rounded-xl">Đăng ký khách hàng</button>
+              </div>
 
-      {intent === 'partner' && (
-        <p className="rounded-lg bg-blue-50 px-4 py-3 text-xs text-blue-700">
-          Tạo tài khoản trước, sau đó bạn sẽ hoàn tất hồ sơ đối tác (giấy phép kinh doanh, mã số thuế) ở bước
-          tiếp theo.
-        </p>
-      )}
+              <div 
+                className="bg-white border border-border rounded-2xl p-6 shadow-sm hover:border-blue-300 hover:shadow-md flex flex-col items-center text-center transition-all cursor-pointer"
+                onClick={() => setIntent('partner')}
+              >
+                <div className="w-16 h-16 rounded-2xl bg-slate-100 text-ink flex items-center justify-center text-3xl mb-4">
+                  <i className="ph-fill ph-buildings"></i>
+                </div>
+                <h2 className="text-lg font-bold text-ink">Đối tác khách sạn</h2>
+                <p className="text-sm mt-2 mb-6 text-ink-muted flex-1">Đăng khách sạn lên Egode, quản lý phòng, giá bán và hoạt động kinh doanh.</p>
+                <span className="w-full bg-slate-100 text-ink hover:bg-slate-200 font-bold py-3 px-4 rounded-xl transition-colors">Đăng ký đối tác</span>
+              </div>
+            </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-xs">
-        {registerMutation.isError && (
-          <div role="alert" className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
-            {registerMutation.error instanceof ApiError
-              ? registerMutation.error.message
-              : 'Đăng ký thất bại, vui lòng thử lại'}
-          </div>
+            <p className="text-center text-sm mt-8 text-ink-muted">
+              Đã có tài khoản? <Link to="/login" className="font-semibold text-primary">Đăng nhập</Link>
+            </p>
+          </section>
+        ) : (
+          <section id="step-customer-form" className="animate-in slide-in-from-right-4 fade-in duration-300">
+            <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
+              <div className="px-8 pt-8 pb-2">
+                <button 
+                  type="button" 
+                  onClick={() => setIntent(null)}
+                  className="flex items-center gap-1.5 text-sm font-semibold text-ink-muted hover:text-ink transition-colors mb-4 -ml-2 px-2 py-1 rounded-lg hover:bg-slate-50"
+                >
+                  <i className="ph ph-arrow-left"></i> Quay lại
+                </button>
+                <div className="text-center mb-2">
+                  <h1 className="text-xl md:text-2xl font-extrabold text-ink">
+                    Tạo tài khoản {intent === 'customer' ? 'khách hàng' : 'đối tác'}
+                  </h1>
+                  <p className="text-sm mt-1 text-ink-muted">
+                    {intent === 'customer' 
+                      ? 'Để trải nghiệm đặt phòng dễ dàng và nhận nhiều ưu đãi.' 
+                      : 'Đăng ký tài khoản để bắt đầu đưa chỗ nghỉ của bạn lên Egode.'}
+                  </p>
+                </div>
+              </div>
+
+              <form onSubmit={handleSubmit(onSubmit)} className="p-8 pt-3 space-y-5" noValidate>
+                {registerMutation.isError && (
+                  <div role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 border border-red-200">
+                    {registerMutation.error instanceof ApiError
+                      ? registerMutation.error.message
+                      : 'Đăng ký thất bại, vui lòng thử lại'}
+                  </div>
+                )}
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-semibold text-ink uppercase tracking-wide">
+                      Họ tên<span className="text-rose-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                        <i className="ph ph-user text-lg"></i>
+                      </div>
+                      <input 
+                        type="text" 
+                        placeholder="Vd: Nguyễn Văn A"
+                        className={cn("w-full pl-10 pr-3.5 py-2.5 rounded-xl border bg-white text-ink text-sm placeholder:text-slate-400 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all", errors.HoTen ? "border-rose-500 bg-rose-50/20" : "border-border")}
+                        {...register('HoTen')}
+                      />
+                    </div>
+                    {errors.HoTen && <p className="text-xs text-rose-500 font-medium flex items-center gap-1"><i className="ph-fill ph-warning-circle"></i>{errors.HoTen.message}</p>}
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-semibold text-ink uppercase tracking-wide">Ngày sinh</label>
+                    <input 
+                      type="date" 
+                      className={cn("w-full px-3.5 py-2.5 rounded-xl border bg-white text-ink text-sm focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all", errors.NgaySinh ? "border-rose-500 bg-rose-50/20" : "border-border")}
+                      {...register('NgaySinh')}
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-semibold text-ink uppercase tracking-wide">
+                      Tên đăng nhập<span className="text-rose-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                        <i className="ph ph-identification-card text-lg"></i>
+                      </div>
+                      <input 
+                        type="text" 
+                        placeholder="Vd: nguyenvana123"
+                        className={cn("w-full pl-10 pr-3.5 py-2.5 rounded-xl border bg-white text-ink text-sm placeholder:text-slate-400 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all", errors.TenDangNhap ? "border-rose-500 bg-rose-50/20" : "border-border")}
+                        {...register('TenDangNhap')}
+                      />
+                    </div>
+                    {errors.TenDangNhap && <p className="text-xs text-rose-500 font-medium flex items-center gap-1"><i className="ph-fill ph-warning-circle"></i>{errors.TenDangNhap.message}</p>}
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-semibold text-ink uppercase tracking-wide">Giới tính</label>
+                    <div className="flex items-center gap-5 h-[42px]">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" value="Nam" {...register('GioiTinh')} className="w-4 h-4 text-primary border-border focus:ring-primary accent-primary" />
+                        <span className="text-sm font-medium text-ink">Nam</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" value="Nữ" {...register('GioiTinh')} className="w-4 h-4 text-primary border-border focus:ring-primary accent-primary" />
+                        <span className="text-sm font-medium text-ink">Nữ</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" value="Khác" {...register('GioiTinh')} className="w-4 h-4 text-primary border-border focus:ring-primary accent-primary" />
+                        <span className="text-sm font-medium text-ink">Khác</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-semibold text-ink uppercase tracking-wide">
+                      Email<span className="text-rose-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                        <i className="ph ph-envelope-simple text-lg"></i>
+                      </div>
+                      <input 
+                        type="email" 
+                        placeholder="nguyenvana@gmail.com"
+                        className={cn("w-full pl-10 pr-3.5 py-2.5 rounded-xl border bg-white text-ink text-sm placeholder:text-slate-400 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all", errors.Email ? "border-rose-500 bg-rose-50/20" : "border-border")}
+                        {...register('Email')}
+                      />
+                    </div>
+                    {errors.Email && <p className="text-xs text-rose-500 font-medium flex items-center gap-1"><i className="ph-fill ph-warning-circle"></i>{errors.Email.message}</p>}
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-semibold text-ink uppercase tracking-wide">
+                      Số điện thoại<span className="text-rose-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                        <i className="ph ph-phone text-lg"></i>
+                      </div>
+                      <input 
+                        type="tel" 
+                        placeholder="0901234567"
+                        className={cn("w-full pl-10 pr-3.5 py-2.5 rounded-xl border bg-white text-ink text-sm placeholder:text-slate-400 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all", errors.SoDienThoai ? "border-rose-500 bg-rose-50/20" : "border-border")}
+                        {...register('SoDienThoai')}
+                      />
+                    </div>
+                    {errors.SoDienThoai && <p className="text-xs text-rose-500 font-medium flex items-center gap-1"><i className="ph-fill ph-warning-circle"></i>{errors.SoDienThoai.message}</p>}
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-semibold text-ink uppercase tracking-wide">
+                      Mật khẩu<span className="text-rose-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                        <i className="ph ph-lock-simple text-lg"></i>
+                      </div>
+                      <input 
+                        type={showPwd ? "text" : "password"} 
+                        placeholder="Tối thiểu 8 ký tự"
+                        className={cn("w-full pl-10 pr-10 py-2.5 rounded-xl border bg-white text-ink text-sm placeholder:text-slate-400 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all", errors.MatKhau ? "border-rose-500 bg-rose-50/20" : "border-border")}
+                        {...register('MatKhau')}
+                      />
+                      <button 
+                        type="button" 
+                        onClick={() => setShowPwd(!showPwd)}
+                        className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-ink transition-colors focus:outline-none"
+                      >
+                        <i className={cn("ph text-lg", showPwd ? "ph-eye" : "ph-eye-slash")}></i>
+                      </button>
+                    </div>
+                    {errors.MatKhau && <p className="text-xs text-rose-500 font-medium flex items-center gap-1"><i className="ph-fill ph-warning-circle"></i>{errors.MatKhau.message}</p>}
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-semibold text-ink uppercase tracking-wide">
+                      Xác nhận mật khẩu<span className="text-rose-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                        <i className="ph ph-lock-key text-lg"></i>
+                      </div>
+                      <input 
+                        type={showConfirmPwd ? "text" : "password"} 
+                        placeholder="Nhập lại mật khẩu"
+                        className={cn("w-full pl-10 pr-10 py-2.5 rounded-xl border bg-white text-ink text-sm placeholder:text-slate-400 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all", errors.confirmMatKhau ? "border-rose-500 bg-rose-50/20" : "border-border")}
+                        {...register('confirmMatKhau')}
+                      />
+                      <button 
+                        type="button" 
+                        onClick={() => setShowConfirmPwd(!showConfirmPwd)}
+                        className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-ink transition-colors focus:outline-none"
+                      >
+                        <i className={cn("ph text-lg", showConfirmPwd ? "ph-eye" : "ph-eye-slash")}></i>
+                      </button>
+                    </div>
+                    {errors.confirmMatKhau && <p className="text-xs text-rose-500 font-medium flex items-center gap-1"><i className="ph-fill ph-warning-circle"></i>{errors.confirmMatKhau.message}</p>}
+                  </div>
+                </div>
+
+                <label className="flex items-start gap-2 cursor-pointer mt-4 group">
+                  <input type="checkbox" required className="mt-1 w-4 h-4 rounded text-primary border-border focus:ring-primary accent-primary flex-shrink-0" />
+                  <span className="text-sm text-ink-muted group-hover:text-ink transition-colors">
+                    Tôi đồng ý với <Link to="#" className="font-semibold text-primary hover:underline">Điều khoản sử dụng</Link> và <Link to="#" className="font-semibold text-primary hover:underline">Chính sách bảo mật</Link> của Egode.
+                  </span>
+                </label>
+
+                <button 
+                  type="submit" 
+                  disabled={isSubmitting || registerMutation.isPending}
+                  className="w-full py-3 px-4 bg-primary hover:bg-primary-700 active:bg-primary-800 text-white font-semibold rounded-xl shadow-md transition-all duration-200 mt-6 disabled:opacity-70 flex justify-center items-center gap-2"
+                >
+                  {isSubmitting || registerMutation.isPending ? (
+                     <>Đang xử lý... <div className="spinner w-4 h-4 border-2 border-white/20 border-t-white"></div></>
+                  ) : (
+                    'Đăng ký tài khoản'
+                  )}
+                </button>
+
+                <p className="text-center text-sm mt-5 text-ink-muted">
+                  Đã có tài khoản? <Link to="/login" className="font-semibold text-primary hover:underline">Đăng nhập</Link>
+                </p>
+              </form>
+            </div>
+          </section>
         )}
-
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <label htmlFor="HoTen" className="block text-sm font-medium text-slate-700">
-                Họ và tên
-              </label>
-              <input
-                id="HoTen"
-                type="text"
-                autoComplete="name"
-                aria-invalid={Boolean(errors.HoTen)}
-                aria-describedby={errors.HoTen ? 'hoten-error' : undefined}
-                {...register('HoTen')}
-                className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                placeholder="Nguyễn Văn A"
-              />
-              {errors.HoTen && <p id="hoten-error" className="mt-1 text-xs text-red-600">{errors.HoTen.message}</p>}
-            </div>
-            <div>
-              <label htmlFor="TenDangNhap" className="block text-sm font-medium text-slate-700">
-                Tên đăng nhập
-              </label>
-              <input
-                id="TenDangNhap"
-                type="text"
-                autoComplete="username"
-                aria-invalid={Boolean(errors.TenDangNhap)}
-                aria-describedby={errors.TenDangNhap ? 'tendangnhap-error' : undefined}
-                {...register('TenDangNhap')}
-                className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                placeholder="nguyenvana"
-              />
-              {errors.TenDangNhap && (
-                <p id="tendangnhap-error" className="mt-1 text-xs text-red-600">{errors.TenDangNhap.message}</p>
-              )}
-            </div>
-          </div>
-
-          <div>
-            <label htmlFor="Email" className="block text-sm font-medium text-slate-700">
-              Email
-            </label>
-            <input
-              id="Email"
-              type="email"
-              autoComplete="email"
-              aria-invalid={Boolean(errors.Email)}
-              aria-describedby={errors.Email ? 'email-error' : undefined}
-              {...register('Email')}
-              className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              placeholder="name@example.com"
-            />
-            {errors.Email && <p id="email-error" className="mt-1 text-xs text-red-600">{errors.Email.message}</p>}
-          </div>
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <label htmlFor="SoDienThoai" className="block text-sm font-medium text-slate-700">
-                Số điện thoại
-              </label>
-              <input
-                id="SoDienThoai"
-                type="tel"
-                autoComplete="tel"
-                aria-invalid={Boolean(errors.SoDienThoai)}
-                aria-describedby={errors.SoDienThoai ? 'sodienthoai-error' : undefined}
-                {...register('SoDienThoai')}
-                className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                placeholder="0912345678"
-              />
-              {errors.SoDienThoai && (
-                <p id="sodienthoai-error" className="mt-1 text-xs text-red-600">{errors.SoDienThoai.message}</p>
-              )}
-            </div>
-            <div>
-              <label htmlFor="NgaySinh" className="block text-sm font-medium text-slate-700">
-                Ngày sinh <span className="font-normal text-slate-400">(tùy chọn)</span>
-              </label>
-              <input
-                id="NgaySinh"
-                type="date"
-                autoComplete="bday"
-                aria-invalid={Boolean(errors.NgaySinh)}
-                aria-describedby={errors.NgaySinh ? 'ngaysinh-error' : undefined}
-                {...register('NgaySinh')}
-                className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              />
-              {errors.NgaySinh && <p id="ngaysinh-error" className="mt-1 text-xs text-red-600">{errors.NgaySinh.message}</p>}
-            </div>
-          </div>
-
-          <div>
-            <label htmlFor="GioiTinh" className="block text-sm font-medium text-slate-700">
-              Giới tính <span className="font-normal text-slate-400">(tùy chọn)</span>
-            </label>
-            <select
-              id="GioiTinh"
-              {...register('GioiTinh')}
-              defaultValue=""
-              aria-invalid={Boolean(errors.GioiTinh)}
-              aria-describedby={errors.GioiTinh ? 'gioitinh-error' : undefined}
-              className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            >
-              <option value="">Không chọn</option>
-              <option value="Nam">Nam</option>
-              <option value="Nữ">Nữ</option>
-              <option value="Khác">Khác</option>
-            </select>
-            {errors.GioiTinh && <p id="gioitinh-error" className="mt-1 text-xs text-red-600">{errors.GioiTinh.message}</p>}
-          </div>
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <label htmlFor="MatKhau" className="block text-sm font-medium text-slate-700">
-                Mật khẩu
-              </label>
-              <input
-                id="MatKhau"
-                type="password"
-                autoComplete="new-password"
-                aria-invalid={Boolean(errors.MatKhau)}
-                aria-describedby={errors.MatKhau ? 'matkhau-error' : undefined}
-                {...register('MatKhau')}
-                className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                placeholder="••••••••"
-              />
-              {errors.MatKhau && <p id="matkhau-error" className="mt-1 text-xs text-red-600">{errors.MatKhau.message}</p>}
-            </div>
-            <div>
-              <label htmlFor="confirmMatKhau" className="block text-sm font-medium text-slate-700">
-                Xác nhận mật khẩu
-              </label>
-              <input
-                id="confirmMatKhau"
-                type="password"
-                autoComplete="new-password"
-                aria-invalid={Boolean(errors.confirmMatKhau)}
-                aria-describedby={errors.confirmMatKhau ? 'confirm-matkhau-error' : undefined}
-                {...register('confirmMatKhau')}
-                className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                placeholder="••••••••"
-              />
-              {errors.confirmMatKhau && (
-                <p id="confirm-matkhau-error" className="mt-1 text-xs text-red-600">{errors.confirmMatKhau.message}</p>
-              )}
-            </div>
-          </div>
-
-          <Button type="submit" className="w-full" disabled={isSubmitting || registerMutation.isPending}>
-            {isSubmitting || registerMutation.isPending
-              ? 'Đang xử lý...'
-              : intent === 'partner'
-                ? 'Đăng ký đối tác'
-                : 'Đăng ký'}
-          </Button>
-        </form>
-
-        <div className="mt-6 text-center text-xs text-slate-500">
-          Đã có tài khoản?{' '}
-          <Link to="/login" className="font-semibold text-blue-600 hover:underline">
-            Đăng nhập ngay
-          </Link>
-        </div>
-      </div>
+      </main>
     </div>
   );
 }

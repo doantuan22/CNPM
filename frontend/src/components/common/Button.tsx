@@ -13,13 +13,13 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const Comp = asChild ? Slot : 'button';
 
     const baseStyles =
-      'inline-flex items-center justify-center font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 rounded-lg cursor-pointer';
+      'inline-flex items-center justify-center rounded-xl font-semibold transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer';
 
     const variantStyles = {
-      primary: 'bg-blue-600 text-white hover:bg-blue-700 focus-visible:ring-blue-500 shadow-sm',
+      primary: 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-md hover:-translate-y-px focus-visible:ring-blue-500 shadow-sm',
       secondary: 'bg-slate-100 text-slate-900 hover:bg-slate-200 focus-visible:ring-slate-500',
-      outline: 'border border-slate-300 bg-white hover:bg-slate-50 text-slate-700',
-      ghost: 'hover:bg-slate-100 text-slate-700',
+      outline: 'border border-slate-300 bg-white hover:border-blue-200 hover:bg-blue-50/40 text-slate-700 focus-visible:ring-blue-500',
+      ghost: 'hover:bg-blue-50 text-slate-700 focus-visible:ring-blue-500',
       danger: 'bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-500',
     };
 

@@ -1,16 +1,7 @@
-import { CheckCircle2, XCircle, HelpCircle } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Button } from '../components/common/Button';
 import { usePaymentStatus } from '../features/payments/hooks';
+import { formatCurrencyVND } from '../lib/utils';
 
-/**
- * Landing page after the VNPAY-hosted page redirects back
- * (VNPAY_RETURN_URL → backend → here). `status` in the URL is only a hint
- * for the first paint — the actual truth is re-fetched from
- * GET /bookings/:id/payments/status, since the IPN (not this redirect) is
- * the authoritative confirmation and may land slightly after/before this
- * page loads (M6 §1 — "Frontend chỉ hiển thị; backend quyết định trạng thái").
- */
 export default function PaymentResultPage() {
   const [searchParams] = useSearchParams();
   const bookingId = Number(searchParams.get('bookingId'));
@@ -23,46 +14,85 @@ export default function PaymentResultPage() {
   const isFailed = latestPayment?.TrangThai === 'Thất bại';
 
   return (
-    <div className="mx-auto max-w-md space-y-6 text-center">
-      {statusQuery.isLoading ? (
-        <div className="flex justify-center py-16" role="status" aria-live="polite">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600" />
-        </div>
-      ) : isConfirmed ? (
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-8">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
-            <CheckCircle2 className="h-7 w-7" />
-          </div>
-          <h1 className="mt-4 text-xl font-bold text-slate-900">Thanh toán thành công!</h1>
-          <p className="mt-1 text-sm text-slate-600">Đặt phòng của bạn đã được xác nhận.</p>
-        </div>
-      ) : isFailed ? (
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-8">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-red-100 text-red-600">
-            <XCircle className="h-7 w-7" />
-          </div>
-          <h1 className="mt-4 text-xl font-bold text-slate-900">Thanh toán không thành công</h1>
-          <p className="mt-1 text-sm text-slate-600">Đặt phòng chưa được xác nhận. Bạn có thể thử thanh toán lại.</p>
-        </div>
-      ) : (
-        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-8">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-amber-100 text-amber-600">
-            <HelpCircle className="h-7 w-7" />
-          </div>
-          <h1 className="mt-4 text-xl font-bold text-slate-900">Đang xác nhận thanh toán...</h1>
-          <p className="mt-1 text-sm text-slate-600">
-            {hintStatus === 'success'
-              ? 'VNPAY báo thành công, đang chờ xác nhận cuối cùng từ hệ thống.'
-              : 'Vui lòng kiểm tra lại trạng thái đặt phòng trong ít phút.'}
-          </p>
-        </div>
-      )}
+    <div className="bg-surface-secondary text-ink min-h-screen flex flex-col font-sans antialiased !max-w-full !px-0 !py-0">
+      
+      <main className="max-w-[800px] w-full mx-auto px-4 py-12 md:py-16 flex-grow flex flex-col items-center justify-center">
 
-      {Number.isFinite(bookingId) && bookingId > 0 && (
-        <Button asChild className="w-full">
-          <Link to={`/bookings/${bookingId}`}>Xem chi tiết đặt phòng</Link>
-        </Button>
-      )}
+        {statusQuery.isLoading ? (
+          <div className="flex justify-center py-16"><div className="spinner"></div></div>
+        ) : isConfirmed ? (
+          <div className="bg-white rounded-3xl border border-border p-8 md:p-12 shadow-md w-full max-w-2xl text-center">
+            <div className="w-16 h-16 bg-blue-50 text-primary rounded-full flex justify-center items-center mx-auto mb-5 text-3xl">
+              <i className="ph-bold ph-check"></i>
+            </div>
+            <h1 className="text-2xl font-bold text-heading mb-2">Thanh toán thành công!</h1>
+            <p className="text-sm text-muted mb-4">Cảm ơn bạn đã lựa chọn Egode. Đặt phòng của bạn đã được xác nhận.</p>
+            {booking && (
+              <div className="inline-block text-xl font-bold text-primary bg-blue-50 px-5 py-2 rounded-xl border border-dashed border-primary/40 mb-8">
+                {booking.MaDatPhong}
+              </div>
+            )}
+
+            {booking && (
+              <div className="card text-left mb-8 shadow-sm border border-border">
+                <div className="card-body">
+                  <div className="flex justify-between items-center mb-5 pb-4 border-b border-border">
+                    <h3 className="text-base font-semibold text-heading">Tổng quan giao dịch</h3>
+                    <span className="status-badge status-confirmed">Thành công</span>
+                  </div>
+                  
+                  <div className="flex justify-between items-center pt-2">
+                    <span className="text-sm text-muted">Số tiền thanh toán</span>
+                    <span className="text-xl font-bold text-primary">{formatCurrencyVND(latestPayment?.SoTien || 0)}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              {Number.isFinite(bookingId) && bookingId > 0 && (
+                <Link to={`/bookings/${bookingId}`} className="btn btn-primary sm:flex-1 py-3 text-base">Xem đơn đặt phòng</Link>
+              )}
+              <Link to="/" className="btn btn-secondary sm:flex-1 py-3 text-base">Về trang chủ</Link>
+            </div>
+          </div>
+        ) : isFailed ? (
+          <div className="bg-white rounded-3xl border border-border p-8 md:p-12 shadow-md w-full max-w-2xl text-center">
+            <div className="w-16 h-16 bg-red-50 text-red-600 rounded-full flex justify-center items-center mx-auto mb-5 text-3xl">
+              <i className="ph-bold ph-x"></i>
+            </div>
+            <h1 className="text-2xl font-bold text-heading mb-2">Thanh toán không thành công</h1>
+            <p className="text-sm text-muted leading-relaxed mb-6">
+              Giao dịch qua thanh toán trực tuyến không thành công. Vui lòng kiểm tra lại số dư tài khoản hoặc thử lại phương thức thanh toán khác.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+               {Number.isFinite(bookingId) && bookingId > 0 && (
+                 <Link to={`/bookings/${bookingId}`} className="btn btn-danger sm:flex-1 py-3 text-base">Về chi tiết đơn</Link>
+               )}
+            </div>
+          </div>
+        ) : (
+          <div className="bg-white rounded-3xl border border-border p-8 md:p-12 shadow-md w-full max-w-2xl text-center">
+            <div className="w-16 h-16 bg-amber-50 text-amber-600 rounded-full flex justify-center items-center mx-auto mb-5 text-3xl">
+              <i className="ph-bold ph-question"></i>
+            </div>
+            <h1 className="text-2xl font-bold text-heading mb-2">Đang xử lý kết quả...</h1>
+            <p className="text-sm text-muted leading-relaxed mb-6">
+              {hintStatus === 'success'
+                ? 'VNPAY báo thành công, đang chờ xác nhận cuối cùng từ hệ thống.'
+                : 'Vui lòng kiểm tra lại trạng thái đặt phòng trong ít phút.'}
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+               {Number.isFinite(bookingId) && bookingId > 0 && (
+                 <Link to={`/bookings/${bookingId}`} className="btn btn-primary sm:flex-1 py-3 text-base">Xem đơn đặt phòng</Link>
+               )}
+            </div>
+          </div>
+        )}
+
+      </main>
+
     </div>
   );
 }

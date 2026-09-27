@@ -1,4 +1,5 @@
 import { Button } from '../common/Button';
+import { Input } from '../common/Input';
 
 interface DateRangeFilterProps {
   from: string;
@@ -16,24 +17,24 @@ export function DateRangeFilter({ from, to, onFromChange, onToChange, onApply, o
         <label htmlFor="analytics-from" className="mb-1 block text-xs font-medium text-slate-600">
           Từ ngày
         </label>
-        <input
+        <Input
           id="analytics-from"
           type="date"
           value={from}
           onChange={(e) => onFromChange(e.target.value)}
-          className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          className="w-auto"
         />
       </div>
       <div>
         <label htmlFor="analytics-to" className="mb-1 block text-xs font-medium text-slate-600">
           Đến ngày
         </label>
-        <input
+        <Input
           id="analytics-to"
           type="date"
           value={to}
           onChange={(e) => onToChange(e.target.value)}
-          className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          className="w-auto"
         />
       </div>
       <Button type="button" size="sm" onClick={onApply}>

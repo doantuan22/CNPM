@@ -1,0 +1,70 @@
+/*
+  Egode Design System — Design Tokens
+  Modern Agoda-inspired travel marketplace. White-first, blue primary,
+  light gray secondary surfaces, thin borders, soft shadows.
+  These CSS custom properties are the single source of truth for color,
+  spacing, radius and shadow across all 33 screens. Tailwind's config
+  (js/tailwind-config.js) mirrors these same values as utility tokens.
+*/
+:root {
+  /* Brand */
+  --color-primary: #2563EB;
+  --color-primary-hover: #1D4ED8;
+  --color-primary-dark: #1E40AF;
+  --color-primary-light: #EFF6FF;
+
+  /* Surfaces */
+  --color-bg: #FFFFFF;
+  --color-bg-secondary: #F7F8FA;
+  --color-bg-tertiary: #F1F5F9;
+
+  /* Text */
+  --color-heading: #1F2937;
+  --color-body: #4B5563;
+  --color-muted: #6B7280;
+  --color-on-primary: #FFFFFF;
+
+  /* Border */
+  --color-border: #E5E7EB;
+  --color-border-strong: #D1D5DB;
+
+  /* Semantic */
+  --color-success: #16A34A;
+  --color-success-light: #DCFCE7;
+  --color-warning: #F59E0B;
+  --color-warning-light: #FEF3C7;
+  --color-danger: #DC2626;
+  --color-danger-light: #FEE2E2;
+  --color-info: #2563EB;
+  --color-info-light: #EFF6FF;
+
+  /* Rating / promotion accents */
+  --color-rating: #F59E0B;
+  --color-discount: #DC2626;
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+  --radius-pill: 999px;
+
+  /* Shadow */
+  --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 12px 32px rgba(15, 23, 42, 0.12);
+
+  /* Layout */
+  --header-height: 68px;
+  --sidebar-width: 264px;
+  --sidebar-width-collapsed: 76px;
+  --container-max: 1536px;
+
+  /* Typography */
+  --font-family: 'Inter', Arial, sans-serif;
+
+  /* Motion */
+  --transition-fast: 150ms ease;
+  --transition-base: 200ms ease;
+}

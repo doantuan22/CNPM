@@ -2,24 +2,25 @@ import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Star, Trash2, ImagePlus, Plus, BedDouble, BarChart3, CalendarDays } from 'lucide-react';
-import { Button } from '../components/common/Button';
-import {
-  useMyHotel,
-  useUpdateHotel,
-  useReplaceHotelAmenities,
-  useUploadHotelImage,
-  useDeleteHotelImage,
-  useSetPrimaryHotelImage,
-  useRoomTypes,
-  useCreateRoomType,
-  useDeactivateHotel,
-} from '../features/owner/hooks';
+import { useMyHotel, useUpdateHotel, useReplaceHotelAmenities, useUploadHotelImage, useDeleteHotelImage, useSetPrimaryHotelImage, useRoomTypes, useCreateRoomType, useDeactivateHotel } from '../features/owner/hooks';
 import { useLocations } from '../features/locations/hooks';
 import { useAmenities } from '../features/amenities/hooks';
 import { hotelFormSchema, HotelFormSchemaValues, roomTypeFormSchema, RoomTypeFormSchemaValues } from '../features/owner/schemas';
 import { ApiError } from '../services/apiClient';
 import { fileToDataUrl, imageFileError, cn } from '../lib/utils';
+
+function getStatusBadgeClass(status: string) {
+  switch (status) {
+    case 'Hoạt động':
+      return 'status-active';
+    case 'Chờ duyệt':
+      return 'status-pending';
+    case 'Đình chỉ':
+      return 'status-suspended';
+    default:
+      return 'status-pending';
+  }
+}
 
 export default function OwnerHotelManagePage() {
   const { id } = useParams<{ id: string }>();
@@ -69,16 +70,12 @@ export default function OwnerHotelManagePage() {
   } = useForm<RoomTypeFormSchemaValues>({ resolver: zodResolver(roomTypeFormSchema) });
 
   if (hotelQuery.isLoading) {
-    return (
-      <div className="flex justify-center py-16" role="status" aria-live="polite">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600" />
-      </div>
-    );
+    return <div className="flex justify-center py-16"><div className="spinner"></div></div>;
   }
 
   if (hotelQuery.isError || !hotelQuery.data) {
     return (
-      <div role="alert" className="mx-auto max-w-md rounded-lg bg-red-50 px-4 py-3 text-center text-sm text-red-700">
+      <div role="alert" className="mx-auto max-w-md rounded-lg bg-red-50 px-4 py-3 text-center text-sm text-red-700 border border-red-200">
         {hotelQuery.error instanceof ApiError ? hotelQuery.error.message : 'Không tìm thấy khách sạn'}
       </div>
     );
@@ -103,7 +100,7 @@ export default function OwnerHotelManagePage() {
     try {
       await uploadImageMutation.mutateAsync(await fileToDataUrl(file));
     } catch {
-      // Mutation error is rendered below.
+      // handled
     } finally {
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
@@ -116,234 +113,296 @@ export default function OwnerHotelManagePage() {
   };
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
-      <Button variant="ghost" size="sm" asChild>
-        <Link to="/owner">
-          <ArrowLeft className="mr-1.5 h-4 w-4" /> Quay lại bảng điều khiển
-        </Link>
-      </Button>
+    <div className="flex flex-col gap-5 max-w-[1080px] mx-auto w-full">
+      <Link to="/owner" className="breadcrumb w-fit">
+        <i className="ph ph-arrow-left"></i>
+        <span>Quay lại danh sách khách sạn</span>
+      </Link>
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex justify-between items-center flex-wrap gap-3 bg-white border border-border rounded-[14px] px-6 py-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">{hotel.TenKhachSan}</h1>
-          <p className="text-sm text-slate-500">Trạng thái: {hotel.TrangThai}</p>
+          <h1 className="text-[20px] font-bold text-heading mb-0.5">Hồ sơ khách sạn</h1>
+          <p className="text-[13px] text-muted">Cập nhật thông tin chi tiết, quy định nhận phòng và hình ảnh cơ sở lưu trú.</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" asChild>
-            <Link to={`/owner/hotels/${hotelId}/analytics`}>
-              <BarChart3 className="mr-1.5 h-4 w-4" /> Xem thống kê
-            </Link>
-          </Button>
-          <Button variant="outline" size="sm" asChild><Link to={`/owner/hotels/${hotelId}/bookings`}><CalendarDays className="mr-1.5 h-4 w-4" /> Đặt phòng</Link></Button>
-          {hotel.TrangThai !== 'Ngừng hoạt động' && <Button variant="outline" size="sm" disabled={deactivateMutation.isPending} onClick={() => { if (window.confirm('Ngừng kinh doanh khách sạn? Booking lịch sử sẽ được giữ lại.')) deactivateMutation.mutate(); }}>{deactivateMutation.isPending ? 'Đang xử lý...' : 'Ngừng kinh doanh'}</Button>}
-          <span className="inline-flex items-center gap-1 rounded-lg bg-amber-50 px-3 py-1.5 text-amber-700">
-            <Star className="h-4 w-4 fill-amber-400 text-amber-400" /> {hotel.HangSao} sao
-          </span>
+
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-2 bg-slate-50 border border-border px-3.5 py-2 rounded-lg cursor-pointer hover:bg-white hover:border-primary transition-all">
+            <div>
+              <span className="text-[12px] text-muted font-medium block leading-tight">Đang quản lý:</span>
+              <div className="text-[13px] font-bold text-heading leading-tight flex items-center gap-1.5"><i className="ph-fill ph-buildings text-primary"></i> {hotel.TenKhachSan}</div>
+            </div>
+          </div>
+          <div className={`status-badge ${getStatusBadgeClass(hotel.TrangThai)}`}>{hotel.TrangThai}</div>
         </div>
       </div>
 
-      {deactivateMutation.isSuccess && <div role="status" className="rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700">Khách sạn đã ngừng kinh doanh; lịch sử booking được giữ lại.</div>}
-      {deactivateMutation.isError && <div role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{deactivateMutation.error instanceof ApiError ? deactivateMutation.error.message : 'Không thể ngừng kinh doanh khách sạn'}</div>}
-
-      {/* Info form */}
-      <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
-        <h2 className="text-lg font-semibold text-slate-900">Thông tin khách sạn</h2>
-        {updateMutation.isSuccess && (
-          <div role="status" className="rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700">Cập nhật thành công</div>
+      <div className="flex items-center gap-3 flex-wrap">
+        <Link to={`/owner/hotels/${hotelId}/analytics`} className="btn btn-outline btn-sm">
+          <i className="ph ph-chart-bar"></i> Xem thống kê
+        </Link>
+        <Link to={`/owner/hotels/${hotelId}/bookings`} className="btn btn-outline btn-sm">
+          <i className="ph ph-calendar"></i> Quản lý Booking
+        </Link>
+        {hotel.TrangThai !== 'Ngừng hoạt động' && (
+          <button 
+            type="button" 
+            className="btn btn-danger-outline btn-sm"
+            disabled={deactivateMutation.isPending}
+            onClick={() => { if (window.confirm('Ngừng kinh doanh khách sạn? Booking lịch sử sẽ được giữ lại.')) deactivateMutation.mutate(); }}
+          >
+            {deactivateMutation.isPending ? 'Đang xử lý...' : 'Ngừng kinh doanh'}
+          </button>
         )}
+      </div>
+
+      {deactivateMutation.isSuccess && <div role="status" className="rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">Khách sạn đã ngừng kinh doanh; lịch sử booking được giữ lại.</div>}
+      {deactivateMutation.isError && <div role="alert" className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">{deactivateMutation.error instanceof ApiError ? deactivateMutation.error.message : 'Không thể ngừng kinh doanh khách sạn'}</div>}
+
+      <form onSubmit={handleSubmit((v) => updateMutation.mutate(v))} noValidate className="flex flex-col gap-5">
         {updateMutation.isError && (
-          <div role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+          <div role="alert" className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
             {updateMutation.error instanceof ApiError ? updateMutation.error.message : 'Cập nhật thất bại'}
           </div>
         )}
-        <form onSubmit={handleSubmit((v) => updateMutation.mutate(v))} noValidate className="space-y-4">
-          <div>
-            <label htmlFor="TenKhachSan" className="block text-sm font-medium text-slate-700">Tên khách sạn</label>
-            <input id="TenKhachSan" {...register('TenKhachSan')} className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-            {errors.TenKhachSan && <p className="mt-1 text-xs text-red-600">{errors.TenKhachSan.message}</p>}
-          </div>
-          <div>
-            <label htmlFor="DiaChiChiTiet" className="block text-sm font-medium text-slate-700">Địa chỉ chi tiết</label>
-            <input id="DiaChiChiTiet" {...register('DiaChiChiTiet')} className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-          </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <label htmlFor="MaDiaPhuong" className="block text-sm font-medium text-slate-700">Địa phương</label>
-              <select id="MaDiaPhuong" {...register('MaDiaPhuong')} className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
-                {locationsQuery.data?.map((loc) => (
-                  <option key={loc.MaDiaPhuong} value={loc.MaDiaPhuong}>{loc.TenThanhPho}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label htmlFor="HangSao" className="block text-sm font-medium text-slate-700">Hạng sao</label>
-              <select id="HangSao" {...register('HangSao')} className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
-                {[1, 2, 3, 4, 5].map((s) => <option key={s} value={s}>{s} sao</option>)}
-              </select>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <label htmlFor="GioNhanPhong" className="block text-sm font-medium text-slate-700">Giờ nhận phòng</label>
-              <input id="GioNhanPhong" type="time" {...register('GioNhanPhong')} className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-            </div>
-            <div>
-              <label htmlFor="GioTraPhong" className="block text-sm font-medium text-slate-700">Giờ trả phòng</label>
-              <input id="GioTraPhong" type="time" {...register('GioTraPhong')} className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-            </div>
-          </div>
-          <div>
-            <label htmlFor="MoTa" className="block text-sm font-medium text-slate-700">Mô tả</label>
-            <textarea id="MoTa" rows={4} {...register('MoTa')} className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-          </div>
-          <Button type="submit" disabled={!isDirty || updateMutation.isPending}>
-            {updateMutation.isPending ? 'Đang lưu...' : 'Lưu thay đổi'}
-          </Button>
-        </form>
-      </section>
 
-      {/* Images */}
-      <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-slate-900">Hình ảnh</h2>
+        <section className="bg-white border border-border rounded-[16px] p-7 shadow-sm">
+          <div className="mb-6">
+            <h2 className="text-lg font-bold text-heading flex items-center gap-2 mb-1">🏢 Thông tin cơ bản</h2>
+            <p className="text-sm text-muted">Tên thương mại, tiêu chuẩn sao và địa chỉ hiển thị với du khách</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="md:col-span-2">
+              <label className="form-label">Tên cơ sở khách sạn / Resort <span className="text-red-500">*</span></label>
+              <input type="text" className={cn("input", errors.TenKhachSan && "border-red-500")} {...register('TenKhachSan')} />
+              {errors.TenKhachSan && <p className="text-xs text-red-500 mt-1">{errors.TenKhachSan.message}</p>}
+            </div>
+
+            <div>
+              <label className="form-label">Xếp hạng sao tiêu chuẩn <span className="text-red-500">*</span></label>
+              <div className="relative">
+                <select className={cn("select", errors.HangSao && "border-red-500")} {...register('HangSao', { valueAsNumber: true })}>
+                  <option value="">-- Chọn xếp hạng sao --</option>
+                  {[1, 2, 3, 4, 5].map(s => <option key={s} value={s}>{s} Sao</option>)}
+                </select>
+                <i className="ph ph-caret-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none"></i>
+              </div>
+            </div>
+
+            <div>
+              <label className="form-label">Tỉnh / Thành phố <span className="text-red-500">*</span></label>
+              <div className="relative">
+                <select className={cn("select", errors.MaDiaPhuong && "border-red-500")} {...register('MaDiaPhuong', { valueAsNumber: true })}>
+                  <option value="">-- Chọn tỉnh thành --</option>
+                  {locationsQuery.data?.map(loc => (
+                    <option key={loc.MaDiaPhuong} value={loc.MaDiaPhuong}>{loc.TenThanhPho}</option>
+                  ))}
+                </select>
+                <i className="ph ph-caret-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none"></i>
+              </div>
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="form-label">Địa chỉ chi tiết <span className="text-red-500">*</span></label>
+              <input type="text" className={cn("input", errors.DiaChiChiTiet && "border-red-500")} {...register('DiaChiChiTiet')} />
+              {errors.DiaChiChiTiet && <p className="text-xs text-red-500 mt-1">{errors.DiaChiChiTiet.message}</p>}
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-white border border-border rounded-[16px] p-7 shadow-sm">
+          <div className="mb-6">
+            <h2 className="text-lg font-bold text-heading flex items-center gap-2 mb-1">⏱️ Quy định vận hành & Khung giờ</h2>
+            <p className="text-sm text-muted">Thiết lập thời gian nhận và trả phòng tiêu chuẩn</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div>
+              <label className="form-label">Giờ nhận phòng tiêu chuẩn (Check-in) <span className="text-red-500">*</span></label>
+              <input type="time" className={cn("input", errors.GioNhanPhong && "border-red-500")} {...register('GioNhanPhong')} />
+              {errors.GioNhanPhong && <p className="text-xs text-red-500 mt-1">{errors.GioNhanPhong.message}</p>}
+            </div>
+            <div>
+              <label className="form-label">Giờ trả phòng tiêu chuẩn (Check-out) <span className="text-red-500">*</span></label>
+              <input type="time" className={cn("input", errors.GioTraPhong && "border-red-500")} {...register('GioTraPhong')} />
+              {errors.GioTraPhong && <p className="text-xs text-red-500 mt-1">{errors.GioTraPhong.message}</p>}
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-white border border-border rounded-[16px] p-7 shadow-sm">
+          <div className="mb-4">
+            <h2 className="text-lg font-bold text-heading flex items-center gap-2 mb-1">📝 Giới thiệu tổng quan</h2>
+            <p className="text-sm text-muted">Đoạn văn ngắn làm nổi bật vị trí, phong cách kiến trúc và dịch vụ vượt trội</p>
+          </div>
           <div>
-            <input ref={fileInputRef} aria-label="Chọn ảnh khách sạn" type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="sr-only" onChange={onImageSelected} />
-            <Button type="button" size="sm" onClick={() => fileInputRef.current?.click()} disabled={uploadImageMutation.isPending || hotel.HINH_ANH_KHACH_SAN.length >= 20}>
-              <ImagePlus className="h-4 w-4" /> {uploadImageMutation.isPending ? 'Đang tải...' : 'Tải ảnh lên'}
-            </Button>
+            <textarea rows={4} className={cn("textarea", errors.MoTa && "border-red-500")} {...register('MoTa')} placeholder="Chia sẻ về phong cách thiết kế, vị trí..."></textarea>
+          </div>
+        </section>
+
+        <section className="bg-white border border-border rounded-[16px] p-7 shadow-sm">
+          <div className="mb-6">
+            <h2 className="text-lg font-bold text-heading flex items-center gap-2 mb-1">✨ Tiện nghi & Dịch vụ khách sạn</h2>
+            <p className="text-sm text-muted">Tích chọn các dịch vụ tiện ích cơ sở hiện đang cung cấp</p>
+          </div>
+          {amenitiesQuery.data && amenitiesQuery.data.length > 0 ? (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {amenitiesQuery.data.map((a) => (
+                <label 
+                  key={a.MaTienNghi} 
+                  className={cn(
+                    "flex items-center gap-2.5 p-3 rounded-lg border cursor-pointer select-none transition-all",
+                    selectedAmenityIds.has(a.MaTienNghi) ? "bg-blue-50 border-blue-200" : "bg-slate-50 border-border hover:bg-slate-100"
+                  )}
+                >
+                  <input 
+                    type="checkbox" 
+                    checked={selectedAmenityIds.has(a.MaTienNghi)} 
+                    onChange={() => toggleAmenity(a.MaTienNghi)} 
+                    className="w-4 h-4 accent-primary" 
+                  />
+                  <span className="text-[13px] font-medium text-heading">{a.TenTienNghi}</span>
+                </label>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-slate-500">Chưa có danh mục tiện nghi.</p>
+          )}
+        </section>
+
+        <div className="flex justify-between items-center flex-wrap gap-3 bg-white border border-border rounded-[14px] px-6 py-4 shadow-sm">
+          <span className="text-[13px] text-muted flex items-center gap-1.5">
+            <i className="ph ph-clock"></i> Hãy nhớ bấm lưu sau khi thay đổi
+          </span>
+          <div className="flex gap-3">
+            <button type="submit" disabled={!isDirty || updateMutation.isPending} className="btn btn-primary">
+              {updateMutation.isPending ? 'Đang lưu...' : 'Lưu thay đổi hồ sơ'}
+            </button>
           </div>
         </div>
-        {(imageError || uploadImageMutation.isError) && <div role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{imageError || (uploadImageMutation.error instanceof ApiError ? uploadImageMutation.error.message : 'Không thể tải ảnh')}</div>}
-        {hotel.HINH_ANH_KHACH_SAN.length === 0 ? (
-          <p className="text-sm text-slate-500">Chưa có hình ảnh nào.</p>
-        ) : (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {hotel.HINH_ANH_KHACH_SAN.map((img) => (
-              <div key={img.MaHinhAnh} className="group relative overflow-hidden rounded-lg border border-slate-200">
-                <img src={img.URL} alt={`Ảnh khách sạn ${hotel.TenKhachSan}`} className="h-28 w-full object-cover" />
-                {img.AnhDaiDien && (
-                  <span className="absolute left-1 top-1 rounded bg-blue-600 px-1.5 py-0.5 text-[10px] font-semibold text-white">Đại diện</span>
-                )}
-                <div className="absolute inset-x-0 bottom-0 flex justify-between bg-black/60 px-1.5 py-1 opacity-0 transition group-focus-within:opacity-100 group-hover:opacity-100">
-                  {!img.AnhDaiDien && (
-                    <button type="button" onClick={() => setPrimaryMutation.mutate(img.MaHinhAnh)} disabled={setPrimaryMutation.isPending} className="text-xs text-white hover:underline disabled:opacity-50">
-                      Đặt đại diện
-                    </button>
-                  )}
-                  <button
-                    aria-label="Xóa ảnh"
-                    type="button"
-                    onClick={() => {
-                      if (window.confirm('Xóa ảnh này? Không thể hoàn tác.')) deleteImageMutation.mutate(img.MaHinhAnh);
-                    }}
-                    disabled={deleteImageMutation.isPending}
-                    className="ml-auto text-white hover:text-red-300 disabled:opacity-50"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              </div>
-            ))}
+        {updateMutation.isSuccess && (
+          <div role="status" className="rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">Cập nhật thành công</div>
+        )}
+      </form>
+
+      <section className="bg-white border border-border rounded-[16px] p-7 shadow-sm">
+        <div className="flex justify-between items-start mb-6">
+          <div>
+            <h2 className="text-lg font-bold text-heading flex items-center gap-2 mb-1">📸 Hình ảnh cơ sở lưu trú</h2>
+            <p className="text-sm text-muted">Ảnh đầu tiên sẽ làm ảnh bìa tìm kiếm</p>
+          </div>
+          <div>
+            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={onImageSelected} />
+            <button type="button" className="btn btn-outline btn-sm" onClick={() => fileInputRef.current?.click()} disabled={uploadImageMutation.isPending}>
+              <i className="ph ph-upload-simple"></i> {uploadImageMutation.isPending ? 'Đang tải...' : 'Tải ảnh lên'}
+            </button>
+          </div>
+        </div>
+        
+        {(imageError || uploadImageMutation.isError) && (
+          <div role="alert" className="rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700 mb-4">
+            {imageError || (uploadImageMutation.error instanceof ApiError ? uploadImageMutation.error.message : 'Không thể tải ảnh')}
           </div>
         )}
-      </section>
 
-      {/* Amenities */}
-      <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
-        <h2 className="text-lg font-semibold text-slate-900">Tiện nghi</h2>
-        {amenitiesQuery.data && amenitiesQuery.data.length > 0 ? (
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {amenitiesQuery.data.map((a) => (
-              <label key={a.MaTienNghi} className="flex items-center gap-2 text-sm text-slate-700">
-                <input
-                  type="checkbox"
-                  checked={selectedAmenityIds.has(a.MaTienNghi)}
-                  onChange={() => toggleAmenity(a.MaTienNghi)}
-                  className="rounded border-slate-300"
-                />
-                {a.TenTienNghi}
-              </label>
-            ))}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3.5">
+          {hotel.HINH_ANH_KHACH_SAN.map((img) => (
+            <div key={img.MaHinhAnh} className="relative h-[120px] rounded-[10px] overflow-hidden border border-border bg-slate-100 group">
+              <img src={img.URL} alt="Hotel img" className="w-full h-full object-cover" />
+              {img.AnhDaiDien && (
+                <span className="absolute top-1.5 left-1.5 bg-primary text-white text-[10px] font-bold px-1.5 py-0.5 rounded-[4px]">Ảnh đại diện</span>
+              )}
+              {!img.AnhDaiDien && (
+                <button type="button" onClick={() => setPrimaryMutation.mutate(img.MaHinhAnh)} disabled={setPrimaryMutation.isPending} className="absolute bottom-1.5 left-1.5 bg-[#172033bf] text-white border-none text-[10px] px-1.5 py-1 rounded-[4px] cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity">
+                  Đặt làm bìa
+                </button>
+              )}
+              <button type="button" onClick={() => { if (window.confirm('Xóa ảnh này?')) deleteImageMutation.mutate(img.MaHinhAnh); }} disabled={deleteImageMutation.isPending} className="absolute top-1.5 right-1.5 w-[22px] h-[22px] rounded-full bg-black/60 text-white border-none flex items-center justify-center text-[12px] cursor-pointer hover:bg-red-500">
+                <i className="ph ph-x"></i>
+              </button>
+            </div>
+          ))}
+          <div 
+            onClick={() => fileInputRef.current?.click()}
+            className="h-[120px] border-[1.5px] border-dashed border-primary bg-[#F5F9FF] rounded-[10px] flex flex-col items-center justify-center gap-1.5 cursor-pointer hover:bg-[#EBF3FF] transition-colors"
+          >
+            <i className="ph-fill ph-plus-circle text-primary text-[24px]"></i>
+            <span className="text-[12px] font-bold text-primary">Thêm ảnh</span>
           </div>
-        ) : (
-          <p className="text-sm text-slate-500">Chưa có danh mục tiện nghi.</p>
-        )}
+        </div>
       </section>
 
-      {/* Room types */}
-      <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-slate-900">Loại phòng</h2>
-          <Button size="sm" variant="outline" onClick={() => setShowRoomTypeForm((v) => !v)}>
-            <Plus className="mr-1 h-4 w-4" /> Thêm loại phòng
-          </Button>
+      <section className="bg-white border border-border rounded-[16px] p-7 shadow-sm">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h2 className="text-lg font-bold text-heading flex items-center gap-2 mb-1">🛏️ Các loại phòng</h2>
+            <p className="text-sm text-muted">Danh sách loại phòng của khách sạn</p>
+          </div>
+          <button type="button" className="btn btn-outline btn-sm" onClick={() => setShowRoomTypeForm(v => !v)}>
+            <i className="ph ph-plus"></i> Thêm loại phòng
+          </button>
         </div>
 
         {showRoomTypeForm && (
-          <form onSubmit={handleRoomTypeSubmit(onCreateRoomType)} noValidate className="space-y-3 rounded-lg bg-slate-50 p-4">
-            <div className="grid grid-cols-2 gap-3">
+          <form onSubmit={handleRoomTypeSubmit(onCreateRoomType)} className="bg-slate-50 border border-border rounded-lg p-5 mb-5 flex flex-col gap-4">
+            <h3 className="font-bold text-heading text-[14px]">Thêm loại phòng mới</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="TenLoaiPhong" className="block text-xs font-medium text-slate-600">Tên loại phòng</label>
-                <input id="TenLoaiPhong" {...registerRoomType('TenLoaiPhong')} className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-                {roomTypeErrors.TenLoaiPhong && <p className="mt-1 text-xs text-red-600">{roomTypeErrors.TenLoaiPhong.message}</p>}
+                <label className="form-label text-[12px]">Tên loại phòng</label>
+                <input type="text" className={cn("input", roomTypeErrors.TenLoaiPhong && "border-red-500")} {...registerRoomType('TenLoaiPhong')} />
               </div>
               <div>
-                <label htmlFor="LoaiGiuong" className="block text-xs font-medium text-slate-600">Loại giường</label>
-                <input id="LoaiGiuong" {...registerRoomType('LoaiGiuong')} className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-3">
-              <div>
-                <label htmlFor="SoGiuong" className="block text-xs font-medium text-slate-600">Số giường</label>
-                <input id="SoGiuong" type="number" min={1} {...registerRoomType('SoGiuong')} className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                <label className="form-label text-[12px]">Loại giường</label>
+                <input type="text" className={cn("input")} {...registerRoomType('LoaiGiuong')} />
               </div>
               <div>
-                <label htmlFor="SucChua" className="block text-xs font-medium text-slate-600">Sức chứa</label>
-                <input id="SucChua" type="number" min={1} {...registerRoomType('SucChua')} className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                <label className="form-label text-[12px]">Số giường</label>
+                <input type="number" min="1" className={cn("input")} {...registerRoomType('SoGiuong', { valueAsNumber: true })} />
               </div>
               <div>
-                <label htmlFor="DienTich" className="block text-xs font-medium text-slate-600">Diện tích (m²)</label>
-                <input id="DienTich" type="number" min={1} step="0.1" {...registerRoomType('DienTich')} className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                <label className="form-label text-[12px]">Sức chứa (Khách)</label>
+                <input type="number" min="1" className={cn("input")} {...registerRoomType('SucChua', { valueAsNumber: true })} />
+              </div>
+              <div>
+                <label className="form-label text-[12px]">Diện tích (m²)</label>
+                <input type="number" min="1" step="0.1" className={cn("input")} {...registerRoomType('DienTich', { valueAsNumber: true })} />
               </div>
             </div>
-            <Button type="submit" size="sm" disabled={isRoomTypeSubmitting || createRoomTypeMutation.isPending}>
-              {createRoomTypeMutation.isPending ? 'Đang tạo...' : 'Tạo loại phòng'}
-            </Button>
+            <div className="flex gap-2">
+              <button type="submit" disabled={isRoomTypeSubmitting || createRoomTypeMutation.isPending} className="btn btn-primary btn-sm">Tạo mới</button>
+              <button type="button" onClick={() => setShowRoomTypeForm(false)} className="btn btn-secondary btn-sm">Hủy</button>
+            </div>
           </form>
         )}
 
-        {roomTypesQuery.isLoading ? (
-          <div className="flex justify-center py-6" role="status" aria-live="polite">
-            <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600" />
-          </div>
-        ) : roomTypesQuery.data && roomTypesQuery.data.length === 0 ? (
-          <p className="text-sm text-slate-500">Chưa có loại phòng nào.</p>
-        ) : (
-          <div className="space-y-2">
-            {roomTypesQuery.data?.map((rt) => (
-              <Link
-                key={rt.MaLoaiPhong}
+        <div className="flex flex-col gap-3">
+          {roomTypesQuery.isLoading ? (
+            <div className="flex justify-center py-6"><div className="spinner"></div></div>
+          ) : roomTypesQuery.data && roomTypesQuery.data.length === 0 ? (
+            <p className="text-sm text-slate-500">Chưa có loại phòng nào.</p>
+          ) : (
+            roomTypesQuery.data?.map(rt => (
+              <Link 
+                key={rt.MaLoaiPhong} 
                 to={`/owner/room-types/${rt.MaLoaiPhong}`}
-                className="flex items-center justify-between rounded-lg border border-slate-200 p-3 hover:border-slate-300"
+                className="flex items-center justify-between p-4 rounded-lg border border-border hover:border-blue-300 transition-colors bg-white"
               >
-                <div className="flex items-center gap-2">
-                  <BedDouble className="h-4 w-4 text-slate-400" />
-                  <span className="font-medium text-slate-900">{rt.TenLoaiPhong}</span>
-                  <span
-                    className={cn(
-                      'rounded-full px-2 py-0.5 text-xs font-medium',
-                      rt.TrangThai === 'Hoạt động' ? 'bg-green-50 text-green-700' : 'bg-slate-100 text-slate-600'
-                    )}
-                  >
-                    {rt.TrangThai}
-                  </span>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-primary text-xl"><i className="ph-duotone ph-bed"></i></div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-heading text-[15px]">{rt.TenLoaiPhong}</span>
+                      <span className={`status-badge ${rt.TrangThai === 'Hoạt động' ? 'status-active' : 'status-suspended'}`}>{rt.TrangThai}</span>
+                    </div>
+                    <span className="text-[13px] text-muted">{rt.SucChua} khách · {rt.DienTich} m² · {rt.SoGiuong} giường ({rt.LoaiGiuong})</span>
+                  </div>
                 </div>
-                <span className="text-xs text-slate-500">{rt.SucChua} khách · {rt.DienTich} m²</span>
+                <i className="ph ph-caret-right text-slate-400"></i>
               </Link>
-            ))}
-          </div>
-        )}
+            ))
+          )}
+        </div>
       </section>
+
     </div>
   );
 }

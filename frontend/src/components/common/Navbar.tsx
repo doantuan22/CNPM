@@ -1,10 +1,10 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Hotel, CalendarCheck, User, LogIn, Menu, X, ShieldCheck, Building2, LogOut, LifeBuoy } from 'lucide-react';
 import { useUiStore } from '../../lib/store';
 import { useAuthStore } from '../../lib/authStore';
 import { useLogout, useMe } from '../../features/auth/hooks';
 import { ROLE_NAMES } from '../../lib/roles';
 import { cn } from '../../lib/utils';
+import { useState } from 'react';
 
 export function Navbar() {
   const location = useLocation();
@@ -14,24 +14,20 @@ export function Navbar() {
   const role = useAuthStore((s) => s.role);
   const meQuery = useMe();
   const logoutMutation = useLogout();
+  
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const navLinks = [
     { to: '/', label: 'Trang chủ' },
-    { to: '/hotels', label: 'Khách sạn', icon: Hotel },
-    { to: '/bookings', label: 'Đặt phòng', icon: CalendarCheck },
-    { to: '/support', label: 'Hỗ trợ', icon: LifeBuoy },
-  ];
-
-  const authLinks = [
-    { to: '/login', label: 'Đăng nhập', icon: LogIn },
-    { to: '/register', label: 'Đăng ký', icon: User },
+    { to: '/hotels', label: 'Khách sạn' },
+    { to: '/support', label: 'Hỗ trợ' },
   ];
 
   const roleDashboard =
     role === ROLE_NAMES.ADMIN
-      ? { to: '/admin', label: 'Quản trị', icon: ShieldCheck }
+      ? { to: '/admin', label: 'Quản trị' }
       : role === ROLE_NAMES.PARTNER
-        ? { to: '/owner', label: 'Đối tác', icon: Building2 }
+        ? { to: '/owner', label: 'Đối tác' }
         : null;
 
   const handleLogout = async () => {
@@ -40,154 +36,115 @@ export function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/95 backdrop-blur-sm shadow-xs">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        {/* Brand */}
-        <Link to="/" className="flex items-center gap-2 font-bold text-xl text-blue-600 tracking-tight">
-          <Hotel className="h-6 w-6" />
-          <span>StayHub</span>
-        </Link>
-
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-6">
-          {navLinks.map((link) => {
-            const isActive = location.pathname === link.to;
-            return (
+    <>
+      <header className="site-header">
+        <div className="site-header__inner">
+          <Link to="/" className="site-header__logo">
+            <div className="site-header__logo-mark">E</div>Egode
+          </Link>
+          
+          <nav className="site-header__nav">
+            {navLinks.map((link) => (
               <Link
                 key={link.to}
                 to={link.to}
-                className={cn(
-                  'text-sm font-medium transition-colors hover:text-blue-600',
-                  isActive ? 'text-blue-600 font-semibold' : 'text-slate-600'
-                )}
-                aria-current={isActive ? 'page' : undefined}
+                className={cn(location.pathname === link.to && 'active')}
               >
                 {link.label}
               </Link>
-            );
-          })}
-        </nav>
-
-        {/* Auth Links */}
-        <div className="hidden md:flex items-center gap-3">
-          {accessToken ? (
-            <>
-              {roleDashboard && (
-                <Link
-                  to={roleDashboard.to}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-100"
-                >
-                  <roleDashboard.icon className="h-4 w-4" />
-                  <span>{roleDashboard.label}</span>
-                </Link>
-              )}
-              <Link
-                to="/profile"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-100"
-              >
-                <User className="h-4 w-4" />
-                <span>{meQuery.data?.HoTen ?? 'Tài khoản'}</span>
-              </Link>
-              <button
-                type="button"
-                onClick={handleLogout}
-                disabled={logoutMutation.isPending}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-50"
-              >
-                <LogOut className="h-4 w-4" />
-                <span>{logoutMutation.isPending ? 'Đang thoát...' : 'Đăng xuất'}</span>
-              </button>
-            </>
-          ) : (
-            authLinks.map((link) => (
-              <Link
-                key={link.to}
-                to={link.to}
-                className={cn(
-                  'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
-                  link.to === '/register'
-                    ? 'bg-blue-600 text-white hover:bg-blue-700'
-                    : 'text-slate-700 hover:bg-slate-100'
-                )}
-              >
-                <link.icon className="h-4 w-4" />
-                <span>{link.label}</span>
-              </Link>
-            ))
-          )}
-        </div>
-
-        {/* Mobile menu button */}
-        <button
-          type="button"
-          onClick={toggleSidebar}
-          className="md:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100"
-          aria-label="Toggle Menu"
-          aria-expanded={isSidebarOpen}
-          aria-controls="mobile-navigation"
-        >
-          {isSidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-        </button>
-      </div>
-
-      {/* Mobile dropdown */}
-      {isSidebarOpen && (
-        <div id="mobile-navigation" className="md:hidden border-b border-slate-200 bg-white px-4 pt-2 pb-4 space-y-1">
-          {navLinks.map((link) => (
-            <Link
-              key={link.to}
-              to={link.to}
+            ))}
+          </nav>
+          
+          <div className="site-header__actions">
+            {accessToken ? (
+              <>
+                <button className="site-header__icon-btn" aria-label="Thông báo">
+                  <i className="ph ph-bell"></i>
+                  <span className="dot"></span>
+                </button>
+                <div className="dropdown">
+                  <button 
+                    className="site-header__user" 
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    aria-expanded={isDropdownOpen}
+                  >
+                    <div className="site-header__avatar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--color-primary-light)', color: 'var(--color-primary)', fontWeight: 'bold' }}>
+                      {meQuery.data?.HoTen?.charAt(0) ?? 'U'}
+                    </div>
+                    <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-heading)' }}>
+                      {meQuery.data?.HoTen ?? 'Tài khoản'}
+                    </span>
+                    <i className="ph ph-caret-down" style={{ fontSize: '13px', color: 'var(--color-muted)' }}></i>
+                  </button>
+                  <div className={cn("dropdown-menu", isDropdownOpen && "open")}>
+                    {roleDashboard && (
+                      <Link to={roleDashboard.to} className="dropdown-item" onClick={() => setIsDropdownOpen(false)}>
+                        <i className="ph ph-squares-four text-lg"></i> {roleDashboard.label}
+                      </Link>
+                    )}
+                    <Link to="/profile" className="dropdown-item" onClick={() => setIsDropdownOpen(false)}>
+                      <i className="ph ph-user text-lg"></i> Tài khoản của tôi
+                    </Link>
+                    <Link to="/bookings" className="dropdown-item" onClick={() => setIsDropdownOpen(false)}>
+                      <i className="ph ph-calendar-check text-lg"></i> Đơn đặt phòng
+                    </Link>
+                    <div className="dropdown-divider"></div>
+                    <button 
+                      className="dropdown-item danger" 
+                      onClick={() => { setIsDropdownOpen(false); handleLogout(); }}
+                      disabled={logoutMutation.isPending}
+                    >
+                      <i className="ph ph-sign-out text-lg"></i> {logoutMutation.isPending ? 'Đang thoát...' : 'Đăng xuất'}
+                    </button>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <Link to="/login" className="btn btn-ghost btn-sm hidden sm:inline-flex">Đăng nhập</Link>
+                <Link to="/register" className="btn btn-primary btn-sm">Đăng ký</Link>
+              </>
+            )}
+            
+            <button
+              className="site-header__icon-btn site-header__menu-toggle"
               onClick={toggleSidebar}
-              aria-current={location.pathname === link.to ? 'page' : undefined}
-              className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50 hover:text-blue-600"
+              aria-label="Mở menu"
             >
-              {link.label}
-            </Link>
-          ))}
-          {accessToken ? (
-            <>
-              {roleDashboard && (
-                <Link
-                  to={roleDashboard.to}
-                  onClick={toggleSidebar}
-                  className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50 hover:text-blue-600"
-                >
-                  {roleDashboard.label}
-                </Link>
-              )}
-              <Link
-                to="/profile"
-                onClick={toggleSidebar}
-                className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50 hover:text-blue-600"
-              >
-                Tài khoản
-              </Link>
-              <button
-                type="button"
-                onClick={() => {
-                  toggleSidebar();
-                  handleLogout();
-                }}
-                disabled={logoutMutation.isPending}
-                className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50 hover:text-blue-600"
-              >
-                Đăng xuất
-              </button>
-            </>
-          ) : (
-            authLinks.map((link) => (
+              <i className="ph ph-list"></i>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Mobile drawer */}
+      <div className={cn("mobile-drawer", isSidebarOpen && "open")}>
+        <div className="mobile-drawer__backdrop" onClick={toggleSidebar}></div>
+        <div className="mobile-drawer__panel">
+          <div className="flex justify-end mb-4">
+            <button onClick={toggleSidebar} className="btn-icon btn-ghost"><i className="ph ph-x text-2xl"></i></button>
+          </div>
+          <div className="space-y-1">
+            {navLinks.map((link) => (
               <Link
                 key={link.to}
                 to={link.to}
                 onClick={toggleSidebar}
-                className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50 hover:text-blue-600"
+                style={{ display: 'block', padding: '12px 14px', borderRadius: 'var(--radius-md)', fontWeight: 600, color: location.pathname === link.to ? 'var(--color-primary)' : 'var(--color-heading)' }}
               >
                 {link.label}
               </Link>
-            ))
-          )}
+            ))}
+            {!accessToken && (
+              <>
+                <div className="dropdown-divider my-4"></div>
+                <Link to="/login" onClick={toggleSidebar} style={{ display: 'block', padding: '12px 14px', fontWeight: 600 }}>Đăng nhập</Link>
+                <Link to="/register" onClick={toggleSidebar} style={{ display: 'block', padding: '12px 14px', fontWeight: 600, color: 'var(--color-primary)' }}>Đăng ký</Link>
+              </>
+            )}
+          </div>
         </div>
-      )}
-    </header>
+      </div>
+    </>
   );
 }

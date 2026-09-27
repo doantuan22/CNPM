@@ -3,45 +3,101 @@ import { Link } from 'react-router-dom';
 import { useAdminPartnerApplications } from '../features/partners/hooks';
 import { ApiError } from '../services/apiClient';
 
-const statuses = ['', 'Chờ duyệt', 'Đã duyệt', 'Từ chối'];
-
 export default function AdminPartnerApplicationsPage() {
   const [status, setStatus] = useState('Chờ duyệt');
-  const query = useAdminPartnerApplications(status || undefined);
+  const query = useAdminPartnerApplications(status === 'ALL' ? undefined : status);
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Duyệt hồ sơ đối tác</h1>
-        <p className="text-sm text-slate-500">Xem và xử lý đăng ký kinh doanh khách sạn mới</p>
+    <div className="flex flex-col gap-6 max-w-[1200px] mx-auto w-full">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-heading">Hồ sơ đăng ký</h1>
+          <p className="text-sm text-slate-500 mt-0.5">Thẩm định tính pháp lý hồ sơ đối tác chủ khách sạn và cơ sở lưu trú trước khi cho phép mở bán phòng.</p>
+        </div>
       </div>
-      <div className="flex flex-wrap items-center gap-3">
-        <label htmlFor="partner-status" className="text-sm font-medium text-slate-700">Trạng thái</label>
-        <select id="partner-status" value={status} onChange={(e) => setStatus(e.target.value)} className="rounded-lg border border-slate-300 px-3 py-2 text-sm">
-          {statuses.map((value) => <option key={value} value={value}>{value || 'Tất cả trạng thái'}</option>)}
-        </select>
+
+      <div className="bg-white rounded-[16px] border border-border shadow-sm p-5 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-slate-100">
+          <div className="flex items-center gap-2">
+            <div className="px-4 py-2 rounded-xl text-sm font-bold bg-primary-50 text-primary-700 border border-primary-100 transition shadow-xs">
+              Đăng ký đối tác
+            </div>
+          </div>
+          
+          <div className="flex items-center bg-slate-100 p-1 rounded-xl text-xs font-semibold overflow-x-auto">
+            {['ALL', 'Chờ duyệt', 'Đã duyệt', 'Từ chối'].map((st) => (
+              <button
+                key={st}
+                onClick={() => setStatus(st)}
+                className={`px-3 py-1.5 rounded-lg transition whitespace-nowrap ${
+                  status === st ? 'bg-white text-heading shadow-sm font-bold' : 'text-slate-600 hover:text-heading font-semibold'
+                }`}
+              >
+                {st === 'ALL' ? 'Tất cả' : st}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
-      <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-xs">
+
+      <div className="bg-white rounded-[16px] border border-border shadow-sm overflow-hidden flex flex-col">
         {query.isLoading ? (
-          <div className="flex justify-center py-16" role="status"><div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600" /></div>
+          <div className="flex justify-center py-16"><div className="spinner"></div></div>
         ) : query.isError ? (
-          <div role="alert" className="px-6 py-10 text-center text-sm text-red-700">{query.error instanceof ApiError ? query.error.message : 'Không thể tải hồ sơ đối tác'}</div>
+          <div role="alert" className="px-6 py-10 text-center text-sm text-red-700">
+            {query.error instanceof ApiError ? query.error.message : 'Không thể tải hồ sơ đối tác'}
+          </div>
         ) : query.data?.items.length === 0 ? (
-          <div className="px-6 py-16 text-center text-sm text-slate-500">Không có hồ sơ phù hợp</div>
+          <div className="py-16 flex flex-col items-center justify-center text-center">
+            <div className="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
+              <i className="ph ph-files text-[28px]"></i>
+            </div>
+            <h4 className="text-sm font-bold text-heading">Không có hồ sơ đăng ký nào phù hợp</h4>
+            <p className="text-xs text-slate-500 max-w-sm mt-1">Chưa có hồ sơ với trạng thái đã chọn.</p>
+          </div>
         ) : (
-          <table className="min-w-[720px] w-full text-left text-sm">
-            <caption className="sr-only">Danh sách hồ sơ đối tác</caption>
-            <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase text-slate-500"><tr><th className="px-4 py-3">Người nộp</th><th className="px-4 py-3">Mã hồ sơ</th><th className="px-4 py-3">Ngày nộp</th><th className="px-4 py-3">Trạng thái</th><th className="px-4 py-3" /></tr></thead>
-            <tbody className="divide-y divide-slate-100">
-              {query.data?.items.map((application) => <tr key={application.MaHoSoDoiTac} className="hover:bg-slate-50">
-                <td className="px-4 py-3 font-medium text-slate-900">{application.TAI_KHOAN_HO_SO_DOI_TAC_MaTaiKhoanToTAI_KHOAN.HoTen}</td>
-                <td className="px-4 py-3 text-slate-700">#{application.MaHoSoDoiTac}</td>
-                <td className="px-4 py-3 text-slate-700">{new Date(application.NgayNop).toLocaleString('vi-VN')}</td>
-                <td className="px-4 py-3"><span className="rounded-full bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700">{application.TrangThaiDuyet}</span></td>
-                <td className="px-4 py-3 text-right"><Link to={`/admin/partner-applications/${application.MaHoSoDoiTac}`} className="font-medium text-blue-600 hover:underline">Chi tiết</Link></td>
-              </tr>)}
-            </tbody>
-          </table>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse min-w-[800px]">
+              <thead>
+                <tr className="bg-slate-50/80 border-b border-border text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                  <th className="py-3.5 px-5">Mã hồ sơ</th>
+                  <th className="py-3.5 px-4">Người đại diện</th>
+                  <th className="py-3.5 px-4 text-center">Ngày nộp</th>
+                  <th className="py-3.5 px-4 text-center">Trạng thái</th>
+                  <th className="py-3.5 px-4 text-center">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-xs">
+                {query.data?.items.map((application) => (
+                  <tr key={application.MaHoSoDoiTac} className="hover:bg-slate-50 transition-colors">
+                    <td className="py-4 px-5 font-mono font-bold text-primary-600">
+                      #{application.MaHoSoDoiTac}
+                    </td>
+                    <td className="py-4 px-4 font-bold text-heading">
+                      {application.TAI_KHOAN_HO_SO_DOI_TAC_MaTaiKhoanToTAI_KHOAN.HoTen}
+                    </td>
+                    <td className="py-4 px-4 text-center font-mono text-[11px] text-slate-500">
+                      {new Date(application.NgayNop).toLocaleString('vi-VN')}
+                    </td>
+                    <td className="py-4 px-4 text-center">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-semibold ${
+                        application.TrangThaiDuyet === 'Chờ duyệt' ? 'bg-amber-50 text-amber-600' :
+                        application.TrangThaiDuyet === 'Đã duyệt' ? 'bg-emerald-50 text-emerald-600' :
+                        'bg-rose-50 text-rose-600'
+                      }`}>
+                        {application.TrangThaiDuyet}
+                      </span>
+                    </td>
+                    <td className="py-4 px-4 text-center">
+                      <Link to={`/admin/partner-applications/${application.MaHoSoDoiTac}`} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-primary-700 bg-primary-50 hover:bg-primary-100 transition border border-primary-200/60">
+                        Thẩm định
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>

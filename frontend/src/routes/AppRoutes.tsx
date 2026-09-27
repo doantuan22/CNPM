@@ -4,6 +4,16 @@ import MainLayout from '../components/layouts/MainLayout';
 import { ProtectedRoute } from '../components/auth/ProtectedRoute';
 import { ROLE_NAMES } from '../lib/roles';
 import HomePage from '../pages/HomePage';
+import {
+  BookingConfirmPage,
+  BookingRoomPage,
+  PartnerInventoryPage,
+  PartnerBookingsPage,
+  PartnerReportsPage,
+  PartnerRevenuePage,
+  PaymentPage,
+  WriteReviewPage,
+} from '../pages/EcodeFlowPages';
 
 const LoginPage = lazy(() => import('../pages/LoginPage'));
 const RegisterPage = lazy(() => import('../pages/RegisterPage'));
@@ -47,22 +57,36 @@ export default function AppRoutes() {
     <Routes>
       <Route element={<MainLayout />}>
         <Route path="/" element={<HomePage />} />
+        <Route path="/home" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/hotels" element={<HotelListPage />} />
+        <Route path="/search-results" element={<HotelListPage />} />
         <Route path="/hotels/:id" element={<HotelDetailPage />} />
+        <Route path="/hotel-detail/:id" element={<HotelDetailPage />} />
 
         {/* Any authenticated account */}
         <Route element={<ProtectedRoute />}>
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/account-profile" element={<ProfilePage />} />
           <Route path="/partner/apply" element={<PartnerApplyPage />} />
+          <Route path="/register-partner" element={<PartnerApplyPage />} />
           <Route path="/bookings" element={<BookingsPage />} />
+          <Route path="/my-bookings" element={<BookingsPage />} />
           <Route path="/bookings/:id" element={<BookingDetailPage />} />
+          <Route path="/booking-detail/:id" element={<BookingDetailPage />} />
+          <Route path="/booking/:id/room" element={<BookingRoomPage />} />
+          <Route path="/booking/:id/confirm" element={<BookingConfirmPage />} />
+          <Route path="/booking/:id/payment" element={<PaymentPage />} />
+          <Route path="/payment/:id" element={<PaymentPage />} />
           <Route path="/payment/result" element={<PaymentResultPage />} />
+          <Route path="/payment-result" element={<PaymentResultPage />} />
           <Route path="/support" element={<SupportPage />} />
+          <Route path="/support-request" element={<SupportPage />} />
           <Route path="/support/:id" element={<SupportDetailPage />} />
+          <Route path="/write-review/:id" element={<WriteReviewPage />} />
         </Route>
 
         {/* Chủ khách sạn */}
@@ -74,6 +98,21 @@ export default function AppRoutes() {
           <Route path="/owner/hotels/:id/analytics" element={<OwnerAnalyticsPage />} />
           <Route path="/owner/hotels/:id/bookings" element={<OwnerBookingsPage />} />
           <Route path="/owner/hotels/:id/bookings/:bookingId" element={<OwnerBookingDetailPage />} />
+
+          {/* UI_EGODE partner screens mapped to the API-backed owner portal. */}
+          <Route path="/partner/dashboard" element={<OwnerDashboardPage />} />
+          <Route path="/partner/hotels" element={<OwnerDashboardPage />} />
+          <Route path="/partner/hotels/new" element={<OwnerHotelFormPage />} />
+          <Route path="/partner/hotels/:id" element={<OwnerHotelManagePage />} />
+          <Route path="/partner/hotels/:id/bookings" element={<OwnerBookingsPage />} />
+          <Route path="/partner/bookings" element={<PartnerBookingsPage />} />
+          <Route path="/partner/hotels/:id/room-types" element={<OwnerRoomTypeManagePage />} />
+          <Route path="/partner/inventory-pricing" element={<PartnerInventoryPage />} />
+          <Route path="/partner/reports" element={<PartnerReportsPage />} />
+          <Route path="/partner/revenue" element={<PartnerRevenuePage />} />
+          <Route path="/partner/room-types" element={<PartnerInventoryPage />} />
+          <Route path="/partner/room-type-form" element={<PartnerInventoryPage />} />
+          <Route path="/partner/hotel-form" element={<OwnerHotelFormPage />} />
         </Route>
 
         {/* Quản trị hệ thống */}
@@ -93,6 +132,8 @@ export default function AppRoutes() {
           <Route path="/admin/promotions" element={<AdminPromotionsPage />} />
           <Route path="/admin/promotions/new" element={<AdminPromotionFormPage />} />
           <Route path="/admin/promotions/:id" element={<AdminPromotionFormPage />} />
+          <Route path="/admin/onboarding" element={<AdminPartnerApplicationsPage />} />
+          <Route path="/admin/operations" element={<AdminDashboardPage />} />
         </Route>
 
         <Route path="*" element={<NotFoundPage />} />

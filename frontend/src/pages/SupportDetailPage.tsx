@@ -1,26 +1,31 @@
-import { ArrowLeft } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
-import { Button } from '../components/common/Button';
 import { useMySupportRequest } from '../features/support/hooks';
-import { supportStatusBadgeClass } from '../features/support/status';
-import { cn } from '../lib/utils';
 import { ApiError } from '../services/apiClient';
+
+function getBadgeClass(status: string) {
+  switch (status) {
+    case 'Mới tiếp nhận':
+      return 'status-new';
+    case 'Đang xử lý':
+      return 'status-processing';
+    case 'Đã xử lý':
+      return 'status-resolved';
+    default:
+      return 'status-new';
+  }
+}
 
 export default function SupportDetailPage() {
   const { id } = useParams<{ id: string }>();
   const requestQuery = useMySupportRequest(Number(id));
 
   if (requestQuery.isLoading) {
-    return (
-      <div className="flex justify-center py-16" role="status" aria-live="polite">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600" />
-      </div>
-    );
+    return <div className="flex justify-center py-16"><div className="spinner"></div></div>;
   }
 
   if (requestQuery.isError || !requestQuery.data) {
     return (
-      <div role="alert" className="mx-auto max-w-md rounded-lg bg-red-50 px-4 py-3 text-center text-sm text-red-700">
+      <div role="alert" className="mx-auto max-w-md mt-8 rounded-lg bg-red-50 px-4 py-3 text-center text-sm text-red-700">
         {requestQuery.error instanceof ApiError ? requestQuery.error.message : 'Không tìm thấy yêu cầu'}
       </div>
     );
@@ -29,36 +34,45 @@ export default function SupportDetailPage() {
   const r = requestQuery.data;
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
-      <Button variant="ghost" size="sm" asChild>
-        <Link to="/support">
-          <ArrowLeft className="mr-1.5 h-4 w-4" /> Quay lại danh sách
-        </Link>
-      </Button>
+    <div className="container" style={{ paddingTop: '32px', paddingBottom: '60px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      
+      <Link to="/support" className="breadcrumb w-fit">
+        <i className="ph ph-arrow-left"></i>
+        <span>Quay lại danh sách yêu cầu</span>
+      </Link>
 
-      <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
-        <div className="flex items-start justify-between gap-3">
+      <div className="card card-body max-w-3xl">
+        <div className="flex justify-between items-start gap-3 mb-5 pb-4 border-b border-border flex-wrap">
           <div>
-            <h1 className="text-lg font-semibold text-slate-900">{r.TieuDe}</h1>
-            <p className="mt-1 text-xs text-slate-500">
-              {r.LoaiYeuCau} · Gửi ngày {new Date(r.NgayTao).toLocaleString('vi-VN')}
-              {r.DAT_PHONG && <> · Đơn {r.DAT_PHONG.MaXacNhanDatPhong}</>}
+            <h1 className="text-[20px] font-bold text-heading">{r.TieuDe}</h1>
+            <p className="mt-1 text-[13px] text-muted">
+              {r.LoaiYeuCau} · Gửi lúc {new Date(r.NgayTao).toLocaleString('vi-VN')}
             </p>
           </div>
-          <span className={cn('rounded-full px-3 py-1 text-sm font-medium', supportStatusBadgeClass(r.TrangThai))}>{r.TrangThai}</span>
+          <span className={`status-badge ${getBadgeClass(r.TrangThai)}`}>{r.TrangThai}</span>
         </div>
 
-        <div className="border-t border-slate-100 pt-4">
-          <p className="mb-1 text-xs font-medium text-slate-600">Nội dung</p>
-          <p className="whitespace-pre-wrap text-sm text-slate-700">{r.NoiDung}</p>
+        <div className="space-y-4 text-sm text-body">
+          {r.DAT_PHONG && (
+             <div><strong>Đơn liên quan:</strong> #{r.DAT_PHONG.MaXacNhanDatPhong}</div>
+          )}
+          
+          <div>
+            <strong className="block mb-1 text-heading">Nội dung chi tiết:</strong>
+            <p className="whitespace-pre-wrap leading-relaxed">{r.NoiDung}</p>
+          </div>
         </div>
 
         {r.KetQuaXuLy && (
-          <div className="rounded-lg bg-green-50 p-3">
-            <p className="mb-1 text-xs font-medium text-green-800">Kết quả xử lý{r.NgayXuLy && ` (${new Date(r.NgayXuLy).toLocaleString('vi-VN')})`}</p>
-            <p className="whitespace-pre-wrap text-sm text-green-900">{r.KetQuaXuLy}</p>
+          <div className="mt-6 bg-emerald-50 border border-emerald-100 rounded-lg p-4">
+            <h4 className="text-sm font-bold text-emerald-800 mb-1 flex items-center gap-2">
+              <i className="ph-fill ph-check-circle text-emerald-600"></i>
+              Kết quả xử lý {r.NgayXuLy && <span className="font-normal opacity-80">({new Date(r.NgayXuLy).toLocaleString('vi-VN')})</span>}
+            </h4>
+            <p className="whitespace-pre-wrap text-sm text-emerald-900 leading-relaxed pl-6">{r.KetQuaXuLy}</p>
           </div>
         )}
+
       </div>
     </div>
   );

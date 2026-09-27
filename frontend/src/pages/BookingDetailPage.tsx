@@ -1,9 +1,7 @@
 import { useState } from 'react';
-import { ArrowLeft, ShieldCheck, CreditCard, RotateCcw, CheckCircle2 } from 'lucide-react';
 import { Link, useLocation, useParams } from 'react-router-dom';
-import { Button } from '../components/common/Button';
+import { Textarea } from '../components/common/Textarea';
 import { useBookingDetail, useCancelBooking } from '../features/bookings/hooks';
-import { bookingStatusBadgeClass, paymentStatusBadgeClass } from '../features/bookings/status';
 import { hoursBeforeCheckIn, selectRefundPercentPreview, computeRefundAmountPreview } from '../features/bookings/refund-preview';
 import { useCreateVnpayPayment, useRetryRefund } from '../features/payments/hooks';
 import { ReviewSection } from '../components/reviews/ReviewSection';
@@ -11,6 +9,19 @@ import { formatCurrencyVND, cn } from '../lib/utils';
 import { ApiError } from '../services/apiClient';
 
 const CANCELLABLE = ['Chờ thanh toán', 'Đã xác nhận'];
+
+function getStatusBadgeClass(status: string) {
+  switch (status) {
+    case 'Đã xác nhận':
+    case 'Thành công':
+    case 'Hoàn tất':
+      return 'status-confirmed';
+    case 'Đã hủy':
+      return 'status-cancelled';
+    default:
+      return 'status-pending'; 
+  }
+}
 
 export default function BookingDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -27,16 +38,12 @@ export default function BookingDetailPage() {
   const [cancelNote, setCancelNote] = useState('');
 
   if (bookingQuery.isLoading) {
-    return (
-      <div className="flex justify-center py-16" role="status" aria-live="polite">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600" />
-      </div>
-    );
+    return <div className="flex justify-center py-16"><div className="spinner"></div></div>;
   }
 
   if (bookingQuery.isError || !bookingQuery.data) {
     return (
-      <div role="alert" className="mx-auto max-w-md rounded-lg bg-red-50 px-4 py-3 text-center text-sm text-red-700">
+      <div role="alert" className="mx-auto max-w-md mt-8 rounded-lg bg-red-50 px-4 py-3 text-center text-sm text-red-700">
         {bookingQuery.error instanceof ApiError ? bookingQuery.error.message : 'Không tìm thấy đặt phòng'}
       </div>
     );
@@ -62,178 +69,223 @@ export default function BookingDetailPage() {
   };
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
-      <Button variant="ghost" size="sm" asChild>
-        <Link to="/bookings">
-          <ArrowLeft className="mr-1.5 h-4 w-4" /> Quay lại danh sách đặt phòng
-        </Link>
-      </Button>
+    <div className="container flex flex-col gap-6" style={{ paddingTop: '28px', paddingBottom: '60px' }}>
+      
+      <Link to="/bookings" className="breadcrumb w-fit">
+        <i className="ph ph-arrow-left"></i>
+        <span>Quay lại danh sách đặt phòng</span>
+      </Link>
 
       {justBooked && (
         <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6 text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
-            <CheckCircle2 className="h-7 w-7" />
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 mb-3">
+            <i className="ph-fill ph-check-circle text-3xl"></i>
           </div>
-          <h1 className="mt-4 text-xl font-bold text-slate-900">Đặt phòng thành công!</h1>
-          <p className="mt-1 text-sm text-slate-600">Vui lòng thanh toán để hoàn tất đặt phòng.</p>
+          <h1 className="text-xl font-bold text-ink">Đặt phòng thành công!</h1>
+          <p className="mt-1 text-sm text-ink-muted">Vui lòng thanh toán để hoàn tất đặt phòng.</p>
         </div>
       )}
 
-      <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm text-slate-500">
-              Mã xác nhận: <span className="font-mono font-semibold text-slate-900">{booking.MaXacNhanDatPhong}</span>
-            </p>
-            <p className="text-xs text-slate-500">{booking.NgayNhanPhong} → {booking.NgayTraPhong}</p>
-          </div>
-          <span className={cn('rounded-full px-3 py-1 text-sm font-medium', bookingStatusBadgeClass(booking.TrangThai))}>
-            {booking.TrangThai}
-          </span>
+      <div className="card p-6 flex justify-between items-center flex-wrap gap-3">
+        <div>
+          <h1 className="text-[22px] font-bold text-ink flex items-center gap-3 flex-wrap">
+            Chi tiết đặt phòng <span className="text-primary">#{booking.MaXacNhanDatPhong}</span>
+          </h1>
+          <p className="text-[13px] text-muted mt-1">Trạng thái hiện tại: {booking.TrangThai}</p>
         </div>
-
-        <div className="space-y-2 border-t border-slate-100 pt-4">
-          {booking.ChiTietPhong.map((line) => (
-            <div key={line.MaLoaiPhong} className="flex justify-between text-sm text-slate-700">
-              <span>{line.TenLoaiPhong} × {line.SoLuong}</span>
-            </div>
-          ))}
-        </div>
-
-        <div className="space-y-1 border-t border-slate-100 pt-4 text-sm">
-          <div className="flex justify-between text-slate-600">
-            <span>Tổng tiền phòng</span>
-            <span>{formatCurrencyVND(booking.TongTienPhong)}</span>
-          </div>
-          {booking.SoTienGiam > 0 && (
-            <div className="flex justify-between text-green-700">
-              <span>Giảm giá{booking.KhuyenMai ? ` (${booking.KhuyenMai.MaCode})` : ''}</span>
-              <span>−{formatCurrencyVND(booking.SoTienGiam)}</span>
-            </div>
-          )}
-          <div className="flex justify-between text-base font-bold text-slate-900">
-            <span>Tổng thanh toán</span>
-            <span>{formatCurrencyVND(booking.TongTienThanhToan)}</span>
-          </div>
-        </div>
-
-        {booking.GhiChu && <p className="border-t border-slate-100 pt-4 text-sm text-slate-600">Ghi chú: {booking.GhiChu}</p>}
-
-        <div className="rounded-lg bg-slate-50 p-3 text-xs text-slate-600">
-          <p className="mb-1 flex items-center gap-1 font-medium text-slate-800">
-            <ShieldCheck className="h-3.5 w-3.5" /> {booking.ChinhSachHuy.TenChinhSach}
-          </p>
-          <ul className="space-y-0.5">
-            {booking.ChinhSachHuy.ChiTiet.map((tier, i) => (
-              <li key={i}>Hủy trước {tier.SoGioTruocNhanPhong} giờ: hoàn {tier.TyLeHoanTien}%</li>
-            ))}
-          </ul>
-        </div>
-
-        {booking.TrangThai === 'Chờ thanh toán' && (
-          <div className="space-y-2 border-t border-slate-100 pt-4">
-            {payMutation.isError && (
-              <div role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">
-                {payMutation.error instanceof ApiError ? payMutation.error.message : 'Không thể tạo yêu cầu thanh toán'}
-              </div>
-            )}
-            <Button className="w-full" onClick={startPayment} disabled={payMutation.isPending}>
-              <CreditCard className="mr-1.5 h-4 w-4" />
-              {payMutation.isPending ? 'Đang chuyển đến VNPAY...' : 'Thanh toán qua VNPAY'}
-            </Button>
-          </div>
-        )}
-
-        {canCancel && (
-          <div className="space-y-3 border-t border-slate-100 pt-4">
-            {!showCancelConfirm ? (
-              <Button variant="danger" className="w-full" onClick={() => setShowCancelConfirm(true)}>
-                Hủy đặt phòng
-              </Button>
-            ) : (
-              <div className="space-y-3 rounded-lg border border-red-200 bg-red-50 p-4">
-                <p className="text-sm font-medium text-red-800">Xác nhận hủy đặt phòng?</p>
-                {successfulPaid > 0 ? (
-                  <p className="text-xs text-red-700">
-                    Dự kiến hoàn: <strong>{formatCurrencyVND(previewAmount)}</strong> ({previewPercent}% của {formatCurrencyVND(successfulPaid)}
-                    đã thanh toán) — số tiền chính xác sẽ do hệ thống tính lại khi xác nhận.
-                  </p>
-                ) : (
-                  <p className="text-xs text-red-700">Đặt phòng này chưa thanh toán — hủy sẽ không tạo yêu cầu hoàn tiền.</p>
-                )}
-                <div>
-                  <label htmlFor="cancel-note" className="mb-1 block text-xs font-medium text-red-800">
-                    Lý do hủy (không bắt buộc)
-                  </label>
-                  <textarea
-                    id="cancel-note"
-                    rows={2}
-                    value={cancelNote}
-                    onChange={(e) => setCancelNote(e.target.value)}
-                    className="block w-full rounded-lg border border-red-300 px-3 py-2 text-sm"
-                  />
-                </div>
-                {cancelMutation.isError && (
-                  <div role="alert" className="rounded-lg bg-red-100 px-3 py-2 text-xs text-red-800">
-                    {cancelMutation.error instanceof ApiError ? cancelMutation.error.message : 'Không thể hủy đặt phòng'}
-                  </div>
-                )}
-                <div className="flex gap-2">
-                  <Button variant="danger" className="flex-1" onClick={confirmCancel} disabled={cancelMutation.isPending}>
-                    {cancelMutation.isPending ? 'Đang hủy...' : 'Xác nhận hủy'}
-                  </Button>
-                  <Button variant="outline" className="flex-1" onClick={() => setShowCancelConfirm(false)}>
-                    Không hủy
-                  </Button>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
+        <span className={`status-badge ${getStatusBadgeClass(booking.TrangThai)}`}>{booking.TrangThai}</span>
       </div>
 
-      {booking.ThanhToan.length > 0 && (
-        <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
-          <h2 className="text-lg font-semibold text-slate-900">Thanh toán & hoàn tiền</h2>
-          {booking.ThanhToan.map((payment) => (
-            <div key={payment.MaThanhToan} className="rounded-lg border border-slate-200 p-3">
-              <div className="flex items-center justify-between text-sm">
-                <span className="font-medium text-slate-900">{formatCurrencyVND(payment.SoTien)} · {payment.PhuongThucThanhToan}</span>
-                <span className={cn('rounded-full px-2 py-0.5 text-xs font-medium', paymentStatusBadgeClass(payment.TrangThai))}>
-                  {payment.TrangThai}
-                </span>
+      <div className="two-col-layout">
+        
+        {/* Left Column */}
+        <div className="flex flex-col gap-6">
+          
+          <div className="card card-body">
+            <div className="flex gap-5 mb-5 flex-wrap">
+              <div className="w-[140px] h-[105px] rounded-lg bg-surface-tertiary flex-none flex items-center justify-center text-slate-300">
+                <i className="ph-duotone ph-image text-4xl"></i>
               </div>
-              <p className="mt-1 text-xs text-slate-500">{new Date(payment.ThoiGianGiaoDich).toLocaleString('vi-VN')}</p>
+              <div>
+                <h2 className="text-lg font-bold text-ink mb-1">{(booking as any).TenKhachSan || (booking as any).PHONG?.LOAI_PHONG.KHACH_SAN.TenKhachSan}</h2>
+                {booking.GhiChu && <p className="text-[13px] text-muted mb-2">Ghi chú: {booking.GhiChu}</p>}
+                <p className="text-[13px] text-primary mt-1.5 cursor-pointer hover:underline">Xem trên bản đồ <i className="ph ph-arrow-right"></i></p>
+              </div>
+            </div>
 
-              {payment.HoanTien.map((refund) => (
-                <div key={refund.MaHoanTien} className="mt-2 flex items-center justify-between rounded-md bg-slate-50 px-3 py-2 text-xs">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-slate-800">Hoàn tiền {formatCurrencyVND(refund.SoTienHoan)}</span>
-                      <span className={cn('rounded-full px-2 py-0.5 font-medium', paymentStatusBadgeClass(refund.TrangThai))}>
-                        {refund.TrangThai}
-                      </span>
-                    </div>
-                    <p className="mt-0.5 text-slate-500">{refund.LyDoHoanTien}</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 bg-surface-secondary border border-border rounded-lg p-4 gap-4">
+              <div>
+                <label className="block text-[12px] text-muted mb-1">Nhận phòng</label>
+                <span className="text-[15px] font-semibold text-heading">{booking.NgayNhanPhong}</span>
+              </div>
+              <div>
+                <label className="block text-[12px] text-muted mb-1">Trả phòng</label>
+                <span className="text-[15px] font-semibold text-heading">{booking.NgayTraPhong}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="card card-body">
+            <div className="flex justify-between items-center mb-5 pb-3 border-b border-border">
+              <span className="text-base font-bold text-heading">Thông tin phòng nghỉ</span>
+            </div>
+
+            {booking.ChiTietPhong.map((line, i) => (
+              <div key={line.MaLoaiPhong} className={cn("flex justify-between items-center pb-4", i !== booking.ChiTietPhong.length - 1 && "border-b border-dashed border-border mb-4")}>
+                <div>
+                  <div className="text-[15px] font-semibold text-heading mb-1">{line.TenLoaiPhong}</div>
+                  <div className="text-[13px] text-muted">Số lượng: {line.SoLuong} phòng</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="card card-body">
+            <div className="text-base font-bold text-heading mb-5 pb-3 border-b border-border">Chính sách hủy đặt phòng</div>
+            <div className="flex items-center gap-2 mb-4">
+              <i className="ph-fill ph-shield-check text-primary text-xl"></i>
+              <span className="font-semibold text-ink text-sm">{booking.ChinhSachHuy.TenChinhSach}</span>
+            </div>
+            <div className="flex flex-col gap-3.5 relative">
+              {booking.ChinhSachHuy.ChiTiet.map((tier, i) => (
+                <div key={i} className="flex gap-3.5 relative">
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold flex-shrink-0 z-10 bg-blue-50 text-primary border border-blue-100">
+                    {i + 1}
                   </div>
-                  {refund.TrangThai !== 'Thành công' && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => retryRefundMutation.mutate(refund.MaHoanTien)}
-                      disabled={retryRefundMutation.isPending}
-                    >
-                      <RotateCcw className="mr-1 h-3 w-3" /> Thử lại
-                    </Button>
-                  )}
+                  <div>
+                    <h5 className="text-[14px] font-semibold text-heading">Trước {tier.SoGioTruocNhanPhong} giờ</h5>
+                    <p className="text-[13px] text-muted mt-0.5">Hoàn tiền {tier.TyLeHoanTien}%</p>
+                  </div>
                 </div>
               ))}
             </div>
-          ))}
+          </div>
+
         </div>
-      )}
+
+        {/* Right Column */}
+        <div className="flex flex-col gap-5">
+          
+          <div className="card card-body">
+            <div className="text-base font-bold text-heading mb-5 pb-3 border-b border-border">Chi tiết thanh toán</div>
+
+            <div className="flex justify-between text-[14px] text-muted mb-3">
+              <span>Tổng tiền phòng</span>
+              <span>{formatCurrencyVND(booking.TongTienPhong)}</span>
+            </div>
+            {booking.SoTienGiam > 0 && (
+              <div className="flex justify-between text-[14px] text-success mb-3">
+                <span>Khuyến mãi {booking.KhuyenMai?.MaCode}</span>
+                <span>− {formatCurrencyVND(booking.SoTienGiam)}</span>
+              </div>
+            )}
+            
+            <div className="flex justify-between items-center pt-3.5 mt-3.5 border-t border-border">
+              <span className="text-[15px] font-semibold text-heading">Tổng thanh toán</span>
+              <span className="text-[20px] font-bold text-primary">{formatCurrencyVND(booking.TongTienThanhToan)}</span>
+            </div>
+
+            <div className="mt-4 pt-3.5 border-t border-dashed border-border text-[13px] text-muted flex flex-col gap-1.5">
+               {booking.ThanhToan.length === 0 ? (
+                 <div>Chưa có giao dịch thanh toán.</div>
+               ) : (
+                 booking.ThanhToan.map((payment) => (
+                   <div key={payment.MaThanhToan} className="bg-slate-50 p-2 rounded border border-slate-100 mt-2">
+                     <div>Phương thức: <strong>{payment.PhuongThucThanhToan}</strong></div>
+                     <div>Trạng thái: <strong className={payment.TrangThai === 'Thành công' ? 'text-success' : ''}>{payment.TrangThai}</strong></div>
+                     <div>Số tiền: <strong>{formatCurrencyVND(payment.SoTien)}</strong></div>
+                     <div className="text-[11px] mt-1">{new Date(payment.ThoiGianGiaoDich).toLocaleString('vi-VN')}</div>
+                     
+                     {payment.HoanTien.length > 0 && (
+                       <div className="mt-2 pt-2 border-t border-slate-200">
+                         {payment.HoanTien.map(r => (
+                           <div key={r.MaHoanTien} className="text-amber-700">
+                             <strong>Hoàn tiền:</strong> {formatCurrencyVND(r.SoTienHoan)} ({r.TrangThai})
+                             {r.TrangThai !== 'Thành công' && (
+                               <button 
+                                 onClick={() => retryRefundMutation.mutate(r.MaHoanTien)}
+                                 className="ml-2 text-[10px] bg-amber-100 px-1.5 py-0.5 rounded text-amber-800 hover:bg-amber-200"
+                               >
+                                 Thử lại
+                               </button>
+                             )}
+                           </div>
+                         ))}
+                       </div>
+                     )}
+                   </div>
+                 ))
+               )}
+            </div>
+          </div>
+
+          {booking.TrangThai === 'Chờ thanh toán' && (
+             <div className="flex flex-col gap-2">
+               {payMutation.isError && (
+                  <div role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">
+                    {payMutation.error instanceof ApiError ? payMutation.error.message : 'Lỗi tạo TT'}
+                  </div>
+               )}
+               <button type="button" className="btn btn-primary btn-block" onClick={startPayment} disabled={payMutation.isPending}>
+                 {payMutation.isPending ? 'Đang xử lý...' : 'Thanh toán ngay'}
+               </button>
+             </div>
+          )}
+
+          {canCancel && (
+            <div>
+               {!showCancelConfirm ? (
+                 <button type="button" className="btn btn-danger-outline btn-block" onClick={() => setShowCancelConfirm(true)}>
+                   Hủy đặt phòng này
+                 </button>
+               ) : (
+                 <div className="bg-red-50 border border-red-200 rounded-xl p-4 shadow-sm">
+                   <h4 className="text-sm font-bold text-red-800 mb-2">Xác nhận hủy đặt phòng?</h4>
+                   <div className="bg-white border border-red-100 rounded-lg p-3 mb-3 text-[13px] text-red-700">
+                     {successfulPaid > 0 ? (
+                       <>
+                         <div className="flex justify-between mb-1"><span>Đã thanh toán:</span> <span>{formatCurrencyVND(successfulPaid)}</span></div>
+                         <div className="flex justify-between mb-1"><span>Dự kiến hoàn ({previewPercent}%):</span> <strong className="text-base">{formatCurrencyVND(previewAmount)}</strong></div>
+                         <div className="text-[11px] mt-2 opacity-80">Hệ thống sẽ tính lại chính xác khi bạn xác nhận.</div>
+                       </>
+                     ) : (
+                       <div>Đơn này chưa thanh toán nên sẽ không có hoàn tiền.</div>
+                     )}
+                   </div>
+                   
+                   <div className="mb-4">
+                     <label className="block text-xs text-red-800 font-medium mb-1">Lý do hủy (không bắt buộc)</label>
+                     <Textarea 
+                       rows={2} 
+                       value={cancelNote} 
+                       onChange={e => setCancelNote(e.target.value)}
+                       className="border-red-300 focus:border-red-500 focus:ring-red-200 text-sm"
+                     />
+                   </div>
+
+                   {cancelMutation.isError && (
+                     <div className="mb-3 text-xs text-red-600 bg-red-100 p-2 rounded">Lỗi: {cancelMutation.error?.message}</div>
+                   )}
+
+                   <div className="flex gap-2">
+                     <button type="button" className="btn btn-danger flex-1 py-2" onClick={confirmCancel} disabled={cancelMutation.isPending}>
+                       {cancelMutation.isPending ? 'Đang xử lý' : 'Xác nhận hủy'}
+                     </button>
+                     <button type="button" className="btn btn-outline flex-1 py-2" onClick={() => setShowCancelConfirm(false)}>
+                       Không hủy
+                     </button>
+                   </div>
+                 </div>
+               )}
+            </div>
+          )}
+
+        </div>
+
+      </div>
 
       <ReviewSection bookingId={booking.MaDatPhong} bookingStatus={booking.TrangThai} />
+
     </div>
   );
 }
