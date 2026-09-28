@@ -28,8 +28,7 @@ export default function HotelDetailPage() {
   const hotelId = Number(id);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
-  const [selectedQuantity, setSelectedQuantity] = useState(1);
+  const [selectedRooms, setSelectedRooms] = useState<Record<number, number>>({});
   const [promoCode, setPromoCode] = useState('');
   const [ghiChu, setGhiChu] = useState('');
   const quoteMutation = useCreateQuote(hotelId);
@@ -41,6 +40,10 @@ export default function HotelDetailPage() {
   const checkIn = searchParams.get('checkIn') || defaults.checkIn;
   const checkOut = searchParams.get('checkOut') || defaults.checkOut;
   const guests = Number(searchParams.get('guests')) || 1;
+  const selectedRoomLines = Object.entries(selectedRooms)
+    .map(([maLoaiPhong, soLuong]) => ({ maLoaiPhong: Number(maLoaiPhong), soLuong }))
+    .filter((line) => line.soLuong > 0);
+  const selectedRoomCount = selectedRoomLines.reduce((sum, line) => sum + line.soLuong, 0);
 
   const hotelQuery = useHotelDetail(hotelId);
   const roomsQuery = useHotelRooms(hotelId, { checkIn, checkOut, guests });
@@ -55,45 +58,62 @@ export default function HotelDetailPage() {
   });
 
   const onDatesSubmit = (values: DateGuestValues) => {
-    setSelectedRoomId(null);
+    setSelectedRooms({});
     quoteMutation.reset();
+    bookingMutation.reset();
     setSearchParams({ checkIn: values.checkIn, checkOut: values.checkOut, guests: String(values.guests) });
   };
 
-  const selectRoom = (maLoaiPhong: number) => {
-    setSelectedRoomId(maLoaiPhong);
-    setSelectedQuantity(1);
-    setPromoCode('');
-    setGhiChu('');
+  const setRoomQuantity = (maLoaiPhong: number, quantity: number, available: number) => {
     quoteMutation.reset();
     bookingMutation.reset();
+    const safeQuantity = Math.min(available, Math.max(0, Math.floor(Number.isFinite(quantity) ? quantity : 0)));
+    setSelectedRooms((current) => {
+      const next = { ...current };
+      if (safeQuantity === 0) delete next[maLoaiPhong];
+      else next[maLoaiPhong] = safeQuantity;
+      return next;
+    });
   };
 
   const requestQuote = (withPromo: boolean) => {
-    if (!selectedRoomId) return;
+    if (selectedRoomLines.length === 0) return;
     bookingMutation.reset();
     quoteMutation.mutate({
       checkIn,
       checkOut,
-      rooms: [{ maLoaiPhong: selectedRoomId, soLuong: selectedQuantity }],
+      rooms: selectedRoomLines,
       promoCode: withPromo && promoCode.trim() ? promoCode.trim() : undefined,
     });
   };
 
-  // Re-quote automatically once a room is selected (and whenever quantity changes).
+  // Re-quote the complete selection whenever a room type or quantity changes.
   useEffect(() => {
-    if (selectedRoomId) requestQuote(false);
+    if (selectedRoomLines.length > 0) requestQuote(Boolean(promoCode.trim()));
+    else quoteMutation.reset();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedRoomId, selectedQuantity]);
+  }, [selectedRooms]);
+
+  const quoteMatchesSelection = (() => {
+    const quote = quoteMutation.data;
+    if (!quote || quote.NgayNhanPhong !== checkIn || quote.NgayTraPhong !== checkOut) return false;
+    if (quote.ChiTietPhong.length !== selectedRoomLines.length) return false;
+    return selectedRoomLines.every((line) =>
+      quote.ChiTietPhong.some((quotedLine) =>
+        quotedLine.MaLoaiPhong === line.maLoaiPhong && quotedLine.SoLuongYeuCau === line.soLuong
+      )
+    );
+  })();
+  const quoteMatchesPromo = (quoteMutation.variables?.promoCode ?? '') === (promoCode.trim() || '');
 
   const confirmBooking = () => {
-    if (!selectedRoomId || !quoteMutation.data) return;
+    if (selectedRoomLines.length === 0 || !quoteMatchesSelection || !quoteMutation.data?.KhaDung) return;
     bookingMutation.mutate(
       {
         checkIn,
         checkOut,
-        rooms: [{ maLoaiPhong: selectedRoomId, soLuong: selectedQuantity }],
-        promoCode: quoteMutation.data.PromoHopLe && promoCode.trim() ? promoCode.trim() : undefined,
+        rooms: selectedRoomLines,
+        promoCode: quoteMutation.data.PromoHopLe ? quoteMutation.variables?.promoCode : undefined,
         ghiChu: ghiChu.trim() || undefined,
       },
       {
@@ -117,7 +137,6 @@ export default function HotelDetailPage() {
   }
 
   const hotel = hotelQuery.data;
-  const selectedRoom = roomsQuery.data?.find((r) => r.MaLoaiPhong === selectedRoomId);
 
   return (
     <div className="booking-flow bg-surface text-ink min-h-screen pb-12 w-full !max-w-full !px-0 !py-0">
@@ -300,7 +319,7 @@ export default function HotelDetailPage() {
               ) : (
                 <div className="space-y-6">
                   {roomsQuery.data?.map((room) => (
-                    <div key={room.MaLoaiPhong} className={cn("bg-white rounded-2xl border p-5 sm:p-6 shadow-md hover:shadow-lg transition-shadow duration-300 grid grid-cols-1 md:grid-cols-12 gap-6", selectedRoomId === room.MaLoaiPhong ? "border-primary ring-1 ring-primary" : "border-border", !room.ConHang && 'opacity-60 grayscale-[50%] pointer-events-none')}>
+                    <div key={room.MaLoaiPhong} className={cn("bg-white rounded-2xl border p-5 sm:p-6 shadow-md hover:shadow-lg transition-shadow duration-300 grid grid-cols-1 md:grid-cols-12 gap-6", (selectedRooms[room.MaLoaiPhong] ?? 0) > 0 ? "border-primary ring-1 ring-primary" : "border-border", !room.ConHang && 'opacity-60 grayscale-[50%] pointer-events-none')}>
                       <div className="md:col-span-4 relative rounded-xl overflow-hidden bg-slate-100 flex items-center justify-center">
                         <i className="ph-duotone ph-image text-4xl text-slate-300"></i>
                       </div>
@@ -331,10 +350,21 @@ export default function HotelDetailPage() {
                            ) : <span className="text-sm text-slate-500">Không có giá</span>}
                         </div>
                         <div className="mt-4 w-full">
-                          <button disabled={!room.ConHang} onClick={() => selectRoom(room.MaLoaiPhong)} className={cn("w-full font-bold text-sm py-2.5 px-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-2", selectedRoomId === room.MaLoaiPhong ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "bg-primary hover:bg-primary-700 text-white")}>
-                            <span>{selectedRoomId === room.MaLoaiPhong ? 'Đang chọn' : 'Chọn phòng'}</span>
-                            {selectedRoomId === room.MaLoaiPhong ? <i className="ph-bold ph-check text-base"></i> : <i className="ph-bold ph-arrow-right text-base"></i>}
-                          </button>
+                          <label htmlFor={"hotel-detail-room-quantity-" + room.MaLoaiPhong} className="mb-1.5 block text-xs font-semibold text-ink-muted md:text-right">
+                            Số phòng muốn đặt
+                          </label>
+                          <Input
+                            id={"hotel-detail-room-quantity-" + room.MaLoaiPhong}
+                            aria-label={"Số phòng " + room.TenLoaiPhong + " muốn đặt"}
+                            type="number"
+                            min={0}
+                            max={room.SoPhongConLai}
+                            step={1}
+                            disabled={!room.ConHang}
+                            value={selectedRooms[room.MaLoaiPhong] ?? 0}
+                            onChange={(e) => setRoomQuantity(room.MaLoaiPhong, Number(e.target.value), room.SoPhongConLai)}
+                            className="h-10 md:ml-auto md:w-28"
+                          />
                           {room.ConHang && <p className="text-[10px] text-ink-muted text-center mt-1.5">Còn {room.SoPhongConLai} phòng</p>}
                         </div>
                       </div>
@@ -380,48 +410,48 @@ export default function HotelDetailPage() {
                   Chi tiết đặt phòng
                 </h2>
                 
-                {!selectedRoomId ? (
+                {selectedRoomLines.length === 0 ? (
                    <div className="p-4 bg-blue-50 rounded-xl border border-blue-100 text-center">
                      <i className="ph-duotone ph-hand-pointing text-3xl text-primary mb-2"></i>
-                     <p className="text-sm font-medium text-blue-900">Vui lòng chọn loại phòng ở bên trái để tiếp tục đặt phòng.</p>
+                     <p className="text-sm font-medium text-blue-900">Chọn số lượng cho một hoặc nhiều loại phòng để xem tổng giá.</p>
                    </div>
                 ) : (
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between border-b border-border pb-3">
-                      <span className="text-sm font-bold text-ink">{selectedRoom?.TenLoaiPhong}</span>
-                      <div className="flex items-center gap-2">
-                        <label htmlFor="hotel-detail-field-1" className="text-xs text-ink-muted">Số lượng</label>
-                        <Input id="hotel-detail-field-1"
-                          type="number"
-                          min={1}
-                          max={selectedRoom?.SoPhongConLai || 50}
-                          value={selectedQuantity}
-                          onChange={(e) => setSelectedQuantity(Math.max(1, Number(e.target.value) || 1))}
-                          className="w-16 h-8 text-sm"
-                        />
-                      </div>
+                    <div className="flex items-center justify-between border-b border-border pb-3 text-sm">
+                      <span className="font-semibold text-ink">{selectedRoomLines.length} loại phòng</span>
+                      <span className="text-ink-muted">{selectedRoomCount} phòng</span>
                     </div>
 
                     {quoteMutation.isPending ? (
                        <div className="flex justify-center py-6" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>
                     ) : quoteMutation.isError ? (
                        <div role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">{quoteMutation.error instanceof ApiError ? quoteMutation.error.message : 'Lỗi tạo báo giá'}</div>
+                    ) : !quoteMatchesSelection ? (
+                       <div className="flex justify-center py-6 text-sm text-ink-muted" role="status" aria-live="polite">Đang cập nhật báo giá...</div>
                     ) : quoteMutation.data ? (
                       <>
                         {!quoteMutation.data.KhaDung && (
                            <div className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700">
-                             Chỉ còn {quoteMutation.data.ChiTietPhong[0]?.SoPhongConLai ?? 0} phòng.
+                             Một hoặc nhiều loại phòng không đủ số lượng hoặc chưa có giá cho toàn bộ ngày lưu trú.
                            </div>
                         )}
+                        <div className="space-y-3 border-b border-border pb-3 text-sm">
+                          {quoteMutation.data.ChiTietPhong.map((line) => (
+                            <div key={line.MaLoaiPhong} className="space-y-1">
+                              <div className="flex justify-between gap-3 font-semibold text-ink">
+                                <span>{line.TenLoaiPhong}</span>
+                                <span className="shrink-0">{formatCurrencyVND(line.ThanhTien ?? 0)}</span>
+                              </div>
+                              <div className="flex justify-between gap-3 text-xs text-ink-muted">
+                                <span>{line.SoLuongYeuCau} phòng × {quoteMutation.data.SoDem} đêm</span>
+                                <span>{line.GiaTheoDem !== null ? formatCurrencyVND(line.GiaTheoDem) + '/phòng/đêm' : 'Chưa có giá'}</span>
+                              </div>
+                              {!line.DuPhong && <p className="text-xs text-amber-700">Chỉ còn {line.SoPhongConLai} phòng cho loại này.</p>}
+                              {!line.CoGiaDayDu && <p className="text-xs text-amber-700">Thiếu giá cho một hoặc nhiều ngày trong kỳ lưu trú.</p>}
+                            </div>
+                          ))}
+                        </div>
                         <div className="space-y-2 border-b border-border pb-3 text-sm">
-                          <div className="flex justify-between text-ink-muted">
-                            <span>{quoteMutation.data.SoDem} đêm × {selectedQuantity} phòng</span>
-                            <span>
-                              {quoteMutation.data.ChiTietPhong[0]?.GiaTheoDem !== null
-                                ? formatCurrencyVND(quoteMutation.data.ChiTietPhong[0]!.GiaTheoDem!) + '/đêm'
-                                : '—'}
-                            </span>
-                          </div>
                           <div className="flex justify-between font-bold text-ink">
                             <span>Tổng tiền phòng</span>
                             <span>{formatCurrencyVND(quoteMutation.data.TongTienPhong)}</span>
@@ -436,15 +466,22 @@ export default function HotelDetailPage() {
                             <Input id="hotel-detail-ml-1"
                               type="text"
                               value={promoCode}
-                              onChange={(e) => setPromoCode(e.target.value)}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                setPromoCode(value);
+                                if (!value.trim()) requestQuote(false);
+                              }}
                               placeholder="Nhập mã (nếu có)"
                               className="uppercase h-10"
                             />
-                            <button onClick={() => requestQuote(true)} disabled={!promoCode.trim()} className="h-10 px-4 bg-slate-900 text-white rounded-lg font-medium text-xs whitespace-nowrap disabled:opacity-50">
+                            <button onClick={() => requestQuote(true)} disabled={!promoCode.trim() || quoteMutation.isPending} className="h-10 px-4 bg-slate-900 text-white rounded-lg font-medium text-xs whitespace-nowrap disabled:opacity-50">
                               Áp dụng
                             </button>
                           </div>
-                          {quoteMutation.data.PromoThongBao && (
+                          {!quoteMatchesPromo && (
+                            <p className="text-xs text-amber-700">Áp dụng mã để cập nhật báo giá trước khi tiếp tục.</p>
+                          )}
+                          {quoteMutation.data.PromoThongBao && quoteMatchesPromo && (
                              <p className={cn('text-xs font-medium', quoteMutation.data.PromoHopLe ? 'text-emerald-600' : 'text-red-600')}>
                                {quoteMutation.data.PromoThongBao}
                              </p>
@@ -498,7 +535,7 @@ export default function HotelDetailPage() {
                           ) : (
                             <button
                               onClick={confirmBooking}
-                              disabled={!quoteMutation.data.KhaDung || bookingMutation.isPending}
+                              disabled={!quoteMatchesSelection || !quoteMatchesPromo || !quoteMutation.data.KhaDung || quoteMutation.isPending || bookingMutation.isPending}
                               className="w-full h-12 bg-primary hover:bg-primary-700 text-white font-bold text-sm rounded-xl shadow-lg shadow-primary/30 transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
                             >
                               {bookingMutation.isPending ? 'Đang xử lý...' : (
