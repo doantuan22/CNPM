@@ -29,7 +29,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? errorId : hint ? hintId : undefined}
         className={cn(
-          'block h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm text-slate-800 shadow-xs transition-colors placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-50',
+          'ui-field',
           className
         )}
         {...props}
@@ -39,19 +39,19 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     if (!label && !error && !hint) return field;
 
     return (
-      <div>
+      <div className="ui-field-group">
         {label && (
-          <label htmlFor={inputId} className="block text-sm font-medium text-slate-700">
+          <label htmlFor={inputId} className="ui-field-label">
             {label}
           </label>
         )}
-        <div className={label ? 'mt-1' : undefined}>{field}</div>
+        <div>{field}</div>
         {error ? (
-          <p id={errorId} className="mt-1 text-xs text-red-600">
+          <p id={errorId} className="ui-field-message ui-field-message--error">
             {error}
           </p>
         ) : hint ? (
-          <p id={hintId} className="mt-1 text-xs text-slate-500">
+          <p id={hintId} className="ui-field-message ui-field-message--hint">
             {hint}
           </p>
         ) : null}

@@ -2,10 +2,10 @@ import { Link } from 'react-router-dom';
 
 export default function AdminDashboardPage() {
   return (
-    <div className="flex flex-col gap-6 max-w-[1200px] mx-auto w-full">
+    <div className="admin-dashboard flex flex-col gap-6 max-w-[1200px] mx-auto w-full">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-heading">Bảng điều khiển quản trị (Admin)</h1>
+          <h1 className="type-page-title text-heading">Bảng điều khiển quản trị (Admin)</h1>
           <p className="text-sm text-slate-500 mt-0.5">Giám sát tổng thể hoạt động sàn, quản lý người dùng, đối tác và tác vụ chờ xử lý.</p>
         </div>
       </div>
@@ -103,15 +103,12 @@ export default function AdminDashboardPage() {
 
       </div>
 
-      <div className="rounded-[16px] border border-border bg-white p-12 text-center shadow-sm">
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-red-50 text-red-600 mb-4">
-          <i className="ph-fill ph-shield-check text-[28px]"></i>
-        </div>
-        <h2 className="text-lg font-bold text-heading">Trung tâm kiểm soát quản trị viên</h2>
-        <p className="mt-2 text-sm text-slate-500 max-w-md mx-auto">
+      <section className="admin-dashboard__note">
+        <h2 className="text-lg font-semibold text-heading">Trung tâm kiểm soát quản trị viên</h2>
+        <p className="mt-2 text-sm text-slate-600 max-w-2xl">
           Quy trình phê duyệt hồ sơ đối tác đã được bật. Việc duyệt chỉ cấp vai trò Chủ khách sạn; đăng ký khách sạn thực hiện ở luồng riêng.
         </p>
-      </div>
+      </section>
 
     </div>
   );

@@ -24,7 +24,7 @@ export default function OwnerDashboardPage() {
   const suspendedCount = hotels.filter(h => h.TrangThai === 'Đình chỉ').length;
 
   return (
-    <div className="space-y-6">
+    <div className="owner-dashboard space-y-6">
       
       {/* Page Header */}
       <div className="page-header">
@@ -65,26 +65,26 @@ export default function OwnerDashboardPage() {
                 <span className="text-[13px] text-muted block mb-1">Đang hoạt động</span>
                 <strong className="text-[20px] text-heading font-bold">{activeCount} cơ sở</strong>
               </div>
-              <div className="text-[22px]">🟢</div>
+              <span className="owner-status-dot owner-status-dot--success" aria-hidden="true"></span>
             </div>
             <div className="card p-4 flex justify-between items-center">
               <div>
                 <span className="text-[13px] text-muted block mb-1">Chờ hệ thống duyệt</span>
                 <strong className="text-[20px] text-heading font-bold">{pendingCount} cơ sở</strong>
               </div>
-              <div className="text-[22px]">🟡</div>
+              <span className="owner-status-dot owner-status-dot--warning" aria-hidden="true"></span>
             </div>
             <div className="card p-4 flex justify-between items-center">
               <div>
                 <span className="text-[13px] text-muted block mb-1">Đình chỉ / Tạm ngưng</span>
                 <strong className="text-[20px] text-heading font-bold">{suspendedCount} cơ sở</strong>
               </div>
-              <div className="text-[22px]">🔴</div>
+              <span className="owner-status-dot owner-status-dot--danger" aria-hidden="true"></span>
             </div>
           </div>
 
           {/* Filter & Search Toolbar */}
-          <div className="card p-3.5 px-5 flex justify-between items-center gap-4 flex-wrap">
+          <div className="owner-dashboard__filters flex justify-between items-center gap-4 flex-wrap">
             <div className="relative flex-1 max-w-[420px] min-w-[220px]">
               <i className="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg"></i>
               <input type="text" className="input !pl-10" placeholder="Tìm theo tên khách sạn, địa chỉ..." />
@@ -106,7 +106,7 @@ export default function OwnerDashboardPage() {
                   {hotel.HINH_ANH_KHACH_SAN[0] ? (
                     <img src={hotel.HINH_ANH_KHACH_SAN[0].URL} alt={hotel.TenKhachSan} className="w-full h-full object-cover" />
                   ) : (
-                    <i className="ph-duotone ph-buildings text-4xl text-slate-300"></i>
+                    <span className="owner-hotel-image-fallback">Ảnh khách sạn</span>
                   )}
                 </div>
 

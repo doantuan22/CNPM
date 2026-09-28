@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Star, MessageSquareText } from 'lucide-react';
 import { Button } from '../common/Button';
 import { Textarea } from '../common/Textarea';
 import { useCreateReview, useMyReview } from '../../features/reviews/hooks';
@@ -47,7 +46,7 @@ export function ReviewSection({ bookingId, bookingStatus }: ReviewSectionProps) 
   return (
     <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
       <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-900">
-        <MessageSquareText className="h-5 w-5 text-slate-400" /> Đánh giá
+        <i className="ph ph-chat-text text-[20px] text-slate-400" aria-hidden="true" /> Đánh giá
       </h2>
 
       {reviewQuery.isLoading ? (
@@ -59,9 +58,10 @@ export function ReviewSection({ bookingId, bookingStatus }: ReviewSectionProps) 
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1">
               {Array.from({ length: 5 }, (_, i) => (
-                <Star
+                <i
                   key={i}
-                  className={cn('h-4 w-4', i < reviewQuery.data!.DiemDanhGia ? 'fill-amber-400 text-amber-400' : 'text-slate-300')}
+                  className={cn('text-base', i < reviewQuery.data!.DiemDanhGia ? 'ph-fill ph-star text-amber-400' : 'ph ph-star text-slate-300')}
+                  aria-hidden="true"
                 />
               ))}
             </div>
@@ -92,7 +92,7 @@ export function ReviewSection({ bookingId, bookingStatus }: ReviewSectionProps) 
                   onClick={() => setScore(value)}
                   className="rounded p-0.5"
                 >
-                  <Star className={cn('h-6 w-6', value <= score ? 'fill-amber-400 text-amber-400' : 'text-slate-300')} />
+                  <i className={cn('text-2xl', value <= score ? 'ph-fill ph-star text-amber-400' : 'ph ph-star text-slate-300')} aria-hidden="true" />
                 </button>
               ))}
             </div>

@@ -45,7 +45,7 @@ export default function HomePage() {
       <section className="bg-surface-secondary pt-28 pb-32 lg:pt-36 lg:pb-40 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-12 items-center">
           <div className="max-w-xl">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-[1.15] mb-6 text-ink">
+            <h1 className="type-display mb-6 text-ink">
               Khám phá nơi lưu trú <span className="text-primary">phù hợp</span> với bạn
             </h1>
             <p className="text-lg text-ink-muted mb-8 leading-relaxed">
@@ -66,7 +66,7 @@ export default function HomePage() {
             {heroImage ? (
               <img src={heroImage} alt="Không gian nghỉ dưỡng tại một khách sạn trên Egode" className="rounded-2xl object-cover h-[450px] w-full shadow-xl" />
             ) : (
-              <div className="rounded-2xl h-[450px] w-full shadow-xl bg-gradient-to-br from-primary/20 via-surface-secondary to-primary/5" aria-hidden="true" />
+              <div className="rounded-xl h-[450px] w-full border border-border bg-surface-secondary" aria-hidden="true" />
             )}
           </div>
         </div>

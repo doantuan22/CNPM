@@ -129,7 +129,7 @@
 
 /* ---------- Generic layout helpers ---------- */
 .page-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
-.page-header h1 { font-size: 22px; }
+.page-header h1 { font-size: var(--font-size-page); font-weight: var(--font-weight-semibold); }
 .page-header__desc { font-size: 14px; color: var(--color-muted); margin-top: 4px; }
 .two-col-layout { display: grid; grid-template-columns: 1fr 380px; gap: 24px; align-items: start; }
 @media (max-width: 960px) { .two-col-layout { grid-template-columns: 1fr; } }

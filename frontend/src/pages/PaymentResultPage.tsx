@@ -22,9 +22,6 @@ export default function PaymentResultPage() {
           <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>
         ) : isConfirmed ? (
           <div className="bg-white rounded-3xl border border-border p-8 md:p-12 shadow-md w-full max-w-2xl text-center">
-            <div className="w-16 h-16 bg-blue-50 text-primary rounded-full flex justify-center items-center mx-auto mb-5 text-3xl">
-              <i className="ph-bold ph-check"></i>
-            </div>
             <h1 className="text-2xl font-bold text-heading mb-2">Thanh toán thành công!</h1>
             <p className="text-sm text-muted mb-4">Cảm ơn bạn đã lựa chọn Egode. Đặt phòng của bạn đã được xác nhận.</p>
             {booking && (
@@ -58,9 +55,6 @@ export default function PaymentResultPage() {
           </div>
         ) : isFailed ? (
           <div className="bg-white rounded-3xl border border-border p-8 md:p-12 shadow-md w-full max-w-2xl text-center">
-            <div className="w-16 h-16 bg-red-50 text-red-600 rounded-full flex justify-center items-center mx-auto mb-5 text-3xl">
-              <i className="ph-bold ph-x"></i>
-            </div>
             <h1 className="text-2xl font-bold text-heading mb-2">Thanh toán không thành công</h1>
             <p className="text-sm text-muted leading-relaxed mb-6">
               Giao dịch qua thanh toán trực tuyến không thành công. Vui lòng kiểm tra lại số dư tài khoản hoặc thử lại phương thức thanh toán khác.
@@ -74,9 +68,6 @@ export default function PaymentResultPage() {
           </div>
         ) : (
           <div className="bg-white rounded-3xl border border-border p-8 md:p-12 shadow-md w-full max-w-2xl text-center">
-            <div className="w-16 h-16 bg-amber-50 text-amber-600 rounded-full flex justify-center items-center mx-auto mb-5 text-3xl">
-              <i className="ph-bold ph-question"></i>
-            </div>
             <h1 className="text-2xl font-bold text-heading mb-2">Đang xử lý kết quả...</h1>
             <p className="text-sm text-muted leading-relaxed mb-6">
               {hintStatus === 'success'

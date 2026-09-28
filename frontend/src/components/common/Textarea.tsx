@@ -22,7 +22,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? errorId : hint ? hintId : undefined}
         className={cn(
-          'block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50',
+          'ui-field ui-field--textarea',
           className
         )}
         {...props}
@@ -32,19 +32,19 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
     if (!label && !error && !hint) return field;
 
     return (
-      <div>
+      <div className="ui-field-group">
         {label && (
-          <label htmlFor={textareaId} className="block text-sm font-medium text-slate-700">
+          <label htmlFor={textareaId} className="ui-field-label">
             {label}
           </label>
         )}
-        <div className={label ? 'mt-1' : undefined}>{field}</div>
+        <div>{field}</div>
         {error ? (
-          <p id={errorId} className="mt-1 text-xs text-red-600">
+          <p id={errorId} className="ui-field-message ui-field-message--error">
             {error}
           </p>
         ) : hint ? (
-          <p id={hintId} className="mt-1 text-xs text-slate-500">
+          <p id={hintId} className="ui-field-message ui-field-message--hint">
             {hint}
           </p>
         ) : null}
