@@ -1,27 +1,25 @@
 import { Link, useLocation } from 'react-router-dom';
+import { useMemo, useState } from 'react';
 import { useMyHotels } from '../features/owner/hooks';
 import { ApiError } from '../services/apiClient';
-function getStatusBadgeClass(status: string) {
-  switch (status) {
-    case 'Hoạt động':
-      return 'status-active';
-    case 'Chờ duyệt':
-      return 'status-pending';
-    case 'Đình chỉ':
-      return 'status-suspended';
-    default:
-      return 'status-pending';
-  }
-}
+import { StatusBadge } from '../components/domain/StatusBadge';
 
 export default function OwnerDashboardPage() {
   const isOverview = useLocation().pathname === '/partner/dashboard';
   const hotelsQuery = useMyHotels();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
 
   const hotels = hotelsQuery.data || [];
   const activeCount = hotels.filter(h => h.TrangThai === 'Hoạt động').length;
   const pendingCount = hotels.filter(h => h.TrangThai === 'Chờ duyệt').length;
   const suspendedCount = hotels.filter(h => h.TrangThai === 'Đình chỉ').length;
+  const visibleHotels = useMemo(() => (hotelsQuery.data ?? []).filter((hotel) => {
+    const search = searchTerm.trim().toLocaleLowerCase('vi');
+    const matchesSearch = !search || `${hotel.TenKhachSan} ${hotel.DiaChiChiTiet} ${hotel.DIA_PHUONG.TenThanhPho}`.toLocaleLowerCase('vi').includes(search);
+    const matchesStatus = statusFilter === 'all' || hotel.TrangThai === statusFilter;
+    return matchesSearch && matchesStatus;
+  }), [hotelsQuery.data, searchTerm, statusFilter]);
 
   return (
     <div className="owner-dashboard space-y-6">
@@ -58,8 +56,8 @@ export default function OwnerDashboardPage() {
         </div>
       ) : (
         <>
-          {/* Mini Summary Bar */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Overview uses only the real property states returned by the API. */}
+          {isOverview && <div className="owner-status-summary grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="card p-4 flex justify-between items-center">
               <div>
                 <span className="text-[13px] text-muted block mb-1">Đang hoạt động</span>
@@ -81,28 +79,29 @@ export default function OwnerDashboardPage() {
               </div>
               <span className="owner-status-dot owner-status-dot--danger" aria-hidden="true"></span>
             </div>
-          </div>
+          </div>}
 
-          {/* Filter & Search Toolbar */}
-          <div className="owner-dashboard__filters flex justify-between items-center gap-4 flex-wrap">
+          {!isOverview && <div className="owner-dashboard__filters flex justify-between items-center gap-4 flex-wrap">
             <div className="relative flex-1 max-w-[420px] min-w-[220px]">
               <i className="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg"></i>
-              <input type="text" className="input !pl-10" placeholder="Tìm theo tên khách sạn, địa chỉ..." />
+              <input type="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} className="input !pl-10" placeholder="Tìm theo tên khách sạn, địa chỉ..." aria-label="Tìm khách sạn theo tên hoặc địa chỉ" />
             </div>
 
-            <div className="flex gap-2 flex-wrap">
-              <button className="pill-tab active">Tất cả ({hotels.length})</button>
-              <button className="pill-tab">Hoạt động ({activeCount})</button>
-              <button className="pill-tab">Chờ duyệt ({pendingCount})</button>
+            <div className="flex gap-2 flex-wrap" role="group" aria-label="Lọc theo trạng thái khách sạn">
+              <button type="button" aria-pressed={statusFilter === 'all'} onClick={() => setStatusFilter('all')} className={`pill-tab ${statusFilter === 'all' ? 'active' : ''}`}>Tất cả ({hotels.length})</button>
+              <button type="button" aria-pressed={statusFilter === 'Hoạt động'} onClick={() => setStatusFilter('Hoạt động')} className={`pill-tab ${statusFilter === 'Hoạt động' ? 'active' : ''}`}>Hoạt động ({activeCount})</button>
+              <button type="button" aria-pressed={statusFilter === 'Chờ duyệt'} onClick={() => setStatusFilter('Chờ duyệt')} className={`pill-tab ${statusFilter === 'Chờ duyệt' ? 'active' : ''}`}>Chờ duyệt ({pendingCount})</button>
+              {suspendedCount > 0 && <button type="button" aria-pressed={statusFilter === 'Đình chỉ'} onClick={() => setStatusFilter('Đình chỉ')} className={`pill-tab ${statusFilter === 'Đình chỉ' ? 'active' : ''}`}>Đình chỉ ({suspendedCount})</button>}
             </div>
-          </div>
+          </div>}
 
-          {/* HOTEL CARDS LIST */}
-          <div className="flex flex-col gap-4">
-            {hotels.map((hotel) => (
-              <div key={hotel.MaKhachSan} className="card p-6 flex flex-col md:flex-row gap-6 items-stretch md:items-center hover:shadow-md hover:border-blue-200 transition-all">
+          {isOverview && <h2 className="text-base font-semibold text-heading">Cơ sở lưu trú của bạn</h2>}
+          {/* Property identity and current state stay together as the owner context. */}
+          <div className="owner-hotel-list flex flex-col">
+            {visibleHotels.map((hotel) => (
+              <article key={hotel.MaKhachSan} className="owner-hotel-list__item flex flex-col md:flex-row gap-4 items-stretch md:items-center">
                 
-                <div className="relative w-full md:w-[190px] h-[130px] rounded-xl overflow-hidden flex-shrink-0 bg-slate-100 flex items-center justify-center">
+                <div className="relative w-full md:w-[156px] h-[118px] rounded-lg overflow-hidden flex-shrink-0 bg-slate-100 flex items-center justify-center">
                   {hotel.HINH_ANH_KHACH_SAN[0] ? (
                     <img src={hotel.HINH_ANH_KHACH_SAN[0].URL} alt={hotel.TenKhachSan} className="w-full h-full object-cover" />
                   ) : (
@@ -112,11 +111,11 @@ export default function OwnerDashboardPage() {
 
                 <div className="flex-1 flex flex-col gap-2.5 min-w-0">
                   <div className="flex items-center gap-3 flex-wrap">
-                    <h2 className="text-[18px] font-bold text-heading">{hotel.TenKhachSan}</h2>
+                    <h3 className="text-[17px] font-bold text-heading">{hotel.TenKhachSan}</h3>
                     <span className="text-amber-500 text-[13px] tracking-widest">
                       {'★'.repeat(hotel.HangSao)}{'☆'.repeat(5 - hotel.HangSao)}
                     </span>
-                    <span className={`status-badge ${getStatusBadgeClass(hotel.TrangThai)}`}>{hotel.TrangThai}</span>
+                    <StatusBadge domain="hotel" status={hotel.TrangThai} />
                   </div>
 
                   <div className="flex items-center gap-1.5 text-[13px] text-muted">
@@ -153,8 +152,9 @@ export default function OwnerDashboardPage() {
                   )}
                   {/* Additional actions can be placed here if needed */}
                 </div>
-              </div>
+              </article>
             ))}
+            {visibleHotels.length === 0 && <p className="py-8 text-sm text-muted">{hotels.length === 0 ? 'Bạn chưa có khách sạn nào.' : 'Không tìm thấy khách sạn phù hợp với bộ lọc.'}</p>}
           </div>
         </>
       )}

@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { FormEvent, useEffect, useState } from 'react';
 import { ApiError } from '../services/apiClient';
+import { useConfirm } from '../components/common/FeedbackProvider';
 import { getAdminHotel, reactivateAdminHotel, suspendAdminHotel, updateAdminHotel, type UpdateAdminHotelPayload } from '../features/admin/hotels/api';
 
 export default function AdminHotelDetailPage() {
@@ -16,6 +17,7 @@ export default function AdminHotelDetailPage() {
       action === 'update' ? updateAdminHotel(id, payload ?? {}) : action === 'suspend' ? suspendAdminHotel(id) : reactivateAdminHotel(id), 
     onSuccess: () => { setSaved(true); queryClient.invalidateQueries({ queryKey: ['admin', 'hotels'] }); } 
   });
+  const confirm = useConfirm();
   
   useEffect(() => { if (mutation.isError) setSaved(false); }, [mutation.isError]);
   
@@ -39,8 +41,12 @@ export default function AdminHotelDetailPage() {
     }); 
   };
   
-  const suspend = () => { if (window.confirm('Đình chỉ khách sạn này? Cơ sở sẽ không thể tiếp nhận đặt phòng mới.')) mutation.mutate({ action: 'suspend' }); };
-  const reactivate = () => { if (window.confirm('Kích hoạt lại khách sạn này?')) mutation.mutate({ action: 'reactivate' }); };
+  const suspend = async () => {
+    if (await confirm({ title: 'Đình chỉ khách sạn?', description: 'Cơ sở sẽ không thể tiếp nhận đặt phòng mới.', confirmLabel: 'Đình chỉ', variant: 'danger' })) mutation.mutate({ action: 'suspend' });
+  };
+  const reactivate = async () => {
+    if (await confirm({ title: 'Kích hoạt lại khách sạn?', description: `Khách sạn ${query.data?.TenKhachSan ?? ''} sẽ được chuyển về trạng thái hoạt động.`, confirmLabel: 'Kích hoạt lại' })) mutation.mutate({ action: 'reactivate' });
+  };
   
   const isActive = hotel.TrangThai === 'Hoạt động';
 

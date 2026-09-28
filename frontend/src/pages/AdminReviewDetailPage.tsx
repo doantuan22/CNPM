@@ -1,6 +1,8 @@
 import { Link, useParams } from 'react-router-dom';
 import { useAdminReviewDetail, useModerateReview, useRemoveViolationReview } from '../features/reviews/hooks';
 import { ApiError } from '../services/apiClient';
+import { useConfirm } from '../components/common/FeedbackProvider';
+import { StatusBadge } from '../components/domain/StatusBadge';
 
 export default function AdminReviewDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -8,6 +10,7 @@ export default function AdminReviewDetailPage() {
   const reviewQuery = useAdminReviewDetail(reviewId);
   const moderateMutation = useModerateReview();
   const removeMutation = useRemoveViolationReview();
+  const confirm = useConfirm();
 
   if (reviewQuery.isLoading) {
     return <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>;
@@ -48,14 +51,7 @@ export default function AdminReviewDetailPage() {
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-lg font-bold text-heading">Chi tiết đánh giá của du khách</h3>
-                <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold border ${
-                        r.TrangThai === 'Hiển thị' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                        r.TrangThai === 'Chờ duyệt' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                        r.TrangThai === 'Vi phạm' ? 'bg-rose-50 text-rose-700 border-rose-200' :
-                        'bg-slate-100 text-slate-600 border-slate-200'
-                      }`}>
-                  {r.TrangThai}
-                </span>
+                <StatusBadge domain="review" status={r.TrangThai} />
               </div>
               <p className="text-[11px] text-slate-400 mt-0.5">
                 Booking: <strong className="font-mono">{r.DAT_PHONG.MaXacNhanDatPhong}</strong> • {r.DAT_PHONG.NgayNhanPhong} → {r.DAT_PHONG.NgayTraPhong}
@@ -159,11 +155,7 @@ export default function AdminReviewDetailPage() {
           {(r.TrangThai === 'Vi phạm' || r.TrangThai === 'Ẩn') && (
             <button
               disabled={r.TrangThai === 'Ẩn' || removeMutation.isPending}
-              onClick={() => {
-                if (window.confirm('Gỡ đánh giá vi phạm khỏi phần hiển thị công khai? Dữ liệu và ảnh sẽ vẫn được lưu để phục vụ kiểm tra.')) {
-                  removeMutation.mutate(reviewId);
-                }
-              }}
+              onClick={() => { void confirm({ title: 'Gỡ đánh giá khỏi phần công khai?', description: 'Dữ liệu và ảnh vẫn được lưu để phục vụ kiểm tra.', confirmLabel: 'Gỡ đánh giá', variant: 'danger' }).then((accepted) => { if (accepted) removeMutation.mutate(reviewId); }); }}
               className="w-full sm:w-auto px-4 py-2.5 bg-rose-600 text-white rounded-xl text-sm font-bold hover:bg-rose-700 transition shadow-sm disabled:opacity-50"
             >
               {removeMutation.isPending ? 'Đang gỡ...' : r.TrangThai === 'Ẩn' ? 'Đã gỡ' : 'Xóa / gỡ khỏi công khai'}

@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useAdminSupportDetail, useAdminUpdateSupportRequest } from '../features/support/hooks';
 import { ApiError } from '../services/apiClient';
+import { Alert } from '../components/common/Alert';
+import { StatusBadge } from '../components/domain/StatusBadge';
 
 export default function AdminSupportDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -9,6 +11,7 @@ export default function AdminSupportDetailPage() {
   const requestQuery = useAdminSupportDetail(requestId);
   const updateMutation = useAdminUpdateSupportRequest();
   const [ketQuaXuLy, setKetQuaXuLy] = useState('');
+  const [resolutionError, setResolutionError] = useState('');
 
   if (requestQuery.isLoading) {
     return <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>;
@@ -24,14 +27,16 @@ export default function AdminSupportDetailPage() {
   const claim = () => updateMutation.mutate({ id: requestId, payload: { trangThai: 'Đang xử lý' } });
   const resolve = () => {
     if (!ketQuaXuLy.trim()) {
-      alert('Vui lòng nhập kết quả xử lý');
+      setResolutionError('Nhập kết quả xử lý trước khi hoàn tất yêu cầu.');
+      document.getElementById('admin-support-detail-field-1')?.focus();
       return;
     }
+    setResolutionError('');
     updateMutation.mutate({ id: requestId, payload: { trangThai: 'Đã xử lý', ketQuaXuLy: ketQuaXuLy.trim() } });
   };
 
   return (
-    <div className="flex flex-col gap-6 max-w-[800px] mx-auto w-full">
+    <div className="admin-support-detail flex flex-col gap-5 max-w-[980px] mx-auto w-full">
       <Link to="/admin/support" className="breadcrumb w-fit">
         <i className="ph ph-arrow-left"></i>
         <span>Quay lại danh sách</span>
@@ -47,23 +52,16 @@ export default function AdminSupportDetailPage() {
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-lg font-bold text-heading">Ticket #TCK-{r.MaYeuCauHoTro}</h3>
-                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border ${
-                        r.TrangThai === 'Mới' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                        r.TrangThai === 'Đang xử lý' ? 'bg-primary-50 text-primary-700 border-primary-200' :
-                        'bg-emerald-50 text-emerald-700 border-emerald-200'
-                      }`}>
-                  {r.TrangThai === 'Mới' && <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>}
-                  {r.TrangThai}
-                </span>
+                <StatusBadge domain="support" status={r.TrangThai} />
               </div>
               <p className="text-[11px] text-slate-400 mt-0.5">
-                Khởi tạo: {new Date(r.NgayTao).toLocaleString('vi-VN')} • Mức độ: Khẩn cấp
+                Khởi tạo: {new Date(r.NgayTao).toLocaleString('vi-VN')}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="p-6 space-y-5 text-xs bg-slate-50/40">
+        <div className="admin-support-detail__body p-6 text-xs">
           {updateMutation.isError && (
              <div role="alert" className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-sm font-medium">
                {updateMutation.error instanceof ApiError ? updateMutation.error.message : 'Không thể cập nhật yêu cầu'}
@@ -75,7 +73,7 @@ export default function AdminSupportDetailPage() {
              </div>
           )}
 
-          <div className="bg-white p-4 rounded-xl border border-border shadow-sm space-y-2">
+          <section className="admin-support-detail__context space-y-2">
             <h4 className="font-bold text-slate-700 uppercase tracking-wider text-[11px]">Thông tin khách hàng & Yêu cầu</h4>
             <div className="grid grid-cols-2 gap-2 text-slate-600 pt-1">
               <div>Họ tên: <strong className="text-heading">{r.TAI_KHOAN_YEU_CAU_HO_TRO_MaTaiKhoanKhachHangToTAI_KHOAN.HoTen}</strong></div>
@@ -85,34 +83,34 @@ export default function AdminSupportDetailPage() {
               )}
               <div>Phân loại: <span className="font-medium text-slate-700">{r.LoaiYeuCau}</span></div>
             </div>
-          </div>
+          </section>
 
-          <div className="bg-white p-4 rounded-xl border border-border shadow-sm space-y-2">
+          <section className="admin-support-detail__issue space-y-2">
             <h4 className="font-bold text-slate-700 uppercase tracking-wider text-[11px]">Nội dung yêu cầu / khiếu nại</h4>
-            <div className="p-3 bg-slate-50 border border-border rounded-lg text-slate-800 leading-relaxed font-medium">
+            <div className="border-t border-border pt-3 text-slate-800 leading-relaxed">
               <div className="font-bold mb-1">{r.TieuDe}</div>
               <div className="whitespace-pre-wrap">{r.NoiDung}</div>
             </div>
-          </div>
+          </section>
           
           {r.TAI_KHOAN_YEU_CAU_HO_TRO_MaTaiKhoanXuLyToTAI_KHOAN && (
-             <div className="text-[11px] text-slate-500 font-medium">
+             <div className="admin-support-detail__handler text-[11px] text-slate-500 font-medium">
                Người phụ trách xử lý: <strong className="text-heading">{r.TAI_KHOAN_YEU_CAU_HO_TRO_MaTaiKhoanXuLyToTAI_KHOAN.HoTen}</strong>
              </div>
           )}
 
           {isResolved ? (
-            <div className="bg-emerald-50/50 p-4 rounded-xl border border-emerald-100 shadow-sm space-y-2 mt-2">
+            <section className="admin-support-detail__resolution space-y-2 mt-2">
               <h4 className="font-bold text-emerald-800 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
                 <i className="ph-fill ph-check-circle text-emerald-600"></i> Phản hồi / Kết quả xử lý
               </h4>
               <p className="text-[11px] text-emerald-700/80 mb-2">Đã giải quyết vào {r.NgayXuLy ? new Date(r.NgayXuLy).toLocaleString('vi-VN') : ''}</p>
-              <div className="p-3 bg-white border border-emerald-200/60 rounded-lg text-emerald-900 leading-relaxed font-medium whitespace-pre-wrap shadow-xs">
+              <div className="border-t border-emerald-200 pt-3 text-emerald-900 leading-relaxed font-medium whitespace-pre-wrap">
                 {r.KetQuaXuLy}
               </div>
-            </div>
+            </section>
           ) : (
-            <div className="bg-white p-4 rounded-xl border border-border shadow-sm space-y-3 mt-2">
+            <section className="admin-support-detail__action space-y-3 mt-2">
               <h4 className="font-bold text-slate-700 uppercase tracking-wider text-[11px]">Phản hồi & Cập nhật trạng thái</h4>
               
               {r.TrangThai === 'Mới' && (
@@ -127,23 +125,25 @@ export default function AdminSupportDetailPage() {
                 <label htmlFor="admin-support-detail-field-1" className="text-[11px] font-semibold text-slate-600 block">Biên bản / Kết quả giải quyết sự cố <span className="text-rose-500">*</span></label>
                 <textarea id="admin-support-detail-field-1" 
                   value={ketQuaXuLy}
-                  onChange={(e) => setKetQuaXuLy(e.target.value)}
+                  onChange={(e) => { setKetQuaXuLy(e.target.value); if (e.target.value.trim()) setResolutionError(''); }}
                   rows={4} 
+                  aria-invalid={Boolean(resolutionError)} aria-describedby={resolutionError ? 'support-resolution-error' : undefined}
                   placeholder="Nhập chi tiết hướng giải quyết, mức bồi thường, hoặc kết quả thương lượng với khách hàng..." 
-                  className="w-full px-3 py-2 bg-white border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition resize-none"
+                  className={`w-full px-3 py-2 bg-white border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition resize-none ${resolutionError ? 'border-red-500' : 'border-border'}`}
                 ></textarea>
+                {resolutionError && <Alert id="support-resolution-error" tone="error" className="mt-2">{resolutionError}</Alert>}
               </div>
 
               <div className="flex justify-end pt-2">
                 <button 
                   onClick={resolve} 
-                  disabled={updateMutation.isPending || !ketQuaXuLy.trim()}
+                  disabled={updateMutation.isPending}
                   className="px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-bold hover:bg-emerald-700 shadow-sm transition disabled:opacity-50"
                 >
                   {updateMutation.isPending ? 'Đang lưu...' : 'Xác nhận Đã giải quyết (Resolved)'}
                 </button>
               </div>
-            </div>
+            </section>
           )}
         </div>
       </div>

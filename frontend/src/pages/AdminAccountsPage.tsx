@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAccountList } from '../features/admin/accounts/hooks';
 import { ApiError } from '../services/apiClient';
+import { StatusBadge } from '../components/domain/StatusBadge';
 
 const PAGE_SIZE = 10;
 
@@ -27,7 +28,7 @@ export default function AdminAccountsPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 max-w-[1200px] mx-auto w-full">
+    <div className="admin-list-page flex flex-col gap-6 max-w-[1200px] mx-auto w-full">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-heading">Quản lý tài khoản</h1>
@@ -127,12 +128,7 @@ export default function AdminAccountsPage() {
                       </span>
                     </td>
                     <td className="py-3.5 px-4 text-center">
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border ${
-                        account.TrangThai === 'Hoạt động' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'
-                      }`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${account.TrangThai === 'Hoạt động' ? 'bg-emerald-500' : 'bg-rose-500'}`}></span>
-                        {account.TrangThai}
-                      </span>
+                      <StatusBadge domain="account" status={account.TrangThai} />
                     </td>
                     <td className="py-3.5 px-4 text-center">
                       <Link to={`/admin/accounts/${account.MaTaiKhoan}`} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-primary-700 bg-primary-50 hover:bg-primary-100 transition border border-primary-200/60">

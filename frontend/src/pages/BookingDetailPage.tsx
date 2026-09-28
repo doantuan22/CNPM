@@ -7,21 +7,10 @@ import { useCreateVnpayPayment, useRetryRefund } from '../features/payments/hook
 import { ReviewSection } from '../components/reviews/ReviewSection';
 import { formatCurrencyVND, cn } from '../lib/utils';
 import { ApiError } from '../services/apiClient';
+import { CustomerCenterNavigation } from '../components/layouts/CustomerCenterNavigation';
+import { StatusBadge } from '../components/domain/StatusBadge';
 
 const CANCELLABLE = ['Chờ thanh toán', 'Đã xác nhận'];
-
-function getStatusBadgeClass(status: string) {
-  switch (status) {
-    case 'Đã xác nhận':
-    case 'Thành công':
-    case 'Hoàn tất':
-      return 'status-confirmed';
-    case 'Đã hủy':
-      return 'status-cancelled';
-    default:
-      return 'status-pending'; 
-  }
-}
 
 export default function BookingDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -70,7 +59,7 @@ export default function BookingDetailPage() {
 
   return (
     <div className="container flex flex-col gap-6" style={{ paddingTop: '28px', paddingBottom: '60px' }}>
-      
+      <CustomerCenterNavigation />
       <Link to="/bookings" className="breadcrumb w-fit">
         <i className="ph ph-arrow-left"></i>
         <span>Quay lại danh sách đặt phòng</span>
@@ -93,7 +82,7 @@ export default function BookingDetailPage() {
           </h1>
           <p className="text-[13px] text-muted mt-1">Trạng thái hiện tại: {booking.TrangThai}</p>
         </div>
-        <span className={`status-badge ${getStatusBadgeClass(booking.TrangThai)}`}>{booking.TrangThai}</span>
+        <StatusBadge domain="booking" status={booking.TrangThai} />
       </div>
 
       <div className="two-col-layout">

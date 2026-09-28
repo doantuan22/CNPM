@@ -1,6 +1,7 @@
 import { Link, useSearchParams } from 'react-router-dom';
 import { usePaymentStatus } from '../features/payments/hooks';
 import { formatCurrencyVND } from '../lib/utils';
+import { CustomerCenterNavigation } from '../components/layouts/CustomerCenterNavigation';
 
 export default function PaymentResultPage() {
   const [searchParams] = useSearchParams();
@@ -15,7 +16,7 @@ export default function PaymentResultPage() {
 
   return (
     <div className="bg-surface-secondary text-ink min-h-screen flex flex-col font-sans antialiased !max-w-full !px-0 !py-0">
-      
+      <div className="max-w-[800px] w-full mx-auto px-4 pt-8"><CustomerCenterNavigation /></div>
       <main className="max-w-[800px] w-full mx-auto px-4 py-12 md:py-16 flex-grow flex flex-col items-center justify-center">
 
         {statusQuery.isLoading ? (

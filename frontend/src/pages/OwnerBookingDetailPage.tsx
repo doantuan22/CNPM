@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router-dom';
 import { useOwnerBooking } from '../features/owner/hooks';
 import { formatCurrencyVND } from '../lib/utils';
 import { ApiError } from '../services/apiClient';
+import { StatusBadge } from '../components/domain/StatusBadge';
 
 export default function OwnerBookingDetailPage() {
   const { id, bookingId } = useParams<{ id: string; bookingId: string }>(); 
@@ -39,9 +40,7 @@ export default function OwnerBookingDetailPage() {
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-lg font-bold text-slate-900">#{b.MaXacNhanDatPhong}</h3>
-                <span className={`text-xs px-2.5 py-0.5 rounded-full font-semibold ${b.TrangThai === 'Hoàn tất' || b.TrangThai === 'Đã xác nhận' ? 'bg-emerald-100 text-emerald-700' : b.TrangThai === 'Chờ thanh toán' ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700'}`}>
-                  {b.TrangThai}
-                </span>
+                <StatusBadge domain="booking" status={b.TrangThai} />
               </div>
               <p className="text-xs text-slate-500 mt-0.5">Ngày tạo: {new Date(b.NgayTao).toLocaleString('vi-VN')}</p>
             </div>

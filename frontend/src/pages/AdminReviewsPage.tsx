@@ -3,6 +3,8 @@ import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { Link } from 'react-router-dom';
 import { useAdminReviewList, useRemoveViolationReview } from '../features/reviews/hooks';
 import { ApiError } from '../services/apiClient';
+import { useConfirm } from '../components/common/FeedbackProvider';
+import { StatusBadge } from '../components/domain/StatusBadge';
 
 const PAGE_SIZE = 10;
 const STATUSES = ['Chờ duyệt', 'Hiển thị', 'Ẩn', 'Vi phạm'];
@@ -22,6 +24,7 @@ export default function AdminReviewsPage() {
     diemDanhGia: star && star !== 'ALL' ? Number(star) : undefined,
   });
   const removeMutation = useRemoveViolationReview();
+  const confirm = useConfirm();
 
   const handleSearchChange = (val: string) => {
     setSearchInput(val);
@@ -41,7 +44,7 @@ export default function AdminReviewsPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 max-w-[1200px] mx-auto w-full">
+    <div className="admin-list-page flex flex-col gap-6 max-w-[1200px] mx-auto w-full">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-heading">Kiểm duyệt đánh giá</h1>
@@ -155,14 +158,7 @@ export default function AdminReviewsPage() {
                       {r.KHACH_SAN.TenKhachSan}
                     </td>
                     <td className="py-4 px-4 text-center">
-                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold border ${
-                        r.TrangThai === 'Hiển thị' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                        r.TrangThai === 'Chờ duyệt' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                        r.TrangThai === 'Vi phạm' ? 'bg-rose-50 text-rose-700 border-rose-200' :
-                        'bg-slate-100 text-slate-600 border-slate-200'
-                      }`}>
-                        {r.TrangThai}
-                      </span>
+                      <StatusBadge domain="review" status={r.TrangThai} />
                     </td>
                     <td className="py-4 px-4 text-center">
                       <div className="flex items-center justify-center gap-2">
@@ -170,11 +166,7 @@ export default function AdminReviewsPage() {
                           <button
                             type="button"
                             disabled={removeMutation.isPending}
-                            onClick={() => {
-                              if (window.confirm('Gỡ đánh giá vi phạm khỏi phần hiển thị công khai? Dữ liệu và ảnh sẽ vẫn được lưu để phục vụ kiểm tra.')) {
-                                removeMutation.mutate(r.MaDanhGia);
-                              }
-                            }}
+                            onClick={() => { void confirm({ title: 'Gỡ đánh giá khỏi phần công khai?', description: 'Dữ liệu và ảnh vẫn được lưu để phục vụ kiểm tra.', confirmLabel: 'Gỡ đánh giá', variant: 'danger' }).then((accepted) => { if (accepted) removeMutation.mutate(r.MaDanhGia); }); }}
                             className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 transition border border-rose-200 disabled:opacity-50"
                           >
                             Xóa/gỡ

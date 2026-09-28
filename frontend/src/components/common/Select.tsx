@@ -39,7 +39,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
       <div className="ui-field-group">
         {label && (
           <label htmlFor={selectId} className="ui-field-label">
-            {label}
+            {label}{props.required && <><span className="ui-field-label__required" aria-hidden="true">*</span><span className="visually-hidden"> (bắt buộc)</span></>}
           </label>
         )}
         <div>{field}</div>

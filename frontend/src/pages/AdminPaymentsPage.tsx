@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { ApiError } from '../services/apiClient';
 import { listAdminPayments } from '../features/admin/payments/api';
+import { StatusBadge } from '../components/domain/StatusBadge';
 
 const STATUSES = ['Thành công', 'Chờ xử lý', 'Thất bại'];
 
@@ -41,7 +42,7 @@ export default function AdminPaymentsPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 max-w-[1200px] mx-auto w-full">
+    <div className="admin-list-page flex flex-col gap-6 max-w-[1200px] mx-auto w-full">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-heading">Thanh toán & Giao dịch</h1>
@@ -154,13 +155,7 @@ export default function AdminPaymentsPage() {
                       {new Date(payment.ThoiGianGiaoDich).toLocaleString('vi-VN')}
                     </td>
                     <td className="py-4 px-4 text-center">
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border ${
-                        payment.TrangThai === 'Thành công' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                        payment.TrangThai === 'Chờ xử lý' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                        'bg-rose-50 text-rose-700 border-rose-200'
-                      }`}>
-                        {payment.TrangThai}
-                      </span>
+                      <StatusBadge domain="payment" status={payment.TrangThai} />
                     </td>
                     <td className="py-4 px-4 text-center">
                       <Link to={`/admin/payments/${payment.MaThanhToan}`} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-primary-700 bg-primary-50 hover:bg-primary-100 transition border border-primary-200/60">

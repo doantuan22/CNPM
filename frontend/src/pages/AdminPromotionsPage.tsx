@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { usePromotionList } from '../features/promotions/hooks';
 import { formatCurrencyVND } from '../lib/utils';
 import { ApiError } from '../services/apiClient';
+import { StatusBadge } from '../components/domain/StatusBadge';
 
 const PAGE_SIZE = 10;
 const STATUSES = ['Hoạt động', 'Ngừng'];
@@ -31,7 +32,7 @@ export default function AdminPromotionsPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 max-w-[1200px] mx-auto w-full">
+    <div className="admin-list-page flex flex-col gap-6 max-w-[1200px] mx-auto w-full">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-heading">Quản lý khuyến mãi</h1>
@@ -138,11 +139,7 @@ export default function AdminPromotionsPage() {
                       {p.NgayBatDau} <br /> ↓ <br /> {p.NgayKetThuc}
                     </td>
                     <td className="py-4 px-4 text-center">
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border ${
-                        p.TrangThai === 'Hoạt động' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'
-                      }`}>
-                        {p.TrangThai}
-                      </span>
+                      <StatusBadge domain="promotion" status={p.TrangThai} />
                     </td>
                     <td className="py-4 px-4 text-center">
                       <Link to={`/admin/promotions/${p.MaKhuyenMai}`} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-primary-700 bg-primary-50 hover:bg-primary-100 transition border border-primary-200/60">

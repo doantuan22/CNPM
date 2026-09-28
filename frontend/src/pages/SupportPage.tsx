@@ -4,21 +4,10 @@ import { useMyBookings } from '../features/bookings/hooks';
 import { useCreateSupportRequest, useMySupportRequests } from '../features/support/hooks';
 import { cn } from '../lib/utils';
 import { ApiError } from '../services/apiClient';
+import { CustomerCenterNavigation } from '../components/layouts/CustomerCenterNavigation';
+import { StatusBadge } from '../components/domain/StatusBadge';
 
 const SUPPORT_TYPES = ['Hỗ trợ', 'Khiếu nại'];
-
-function getBadgeClass(status: string) {
-  switch (status) {
-    case 'Mới tiếp nhận':
-      return 'status-new';
-    case 'Đang xử lý':
-      return 'status-processing';
-    case 'Đã xử lý':
-      return 'status-resolved';
-    default:
-      return 'status-new';
-  }
-}
 
 export default function SupportPage() {
   const requestsQuery = useMySupportRequests();
@@ -59,7 +48,7 @@ export default function SupportPage() {
 
   return (
     <div className="container" style={{ paddingTop: '32px', paddingBottom: '60px', display: 'flex', flexDirection: 'column', gap: '28px' }}>
-      
+      <CustomerCenterNavigation />
       <div className="page-header">
         <div>
           <h1>Hỗ trợ & Khiếu nại</h1>
@@ -176,7 +165,7 @@ export default function SupportPage() {
                       {r.DAT_PHONG && <span className="ticket-booking-ref block mt-0.5">Đơn liên quan: #{r.DAT_PHONG.MaXacNhanDatPhong}</span>}
                     </td>
                     <td className="text-[13px] text-muted">{new Date(r.NgayTao).toLocaleDateString('vi-VN')}</td>
-                    <td><span className={`status-badge ${getBadgeClass(r.TrangThai)}`}>{r.TrangThai}</span></td>
+                    <td><StatusBadge domain="support" status={r.TrangThai} /></td>
                     <td className="text-right">
                       <Link to={`/support/${r.MaYeuCauHoTro}`} className="btn btn-outline btn-sm">Xem trao đổi</Link>
                     </td>

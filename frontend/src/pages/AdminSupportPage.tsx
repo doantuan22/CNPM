@@ -3,6 +3,7 @@ import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { Link } from 'react-router-dom';
 import { useAdminSupportList } from '../features/support/hooks';
 import { ApiError } from '../services/apiClient';
+import { StatusBadge } from '../components/domain/StatusBadge';
 
 const PAGE_SIZE = 10;
 const STATUSES = ['Mới', 'Đang xử lý', 'Đã xử lý'];
@@ -29,7 +30,7 @@ export default function AdminSupportPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 max-w-[1200px] mx-auto w-full">
+    <div className="admin-list-page flex flex-col gap-6 max-w-[1200px] mx-auto w-full">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-heading">Hỗ trợ & Khiếu nại</h1>
@@ -128,14 +129,7 @@ export default function AdminSupportPage() {
                       {r.TieuDe}
                     </td>
                     <td className="py-4 px-4 text-center">
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border ${
-                        r.TrangThai === 'Mới' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                        r.TrangThai === 'Đang xử lý' ? 'bg-primary-50 text-primary-700 border-primary-200' :
-                        'bg-emerald-50 text-emerald-700 border-emerald-200'
-                      }`}>
-                        {r.TrangThai === 'Mới' && <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>}
-                        {r.TrangThai}
-                      </span>
+                      <StatusBadge domain="support" status={r.TrangThai} />
                     </td>
                     <td className="py-4 px-4 text-center">
                       <Link to={`/admin/support/${r.MaYeuCauHoTro}`} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-primary-700 bg-primary-50 hover:bg-primary-100 transition border border-primary-200/60">

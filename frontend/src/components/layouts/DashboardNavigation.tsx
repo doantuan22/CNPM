@@ -39,7 +39,13 @@ const adminGroups = [
 ];
 
 function activePath(pathname: string, to: string) {
-  if (to === '/owner' || to === '/admin') return pathname === to;
+  if (to === '/admin') return pathname === to;
+  if (to === '/partner/dashboard') return pathname === to;
+  if (to === '/partner/hotels') return pathname === '/owner' || pathname === to || pathname.startsWith('/owner/hotels/') || pathname.startsWith('/partner/hotels/');
+  if (to === '/partner/room-types') return pathname.startsWith('/partner/room-types') || pathname.startsWith('/owner/room-types/') || pathname.endsWith('/room-types');
+  if (to === '/partner/bookings') return pathname === to || /\/(owner|partner)\/hotels\/[^/]+\/bookings(?:\/|$)/.test(pathname);
+  if (to === '/partner/reports') return pathname === to || /\/owner\/hotels\/[^/]+\/analytics$/.test(pathname);
+  if (to === '/partner/revenue') return pathname === to;
   return pathname === to || pathname.startsWith(`${to}/`);
 }
 

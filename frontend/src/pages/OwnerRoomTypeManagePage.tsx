@@ -22,10 +22,8 @@ import {
 } from '../features/owner/schemas';
 import { ApiError } from '../services/apiClient';
 import { fileToDataUrl, imageFileError, formatCurrencyVND, toDateInputValue, cn } from '../lib/utils';
-
-function getStatusBadgeClass(status: string) {
-  return status === 'Hoạt động' ? 'status-active' : 'status-suspended';
-}
+import { useConfirm } from '../components/common/FeedbackProvider';
+import { StatusBadge } from '../components/domain/StatusBadge';
 
 export default function OwnerRoomTypeManagePage() {
   const { id } = useParams<{ id: string }>();
@@ -46,6 +44,7 @@ export default function OwnerRoomTypeManagePage() {
   const [ratesRange, setRatesRange] = useState({ from: today, to: twoWeeksOut });
   const ratesQuery = useRates(roomTypeId, ratesRange.from, ratesRange.to);
   const bulkUpsertMutation = useBulkUpsertRates(roomTypeId);
+  const confirm = useConfirm();
 
   const {
     register,
@@ -132,7 +131,7 @@ export default function OwnerRoomTypeManagePage() {
     <div className="flex flex-col gap-5 max-w-[1040px] mx-auto w-full">
       <Link to={`/owner/hotels/${roomType.MaKhachSan}`} className="breadcrumb w-fit">
         <i className="ph ph-arrow-left"></i>
-        <span>Quay lại khách sạn</span>
+        <span>Quay lại {roomType.KHACH_SAN?.TenKhachSan ?? 'khách sạn'}</span>
       </Link>
 
       <div className="flex justify-between items-center flex-wrap gap-3 bg-white border border-border rounded-[14px] px-6 py-4">
@@ -140,7 +139,7 @@ export default function OwnerRoomTypeManagePage() {
           <h1 className="text-[20px] font-bold text-heading mb-0.5">Chỉnh sửa: {roomType.TenLoaiPhong}</h1>
           <p className="text-[13px] text-muted">Cập nhật thông số kỹ thuật, sức chứa, tiện ích và thư viện ảnh của loại phòng này.</p>
         </div>
-        <div className={`status-badge ${getStatusBadgeClass(roomType.TrangThai)}`}>{roomType.TrangThai}</div>
+        <StatusBadge domain="roomType" status={roomType.TrangThai} />
       </div>
 
       <form onSubmit={handleSubmit((v) => updateMutation.mutate(v))} noValidate className="flex flex-col gap-5">
@@ -150,9 +149,9 @@ export default function OwnerRoomTypeManagePage() {
           </div>
         )}
 
-        <section className="bg-white border border-border rounded-[16px] p-7 shadow-sm">
+        <section className="owner-editor-section border-b border-border py-6 first:border-t">
           <div className="mb-6">
-            <h2 className="text-lg font-bold text-heading flex items-center gap-2 mb-1">📐 Thông số kỹ thuật & Cấu hình</h2>
+            <h2 className="text-lg font-bold text-heading mb-1">Thông số kỹ thuật & cấu hình</h2>
             <p className="text-sm text-muted">Tên gọi thương mại, diện tích, sức chứa và loại giường tiêu chuẩn</p>
           </div>
 
@@ -191,9 +190,9 @@ export default function OwnerRoomTypeManagePage() {
           </div>
         </section>
 
-        <section className="bg-white border border-border rounded-[16px] p-7 shadow-sm">
+        <section className="owner-editor-section border-b border-border py-6">
           <div className="mb-4">
-            <h2 className="text-lg font-bold text-heading flex items-center gap-2 mb-1">📝 Giới thiệu & Mô tả không gian</h2>
+            <h2 className="text-lg font-bold text-heading mb-1">Giới thiệu & mô tả không gian</h2>
             <p className="text-sm text-muted">Nội dung hiển thị cho du khách khi xem chi tiết loại phòng này</p>
           </div>
           <div>
@@ -211,7 +210,7 @@ export default function OwnerRoomTypeManagePage() {
                 type="button" 
                 className="btn btn-danger-outline" 
                 disabled={deactivateMutation.isPending} 
-                onClick={() => { if (window.confirm('Ngừng bán loại phòng này? Booking lịch sử sẽ được giữ lại.')) deactivateMutation.mutate(); }}
+                onClick={async () => { if (await confirm({ title: 'Ngừng bán loại phòng?', description: 'Các đặt phòng lịch sử sẽ được giữ lại.', confirmLabel: 'Ngừng bán', variant: 'danger' })) deactivateMutation.mutate(); }}
               >
                 {deactivateMutation.isPending ? 'Đang xử lý...' : 'Ngừng bán'}
               </button>
@@ -220,9 +219,9 @@ export default function OwnerRoomTypeManagePage() {
         </div>
       </form>
 
-      <section className="bg-white border border-border rounded-[16px] p-7 shadow-sm">
+      <section className="owner-editor-section border-b border-border py-6">
         <div className="mb-6">
-          <h2 className="text-lg font-bold text-heading flex items-center gap-2 mb-1">✨ Tiện nghi phòng sẵn có</h2>
+          <h2 className="text-lg font-bold text-heading mb-1">Tiện nghi phòng sẵn có</h2>
           <p className="text-sm text-muted">Tích chọn các tiện ích được phục vụ trong loại phòng này</p>
         </div>
 
@@ -251,10 +250,10 @@ export default function OwnerRoomTypeManagePage() {
         )}
       </section>
 
-      <section className="bg-white border border-border rounded-[16px] p-7 shadow-sm">
+      <section className="owner-editor-section border-b border-border py-6">
         <div className="flex justify-between items-start mb-6">
           <div>
-            <h2 className="text-lg font-bold text-heading flex items-center gap-2 mb-1">📸 Thư viện hình ảnh loại phòng</h2>
+            <h2 className="text-lg font-bold text-heading mb-1">Thư viện hình ảnh loại phòng</h2>
             <p className="text-sm text-muted">Ảnh độ nét cao. Ảnh đầu tiên là ảnh đại diện</p>
           </div>
           <div>
@@ -274,7 +273,7 @@ export default function OwnerRoomTypeManagePage() {
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           {roomType.HINH_ANH_LOAI_PHONG.map((img) => (
             <div key={img.MaHinhAnhLoaiPhong} className="relative h-[110px] rounded-lg overflow-hidden border border-border bg-slate-100 group">
-              <img src={img.URL} alt="Room img" className="w-full h-full object-cover" />
+              <img src={img.URL} alt={`${roomType.TenLoaiPhong} - ảnh phòng`} className="w-full h-full object-cover" />
               {img.LaAnhDaiDien && (
                 <span className="absolute top-1.5 left-1.5 bg-primary text-white text-[10px] font-bold px-1.5 py-0.5 rounded-[4px]">Ảnh đại diện</span>
               )}
@@ -283,26 +282,23 @@ export default function OwnerRoomTypeManagePage() {
                   Đặt làm bìa
                 </button>
               )}
-              <button type="button" onClick={() => { if (window.confirm('Xóa ảnh này?')) deleteImageMutation.mutate(img.MaHinhAnhLoaiPhong); }} disabled={deleteImageMutation.isPending} className="absolute top-1.5 right-1.5 w-[22px] h-[22px] rounded-full bg-black/60 text-white border-none flex items-center justify-center text-[12px] cursor-pointer hover:bg-red-500">
+              <button type="button" aria-label={`Xóa ảnh ${img.URL}`} onClick={async () => { if (await confirm({ title: 'Xóa ảnh loại phòng?', description: 'Ảnh này sẽ bị xóa khỏi loại phòng.', confirmLabel: 'Xóa ảnh', variant: 'danger' })) deleteImageMutation.mutate(img.MaHinhAnhLoaiPhong); }} disabled={deleteImageMutation.isPending} className="absolute top-1.5 right-1.5 w-[22px] h-[22px] rounded-full bg-black/60 text-white border-none flex items-center justify-center text-[12px] cursor-pointer hover:bg-red-500">
                 <i className="ph ph-x"></i>
               </button>
             </div>
           ))}
-          <div 
-            onClick={() => fileInputRef.current?.click()}
-            className="h-[110px] border-[1.5px] border-dashed border-primary bg-[#F5F9FF] rounded-lg flex flex-col items-center justify-center gap-1 cursor-pointer hover:bg-[#EBF3FF] transition-colors"
-          >
+          <button type="button" aria-label="Thêm ảnh loại phòng" onClick={() => fileInputRef.current?.click()} className="h-[110px] w-full border-[1.5px] border-dashed border-primary bg-[#F5F9FF] rounded-lg flex flex-col items-center justify-center gap-1 cursor-pointer hover:bg-[#EBF3FF] transition-colors">
             <i className="ph-fill ph-plus-circle text-primary text-[20px]"></i>
             <span className="text-[12px] font-bold text-primary">Thêm ảnh</span>
-          </div>
+          </button>
         </div>
       </section>
 
       {/* Inventory & Pricing */}
-      <section className="bg-white border border-border rounded-[16px] p-7 shadow-sm">
+      <section className="owner-editor-section border-t border-border py-6">
         <div className="mb-6">
-          <h2 className="text-lg font-bold text-heading flex items-center gap-2 mb-1">📅 Giá & quỹ phòng theo ngày</h2>
-          <p className="text-sm text-muted">Thiết lập giá và số lượng mở bán cho từng ngày.</p>
+          <h2 className="text-lg font-bold text-heading mb-1">Giá & quỹ phòng theo ngày</h2>
+          <p className="text-sm text-muted">Khoảng ngày bên dưới là thao tác áp dụng hàng loạt; hệ thống lưu một bản ghi riêng cho từng ngày áp dụng.</p>
         </div>
 
         {bulkUpsertMutation.isSuccess && (
@@ -328,7 +324,7 @@ export default function OwnerRoomTypeManagePage() {
           </div>
           <div className="col-span-2 md:col-span-4 mt-2">
             <button type="submit" disabled={isRateSubmitting || bulkUpsertMutation.isPending} className="btn btn-primary w-full md:w-auto">
-              {bulkUpsertMutation.isPending ? 'Đang áp dụng...' : 'Áp dụng đồng loạt cho khoảng ngày này'}
+              {bulkUpsertMutation.isPending ? 'Đang áp dụng...' : 'Áp dụng mức này cho từng ngày'}
             </button>
           </div>
         </form>
@@ -358,9 +354,7 @@ export default function OwnerRoomTypeManagePage() {
                     <td className="px-4 py-3 text-primary font-semibold">{formatCurrencyVND(rate.GiaPhong)}</td>
                     <td className="px-4 py-3 font-medium text-heading">{rate.SoLuongPhong} phòng</td>
                     <td className="px-4 py-3">
-                      <span className={`inline-flex items-center px-2 py-1 rounded-md text-[11px] font-bold ${rate.TrangThai === 'Mở bán' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                        {rate.TrangThai}
-                      </span>
+                      <StatusBadge domain="roomRate" status={rate.TrangThai} />
                     </td>
                   </tr>
                 ))}

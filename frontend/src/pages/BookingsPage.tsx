@@ -1,21 +1,10 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMyBookings } from '../features/bookings/hooks';
+import { CustomerCenterNavigation } from '../components/layouts/CustomerCenterNavigation';
 import { formatCurrencyVND } from '../lib/utils';
 import { ApiError } from '../services/apiClient';
-
-function getStatusBadgeClass(status: string) {
-  switch (status) {
-    case 'Đã xác nhận':
-    case 'Thành công':
-    case 'Hoàn tất':
-      return 'status-confirmed';
-    case 'Đã hủy':
-      return 'status-cancelled';
-    default:
-      return 'status-pending'; // Chờ xác nhận, Chờ thanh toán
-  }
-}
+import { StatusBadge } from '../components/domain/StatusBadge';
 
 function getStatusFilterTag(status: string) {
   switch (status) {
@@ -41,6 +30,7 @@ export default function BookingsPage() {
 
   return (
     <div className="container" style={{ paddingTop: '32px', paddingBottom: '60px' }}>
+      <CustomerCenterNavigation />
       <div className="page-header">
         <h1>Đặt phòng của tôi</h1>
       </div>
@@ -83,7 +73,7 @@ export default function BookingsPage() {
               <div className="flex-1 flex flex-col gap-1.5 min-w-0">
                 <div className="flex justify-between items-center flex-wrap gap-2">
                   <span className="text-[13px] font-semibold text-primary">Mã đơn: {b.MaXacNhanDatPhong}</span>
-                  <span className={`status-badge ${getStatusBadgeClass(b.TrangThai)}`}>{b.TrangThai}</span>
+                  <StatusBadge domain="booking" status={b.TrangThai} />
                 </div>
                 <h3 className="text-base font-semibold text-heading truncate">{b.TenKhachSan}</h3>
                 <div className="text-[13px] text-muted flex gap-x-4 gap-y-1 flex-wrap mt-1">
@@ -97,7 +87,7 @@ export default function BookingsPage() {
                 <div className="flex gap-2">
                   <Link to={`/bookings/${b.MaDatPhong}`} className="btn btn-outline btn-sm">Chi tiết</Link>
                   {getStatusFilterTag(b.TrangThai) === 'completed' && (
-                    <button className="btn btn-primary btn-sm">Đánh giá</button>
+                    <Link to={`/write-review/${b.MaDatPhong}`} className="btn btn-primary btn-sm">Đánh giá</Link>
                   )}
                 </div>
               </div>

@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { ApiError } from '../services/apiClient';
+import { StatusBadge } from '../components/domain/StatusBadge';
 import { listAdminHotels } from '../features/admin/hotels/api';
 
 export default function AdminHotelsPage() {
@@ -23,7 +24,7 @@ export default function AdminHotelsPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 max-w-[1200px] mx-auto w-full">
+    <div className="admin-list-page flex flex-col gap-6 max-w-[1200px] mx-auto w-full">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-heading">Quản lý khách sạn</h1>
@@ -107,12 +108,7 @@ export default function AdminHotelsPage() {
                       {hotel.DIA_PHUONG?.TenThanhPho ?? '—'}
                     </td>
                     <td className="py-4 px-4 text-center">
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border ${
-                        hotel.TrangThai === 'Hoạt động' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'
-                      }`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${hotel.TrangThai === 'Hoạt động' ? 'bg-emerald-500' : 'bg-rose-500'}`}></span>
-                        {hotel.TrangThai}
-                      </span>
+                      <StatusBadge domain="hotel" status={hotel.TrangThai} />
                     </td>
                     <td className="py-4 px-4 text-center">
                       <Link to={`/admin/hotels/${hotel.MaKhachSan}`} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-primary-700 bg-primary-50 hover:bg-primary-100 transition border border-primary-200/60">

@@ -2,13 +2,14 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAdminPartnerApplications } from '../features/partners/hooks';
 import { ApiError } from '../services/apiClient';
+import { StatusBadge } from '../components/domain/StatusBadge';
 
 export default function AdminPartnerApplicationsPage() {
   const [status, setStatus] = useState('Chờ duyệt');
   const query = useAdminPartnerApplications(status === 'ALL' ? undefined : status);
 
   return (
-    <div className="flex flex-col gap-6 max-w-[1200px] mx-auto w-full">
+    <div className="admin-list-page flex flex-col gap-6 max-w-[1200px] mx-auto w-full">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-heading">Hồ sơ đăng ký</h1>
@@ -80,13 +81,7 @@ export default function AdminPartnerApplicationsPage() {
                       {new Date(application.NgayNop).toLocaleString('vi-VN')}
                     </td>
                     <td className="py-4 px-4 text-center">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-semibold ${
-                        application.TrangThaiDuyet === 'Chờ duyệt' ? 'bg-amber-50 text-amber-600' :
-                        application.TrangThaiDuyet === 'Đã duyệt' ? 'bg-emerald-50 text-emerald-600' :
-                        'bg-rose-50 text-rose-600'
-                      }`}>
-                        {application.TrangThaiDuyet}
-                      </span>
+                      <StatusBadge domain="partnerApplication" status={application.TrangThaiDuyet} />
                     </td>
                     <td className="py-4 px-4 text-center">
                       <Link to={`/admin/partner-applications/${application.MaHoSoDoiTac}`} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-primary-700 bg-primary-50 hover:bg-primary-100 transition border border-primary-200/60">

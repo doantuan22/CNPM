@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import {
@@ -10,12 +10,13 @@ import {
 } from '../features/admin/accounts/hooks';
 import type { UpdateAccountPayload } from '../types/auth';
 import { ApiError } from '../services/apiClient';
+import { useConfirm } from '../components/common/FeedbackProvider';
 
 export default function AdminAccountDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const accountId = Number(id);
-  const [confirmDelete, setConfirmDelete] = useState(false);
+  const confirm = useConfirm();
 
   const detailQuery = useAccountDetail(Number.isFinite(accountId) ? accountId : null);
   const updateMutation = useUpdateAccount();
@@ -64,9 +65,10 @@ export default function AdminAccountDetailPage() {
     });
 
   const onDelete = async () => {
+    const accepted = await confirm({ title: 'Xóa tài khoản?', description: `Tài khoản ${account.HoTen} sẽ bị xóa nếu không có dữ liệu lịch sử cần giữ lại.`, confirmLabel: 'Xóa tài khoản', variant: 'danger' });
+    if (!accepted) return;
     const result = await deleteMutation.mutateAsync(accountId);
     if (result.hardDeleted) navigate('/admin/accounts', { replace: true });
-    setConfirmDelete(false);
   };
 
   return (
@@ -178,9 +180,7 @@ export default function AdminAccountDetailPage() {
                 <button
                   type="button"
                   onClick={() => {
-                    if (window.confirm('Khóa tài khoản này? Người dùng sẽ không thể đăng nhập cho đến khi được mở khóa.')) {
-                      lockMutation.mutate(accountId);
-                    }
+                    void confirm({ title: 'Khóa tài khoản?', description: 'Người dùng sẽ không thể đăng nhập cho đến khi được mở khóa.', confirmLabel: 'Khóa tài khoản', variant: 'danger' }).then((accepted) => { if (accepted) lockMutation.mutate(accountId); });
                   }}
                   disabled={lockMutation.isPending}
                   className="flex-1 px-4 py-2.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-xl text-sm font-bold hover:bg-amber-100 transition disabled:opacity-50 flex items-center justify-center gap-2"
@@ -189,33 +189,9 @@ export default function AdminAccountDetailPage() {
                 </button>
               )}
 
-              {!confirmDelete ? (
-                <button
-                  type="button"
-                  onClick={() => setConfirmDelete(true)}
-                  className="flex-1 px-4 py-2.5 bg-rose-50 text-rose-700 border border-rose-200 rounded-xl text-sm font-bold hover:bg-rose-100 transition flex items-center justify-center gap-2"
-                >
-                  <i className="ph ph-trash"></i> Xóa tài khoản
-                </button>
-              ) : (
-                <div className="flex-1 flex items-center gap-2 p-2 border border-rose-200 bg-rose-50 rounded-xl">
-                  <button
-                    type="button"
-                    onClick={onDelete}
-                    disabled={deleteMutation.isPending}
-                    className="flex-1 px-3 py-1.5 bg-rose-600 text-white rounded-lg text-xs font-bold hover:bg-rose-700 transition"
-                  >
-                    {deleteMutation.isPending ? 'Đang xóa...' : 'Xác nhận xóa'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setConfirmDelete(false)}
-                    className="flex-1 px-3 py-1.5 bg-white text-slate-700 border border-border rounded-lg text-xs font-bold hover:bg-slate-50 transition"
-                  >
-                    Hủy
-                  </button>
-                </div>
-              )}
+              <button type="button" onClick={onDelete} disabled={deleteMutation.isPending} className="flex-1 px-4 py-2.5 bg-rose-50 text-rose-700 border border-rose-200 rounded-xl text-sm font-bold hover:bg-rose-100 transition flex items-center justify-center gap-2 disabled:opacity-50">
+                <i className="ph ph-trash" aria-hidden="true"></i> {deleteMutation.isPending ? 'Đang xóa...' : 'Xóa tài khoản'}
+              </button>
             </div>
           </div>
           

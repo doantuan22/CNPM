@@ -42,7 +42,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       <div className="ui-field-group">
         {label && (
           <label htmlFor={inputId} className="ui-field-label">
-            {label}
+            {label}{props.required && <><span className="ui-field-label__required" aria-hidden="true">*</span><span className="visually-hidden"> (bắt buộc)</span></>}
           </label>
         )}
         <div>{field}</div>

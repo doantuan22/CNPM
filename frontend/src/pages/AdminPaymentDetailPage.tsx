@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { ApiError } from '../services/apiClient';
 import { getAdminPayment } from '../features/admin/payments/api';
+import { StatusBadge } from '../components/domain/StatusBadge';
 
 export default function AdminPaymentDetailPage() {
   const id = Number(useParams().id);
@@ -18,7 +19,7 @@ export default function AdminPaymentDetailPage() {
   const payment = query.data;
 
   return (
-    <div className="flex flex-col gap-6 max-w-[600px] mx-auto w-full">
+    <div className="admin-payment-detail flex flex-col gap-5 max-w-[1000px] mx-auto w-full">
       <Link to="/admin/payments" className="breadcrumb w-fit">
         <i className="ph ph-arrow-left"></i>
         <span>Quay lại danh sách</span>
@@ -36,13 +37,7 @@ export default function AdminPaymentDetailPage() {
                 <h3 className="text-lg font-bold text-heading">
                   {payment.MaGiaoDichDoiTac || `PAY-${payment.MaThanhToan}`}
                 </h3>
-                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border ${
-                        payment.TrangThai === 'Thành công' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                        payment.TrangThai === 'Chờ xử lý' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                        'bg-rose-50 text-rose-700 border-rose-200'
-                      }`}>
-                  {payment.TrangThai}
-                </span>
+                <StatusBadge domain="payment" status={payment.TrangThai} />
               </div>
               <p className="text-[11px] text-slate-400 mt-0.5">
                 Booking: <strong className="font-mono">#{payment.DAT_PHONG.MaXacNhanDatPhong}</strong>
@@ -51,9 +46,9 @@ export default function AdminPaymentDetailPage() {
           </div>
         </div>
 
-        <div className="p-6 space-y-5 text-xs">
+        <div className="admin-payment-detail__body p-6 text-xs">
           {/* Thông tin số tiền */}
-          <div className="bg-slate-50 border border-border rounded-2xl p-4 space-y-3">
+          <section className="admin-payment-detail__summary space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-slate-500 font-semibold text-sm">Tổng giá trị giao dịch:</span>
               <span className="text-xl font-black text-heading">{Number(payment.SoTien).toLocaleString('vi-VN')} đ</span>
@@ -76,9 +71,9 @@ export default function AdminPaymentDetailPage() {
                 <span className="font-medium text-slate-700">{payment.DAT_PHONG.KHACH_SAN.TenKhachSan}</span>
               </div>
             </div>
-          </div>
+          </section>
 
-          <div className="bg-white border border-border rounded-2xl p-4 space-y-3 shadow-sm">
+          <section className="admin-payment-detail__timeline space-y-3">
             <h4 className="font-bold text-slate-700 uppercase tracking-wider text-[11px]">Timeline dòng tiền & trạng thái</h4>
             <div className="space-y-3 pl-2 border-l-2 border-primary/30 ml-1 text-xs pt-1">
               <div className="relative">
@@ -107,12 +102,12 @@ export default function AdminPaymentDetailPage() {
                 </div>
               )}
             </div>
-          </div>
+          </section>
 
           {payment.HOAN_TIEN && payment.HOAN_TIEN.length > 0 && (
-            <div className="space-y-3">
+            <section className="admin-payment-detail__refunds space-y-3">
               {payment.HOAN_TIEN.map((refund) => (
-                <div key={refund.MaHoanTien} className="bg-amber-50/80 border border-amber-200/90 rounded-2xl p-4 space-y-2.5">
+                <div key={refund.MaHoanTien} className="border-t border-border py-4 space-y-2.5">
                   <div className="flex items-center justify-between pb-2 border-b border-amber-200/60">
                     <div className="flex items-center gap-1.5 font-bold text-amber-900 text-sm">
                       <i className="ph-fill ph-arrow-u-down-left text-amber-600"></i>
@@ -140,7 +135,7 @@ export default function AdminPaymentDetailPage() {
                   </div>
                 </div>
               ))}
-            </div>
+            </section>
           )}
         </div>
       </div>

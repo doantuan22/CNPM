@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useCreatePromotion, usePromotionDetail, useSetPromotionStatus, useUpdatePromotion } from '../features/promotions/hooks';
 import { ApiError } from '../services/apiClient';
 import type { PromotionFormValues } from '../features/promotions/types';
+import { useConfirm } from '../components/common/FeedbackProvider';
 
 const DISCOUNT_TYPES = ['Phần trăm', 'Số tiền cố định'];
 
@@ -27,6 +28,7 @@ export default function AdminPromotionFormPage() {
   const createMutation = useCreatePromotion();
   const updateMutation = useUpdatePromotion();
   const statusMutation = useSetPromotionStatus();
+  const confirm = useConfirm();
 
   const [form, setForm] = useState<PromotionFormValues>(emptyForm);
 
@@ -217,11 +219,9 @@ export default function AdminPromotionFormPage() {
                     <button
                       type="button"
                       disabled={statusMutation.isPending}
-                      onClick={() => {
+                      onClick={async () => {
                         const activating = detailQuery.data!.TrangThai !== 'Hoạt động';
-                        if (!activating && !window.confirm('Ngừng áp dụng mã khuyến mãi này? Khách hàng sẽ không thể dùng mã ngay sau đó.')) {
-                          return;
-                        }
+                        if (!activating && !await confirm({ title: 'Ngừng mã khuyến mãi?', description: 'Khách hàng sẽ không thể dùng mã này cho đặt phòng mới.', confirmLabel: 'Ngừng mã', variant: 'danger' })) return;
                         statusMutation.mutate({ id: promotionId, active: activating });
                       }}
                       className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-bold transition border ${

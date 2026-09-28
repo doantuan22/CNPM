@@ -18,7 +18,7 @@ const roleHome: Record<string, string> = {
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const location = useLocation() as { state?: { from?: { pathname?: string } } };
+  const location = useLocation() as { state?: { from?: { pathname?: string; search?: string } } };
   const loginMutation = useLogin();
   
   const [showSessionExpired] = useState(() => useAuthStore.getState().sessionExpired);
@@ -37,7 +37,8 @@ export default function LoginPage() {
       const result = await loginMutation.mutateAsync(data);
       const decoded = decodeAccessToken(result.accessToken);
       const fallback = (decoded && roleHome[decoded.role]) || '/';
-      navigate(location.state?.from?.pathname || fallback, { replace: true });
+      const returnTo = location.state?.from;
+      navigate(returnTo?.pathname ? `${returnTo.pathname}${returnTo.search ?? ''}` : fallback, { replace: true });
     } catch {
       // surfaced via loginMutation.isError below
     }

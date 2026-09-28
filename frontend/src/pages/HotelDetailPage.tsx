@@ -254,9 +254,9 @@ export default function HotelDetailPage() {
       <main className="max-w-[1440px] mx-auto px-6 lg:px-12 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
-          <div className="lg:col-span-8 space-y-12">
+          <div className="hotel-detail-content lg:col-span-8 flex flex-col gap-8">
             {/* OVERVIEW */}
-            <section id="tong-quan" className="pt-2 scroll-mt-36">
+            <section id="tong-quan" className="order-2 pt-2 scroll-mt-36">
               <div className="bg-white rounded-2xl border border-border p-6 sm:p-8 shadow-md">
                 <h2 className="text-xl sm:text-2xl font-bold text-ink tracking-tight mb-4 flex items-center gap-2.5">
                   <i className="ph ph-info text-2xl text-primary"></i>
@@ -279,13 +279,14 @@ export default function HotelDetailPage() {
             </section>
 
             {/* ROOM SELECTION LIST */}
-            <section id="loai-phong" className="pt-2 scroll-mt-36">
+            <section id="loai-phong" className="order-1 pt-2 scroll-mt-36">
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h2 className="text-xl sm:text-2xl font-bold text-ink tracking-tight flex items-center gap-2">
                     <i className="ph ph-bed text-2xl text-primary"></i>
                     Các loại phòng sẵn có
                   </h2>
+                  <p className="mt-1 text-sm text-ink-muted">{checkIn} → {checkOut} · {guests} khách</p>
                 </div>
               </div>
 
@@ -319,7 +320,7 @@ export default function HotelDetailPage() {
               ) : (
                 <div className="space-y-6">
                   {roomsQuery.data?.map((room) => (
-                    <div key={room.MaLoaiPhong} className={cn("bg-white rounded-2xl border p-5 sm:p-6 shadow-md hover:shadow-lg transition-shadow duration-300 grid grid-cols-1 md:grid-cols-12 gap-6", (selectedRooms[room.MaLoaiPhong] ?? 0) > 0 ? "border-primary ring-1 ring-primary" : "border-border", !room.ConHang && 'opacity-60 grayscale-[50%] pointer-events-none')}>
+                    <div key={room.MaLoaiPhong} className={cn("bg-white rounded-2xl border p-5 sm:p-6 shadow-sm hover:border-primary/60 transition-colors grid grid-cols-1 md:grid-cols-12 gap-6", (selectedRooms[room.MaLoaiPhong] ?? 0) > 0 ? "border-primary ring-1 ring-primary" : "border-border", !room.ConHang && 'opacity-60 grayscale-[50%] pointer-events-none')}>
                       <div className="md:col-span-4 relative rounded-xl overflow-hidden bg-slate-100 flex items-center justify-center">
                         <i className="ph-duotone ph-image text-4xl text-slate-300"></i>
                       </div>
@@ -375,7 +376,7 @@ export default function HotelDetailPage() {
             </section>
             
             {/* AMENITIES */}
-            <section id="tien-nghi" className="pt-2 scroll-mt-36">
+            <section id="tien-nghi" className="order-3 pt-2 scroll-mt-36">
               <div className="bg-white rounded-2xl border border-border p-6 sm:p-8 shadow-md">
                 <div className="flex items-center justify-between mb-6">
                   <div>
@@ -403,7 +404,7 @@ export default function HotelDetailPage() {
 
           {/* RIGHT COLUMN: BOOKING WIDGET */}
           <div className="lg:col-span-4 relative">
-            <div className="sticky top-28 space-y-4">
+            <div className="hotel-selection-summary lg:sticky lg:top-28 space-y-4">
               <div className="bg-white rounded-2xl border-2 border-primary/20 p-6 shadow-xl relative overflow-hidden">
                 <h2 className="text-lg font-bold text-ink mb-4 flex items-center gap-2">
                   <i className="ph-fill ph-receipt text-primary text-xl"></i>
@@ -524,7 +525,7 @@ export default function HotelDetailPage() {
 
                         <div className="pt-2">
                           {!accessToken ? (
-                            <button onClick={() => navigate('/login')} className="w-full h-12 bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm rounded-xl transition-all shadow-md">
+                            <button onClick={() => navigate('/login', { state: { from: { pathname: `/hotels/${hotelId}`, search: window.location.search } } })} className="w-full h-12 bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm rounded-xl transition-all shadow-md">
                               Đăng nhập để đặt phòng
                             </button>
                           ) : role !== ROLE_NAMES.CUSTOMER ? (
@@ -540,7 +541,7 @@ export default function HotelDetailPage() {
                             >
                               {bookingMutation.isPending ? 'Đang xử lý...' : (
                                 <>
-                                  <span>Xác nhận đặt ngay</span>
+                                  <span>Tạo đặt phòng</span>
                                   <i className="ph-bold ph-arrow-right"></i>
                                 </>
                               )}

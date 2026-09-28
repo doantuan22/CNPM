@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useParams, Link } from 'react-router-dom';
 import { useMyHotel, useUpdateHotel, useReplaceHotelAmenities, useUploadHotelImage, useDeleteHotelImage, useSetPrimaryHotelImage, useRoomTypes, useCreateRoomType, useDeactivateHotel } from '../features/owner/hooks';
@@ -8,19 +8,9 @@ import { useAmenities } from '../features/amenities/hooks';
 import { hotelFormSchema, HotelFormSchemaValues, roomTypeFormSchema, RoomTypeFormSchemaValues } from '../features/owner/schemas';
 import { ApiError } from '../services/apiClient';
 import { fileToDataUrl, imageFileError, cn } from '../lib/utils';
-
-function getStatusBadgeClass(status: string) {
-  switch (status) {
-    case 'Hoạt động':
-      return 'status-active';
-    case 'Chờ duyệt':
-      return 'status-pending';
-    case 'Đình chỉ':
-      return 'status-suspended';
-    default:
-      return 'status-pending';
-  }
-}
+import { useConfirm } from '../components/common/FeedbackProvider';
+import { StatusBadge } from '../components/domain/StatusBadge';
+import { Combobox } from '../components/common/Combobox';
 
 export default function OwnerHotelManagePage() {
   const { id } = useParams<{ id: string }>();
@@ -36,6 +26,7 @@ export default function OwnerHotelManagePage() {
   const roomTypesQuery = useRoomTypes(hotelId);
   const createRoomTypeMutation = useCreateRoomType(hotelId);
   const deactivateMutation = useDeactivateHotel(hotelId);
+  const confirm = useConfirm();
 
   const [showRoomTypeForm, setShowRoomTypeForm] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
@@ -43,6 +34,7 @@ export default function OwnerHotelManagePage() {
 
   const {
     register,
+    control,
     handleSubmit,
     reset,
     formState: { errors, isDirty },
@@ -113,30 +105,30 @@ export default function OwnerHotelManagePage() {
   };
 
   return (
-    <div className="flex flex-col gap-5 max-w-[1080px] mx-auto w-full">
+    <div className="owner-hotel-manage flex flex-col gap-5 max-w-[1200px] mx-auto w-full">
       <Link to="/owner" className="breadcrumb w-fit">
         <i className="ph ph-arrow-left"></i>
         <span>Quay lại danh sách khách sạn</span>
       </Link>
 
-      <div className="flex justify-between items-center flex-wrap gap-3 bg-white border border-border rounded-[14px] px-6 py-4">
+      <div className="owner-hotel-manage__identity flex justify-between items-center flex-wrap gap-3">
         <div>
           <h1 className="text-[20px] font-bold text-heading mb-0.5">Hồ sơ khách sạn</h1>
           <p className="text-[13px] text-muted">Cập nhật thông tin chi tiết, quy định nhận phòng và hình ảnh cơ sở lưu trú.</p>
         </div>
 
         <div className="flex items-center gap-3 flex-wrap">
-          <div className="flex items-center gap-2 bg-slate-50 border border-border px-3.5 py-2 rounded-lg cursor-pointer hover:bg-white hover:border-primary transition-all">
+          <div className="flex items-center gap-2 px-1 py-2">
             <div>
               <span className="text-[12px] text-muted font-medium block leading-tight">Đang quản lý:</span>
               <div className="text-[13px] font-bold text-heading leading-tight flex items-center gap-1.5"><i className="ph-fill ph-buildings text-primary"></i> {hotel.TenKhachSan}</div>
             </div>
           </div>
-          <div className={`status-badge ${getStatusBadgeClass(hotel.TrangThai)}`}>{hotel.TrangThai}</div>
+          <StatusBadge domain="hotel" status={hotel.TrangThai} />
         </div>
       </div>
 
-      <div className="flex items-center gap-3 flex-wrap">
+      <nav className="owner-hotel-manage__actions flex items-center gap-3 flex-wrap" aria-label="Thao tác khách sạn">
         <Link to={`/owner/hotels/${hotelId}/analytics`} className="btn btn-outline btn-sm">
           <i className="ph ph-chart-bar"></i> Xem thống kê
         </Link>
@@ -148,12 +140,12 @@ export default function OwnerHotelManagePage() {
             type="button" 
             className="btn btn-danger-outline btn-sm"
             disabled={deactivateMutation.isPending}
-            onClick={() => { if (window.confirm('Ngừng kinh doanh khách sạn? Booking lịch sử sẽ được giữ lại.')) deactivateMutation.mutate(); }}
+            onClick={async () => { if (await confirm({ title: 'Ngừng kinh doanh khách sạn?', description: 'Các đặt phòng lịch sử sẽ được giữ lại.', confirmLabel: 'Ngừng kinh doanh', variant: 'danger' })) deactivateMutation.mutate(); }}
           >
             {deactivateMutation.isPending ? 'Đang xử lý...' : 'Ngừng kinh doanh'}
           </button>
         )}
-      </div>
+      </nav>
 
       {deactivateMutation.isSuccess && <div role="status" className="rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">Khách sạn đã ngừng kinh doanh; lịch sử booking được giữ lại.</div>}
       {deactivateMutation.isError && <div role="alert" className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">{deactivateMutation.error instanceof ApiError ? deactivateMutation.error.message : 'Không thể ngừng kinh doanh khách sạn'}</div>}
@@ -165,9 +157,9 @@ export default function OwnerHotelManagePage() {
           </div>
         )}
 
-        <section className="bg-white border border-border rounded-[16px] p-7 shadow-sm">
+        <section className="owner-editor-section border-b border-border py-6 first:border-t">
           <div className="mb-6">
-            <h2 className="text-lg font-bold text-heading flex items-center gap-2 mb-1">🏢 Thông tin cơ bản</h2>
+            <h2 className="text-lg font-bold text-heading mb-1">Thông tin cơ bản</h2>
             <p className="text-sm text-muted">Tên thương mại, tiêu chuẩn sao và địa chỉ hiển thị với du khách</p>
           </div>
 
@@ -190,16 +182,11 @@ export default function OwnerHotelManagePage() {
             </div>
 
             <div>
-              <label htmlFor="owner-hotel-manage-MaDiaPhuong" className="form-label">Tỉnh / Thành phố <span className="text-red-500">*</span></label>
-              <div className="relative">
-                <select id="owner-hotel-manage-MaDiaPhuong" className={cn("select", errors.MaDiaPhuong && "border-red-500")} {...register('MaDiaPhuong', { valueAsNumber: true })}>
-                  <option value="">-- Chọn tỉnh thành --</option>
-                  {locationsQuery.data?.map(loc => (
-                    <option key={loc.MaDiaPhuong} value={loc.MaDiaPhuong}>{loc.TenThanhPho}</option>
-                  ))}
-                </select>
-                <i className="ph ph-caret-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none"></i>
-              </div>
+              <Controller control={control} name="MaDiaPhuong" render={({ field }) => (
+                <Combobox id="owner-hotel-manage-MaDiaPhuong" label="Tỉnh / Thành phố" placeholder="Tìm tỉnh hoặc thành phố..."
+                  options={(locationsQuery.data ?? []).map((location) => ({ value: String(location.MaDiaPhuong), label: location.TenThanhPho }))}
+                  value={field.value ? String(field.value) : ''} onValueChange={(value) => field.onChange(value ? Number(value) : undefined)} error={errors.MaDiaPhuong?.message} />
+              )} />
             </div>
 
             <div className="md:col-span-2">
@@ -210,9 +197,9 @@ export default function OwnerHotelManagePage() {
           </div>
         </section>
 
-        <section className="bg-white border border-border rounded-[16px] p-7 shadow-sm">
+        <section className="owner-editor-section border-b border-border py-6">
           <div className="mb-6">
-            <h2 className="text-lg font-bold text-heading flex items-center gap-2 mb-1">⏱️ Quy định vận hành & Khung giờ</h2>
+            <h2 className="text-lg font-bold text-heading mb-1">Quy định vận hành & khung giờ</h2>
             <p className="text-sm text-muted">Thiết lập thời gian nhận và trả phòng tiêu chuẩn</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -229,9 +216,9 @@ export default function OwnerHotelManagePage() {
           </div>
         </section>
 
-        <section className="bg-white border border-border rounded-[16px] p-7 shadow-sm">
+        <section className="owner-editor-section border-b border-border py-6">
           <div className="mb-4">
-            <h2 className="text-lg font-bold text-heading flex items-center gap-2 mb-1">📝 Giới thiệu tổng quan</h2>
+            <h2 className="text-lg font-bold text-heading mb-1">Giới thiệu tổng quan</h2>
             <p className="text-sm text-muted">Đoạn văn ngắn làm nổi bật vị trí, phong cách kiến trúc và dịch vụ vượt trội</p>
           </div>
           <div>
@@ -239,9 +226,9 @@ export default function OwnerHotelManagePage() {
           </div>
         </section>
 
-        <section className="bg-white border border-border rounded-[16px] p-7 shadow-sm">
+        <section className="owner-editor-section border-b border-border py-6">
           <div className="mb-6">
-            <h2 className="text-lg font-bold text-heading flex items-center gap-2 mb-1">✨ Tiện nghi & Dịch vụ khách sạn</h2>
+            <h2 className="text-lg font-bold text-heading mb-1">Tiện nghi & dịch vụ khách sạn</h2>
             <p className="text-sm text-muted">Tích chọn các dịch vụ tiện ích cơ sở hiện đang cung cấp</p>
           </div>
           {amenitiesQuery.data && amenitiesQuery.data.length > 0 ? (
@@ -284,10 +271,10 @@ export default function OwnerHotelManagePage() {
         )}
       </form>
 
-      <section className="bg-white border border-border rounded-[16px] p-7 shadow-sm">
+      <section className="owner-editor-section border-t border-border py-6">
         <div className="flex justify-between items-start mb-6">
           <div>
-            <h2 className="text-lg font-bold text-heading flex items-center gap-2 mb-1">📸 Hình ảnh cơ sở lưu trú</h2>
+            <h2 className="text-lg font-bold text-heading mb-1">Hình ảnh cơ sở lưu trú</h2>
             <p className="text-sm text-muted">Ảnh đầu tiên sẽ làm ảnh bìa tìm kiếm</p>
           </div>
           <div>
@@ -307,7 +294,7 @@ export default function OwnerHotelManagePage() {
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3.5">
           {hotel.HINH_ANH_KHACH_SAN.map((img) => (
             <div key={img.MaHinhAnh} className="relative h-[120px] rounded-[10px] overflow-hidden border border-border bg-slate-100 group">
-              <img src={img.URL} alt="Hotel img" className="w-full h-full object-cover" />
+              <img src={img.URL} alt={`${hotel.TenKhachSan} - ảnh cơ sở lưu trú`} className="w-full h-full object-cover" />
               {img.AnhDaiDien && (
                 <span className="absolute top-1.5 left-1.5 bg-primary text-white text-[10px] font-bold px-1.5 py-0.5 rounded-[4px]">Ảnh đại diện</span>
               )}
@@ -316,25 +303,22 @@ export default function OwnerHotelManagePage() {
                   Đặt làm bìa
                 </button>
               )}
-              <button type="button" onClick={() => { if (window.confirm('Xóa ảnh này?')) deleteImageMutation.mutate(img.MaHinhAnh); }} disabled={deleteImageMutation.isPending} className="absolute top-1.5 right-1.5 w-[22px] h-[22px] rounded-full bg-black/60 text-white border-none flex items-center justify-center text-[12px] cursor-pointer hover:bg-red-500">
+              <button type="button" aria-label={`Xóa ảnh ${img.URL}`} onClick={async () => { if (await confirm({ title: 'Xóa ảnh khách sạn?', description: 'Ảnh này sẽ bị xóa khỏi hồ sơ khách sạn.', confirmLabel: 'Xóa ảnh', variant: 'danger' })) deleteImageMutation.mutate(img.MaHinhAnh); }} disabled={deleteImageMutation.isPending} className="absolute top-1.5 right-1.5 w-[22px] h-[22px] rounded-full bg-black/60 text-white border-none flex items-center justify-center text-[12px] cursor-pointer hover:bg-red-500">
                 <i className="ph ph-x"></i>
               </button>
             </div>
           ))}
-          <div 
-            onClick={() => fileInputRef.current?.click()}
-            className="h-[120px] border-[1.5px] border-dashed border-primary bg-[#F5F9FF] rounded-[10px] flex flex-col items-center justify-center gap-1.5 cursor-pointer hover:bg-[#EBF3FF] transition-colors"
-          >
+          <button type="button" aria-label="Thêm ảnh khách sạn" onClick={() => fileInputRef.current?.click()} className="h-[120px] w-full border-[1.5px] border-dashed border-primary bg-[#F5F9FF] rounded-[10px] flex flex-col items-center justify-center gap-1.5 cursor-pointer hover:bg-[#EBF3FF] transition-colors">
             <i className="ph-fill ph-plus-circle text-primary text-[24px]"></i>
             <span className="text-[12px] font-bold text-primary">Thêm ảnh</span>
-          </div>
+          </button>
         </div>
       </section>
 
-      <section className="bg-white border border-border rounded-[16px] p-7 shadow-sm">
+      <section className="owner-editor-section border-t border-border py-6">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h2 className="text-lg font-bold text-heading flex items-center gap-2 mb-1">🛏️ Các loại phòng</h2>
+            <h2 className="text-lg font-bold text-heading mb-1">Các loại phòng</h2>
             <p className="text-sm text-muted">Danh sách loại phòng của khách sạn</p>
           </div>
           <button type="button" className="btn btn-outline btn-sm" onClick={() => setShowRoomTypeForm(v => !v)}>
@@ -391,7 +375,7 @@ export default function OwnerHotelManagePage() {
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-heading text-[15px]">{rt.TenLoaiPhong}</span>
-                      <span className={`status-badge ${rt.TrangThai === 'Hoạt động' ? 'status-active' : 'status-suspended'}`}>{rt.TrangThai}</span>
+                      <StatusBadge domain="roomType" status={rt.TrangThai} />
                     </div>
                     <span className="text-[13px] text-muted">{rt.SucChua} khách · {rt.DienTich} m² · {rt.SoGiuong} giường ({rt.LoaiGiuong})</span>
                   </div>

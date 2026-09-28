@@ -1,19 +1,8 @@
 import { Link, useParams } from 'react-router-dom';
 import { useMySupportRequest } from '../features/support/hooks';
 import { ApiError } from '../services/apiClient';
-
-function getBadgeClass(status: string) {
-  switch (status) {
-    case 'Mới tiếp nhận':
-      return 'status-new';
-    case 'Đang xử lý':
-      return 'status-processing';
-    case 'Đã xử lý':
-      return 'status-resolved';
-    default:
-      return 'status-new';
-  }
-}
+import { CustomerCenterNavigation } from '../components/layouts/CustomerCenterNavigation';
+import { StatusBadge } from '../components/domain/StatusBadge';
 
 export default function SupportDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -35,7 +24,7 @@ export default function SupportDetailPage() {
 
   return (
     <div className="container" style={{ paddingTop: '32px', paddingBottom: '60px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
-      
+      <CustomerCenterNavigation />
       <Link to="/support" className="breadcrumb w-fit">
         <i className="ph ph-arrow-left"></i>
         <span>Quay lại danh sách yêu cầu</span>
@@ -49,7 +38,7 @@ export default function SupportDetailPage() {
               {r.LoaiYeuCau} · Gửi lúc {new Date(r.NgayTao).toLocaleString('vi-VN')}
             </p>
           </div>
-          <span className={`status-badge ${getBadgeClass(r.TrangThai)}`}>{r.TrangThai}</span>
+          <StatusBadge domain="support" status={r.TrangThai} />
         </div>
 
         <div className="space-y-4 text-sm text-body">

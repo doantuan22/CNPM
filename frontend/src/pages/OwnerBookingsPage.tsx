@@ -3,41 +3,10 @@ import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useOwnerBookings, useMyHotel } from '../features/owner/hooks';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { formatCurrencyVND } from '../lib/utils';
+import { StatusBadge } from '../components/domain/StatusBadge';
 
 
-function getStatusBadge(status: string) {
-  switch (status) {
-    case 'Đã xác nhận':
-    case 'Hoàn tất':
-      return (
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-          {status}
-        </span>
-      );
-    case 'Chờ thanh toán':
-      return (
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
-          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
-          {status}
-        </span>
-      );
-    case 'Đã hủy':
-      return (
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
-          <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-          {status}
-        </span>
-      );
-    default:
-      return (
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">
-          <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-          {status}
-        </span>
-      );
-  }
-}
+function getStatusBadge(status: string) { return <StatusBadge domain="booking" status={status} />; }
 
 export default function OwnerBookingsPage() {
   const { id } = useParams<{ id: string }>(); 
@@ -182,7 +151,7 @@ export default function OwnerBookingsPage() {
         </div>
       </div>
 
-      <div className="bg-white rounded-[16px] border border-border shadow-sm overflow-hidden flex flex-col">
+      <div className="owner-bookings-results bg-white rounded-[16px] border border-border overflow-hidden flex flex-col">
         {result.items.length === 0 ? (
           <div className="py-16 flex flex-col items-center justify-center text-center">
             <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
@@ -192,7 +161,8 @@ export default function OwnerBookingsPage() {
             <p className="text-sm text-slate-500 max-w-sm mt-1">Thử thay đổi từ khóa hoặc xóa bộ lọc.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <>
+          <div className="owner-bookings-table hidden md:block overflow-x-auto">
             <table className="w-full text-left border-collapse min-w-[800px]">
               <thead>
                 <tr className="bg-slate-50/80 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
@@ -201,6 +171,7 @@ export default function OwnerBookingsPage() {
                   <th className="py-3.5 px-4">Khách hàng</th>
                   <th className="py-3.5 px-4">Ngày nhận phòng</th>
                   <th className="py-3.5 px-4">Ngày trả phòng</th>
+                  <th className="py-3.5 px-4">Phòng</th>
                   <th className="py-3.5 px-4 text-right">Tổng tiền</th>
                   <th className="py-3.5 px-4 text-center">Trạng thái</th>
                   <th className="py-3.5 px-4 text-center">Thao tác</th>
@@ -221,6 +192,9 @@ export default function OwnerBookingsPage() {
                     <td className="py-4 px-4">
                       <div className="font-medium text-slate-800">{new Date(b.NgayTraPhong).toLocaleDateString('vi-VN')}</div>
                     </td>
+                    <td className="py-4 px-4 text-xs text-slate-600">
+                      {b.ChiTietPhong.map((room) => `${room.TenLoaiPhong} × ${room.SoLuong}`).join(', ')}
+                    </td>
                     <td className="py-4 px-4 text-right">
                       <div className="font-extrabold text-slate-900">{formatCurrencyVND(b.TongTienThanhToan)}</div>
                       {b.TrangThai === 'Đã xác nhận' && <span className="text-[10px] text-emerald-600 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded">Đã thanh toán</span>}
@@ -239,6 +213,28 @@ export default function OwnerBookingsPage() {
               </tbody>
             </table>
           </div>
+          <div className="owner-bookings-mobile-list md:hidden divide-y divide-border">
+            {result.items.map((booking) => (
+              <article key={booking.MaDatPhong} className="p-4 space-y-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-mono text-sm font-bold text-primary break-all">{booking.MaXacNhanDatPhong}</p>
+                    <p className="mt-1 font-semibold text-heading">{booking.KhachHang.HoTen}</p>
+                    <p className="text-sm text-muted">{booking.KhachHang.SoDienThoai}</p>
+                  </div>
+                  {getStatusBadge(booking.TrangThai)}
+                </div>
+                <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                  <div><dt className="text-xs text-muted">Nhận phòng</dt><dd className="font-medium text-heading">{new Date(booking.NgayNhanPhong).toLocaleDateString('vi-VN')}</dd></div>
+                  <div><dt className="text-xs text-muted">Trả phòng</dt><dd className="font-medium text-heading">{new Date(booking.NgayTraPhong).toLocaleDateString('vi-VN')}</dd></div>
+                  <div className="col-span-2"><dt className="text-xs text-muted">Phòng</dt><dd className="font-medium text-heading">{booking.ChiTietPhong.map((room) => `${room.TenLoaiPhong} × ${room.SoLuong}`).join(', ')}</dd></div>
+                  <div className="col-span-2"><dt className="text-xs text-muted">Tổng thanh toán</dt><dd className="font-bold text-heading">{formatCurrencyVND(booking.TongTienThanhToan)}</dd></div>
+                </dl>
+                <Link to={`/owner/hotels/${hotelId}/bookings/${booking.MaDatPhong}`} className="btn btn-outline btn-sm w-full justify-center">Xem chi tiết</Link>
+              </article>
+            ))}
+          </div>
+          </>
         )}
         <div className="px-6 py-4 border-t border-slate-200 bg-slate-50/50 flex items-center justify-between text-xs text-slate-500">
           <span>Tổng cộng {result.pagination.total} kết quả</span>

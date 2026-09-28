@@ -35,6 +35,7 @@ export default function HotelListPage() {
   const amenitiesQuery = useAmenities();
   
   const [isSearchFormOpen, setIsSearchFormOpen] = useState(false);
+  const [areFiltersOpen, setAreFiltersOpen] = useState(false);
 
   const updateParams = (patch: Record<string, string | undefined>, resetPage = true) => {
     const next = new URLSearchParams(searchParams);
@@ -84,29 +85,29 @@ export default function HotelListPage() {
               />
             </div>
           ) : (
-            <div className="bg-slate-50 p-2 rounded-2xl border border-slate-200/80 flex flex-col lg:flex-row items-center justify-between gap-2.5">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-2 w-full lg:flex-1" onClick={() => setIsSearchFormOpen(true)}>
-                <div className="flex items-center gap-3 bg-white px-4 py-2.5 rounded-xl border border-slate-200 hover:border-primary transition-colors cursor-pointer group">
+            <div className="hotel-stay-context flex flex-col lg:flex-row items-center justify-between gap-2.5">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-2 w-full lg:flex-1">
+                <button type="button" onClick={() => setIsSearchFormOpen(true)} className="hotel-stay-context__item flex items-center gap-3 bg-white px-4 py-2.5 rounded-xl border border-slate-200 hover:border-primary transition-colors cursor-pointer group text-left min-w-0">
                   <i className="ph-duotone ph-map-pin text-xl text-primary group-hover:scale-110 transition-transform"></i>
                   <div className="flex flex-col text-left truncate">
                     <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Điểm đến</span>
                     <span className="text-sm font-semibold text-slate-800 truncate">{params.location || 'Tất cả'}</span>
                   </div>
-                </div>
-                <div className="flex items-center gap-3 bg-white px-4 py-2.5 rounded-xl border border-slate-200 hover:border-primary transition-colors cursor-pointer group">
+                </button>
+                <button type="button" onClick={() => setIsSearchFormOpen(true)} className="hotel-stay-context__item flex items-center gap-3 bg-white px-4 py-2.5 rounded-xl border border-slate-200 hover:border-primary transition-colors cursor-pointer group text-left min-w-0">
                   <i className="ph-duotone ph-calendar-blank text-xl text-primary group-hover:scale-110 transition-transform"></i>
                   <div className="flex flex-col text-left truncate">
                     <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Nhận & Trả phòng</span>
                     <span className="text-sm font-semibold text-slate-800 truncate">{params.checkIn} - {params.checkOut}</span>
                   </div>
-                </div>
-                <div className="flex items-center gap-3 bg-white px-4 py-2.5 rounded-xl border border-slate-200 hover:border-primary transition-colors cursor-pointer group">
+                </button>
+                <button type="button" onClick={() => setIsSearchFormOpen(true)} className="hotel-stay-context__item flex items-center gap-3 bg-white px-4 py-2.5 rounded-xl border border-slate-200 hover:border-primary transition-colors cursor-pointer group text-left min-w-0">
                   <i className="ph-duotone ph-users text-xl text-primary group-hover:scale-110 transition-transform"></i>
                   <div className="flex flex-col text-left truncate">
                     <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Số khách</span>
                     <span className="text-sm font-semibold text-slate-800 truncate">{params.guests} người</span>
                   </div>
-                </div>
+                </button>
               </div>
               <button type="button" onClick={() => setIsSearchFormOpen(true)} className="w-full lg:w-auto px-7 py-3 bg-primary hover:bg-blue-600 text-white font-semibold text-sm rounded-xl transition-all shadow-md shadow-blue-500/25 flex items-center justify-center gap-2 whitespace-nowrap active:scale-[0.98]">
                 <i className="ph-bold ph-magnifying-glass text-base"></i>
@@ -117,11 +118,15 @@ export default function HotelListPage() {
         </div>
       </section>
 
-      <main className="max-w-[1440px] mx-auto px-4 lg:px-12 py-8 flex-1 w-full">
+      <main className="hotel-results-page max-w-[1440px] mx-auto px-4 lg:px-12 py-8 flex-1 w-full">
         <div className="flex flex-col lg:flex-row items-start gap-8">
           
           {/* SIDEBAR: BỘ LỌC TÌM KIẾM */}
-          <aside className="w-full lg:w-[290px] shrink-0 bg-white rounded-2xl p-5 border border-border shadow-md sticky top-40 space-y-6">
+          <button type="button" className="hotel-filter-toggle lg:hidden" aria-expanded={areFiltersOpen} aria-controls="hotel-search-filters" onClick={() => setAreFiltersOpen((open) => !open)}>
+            <span><i className="ph-bold ph-faders mr-2" aria-hidden="true"></i>Bộ lọc tìm kiếm</span>
+            <span className="text-primary">{areFiltersOpen ? 'Ẩn bộ lọc' : 'Mở bộ lọc'}</span>
+          </button>
+          <aside id="hotel-search-filters" className={`hotel-search-filters w-full lg:w-[290px] shrink-0 lg:sticky lg:top-40 space-y-6 ${areFiltersOpen ? 'block' : 'hidden lg:block'}`}>
             <div className="flex items-center justify-between pb-4 border-b border-slate-100">
               <div className="flex items-center gap-2">
                 <i className="ph-bold ph-faders text-lg text-primary"></i>
@@ -184,7 +189,7 @@ export default function HotelListPage() {
 
           {/* RESULTS LIST */}
           <section className="flex-1 w-full space-y-5">
-            <div className="bg-white p-5 rounded-2xl border border-border shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="hotel-results-toolbar flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2">
                   <h1 className="text-lg font-bold text-slate-900">Tìm thấy <span className="text-primary">{query.data?.pagination.total ?? 0}</span> khách sạn</h1>

@@ -9,6 +9,21 @@ export function formatCurrencyVND(amount: number): string {
   return new Intl.NumberFormat('vi-VN').format(Math.round(amount)) + ' đ';
 }
 
+/** Formats date-only API values without interpreting YYYY-MM-DD as UTC. */
+export function formatDateVi(value: string): string {
+  const dateOnly = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  const date = dateOnly ? new Date(Number(dateOnly[1]), Number(dateOnly[2]) - 1, Number(dateOnly[3])) : new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(date);
+}
+
+/** Timestamp formatter uses the browser locale/timezone, matching current page behavior. */
+export function formatDateTimeVi(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short', timeStyle: 'short' }).format(date);
+}
+
 /** YYYY-MM-DD for <input type="date"> — always local-date-safe (no timezone shift). */
 export function toDateInputValue(date: Date): string {
   const y = date.getFullYear();

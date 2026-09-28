@@ -1,4 +1,4 @@
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate, Link } from 'react-router-dom';
 import { useCreateHotel } from '../features/owner/hooks';
@@ -6,6 +6,8 @@ import { useLocations } from '../features/locations/hooks';
 import { hotelFormSchema, HotelFormSchemaValues } from '../features/owner/schemas';
 import { ApiError } from '../services/apiClient';
 import { cn } from '../lib/utils';
+import { Combobox } from '../components/common/Combobox';
+import { FormErrorSummary } from '../components/common/FormErrorSummary';
 
 export default function OwnerHotelFormPage() {
   const navigate = useNavigate();
@@ -14,6 +16,7 @@ export default function OwnerHotelFormPage() {
 
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<HotelFormSchemaValues>({
@@ -31,36 +34,41 @@ export default function OwnerHotelFormPage() {
   };
 
   return (
-    <div className="flex flex-col gap-5 max-w-[1080px] mx-auto w-full">
+    <div className="owner-hotel-form flex flex-col gap-5 max-w-[1080px] mx-auto w-full">
       <Link to="/owner" className="breadcrumb w-fit">
         <i className="ph ph-arrow-left"></i>
         <span>Quay lại danh sách khách sạn</span>
       </Link>
 
-      <div className="flex justify-between items-center flex-wrap gap-3 bg-white border border-border rounded-[14px] px-6 py-4">
+      <header className="owner-form-heading flex justify-between items-center flex-wrap gap-3">
         <div>
           <h1 className="text-[20px] font-bold text-heading mb-0.5">Thêm khách sạn mới</h1>
           <p className="text-[13px] text-muted">Điền thông tin chi tiết của cơ sở lưu trú để gửi hồ sơ kiểm duyệt tới hệ thống.</p>
         </div>
-      </div>
+      </header>
 
       <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 flex gap-3 items-center text-[13px] text-blue-800">
-        <span className="text-[18px]">ℹ️</span>
+        <i className="ph ph-info text-lg shrink-0" aria-hidden="true"></i>
         <div>
           <strong>Quy trình phê duyệt:</strong> Sau khi hoàn tất và nhấn <em>"Đăng ký khách sạn"</em>, quản trị viên sẽ thẩm định hồ sơ trước khi cấp phép hoạt động. Bạn có thể bổ sung tiện nghi và hình ảnh sau khi tạo hồ sơ.
         </div>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-5">
+        <FormErrorSummary
+          errors={errors}
+          fieldLabels={{ TenKhachSan: 'Tên khách sạn', HangSao: 'Hạng sao', MaDiaPhuong: 'Tỉnh / thành phố', DiaChiChiTiet: 'Địa chỉ', GioNhanPhong: 'Giờ nhận phòng', GioTraPhong: 'Giờ trả phòng', MoTa: 'Giới thiệu' }}
+          fieldIds={{ TenKhachSan: 'owner-hotel-form-TenKhachSan', HangSao: 'owner-hotel-form-HangSao', MaDiaPhuong: 'owner-hotel-form-MaDiaPhuong', DiaChiChiTiet: 'owner-hotel-form-DiaChiChiTiet', GioNhanPhong: 'owner-hotel-form-GioNhanPhong', GioTraPhong: 'owner-hotel-form-GioTraPhong' }}
+        />
         {createMutation.isError && (
           <div role="alert" className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
             {createMutation.error instanceof ApiError ? createMutation.error.message : 'Đăng ký thất bại, vui lòng thử lại'}
           </div>
         )}
 
-        <section className="bg-white border border-border rounded-[16px] p-7 shadow-sm">
+        <section className="owner-editor-section first:border-t border-b border-border py-6">
           <div className="mb-6">
-            <h2 className="text-lg font-bold text-heading flex items-center gap-2 mb-1">🏢 Thông tin cơ bản</h2>
+            <h2 className="text-lg font-bold text-heading mb-1">Thông tin cơ bản</h2>
             <p className="text-sm text-muted">Tên thương mại, tiêu chuẩn sao và địa chỉ hiển thị với du khách</p>
           </div>
 
@@ -85,17 +93,11 @@ export default function OwnerHotelFormPage() {
             </div>
 
             <div>
-              <label htmlFor="owner-hotel-form-MaDiaPhuong" className="form-label">Tỉnh / Thành phố <span className="text-red-500">*</span></label>
-              <div className="relative">
-                <select id="owner-hotel-form-MaDiaPhuong" className={cn("select", errors.MaDiaPhuong && "border-red-500")} defaultValue="" {...register('MaDiaPhuong', { valueAsNumber: true })}>
-                  <option value="" disabled>-- Chọn tỉnh thành --</option>
-                  {locationsQuery.data?.map((loc) => (
-                    <option key={loc.MaDiaPhuong} value={loc.MaDiaPhuong}>{loc.TenThanhPho}</option>
-                  ))}
-                </select>
-                <i className="ph ph-caret-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none"></i>
-              </div>
-              {errors.MaDiaPhuong && <p className="text-xs text-red-500 mt-1">{errors.MaDiaPhuong.message}</p>}
+              <Controller control={control} name="MaDiaPhuong" render={({ field }) => (
+                <Combobox id="owner-hotel-form-MaDiaPhuong" label="Tỉnh / Thành phố" placeholder="Tìm tỉnh hoặc thành phố..."
+                  options={(locationsQuery.data ?? []).map((location) => ({ value: String(location.MaDiaPhuong), label: location.TenThanhPho }))}
+                  value={field.value ? String(field.value) : ''} onValueChange={(value) => field.onChange(value ? Number(value) : undefined)} error={errors.MaDiaPhuong?.message} />
+              )} />
             </div>
 
             <div className="md:col-span-2">
@@ -106,9 +108,9 @@ export default function OwnerHotelFormPage() {
           </div>
         </section>
 
-        <section className="bg-white border border-border rounded-[16px] p-7 shadow-sm">
+        <section className="owner-editor-section border-b border-border py-6">
           <div className="mb-6">
-            <h2 className="text-lg font-bold text-heading flex items-center gap-2 mb-1">⏱️ Quy định vận hành & Khung giờ</h2>
+            <h2 className="text-lg font-bold text-heading mb-1">Quy định vận hành & khung giờ</h2>
             <p className="text-sm text-muted">Thiết lập thời gian nhận và trả phòng tiêu chuẩn</p>
           </div>
 
@@ -126,9 +128,9 @@ export default function OwnerHotelFormPage() {
           </div>
         </section>
 
-        <section className="bg-white border border-border rounded-[16px] p-7 shadow-sm">
+        <section className="owner-editor-section border-b border-border py-6">
           <div className="mb-4">
-            <h2 className="text-lg font-bold text-heading flex items-center gap-2 mb-1">📝 Giới thiệu tổng quan</h2>
+            <h2 className="text-lg font-bold text-heading mb-1">Giới thiệu tổng quan</h2>
             <p className="text-sm text-muted">Đoạn văn ngắn làm nổi bật vị trí, phong cách kiến trúc và dịch vụ vượt trội</p>
           </div>
           <div>
@@ -136,7 +138,7 @@ export default function OwnerHotelFormPage() {
           </div>
         </section>
 
-        <div className="flex justify-between items-center flex-wrap gap-3 bg-white border border-border rounded-[14px] px-6 py-4 shadow-sm">
+        <footer className="owner-form-actions flex justify-between items-center flex-wrap gap-3">
           <span className="text-[13px] text-muted flex items-center gap-1.5">
             <i className="ph ph-info"></i> Hãy kiểm tra kỹ trước khi gửi đăng ký
           </span>
@@ -146,7 +148,7 @@ export default function OwnerHotelFormPage() {
               {isSubmitting || createMutation.isPending ? 'Đang xử lý...' : 'Gửi đăng ký duyệt'}
             </button>
           </div>
-        </div>
+        </footer>
       </form>
     </div>
   );
