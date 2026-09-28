@@ -110,8 +110,8 @@ export default function AppRoutes() {
           <Route path="/partner/inventory-pricing" element={<PartnerInventoryPage />} />
           <Route path="/partner/reports" element={<PartnerReportsPage />} />
           <Route path="/partner/revenue" element={<PartnerRevenuePage />} />
-          <Route path="/partner/room-types" element={<PartnerInventoryPage />} />
-          <Route path="/partner/room-type-form" element={<PartnerInventoryPage />} />
+          <Route path="/partner/room-types" element={<PartnerInventoryPage mode="rooms" />} />
+          <Route path="/partner/room-type-form" element={<PartnerInventoryPage mode="rooms" />} />
           <Route path="/partner/hotel-form" element={<OwnerHotelFormPage />} />
         </Route>
 

@@ -8,7 +8,9 @@ import { ROLE_NAMES } from '../../lib/roles';
 export function MainLayout() {
   const location = useLocation();
   const role = useAuthStore((state) => state.role);
-  const isDashboard = (role === ROLE_NAMES.ADMIN && location.pathname.startsWith('/admin')) || (role === ROLE_NAMES.PARTNER && location.pathname.startsWith('/owner'));
+  const isDashboard =
+    (role === ROLE_NAMES.ADMIN && location.pathname.startsWith('/admin')) ||
+    (role === ROLE_NAMES.PARTNER && (location.pathname.startsWith('/owner') || location.pathname.startsWith('/partner')));
 
   return (
     <div className={isDashboard ? 'dashboard-shell' : ''}>

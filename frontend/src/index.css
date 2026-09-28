@@ -48,8 +48,3 @@ body {
   text-rendering: optimizeLegibility;
   background-color: var(--color-bg-secondary);
 }
-
-/* Fix for conflict with standard UI_EGODE */
-.egode-dashboard-layout { display: flex; min-height: 100vh; background: var(--color-bg-secondary); }
-.egode-dashboard-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-.egode-dashboard-content { width: 100%; max-width: 1536px; margin: 0 auto; flex: 1; padding: 24px; }

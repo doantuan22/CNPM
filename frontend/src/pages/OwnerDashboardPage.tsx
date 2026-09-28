@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useMyHotels } from '../features/owner/hooks';
 import { ApiError } from '../services/apiClient';
 function getStatusBadgeClass(status: string) {
@@ -15,6 +15,7 @@ function getStatusBadgeClass(status: string) {
 }
 
 export default function OwnerDashboardPage() {
+  const isOverview = useLocation().pathname === '/partner/dashboard';
   const hotelsQuery = useMyHotels();
 
   const hotels = hotelsQuery.data || [];
@@ -28,8 +29,8 @@ export default function OwnerDashboardPage() {
       {/* Page Header */}
       <div className="page-header">
         <div>
-          <h1>Khách sạn của tôi</h1>
-          <p className="page-header__desc">Quản lý hồ sơ, cấu hình phòng và theo dõi tình trạng phê duyệt của các cơ sở lưu trú.</p>
+          <h1>{isOverview ? 'Tổng quan' : 'Khách sạn của tôi'}</h1>
+          <p className="page-header__desc">{isOverview ? 'Tổng quan tình trạng hoạt động và các cơ sở lưu trú của bạn.' : 'Quản lý hồ sơ, cấu hình phòng và theo dõi tình trạng phê duyệt của các cơ sở lưu trú.'}</p>
         </div>
         <Link to="/owner/hotels/new" className="btn btn-primary">
           <i className="ph ph-plus"></i> Thêm khách sạn mới

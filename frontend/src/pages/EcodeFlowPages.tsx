@@ -85,11 +85,12 @@ export function WriteReviewPage() {
   </Frame>;
 }
 
-export function PartnerInventoryPage() {
+export function PartnerInventoryPage({ mode = 'inventory' }: { mode?: 'rooms' | 'inventory' }) {
   const hotels = useMyHotels();
-  return <Frame title="Tồn kho & giá bán" description="Chọn khách sạn để quản lý loại phòng, số phòng mở bán và giá theo ngày." icon={Hotel}>
+  const isRoomTypes = mode === 'rooms';
+  return <Frame title={isRoomTypes ? 'Loại phòng' : 'Quỹ phòng & giá bán'} description={isRoomTypes ? 'Chọn khách sạn để xem và quản lý các loại phòng.' : 'Chọn khách sạn để quản lý số phòng mở bán và giá theo ngày.'} icon={Hotel}>
     <LoadingOrError loading={hotels.isLoading} error={hotels.error} empty={!hotels.data?.length} />
-    {hotels.data && hotels.data.length > 0 && <div className="grid gap-4 sm:grid-cols-2">{hotels.data.map((hotel) => <Link key={hotel.MaKhachSan} to={`/owner/hotels/${hotel.MaKhachSan}`} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs transition hover:border-blue-300"><p className="font-semibold text-slate-900">{hotel.TenKhachSan}</p><p className="mt-1 text-sm text-slate-500">{hotel._count?.LOAI_PHONG ?? 0} loại phòng · mở trang quản lý giá & tồn kho</p></Link>)}</div>}
+    {hotels.data && hotels.data.length > 0 && <div className="grid gap-4 sm:grid-cols-2">{hotels.data.map((hotel) => <Link key={hotel.MaKhachSan} to={`/owner/hotels/${hotel.MaKhachSan}`} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs transition hover:border-blue-300"><p className="font-semibold text-slate-900">{hotel.TenKhachSan}</p><p className="mt-1 text-sm text-slate-500">{hotel._count?.LOAI_PHONG ?? 0} loại phòng · {isRoomTypes ? 'mở trang quản lý loại phòng' : 'mở trang quản lý giá & tồn kho'}</p></Link>)}</div>}
   </Frame>;
 }
 
