@@ -132,15 +132,7 @@ export default function LoginPage() {
               )}
             </div>
 
-            <div className="flex items-center justify-between pt-1">
-              <label className="flex items-center gap-2 cursor-pointer select-none">
-                <input 
-                  type="checkbox" 
-                  defaultChecked
-                  className="w-4 h-4 rounded text-primary border-border focus:ring-primary/20 focus:ring-2 cursor-pointer accent-primary"
-                />
-                <span className="text-xs sm:text-sm text-ink-muted">Ghi nhớ đăng nhập</span>
-              </label>
+            <div className="flex items-center justify-end pt-1">
               <Link to="/forgot-password" className="text-xs sm:text-sm font-medium text-primary hover:text-primary-700 hover:underline transition-colors">
                 Quên mật khẩu?
               </Link>

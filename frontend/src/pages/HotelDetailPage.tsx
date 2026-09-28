@@ -105,7 +105,7 @@ export default function HotelDetailPage() {
   };
 
   if (hotelQuery.isLoading) {
-    return <div className="flex justify-center py-16"><div className="spinner"></div></div>;
+    return <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>;
   }
 
   if (hotelQuery.isError || !hotelQuery.data) {
@@ -274,16 +274,16 @@ export default function HotelDetailPage() {
               <div className="bg-white rounded-2xl border border-border p-5 mb-6 shadow-sm">
                 <form onSubmit={handleSubmit(onDatesSubmit)} noValidate className="grid grid-cols-1 gap-3 sm:grid-cols-4 items-end">
                   <div>
-                    <label className="mb-1 block text-xs font-medium text-slate-600">Nhận phòng</label>
-                    <Input type="date" {...register('checkIn')} />
+                    <label htmlFor="hotel-detail-checkIn" className="mb-1 block text-xs font-medium text-slate-600">Nhận phòng</label>
+                    <Input id="hotel-detail-checkIn" type="date" {...register('checkIn')} />
                   </div>
                   <div>
-                    <label className="mb-1 block text-xs font-medium text-slate-600">Trả phòng</label>
-                    <Input type="date" error={errors.checkOut?.message} {...register('checkOut')} />
+                    <label htmlFor="hotel-detail-checkOut" className="mb-1 block text-xs font-medium text-slate-600">Trả phòng</label>
+                    <Input id="hotel-detail-checkOut" type="date" error={errors.checkOut?.message} {...register('checkOut')} />
                   </div>
                   <div>
-                    <label className="mb-1 block text-xs font-medium text-slate-600">Số khách</label>
-                    <Input type="number" min={1} max={50} {...register('guests')} />
+                    <label htmlFor="hotel-detail-guests" className="mb-1 block text-xs font-medium text-slate-600">Số khách</label>
+                    <Input id="hotel-detail-guests" type="number" min={1} max={50} {...register('guests')} />
                   </div>
                   <button type="submit" className="w-full h-[42px] bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-medium transition-colors text-sm">
                     Kiểm tra phòng
@@ -292,7 +292,7 @@ export default function HotelDetailPage() {
               </div>
 
               {roomsQuery.isLoading ? (
-                <div className="flex justify-center py-10"><div className="spinner"></div></div>
+                <div className="flex justify-center py-10" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>
               ) : roomsQuery.isError ? (
                  <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">Không thể tải danh sách phòng</div>
               ) : roomsQuery.data && roomsQuery.data.length === 0 ? (
@@ -390,8 +390,8 @@ export default function HotelDetailPage() {
                     <div className="flex items-center justify-between border-b border-border pb-3">
                       <span className="text-sm font-bold text-ink">{selectedRoom?.TenLoaiPhong}</span>
                       <div className="flex items-center gap-2">
-                        <label className="text-xs text-ink-muted">Số lượng</label>
-                        <Input
+                        <label htmlFor="hotel-detail-field-1" className="text-xs text-ink-muted">Số lượng</label>
+                        <Input id="hotel-detail-field-1"
                           type="number"
                           min={1}
                           max={selectedRoom?.SoPhongConLai || 50}
@@ -403,9 +403,9 @@ export default function HotelDetailPage() {
                     </div>
 
                     {quoteMutation.isPending ? (
-                       <div className="flex justify-center py-6"><div className="spinner"></div></div>
+                       <div className="flex justify-center py-6" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>
                     ) : quoteMutation.isError ? (
-                       <div className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">{quoteMutation.error instanceof ApiError ? quoteMutation.error.message : 'Lỗi tạo báo giá'}</div>
+                       <div role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">{quoteMutation.error instanceof ApiError ? quoteMutation.error.message : 'Lỗi tạo báo giá'}</div>
                     ) : quoteMutation.data ? (
                       <>
                         {!quoteMutation.data.KhaDung && (
@@ -429,11 +429,11 @@ export default function HotelDetailPage() {
                         </div>
 
                         <div className="space-y-2">
-                          <label className="flex items-center gap-1 text-xs font-bold text-ink-muted uppercase tracking-wider">
+                          <label htmlFor="hotel-detail-ml-1" className="flex items-center gap-1 text-xs font-bold text-ink-muted uppercase tracking-wider">
                             <i className="ph-bold ph-tag"></i> Mã khuyến mãi
                           </label>
                           <div className="flex gap-2">
-                            <Input
+                            <Input id="hotel-detail-ml-1"
                               type="text"
                               value={promoCode}
                               onChange={(e) => setPromoCode(e.target.value)}
@@ -469,8 +469,8 @@ export default function HotelDetailPage() {
                         </div>
 
                         <div>
-                          <label className="mb-1 block text-xs font-medium text-ink-muted">Ghi chú cho khách sạn</label>
-                          <Textarea
+                          <label htmlFor="hotel-detail-field-2" className="mb-1 block text-xs font-medium text-ink-muted">Ghi chú cho khách sạn</label>
+                          <Textarea id="hotel-detail-field-2"
                             rows={2}
                             value={ghiChu}
                             onChange={(e) => setGhiChu(e.target.value)}
@@ -480,7 +480,7 @@ export default function HotelDetailPage() {
                         </div>
 
                         {bookingMutation.isError && (
-                          <div className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">
+                          <div role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">
                              {bookingMutation.error instanceof ApiError ? bookingMutation.error.message : 'Lỗi'}
                           </div>
                         )}

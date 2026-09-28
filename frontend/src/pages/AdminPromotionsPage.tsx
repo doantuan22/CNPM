@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { Link } from 'react-router-dom';
 import { usePromotionList } from '../features/promotions/hooks';
 import { formatCurrencyVND } from '../lib/utils';
@@ -11,7 +12,7 @@ const TYPES = ['Phần trăm', 'Số tiền cố định'];
 export default function AdminPromotionsPage() {
   const [page, setPage] = useState(1);
   const [searchInput, setSearchInput] = useState('');
-  const [search, setSearch] = useState('');
+  const search = useDebouncedValue(searchInput.trim());
   const [status, setStatus] = useState('');
   const [type, setType] = useState('');
 
@@ -19,7 +20,6 @@ export default function AdminPromotionsPage() {
 
   const resetFilters = () => {
     setSearchInput('');
-    setSearch('');
     setStatus('');
     setType('');
     setPage(1);
@@ -27,7 +27,6 @@ export default function AdminPromotionsPage() {
 
   const handleSearchChange = (val: string) => {
     setSearchInput(val);
-    setSearch(val.trim());
     setPage(1);
   };
 
@@ -50,12 +49,12 @@ export default function AdminPromotionsPage() {
       <div className="bg-white p-5 rounded-[16px] border border-border shadow-sm space-y-3.5">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-3.5 text-xs">
           <div className="md:col-span-5 relative">
-            <label className="block font-semibold text-slate-600 mb-1.5">Tìm mã code / chương trình</label>
+            <label htmlFor="admin-promotions-field-1" className="block font-semibold text-slate-600 mb-1.5">Tìm mã code / chương trình</label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                 <i className="ph ph-magnifying-glass text-[16px]"></i>
               </div>
-              <input 
+              <input id="admin-promotions-field-1" 
                 type="text" 
                 value={searchInput} 
                 onChange={(e) => handleSearchChange(e.target.value)} 
@@ -66,8 +65,8 @@ export default function AdminPromotionsPage() {
           </div>
 
           <div className="md:col-span-3">
-            <label className="block font-semibold text-slate-600 mb-1.5">Trạng thái áp dụng</label>
-            <select 
+            <label htmlFor="admin-promotions-field-2" className="block font-semibold text-slate-600 mb-1.5">Trạng thái áp dụng</label>
+            <select id="admin-promotions-field-2" 
               value={status} 
               onChange={(e) => { setStatus(e.target.value); setPage(1); }} 
               className="w-full px-3 py-2.5 bg-slate-50 border border-border rounded-xl text-sm text-heading focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition font-medium"
@@ -78,8 +77,8 @@ export default function AdminPromotionsPage() {
           </div>
 
           <div className="md:col-span-2">
-            <label className="block font-semibold text-slate-600 mb-1.5">Loại giảm giá</label>
-            <select 
+            <label htmlFor="admin-promotions-field-3" className="block font-semibold text-slate-600 mb-1.5">Loại giảm giá</label>
+            <select id="admin-promotions-field-3" 
               value={type} 
               onChange={(e) => { setType(e.target.value); setPage(1); }} 
               className="w-full px-3 py-2.5 bg-slate-50 border border-border rounded-xl text-sm text-heading focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition font-medium"
@@ -99,7 +98,7 @@ export default function AdminPromotionsPage() {
 
       <div className="bg-white rounded-[16px] border border-border shadow-sm overflow-hidden flex flex-col">
         {query.isLoading ? (
-          <div className="flex justify-center py-16"><div className="spinner"></div></div>
+          <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>
         ) : query.isError ? (
           <div role="alert" className="px-6 py-10 text-center text-sm text-red-700">
             {query.error instanceof ApiError ? query.error.message : 'Không thể tải danh sách khuyến mãi'}

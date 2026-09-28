@@ -14,6 +14,14 @@ export interface Account {
   TrangThai: string;
   NgayTao: string;
   NgayCapNhat: string;
+  /** Present on admin account responses. */
+  VAI_TRO?: { TenVaiTro: string };
+}
+
+export interface Role {
+  MaVaiTro: number;
+  TenVaiTro: string;
+  MoTa: string;
 }
 
 export interface AuthResult {

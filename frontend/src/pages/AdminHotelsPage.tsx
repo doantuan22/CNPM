@@ -1,17 +1,19 @@
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
+import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { ApiError } from '../services/apiClient';
 import { listAdminHotels } from '../features/admin/hotels/api';
 
 export default function AdminHotelsPage() {
   const [page, setPage] = useState(1); 
   const [search, setSearch] = useState(''); 
+  const debouncedSearch = useDebouncedValue(search.trim());
   const [status, setStatus] = useState('');
   
   const query = useQuery({ 
-    queryKey: ['admin', 'hotels', page, search, status], 
-    queryFn: () => listAdminHotels({ page, limit: 20, search: search || undefined, TrangThai: status || undefined }) 
+    queryKey: ['admin', 'hotels', page, debouncedSearch, status], 
+    queryFn: () => listAdminHotels({ page, limit: 20, search: debouncedSearch || undefined, TrangThai: status || undefined }) 
   });
   
   const resetFilters = () => {
@@ -32,12 +34,12 @@ export default function AdminHotelsPage() {
       <div className="bg-white p-5 rounded-[16px] border border-border shadow-sm space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-3.5">
           <div className="md:col-span-6 relative">
-            <label className="block text-xs font-semibold text-slate-600 mb-1.5">Tìm kiếm khách sạn</label>
+            <label htmlFor="admin-hotels-field-1" className="block text-xs font-semibold text-slate-600 mb-1.5">Tìm kiếm khách sạn</label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                 <i className="ph ph-magnifying-glass"></i>
               </div>
-              <input 
+              <input id="admin-hotels-field-1" 
                 type="text" 
                 value={search} 
                 onChange={(e) => { setSearch(e.target.value); setPage(1); }} 
@@ -48,8 +50,8 @@ export default function AdminHotelsPage() {
           </div>
 
           <div className="md:col-span-4">
-            <label className="block text-xs font-semibold text-slate-600 mb-1.5">Trạng thái hoạt động</label>
-            <select 
+            <label htmlFor="admin-hotels-field-2" className="block text-xs font-semibold text-slate-600 mb-1.5">Trạng thái hoạt động</label>
+            <select id="admin-hotels-field-2" 
               value={status} 
               onChange={(e) => { setStatus(e.target.value); setPage(1); }} 
               className="w-full px-3 py-2.5 bg-slate-50/60 border border-border rounded-xl text-sm text-heading focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition font-medium"
@@ -70,7 +72,7 @@ export default function AdminHotelsPage() {
 
       <div className="bg-white rounded-[16px] border border-border shadow-sm overflow-hidden flex flex-col">
         {query.isLoading ? (
-          <div className="flex justify-center py-16"><div className="spinner"></div></div>
+          <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>
         ) : query.isError ? (
           <div role="alert" className="px-6 py-10 text-center text-sm text-red-700">
             {query.error instanceof ApiError ? query.error.message : 'Không thể tải khách sạn'}

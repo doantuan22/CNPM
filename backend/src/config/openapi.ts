@@ -269,11 +269,12 @@ export const openApiSpec = {
     },
     '/admin/reviews': {
       get: {
-        summary: 'List reviews for moderation, filter by TrangThai / search (M7 §1, admin only)',
+        summary: 'List reviews for moderation, filter by TrangThai / star score / search (M7 §1, admin only)',
         tags: ['Review'],
         security: [{ BearerAuth: [] }],
         parameters: [
           { name: 'trangThai', in: 'query', schema: { type: 'string' } },
+          { name: 'diemDanhGia', in: 'query', schema: { type: 'integer', minimum: 1, maximum: 5 } },
           { name: 'search', in: 'query', schema: { type: 'string' } },
           { name: 'page', in: 'query', schema: { type: 'integer', default: 1 } },
           { name: 'limit', in: 'query', schema: { type: 'integer', default: 20 } },
@@ -785,6 +786,14 @@ export const openApiSpec = {
           content: { 'application/json': { schema: { $ref: '#/components/schemas/CreateAccountRequest' } } },
         },
         responses: { '201': { description: 'Account created' }, '403': { description: 'Not an admin' } },
+      },
+    },
+    '/admin/accounts/roles': {
+      get: {
+        summary: 'List VAI_TRO rows (MaVaiTro, TenVaiTro, MoTa) for the create/edit account forms — ids are IDENTITY values and differ between databases, so clients must never hardcode them',
+        tags: ['Admin Accounts'],
+        security: [{ BearerAuth: [] }],
+        responses: { '200': { description: 'Role list' }, '403': { description: 'Not an admin' } },
       },
     },
     '/admin/accounts/{id}': {

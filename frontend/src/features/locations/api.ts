@@ -1,7 +1,7 @@
 import { apiClient } from '../../services/apiClient';
-import type { DiaPhuong } from '../hotels/types';
+import type { LocationSummary } from '../hotels/types';
 
-export const listLocations = async (): Promise<DiaPhuong[]> => {
-  const res = await apiClient<DiaPhuong[]>('/locations');
+export const listLocations = async (): Promise<LocationSummary[]> => {
+  const res = await apiClient<LocationSummary[]>('/locations');
   return res.data ?? [];
 };

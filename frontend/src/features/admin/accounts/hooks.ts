@@ -13,6 +13,10 @@ export function useAccountList(query: AccountListQuery) {
   });
 }
 
+export function useRoles() {
+  return useQuery({ queryKey: ['admin', 'roles'], queryFn: accountsApi.listRoles, staleTime: Infinity });
+}
+
 export function useAccountDetail(id: number | null) {
   return useQuery({
     queryKey: detailKey(id ?? -1),

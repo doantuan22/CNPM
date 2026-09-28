@@ -19,7 +19,7 @@ export default function PaymentResultPage() {
       <main className="max-w-[800px] w-full mx-auto px-4 py-12 md:py-16 flex-grow flex flex-col items-center justify-center">
 
         {statusQuery.isLoading ? (
-          <div className="flex justify-center py-16"><div className="spinner"></div></div>
+          <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>
         ) : isConfirmed ? (
           <div className="bg-white rounded-3xl border border-border p-8 md:p-12 shadow-md w-full max-w-2xl text-center">
             <div className="w-16 h-16 bg-blue-50 text-primary rounded-full flex justify-center items-center mx-auto mb-5 text-3xl">

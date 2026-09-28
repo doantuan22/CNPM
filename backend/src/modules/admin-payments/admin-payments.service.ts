@@ -20,6 +20,7 @@ export class AdminPaymentsService {
     const where = {
       ...(query.TrangThai ? { TrangThai: query.TrangThai } : {}),
       ...(query.PhuongThucThanhToan ? { PhuongThucThanhToan: query.PhuongThucThanhToan } : {}),
+      ...(query.coHoanTien === true ? { HOAN_TIEN: { some: {} } } : query.coHoanTien === false ? { HOAN_TIEN: { none: {} } } : {}),
       ...((query.from || query.to) ? { ThoiGianGiaoDich: { ...(query.from ? { gte: query.from } : {}), ...(query.to ? { lte: query.to } : {}) } } : {}),
       ...(query.search ? { OR: [{ MaGiaoDichDoiTac: { contains: query.search } }, { DAT_PHONG: { MaXacNhanDatPhong: { contains: query.search } } }] } : {}),
     };

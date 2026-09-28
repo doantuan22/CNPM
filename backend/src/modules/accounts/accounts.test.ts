@@ -189,3 +189,32 @@ describe('DELETE /api/admin/accounts/:id (safe delete)', () => {
     expect(row?.TrangThai).toBe(ACCOUNT_STATUS.LOCKED);
   });
 });
+
+describe('Role lookups for admin account forms', () => {
+  it('lists every role with its real id so the UI never hardcodes MaVaiTro', async () => {
+    const { token } = await makeAdminToken();
+    const res = await request(app).get('/api/admin/accounts/roles').set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(200);
+    const names = res.body.data.map((r: { TenVaiTro: string }) => r.TenVaiTro);
+    expect(names).toEqual(expect.arrayContaining([ROLE_NAMES.CUSTOMER, ROLE_NAMES.PARTNER, ROLE_NAMES.ADMIN]));
+    const partner = res.body.data.find((r: { TenVaiTro: string }) => r.TenVaiTro === ROLE_NAMES.PARTNER);
+    expect(partner.MaVaiTro).toBe(await getRoleId(ROLE_NAMES.PARTNER));
+  });
+
+  it('rejects the role lookup for a customer', async () => {
+    const { account, plainPassword } = await createTestAccount({ role: ROLE_NAMES.CUSTOMER });
+    createdAccountIds.push(account.MaTaiKhoan);
+    const token = await loginAndGetToken(account.Email, plainPassword);
+    const res = await request(app).get('/api/admin/accounts/roles').set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(403);
+  });
+
+  it('returns the role name with list and detail rows, never the password hash', async () => {
+    const { token, account } = await makeAdminToken();
+    const list = await request(app).get('/api/admin/accounts').query({ search: account.TenDangNhap }).set('Authorization', `Bearer ${token}`);
+    expect(list.body.data[0].VAI_TRO.TenVaiTro).toBe(ROLE_NAMES.ADMIN);
+    const detail = await request(app).get(`/api/admin/accounts/${account.MaTaiKhoan}`).set('Authorization', `Bearer ${token}`);
+    expect(detail.body.data.VAI_TRO.TenVaiTro).toBe(ROLE_NAMES.ADMIN);
+    expect(JSON.stringify(detail.body.data)).not.toContain('MatKhau');
+  });
+});

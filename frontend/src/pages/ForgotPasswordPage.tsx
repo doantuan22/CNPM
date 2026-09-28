@@ -101,7 +101,7 @@ export default function ForgotPasswordPage() {
                   className="w-full bg-primary hover:bg-primary-700 active:bg-primary-800 text-white font-bold py-3.5 px-4 rounded-xl transition-all shadow-md shadow-primary/30 mt-6 disabled:opacity-70 flex justify-center items-center gap-2"
                 >
                   {isSubmitting || mutation.isPending ? (
-                     <>Đang gửi... <div className="spinner w-4 h-4 border-2 border-white/20 border-t-white"></div></>
+                     <>Đang gửi... <div className="spinner w-4 h-4 border-2 border-white/20 border-t-white" aria-hidden="true"></div></>
                   ) : (
                     'Gửi hướng dẫn qua email'
                   )}

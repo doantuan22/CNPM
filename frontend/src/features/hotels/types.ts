@@ -5,6 +5,12 @@ export interface DiaPhuong {
   QuocGia: string;
 }
 
+/** GET /api/locations row — DiaPhuong plus its count of publicly listed hotels and a cover image. */
+export interface LocationSummary extends DiaPhuong {
+  SoKhachSan: number;
+  AnhDaiDien: string | null;
+}
+
 export interface Amenity {
   MaTienNghi: number;
   TenTienNghi: string;

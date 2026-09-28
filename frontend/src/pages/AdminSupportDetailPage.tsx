@@ -11,7 +11,7 @@ export default function AdminSupportDetailPage() {
   const [ketQuaXuLy, setKetQuaXuLy] = useState('');
 
   if (requestQuery.isLoading) {
-    return <div className="flex justify-center py-16"><div className="spinner"></div></div>;
+    return <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>;
   }
 
   if (requestQuery.isError || !requestQuery.data) {
@@ -124,8 +124,8 @@ export default function AdminSupportDetailPage() {
               )}
 
               <div className="space-y-1.5 pt-1">
-                <label className="text-[11px] font-semibold text-slate-600 block">Biên bản / Kết quả giải quyết sự cố <span className="text-rose-500">*</span></label>
-                <textarea 
+                <label htmlFor="admin-support-detail-field-1" className="text-[11px] font-semibold text-slate-600 block">Biên bản / Kết quả giải quyết sự cố <span className="text-rose-500">*</span></label>
+                <textarea id="admin-support-detail-field-1" 
                   value={ketQuaXuLy}
                   onChange={(e) => setKetQuaXuLy(e.target.value)}
                   rows={4} 

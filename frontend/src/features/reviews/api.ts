@@ -21,6 +21,7 @@ const buildQuery = (query: AdminReviewListQuery): string => {
   if (query.limit) params.set('limit', String(query.limit));
   if (query.search) params.set('search', query.search);
   if (query.trangThai) params.set('trangThai', query.trangThai);
+  if (query.diemDanhGia) params.set('diemDanhGia', String(query.diemDanhGia));
   return params.toString();
 };
 

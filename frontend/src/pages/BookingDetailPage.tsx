@@ -38,7 +38,7 @@ export default function BookingDetailPage() {
   const [cancelNote, setCancelNote] = useState('');
 
   if (bookingQuery.isLoading) {
-    return <div className="flex justify-center py-16"><div className="spinner"></div></div>;
+    return <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>;
   }
 
   if (bookingQuery.isError || !bookingQuery.data) {
@@ -107,7 +107,7 @@ export default function BookingDetailPage() {
                 <i className="ph-duotone ph-image text-4xl"></i>
               </div>
               <div>
-                <h2 className="text-lg font-bold text-ink mb-1">{(booking as any).TenKhachSan || (booking as any).PHONG?.LOAI_PHONG.KHACH_SAN.TenKhachSan}</h2>
+                <h2 className="text-lg font-bold text-ink mb-1">{booking.TenKhachSan}</h2>
                 {booking.GhiChu && <p className="text-[13px] text-muted mb-2">Ghi chú: {booking.GhiChu}</p>}
                 <p className="text-[13px] text-primary mt-1.5 cursor-pointer hover:underline">Xem trên bản đồ <i className="ph ph-arrow-right"></i></p>
               </div>
@@ -115,11 +115,11 @@ export default function BookingDetailPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 bg-surface-secondary border border-border rounded-lg p-4 gap-4">
               <div>
-                <label className="block text-[12px] text-muted mb-1">Nhận phòng</label>
+                <p className="block text-[12px] text-muted mb-1">Nhận phòng</p>
                 <span className="text-[15px] font-semibold text-heading">{booking.NgayNhanPhong}</span>
               </div>
               <div>
-                <label className="block text-[12px] text-muted mb-1">Trả phòng</label>
+                <p className="block text-[12px] text-muted mb-1">Trả phòng</p>
                 <span className="text-[15px] font-semibold text-heading">{booking.NgayTraPhong}</span>
               </div>
             </div>
@@ -254,8 +254,8 @@ export default function BookingDetailPage() {
                    </div>
                    
                    <div className="mb-4">
-                     <label className="block text-xs text-red-800 font-medium mb-1">Lý do hủy (không bắt buộc)</label>
-                     <Textarea 
+                     <label htmlFor="booking-detail-field-1" className="block text-xs text-red-800 font-medium mb-1">Lý do hủy (không bắt buộc)</label>
+                     <Textarea id="booking-detail-field-1" 
                        rows={2} 
                        value={cancelNote} 
                        onChange={e => setCancelNote(e.target.value)}

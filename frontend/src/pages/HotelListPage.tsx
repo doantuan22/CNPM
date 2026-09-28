@@ -134,24 +134,24 @@ export default function HotelListPage() {
 
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Khoảng Giá (VND)</label>
+                <p id="hotel-list-price-label" className="text-xs font-bold uppercase tracking-wider text-slate-500">Khoảng Giá (VND)</p>
                 <span className="text-[11px] text-slate-400 font-medium">/ mỗi đêm</span>
               </div>
-              <div className="grid grid-cols-2 gap-2 pt-1 text-xs">
+              <div role="group" aria-labelledby="hotel-list-price-label" className="grid grid-cols-2 gap-2 pt-1 text-xs">
                 <div className="bg-slate-50 p-2 rounded-xl border border-slate-200">
-                  <span className="text-[10px] text-slate-400 block font-medium">Tối thiểu</span>
-                  <input type="number" className="w-full bg-transparent font-bold text-slate-700 outline-none" placeholder="0" defaultValue={params.minPrice} onBlur={(e) => updateParams({ minPrice: e.target.value || undefined })} />
+                  <label htmlFor="hotel-list-min-price" className="text-[10px] text-slate-400 block font-medium">Tối thiểu</label>
+                  <input id="hotel-list-min-price" key={`min-${params.minPrice ?? ""}`} type="number" min={0} className="w-full bg-transparent font-bold text-slate-700 outline-none" placeholder="0" defaultValue={params.minPrice} onBlur={(e) => updateParams({ minPrice: e.target.value || undefined })} onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur(); }} />
                 </div>
                 <div className="bg-slate-50 p-2 rounded-xl border border-slate-200 text-right">
-                  <span className="text-[10px] text-slate-400 block font-medium">Tối đa</span>
-                  <input type="number" className="w-full bg-transparent font-bold text-primary text-right outline-none" placeholder="Bất kỳ" defaultValue={params.maxPrice} onBlur={(e) => updateParams({ maxPrice: e.target.value || undefined })} />
+                  <label htmlFor="hotel-list-max-price" className="text-[10px] text-slate-400 block font-medium">Tối đa</label>
+                  <input id="hotel-list-max-price" key={`max-${params.maxPrice ?? ""}`} type="number" min={0} className="w-full bg-transparent font-bold text-primary text-right outline-none" placeholder="Bất kỳ" defaultValue={params.maxPrice} onBlur={(e) => updateParams({ maxPrice: e.target.value || undefined })} onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur(); }} />
                 </div>
               </div>
             </div>
 
             <div className="space-y-3 pt-3 border-t border-slate-100">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Hạng Sao</label>
-              <div className="space-y-2">
+              <p id="hotel-list-star-label" className="text-xs font-bold uppercase tracking-wider text-slate-500">Hạng Sao</p>
+              <div role="group" aria-labelledby="hotel-list-star-label" className="space-y-2">
                 {[5, 4, 3, 2, 1].map((star) => (
                   <label key={star} className="flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors group">
                     <div className="flex items-center gap-2.5">
@@ -169,8 +169,8 @@ export default function HotelListPage() {
 
             {amenitiesQuery.data && (
               <div className="space-y-3 pt-3 border-t border-slate-100">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Tiện Nghi</label>
-                <div className="space-y-2 text-sm text-slate-700">
+                <p id="hotel-list-amenity-label" className="text-xs font-bold uppercase tracking-wider text-slate-500">Tiện Nghi</p>
+                <div role="group" aria-labelledby="hotel-list-amenity-label" className="space-y-2 text-sm text-slate-700">
                   {amenitiesQuery.data.map((a) => (
                     <label key={a.MaTienNghi} className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors">
                       <input type="checkbox" checked={(params.amenities ?? []).includes(a.MaTienNghi)} onChange={() => toggleAmenity(a.MaTienNghi)} className="w-4 h-4 rounded text-primary border-slate-300" />
@@ -210,9 +210,9 @@ export default function HotelListPage() {
             </div>
 
             {query.isLoading ? (
-              <div className="flex justify-center py-16"><div className="spinner"></div></div>
+              <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>
             ) : query.isError ? (
-              <div className="rounded-xl border border-red-200 bg-red-50 px-6 py-10 text-center text-sm text-red-700">
+              <div role="alert" className="rounded-xl border border-red-200 bg-red-50 px-6 py-10 text-center text-sm text-red-700">
                 {query.error instanceof ApiError ? query.error.message : 'Không thể tải danh sách khách sạn'}
               </div>
             ) : query.data && query.data.items.length === 0 ? (

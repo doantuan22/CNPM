@@ -3,7 +3,7 @@ import type { PartnerApplication, ApplyPartnerPayload, PaginationMeta } from '..
 import type { PaginatedApiResponse } from '../../types/api';
 
 export interface AdminPartnerApplication extends PartnerApplication {
-  TAI_KHOAN_HO_SO_DOI_TAC_MaTaiKhoanToTAI_KHOAN: { MaTaiKhoan: number; HoTen: string; Email: string; MaVaiTro?: number };
+  TAI_KHOAN_HO_SO_DOI_TAC_MaTaiKhoanToTAI_KHOAN: { MaTaiKhoan: number; HoTen: string; Email: string; SoDienThoai?: string; MaVaiTro?: number };
   TAI_KHOAN_HO_SO_DOI_TAC_MaTaiKhoanDuyetToTAI_KHOAN?: { MaTaiKhoan: number; HoTen: string; Email?: string } | null;
 }
 

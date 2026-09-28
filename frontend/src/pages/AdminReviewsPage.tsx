@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { Link } from 'react-router-dom';
 import { useAdminReviewList, useRemoveViolationReview } from '../features/reviews/hooks';
 import { ApiError } from '../services/apiClient';
@@ -9,16 +10,21 @@ const STATUSES = ['Chờ duyệt', 'Hiển thị', 'Ẩn', 'Vi phạm'];
 export default function AdminReviewsPage() {
   const [page, setPage] = useState(1);
   const [searchInput, setSearchInput] = useState('');
-  const [search, setSearch] = useState('');
+  const search = useDebouncedValue(searchInput.trim());
   const [status, setStatus] = useState('');
   const [star, setStar] = useState('');
 
-  const query = useAdminReviewList({ page, limit: PAGE_SIZE, search: search || undefined, trangThai: status === 'ALL' ? undefined : status || undefined });
+  const query = useAdminReviewList({
+    page,
+    limit: PAGE_SIZE,
+    search: search || undefined,
+    trangThai: status === 'ALL' ? undefined : status || undefined,
+    diemDanhGia: star && star !== 'ALL' ? Number(star) : undefined,
+  });
   const removeMutation = useRemoveViolationReview();
 
   const handleSearchChange = (val: string) => {
     setSearchInput(val);
-    setSearch(val.trim());
     setPage(1);
   };
 
@@ -62,8 +68,8 @@ export default function AdminReviewsPage() {
           </div>
 
           <div className="flex items-center gap-2 text-xs">
-            <span className="text-slate-400 font-medium">Hạng sao:</span>
-            <select 
+            <label htmlFor="admin-reviews-star" className="text-slate-400 font-medium">Hạng sao:</label>
+            <select id="admin-reviews-star"
               value={star} 
               onChange={(e) => { setStar(e.target.value); setPage(1); }} 
               className="px-3 py-1.5 bg-slate-50 border border-border rounded-lg font-medium text-xs text-heading focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -105,7 +111,7 @@ export default function AdminReviewsPage() {
 
       <div className="bg-white rounded-[16px] border border-border shadow-sm overflow-hidden flex flex-col">
         {query.isLoading ? (
-          <div className="flex justify-center py-16"><div className="spinner"></div></div>
+          <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>
         ) : query.isError ? (
           <div role="alert" className="px-6 py-10 text-center text-sm text-red-700">
             {query.error instanceof ApiError ? query.error.message : 'Không thể tải danh sách đánh giá'}

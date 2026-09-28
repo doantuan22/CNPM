@@ -66,15 +66,15 @@ export default function OwnerHotelFormPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div className="md:col-span-2">
-              <label className="form-label">Tên cơ sở khách sạn / Resort <span className="text-red-500">*</span></label>
-              <input type="text" className={cn("input", errors.TenKhachSan && "border-red-500")} placeholder="Ví dụ: Grand Palace Saigon Hotel & Spa" {...register('TenKhachSan')} />
+              <label htmlFor="owner-hotel-form-TenKhachSan" className="form-label">Tên cơ sở khách sạn / Resort <span className="text-red-500">*</span></label>
+              <input id="owner-hotel-form-TenKhachSan" type="text" className={cn("input", errors.TenKhachSan && "border-red-500")} placeholder="Ví dụ: Grand Palace Saigon Hotel & Spa" {...register('TenKhachSan')} />
               {errors.TenKhachSan && <p className="text-xs text-red-500 mt-1">{errors.TenKhachSan.message}</p>}
             </div>
 
             <div>
-              <label className="form-label">Xếp hạng sao tiêu chuẩn <span className="text-red-500">*</span></label>
+              <label htmlFor="owner-hotel-form-HangSao" className="form-label">Xếp hạng sao tiêu chuẩn <span className="text-red-500">*</span></label>
               <div className="relative">
-                <select className={cn("select", errors.HangSao && "border-red-500")} {...register('HangSao', { valueAsNumber: true })}>
+                <select id="owner-hotel-form-HangSao" className={cn("select", errors.HangSao && "border-red-500")} {...register('HangSao', { valueAsNumber: true })}>
                   <option value="">-- Chọn xếp hạng sao --</option>
                   {[1, 2, 3, 4, 5].map((s) => (
                     <option key={s} value={s}>{s} Sao</option>
@@ -85,9 +85,9 @@ export default function OwnerHotelFormPage() {
             </div>
 
             <div>
-              <label className="form-label">Tỉnh / Thành phố <span className="text-red-500">*</span></label>
+              <label htmlFor="owner-hotel-form-MaDiaPhuong" className="form-label">Tỉnh / Thành phố <span className="text-red-500">*</span></label>
               <div className="relative">
-                <select className={cn("select", errors.MaDiaPhuong && "border-red-500")} defaultValue="" {...register('MaDiaPhuong', { valueAsNumber: true })}>
+                <select id="owner-hotel-form-MaDiaPhuong" className={cn("select", errors.MaDiaPhuong && "border-red-500")} defaultValue="" {...register('MaDiaPhuong', { valueAsNumber: true })}>
                   <option value="" disabled>-- Chọn tỉnh thành --</option>
                   {locationsQuery.data?.map((loc) => (
                     <option key={loc.MaDiaPhuong} value={loc.MaDiaPhuong}>{loc.TenThanhPho}</option>
@@ -99,8 +99,8 @@ export default function OwnerHotelFormPage() {
             </div>
 
             <div className="md:col-span-2">
-              <label className="form-label">Địa chỉ chi tiết <span className="text-red-500">*</span></label>
-              <input type="text" className={cn("input", errors.DiaChiChiTiet && "border-red-500")} placeholder="Số nhà, tên đường, phường/xã, quận/huyện..." {...register('DiaChiChiTiet')} />
+              <label htmlFor="owner-hotel-form-DiaChiChiTiet" className="form-label">Địa chỉ chi tiết <span className="text-red-500">*</span></label>
+              <input id="owner-hotel-form-DiaChiChiTiet" type="text" className={cn("input", errors.DiaChiChiTiet && "border-red-500")} placeholder="Số nhà, tên đường, phường/xã, quận/huyện..." {...register('DiaChiChiTiet')} />
               {errors.DiaChiChiTiet && <p className="text-xs text-red-500 mt-1">{errors.DiaChiChiTiet.message}</p>}
             </div>
           </div>
@@ -114,13 +114,13 @@ export default function OwnerHotelFormPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
-              <label className="form-label">Giờ nhận phòng tiêu chuẩn (Check-in) <span className="text-red-500">*</span></label>
-              <input type="time" className={cn("input", errors.GioNhanPhong && "border-red-500")} {...register('GioNhanPhong')} />
+              <label htmlFor="owner-hotel-form-GioNhanPhong" className="form-label">Giờ nhận phòng tiêu chuẩn (Check-in) <span className="text-red-500">*</span></label>
+              <input id="owner-hotel-form-GioNhanPhong" type="time" className={cn("input", errors.GioNhanPhong && "border-red-500")} {...register('GioNhanPhong')} />
               {errors.GioNhanPhong && <p className="text-xs text-red-500 mt-1">{errors.GioNhanPhong.message}</p>}
             </div>
             <div>
-              <label className="form-label">Giờ trả phòng tiêu chuẩn (Check-out) <span className="text-red-500">*</span></label>
-              <input type="time" className={cn("input", errors.GioTraPhong && "border-red-500")} {...register('GioTraPhong')} />
+              <label htmlFor="owner-hotel-form-GioTraPhong" className="form-label">Giờ trả phòng tiêu chuẩn (Check-out) <span className="text-red-500">*</span></label>
+              <input id="owner-hotel-form-GioTraPhong" type="time" className={cn("input", errors.GioTraPhong && "border-red-500")} {...register('GioTraPhong')} />
               {errors.GioTraPhong && <p className="text-xs text-red-500 mt-1">{errors.GioTraPhong.message}</p>}
             </div>
           </div>

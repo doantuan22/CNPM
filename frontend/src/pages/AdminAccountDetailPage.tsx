@@ -39,7 +39,7 @@ export default function AdminAccountDetailPage() {
   }, [detailQuery.data, reset]);
 
   if (detailQuery.isLoading) {
-    return <div className="flex justify-center py-16"><div className="spinner"></div></div>;
+    return <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>;
   }
 
   if (detailQuery.isError || !detailQuery.data) {
@@ -121,28 +121,28 @@ export default function AdminAccountDetailPage() {
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-2" noValidate>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-600 block">Tên đăng nhập</label>
-                  <input type="text" {...register('TenDangNhap')} className="w-full px-3 py-2 bg-white border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition" />
+                  <label htmlFor="admin-account-detail-TenDangNhap" className="text-xs font-semibold text-slate-600 block">Tên đăng nhập</label>
+                  <input id="admin-account-detail-TenDangNhap" type="text" {...register('TenDangNhap')} className="w-full px-3 py-2 bg-white border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition" />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-600 block">Email</label>
-                  <input type="email" {...register('Email')} className="w-full px-3 py-2 bg-white border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition" />
+                  <label htmlFor="admin-account-detail-Email" className="text-xs font-semibold text-slate-600 block">Email</label>
+                  <input id="admin-account-detail-Email" type="email" {...register('Email')} className="w-full px-3 py-2 bg-white border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition" />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-600 block">Họ và tên</label>
-                  <input type="text" {...register('HoTen')} className="w-full px-3 py-2 bg-white border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition" />
+                  <label htmlFor="admin-account-detail-HoTen" className="text-xs font-semibold text-slate-600 block">Họ và tên</label>
+                  <input id="admin-account-detail-HoTen" type="text" {...register('HoTen')} className="w-full px-3 py-2 bg-white border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition" />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-600 block">Số điện thoại</label>
-                  <input type="tel" {...register('SoDienThoai')} className="w-full px-3 py-2 bg-white border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition" />
+                  <label htmlFor="admin-account-detail-SoDienThoai" className="text-xs font-semibold text-slate-600 block">Số điện thoại</label>
+                  <input id="admin-account-detail-SoDienThoai" type="tel" {...register('SoDienThoai')} className="w-full px-3 py-2 bg-white border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition" />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-600 block">Ngày sinh</label>
-                  <input type="date" {...register('NgaySinh')} className="w-full px-3 py-2 bg-white border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition" />
+                  <label htmlFor="admin-account-detail-NgaySinh" className="text-xs font-semibold text-slate-600 block">Ngày sinh</label>
+                  <input id="admin-account-detail-NgaySinh" type="date" {...register('NgaySinh')} className="w-full px-3 py-2 bg-white border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition" />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-600 block">Giới tính</label>
-                  <select {...register('GioiTinh')} className="w-full px-3 py-2 bg-white border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition">
+                  <label htmlFor="admin-account-detail-GioiTinh" className="text-xs font-semibold text-slate-600 block">Giới tính</label>
+                  <select id="admin-account-detail-GioiTinh" {...register('GioiTinh')} className="w-full px-3 py-2 bg-white border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition">
                     <option value="">Không chọn</option>
                     <option value="Nam">Nam</option>
                     <option value="Nữ">Nữ</option>

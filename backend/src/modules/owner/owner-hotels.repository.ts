@@ -7,7 +7,7 @@ export class OwnerHotelsRepository {
     const prisma = getPrismaClient();
     return prisma.kHACH_SAN.findMany({
       where: { MaTaiKhoanSoHuu: ownerId },
-      include: { DIA_PHUONG: true, HINH_ANH_KHACH_SAN: true },
+      include: { DIA_PHUONG: true, HINH_ANH_KHACH_SAN: true, _count: { select: { LOAI_PHONG: true } } },
       orderBy: { NgayDangKy: 'desc' },
     });
   }

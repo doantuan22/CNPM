@@ -93,7 +93,7 @@ export default function ResetPasswordPage() {
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
             {mutation.isError && (
-              <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 border border-red-200">
+              <div role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 border border-red-200">
                 {mutation.error instanceof ApiError ? mutation.error.message : 'Token không hợp lệ hoặc đã hết hạn'}
               </div>
             )}
@@ -101,9 +101,9 @@ export default function ResetPasswordPage() {
             <input type="hidden" {...register('token')} />
 
             <div className="space-y-1.5">
-              <label className="block text-sm font-medium text-ink">Mật khẩu mới</label>
+              <label htmlFor="reset-password-field-1" className="block text-sm font-medium text-ink">Mật khẩu mới</label>
               <div className="relative">
-                <input 
+                <input id="reset-password-field-1" 
                   type={showPwd ? "text" : "password"} 
                   placeholder="••••••••••" 
                   className={cn("w-full px-4 py-2.5 rounded-lg border bg-white text-ink text-sm placeholder:text-slate-400 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all", errors.MatKhauMoi ? "border-rose-500 bg-rose-50/20" : "border-border")}
@@ -121,9 +121,9 @@ export default function ResetPasswordPage() {
             </div>
 
             <div className="space-y-1.5">
-              <label className="block text-sm font-medium text-ink">Xác nhận mật khẩu mới</label>
+              <label htmlFor="reset-password-field-2" className="block text-sm font-medium text-ink">Xác nhận mật khẩu mới</label>
               <div className="relative">
-                <input 
+                <input id="reset-password-field-2" 
                   type={showConfirmPwd ? "text" : "password"} 
                   placeholder="••••••••••" 
                   className={cn("w-full px-4 py-2.5 rounded-lg border bg-white text-ink text-sm placeholder:text-slate-400 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all", errors.confirmMatKhauMoi ? "border-rose-500 bg-rose-50/20" : "border-border")}
@@ -146,7 +146,7 @@ export default function ResetPasswordPage() {
               className="w-full bg-primary hover:bg-primary-700 active:bg-primary-800 text-white font-medium py-3 px-4 rounded-lg transition-all shadow-md shadow-primary/30 mt-6 flex justify-center items-center gap-2 disabled:opacity-70"
             >
               {isSubmitting || mutation.isPending ? (
-                 <>Đang xử lý... <div className="spinner w-4 h-4 border-2 border-white/20 border-t-white"></div></>
+                 <>Đang xử lý... <div className="spinner w-4 h-4 border-2 border-white/20 border-t-white" aria-hidden="true"></div></>
               ) : (
                 'Cập nhật mật khẩu'
               )}

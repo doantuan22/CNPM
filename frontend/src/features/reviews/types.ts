@@ -34,4 +34,5 @@ export interface AdminReviewListQuery {
   limit?: number;
   search?: string;
   trangThai?: string;
+  diemDanhGia?: number;
 }

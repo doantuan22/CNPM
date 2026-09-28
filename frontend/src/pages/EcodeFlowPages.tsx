@@ -1,5 +1,5 @@
 import { FormEvent, type ReactNode, useState } from 'react';
-import { CheckCircle2, CreditCard, FileText, Hotel, LockKeyhole, MessageSquare, PenLine, ShieldCheck } from 'lucide-react';
+import { CheckCircle2, CreditCard, FileText, Hotel, LockKeyhole, PenLine, ShieldCheck } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import { Button } from '../components/common/Button';
 import { Textarea } from '../components/common/Textarea';
@@ -44,7 +44,7 @@ export function BookingRoomPage() {
     {booking.data && <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
       <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
         <div className="flex items-center gap-2 text-sm font-semibold text-blue-700"><CheckCircle2 className="h-4 w-4" /> Bước 1 / 3</div>
-        <h2 className="text-lg font-semibold text-slate-900">Khách sạn #{booking.data.MaKhachSan}</h2>
+        <h2 className="text-lg font-semibold text-slate-900">{booking.data.TenKhachSan}</h2>
         <p className="text-sm text-slate-500">{booking.data.NgayNhanPhong} → {booking.data.NgayTraPhong}</p>
         {booking.data.ChiTietPhong.map((room) => <div key={room.MaLoaiPhong} className="flex items-center justify-between rounded-xl border border-slate-200 p-4"><span className="font-medium text-slate-800">{room.TenLoaiPhong} × {room.SoLuong}</span><span className="text-sm text-slate-500">Phòng đã chọn</span></div>)}
       </section>
@@ -81,11 +81,17 @@ export function WriteReviewPage() {
   const submit = (event: FormEvent) => { event.preventDefault(); create.mutate({ diemDanhGia: rating, noiDung: content.trim() }); };
   return <Frame title="Viết đánh giá" description="Chia sẻ trải nghiệm thực tế của bạn sau kỳ lưu trú." icon={PenLine}>
     <LoadingOrError loading={existing.isLoading} error={existing.error} />
-    {existing.data ? <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6 text-sm text-emerald-800">Bạn đã gửi đánh giá cho đặt phòng này.</div> : <form onSubmit={submit} className="mx-auto max-w-2xl space-y-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-xs"><div><label className="mb-2 block text-sm font-medium text-slate-700">Điểm đánh giá</label><select value={rating} onChange={(e) => setRating(Number(e.target.value))} className="w-full rounded-lg border border-slate-300 px-3 py-2">{[5,4,3,2,1].map((value) => <option key={value} value={value}>{value}/5</option>)}</select></div><Textarea label="Nội dung đánh giá" required rows={5} value={content} onChange={(e) => setContent(e.target.value)} /><Button type="submit" disabled={create.isPending}>{create.isPending ? 'Đang gửi...' : 'Gửi đánh giá'}</Button></form>}
+    {existing.data ? <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6 text-sm text-emerald-800">Bạn đã gửi đánh giá cho đặt phòng này.</div> : <form onSubmit={submit} className="mx-auto max-w-2xl space-y-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-xs"><div><label htmlFor="ecode-flow-pages-field-1" className="mb-2 block text-sm font-medium text-slate-700">Điểm đánh giá</label><select id="ecode-flow-pages-field-1" value={rating} onChange={(e) => setRating(Number(e.target.value))} className="w-full rounded-lg border border-slate-300 px-3 py-2">{[5,4,3,2,1].map((value) => <option key={value} value={value}>{value}/5</option>)}</select></div><Textarea label="Nội dung đánh giá" required rows={5} value={content} onChange={(e) => setContent(e.target.value)} /><Button type="submit" disabled={create.isPending}>{create.isPending ? 'Đang gửi...' : 'Gửi đánh giá'}</Button></form>}
   </Frame>;
 }
 
-export function PartnerInventoryPage() { return <Frame title="Tồn kho & giá bán" description="Quản lý tồn kho phòng và bảng giá theo thời gian thực." icon={Hotel}><div className="grid gap-4 sm:grid-cols-3">{['Lịch phòng','Giá theo ngày','Chính sách bán'].map((label) => <div key={label} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs"><p className="text-sm font-semibold text-slate-900">{label}</p><p className="mt-2 text-sm text-slate-500">Dữ liệu sẽ được tải từ cơ sở dữ liệu khi chọn khách sạn.</p></div>)}</div><div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-500">Chọn khách sạn để xem và cập nhật tồn kho.</div></Frame>; }
+export function PartnerInventoryPage() {
+  const hotels = useMyHotels();
+  return <Frame title="Tồn kho & giá bán" description="Chọn khách sạn để quản lý loại phòng, số phòng mở bán và giá theo ngày." icon={Hotel}>
+    <LoadingOrError loading={hotels.isLoading} error={hotels.error} empty={!hotels.data?.length} />
+    {hotels.data && hotels.data.length > 0 && <div className="grid gap-4 sm:grid-cols-2">{hotels.data.map((hotel) => <Link key={hotel.MaKhachSan} to={`/owner/hotels/${hotel.MaKhachSan}`} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs transition hover:border-blue-300"><p className="font-semibold text-slate-900">{hotel.TenKhachSan}</p><p className="mt-1 text-sm text-slate-500">{hotel._count?.LOAI_PHONG ?? 0} loại phòng · mở trang quản lý giá & tồn kho</p></Link>)}</div>}
+  </Frame>;
+}
 
 export function PartnerBookingsPage() {
   const hotels = useMyHotels();
@@ -103,7 +109,3 @@ function HotelAnalyticsLinks({ mode }: { mode: 'report' | 'revenue' }) {
 export function PartnerReportsPage() { return <Frame title="Báo cáo đối tác" description="Theo dõi hiệu suất kinh doanh và đặt phòng." icon={FileText}><HotelAnalyticsLinks mode="report" /></Frame>; }
 
 export function PartnerRevenuePage() { return <Frame title="Doanh thu" description="Tổng hợp doanh thu theo dữ liệu giao dịch thực tế." icon={CreditCard}><HotelAnalyticsLinks mode="revenue" /></Frame>; }
-
-export function AdminOperationsPage() { return <Frame title="Vận hành sàn" description="Theo dõi hoạt động đặt phòng, thanh toán và hỗ trợ." icon={MessageSquare}><div className="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center text-sm text-slate-500">Các chỉ số vận hành sẽ được tải từ API quản trị.</div></Frame>; }
-
-export function AdminOnboardingPage() { return <Frame title="Thẩm định hồ sơ" description="Xử lý hồ sơ đăng ký đối tác theo quy trình Egode." icon={FileText}><div className="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center text-sm text-slate-500">Chưa có hồ sơ cần thẩm định.</div></Frame>; }

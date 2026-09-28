@@ -53,9 +53,9 @@ export default function BookingsPage() {
       </div>
 
       {bookingsQuery.isLoading ? (
-        <div className="flex justify-center py-16"><div className="spinner"></div></div>
+        <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>
       ) : bookingsQuery.isError ? (
-        <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
           {bookingsQuery.error instanceof ApiError ? bookingsQuery.error.message : 'Không thể tải danh sách đặt phòng'}
         </div>
       ) : !bookingsQuery.data || bookingsQuery.data.length === 0 ? (

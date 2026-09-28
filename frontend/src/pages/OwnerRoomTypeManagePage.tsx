@@ -77,7 +77,7 @@ export default function OwnerRoomTypeManagePage() {
   }, [roomTypeQuery.data, reset]);
 
   if (roomTypeQuery.isLoading) {
-    return <div className="flex justify-center py-16"><div className="spinner"></div></div>;
+    return <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>;
   }
 
   if (roomTypeQuery.isError || !roomTypeQuery.data) {
@@ -158,33 +158,33 @@ export default function OwnerRoomTypeManagePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             <div className="md:col-span-2 lg:col-span-3">
-              <label className="form-label">Tên loại phòng <span className="text-red-500">*</span></label>
-              <input type="text" className={cn("input", errors.TenLoaiPhong && "border-red-500")} {...register('TenLoaiPhong')} />
+              <label htmlFor="owner-room-type-manage-TenLoaiPhong" className="form-label">Tên loại phòng <span className="text-red-500">*</span></label>
+              <input id="owner-room-type-manage-TenLoaiPhong" type="text" className={cn("input", errors.TenLoaiPhong && "border-red-500")} {...register('TenLoaiPhong')} />
               {errors.TenLoaiPhong && <p className="text-xs text-red-500 mt-1">{errors.TenLoaiPhong.message}</p>}
             </div>
 
             <div>
-              <label className="form-label">Diện tích phòng (m²) <span className="text-red-500">*</span></label>
-              <input type="number" step="0.1" className={cn("input", errors.DienTich && "border-red-500")} {...register('DienTich', { valueAsNumber: true })} />
+              <label htmlFor="owner-room-type-manage-DienTich" className="form-label">Diện tích phòng (m²) <span className="text-red-500">*</span></label>
+              <input id="owner-room-type-manage-DienTich" type="number" step="0.1" className={cn("input", errors.DienTich && "border-red-500")} {...register('DienTich', { valueAsNumber: true })} />
               {errors.DienTich && <p className="text-xs text-red-500 mt-1">{errors.DienTich.message}</p>}
             </div>
 
             <div>
-              <label className="form-label">Sức chứa tối đa (Khách) <span className="text-red-500">*</span></label>
-              <input type="number" className={cn("input", errors.SucChua && "border-red-500")} {...register('SucChua', { valueAsNumber: true })} />
+              <label htmlFor="owner-room-type-manage-SucChua" className="form-label">Sức chứa tối đa (Khách) <span className="text-red-500">*</span></label>
+              <input id="owner-room-type-manage-SucChua" type="number" className={cn("input", errors.SucChua && "border-red-500")} {...register('SucChua', { valueAsNumber: true })} />
               {errors.SucChua && <p className="text-xs text-red-500 mt-1">{errors.SucChua.message}</p>}
             </div>
 
             <div className="md:col-span-2 lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
-                <label className="form-label">Loại giường <span className="text-red-500">*</span></label>
-                <input type="text" className={cn("input", errors.LoaiGiuong && "border-red-500")} {...register('LoaiGiuong')} />
+                <label htmlFor="owner-room-type-manage-LoaiGiuong" className="form-label">Loại giường <span className="text-red-500">*</span></label>
+                <input id="owner-room-type-manage-LoaiGiuong" type="text" className={cn("input", errors.LoaiGiuong && "border-red-500")} {...register('LoaiGiuong')} />
                 {errors.LoaiGiuong && <p className="text-xs text-red-500 mt-1">{errors.LoaiGiuong.message}</p>}
               </div>
 
               <div>
-                <label className="form-label">Số lượng giường <span className="text-red-500">*</span></label>
-                <input type="number" className={cn("input", errors.SoGiuong && "border-red-500")} {...register('SoGiuong', { valueAsNumber: true })} />
+                <label htmlFor="owner-room-type-manage-SoGiuong" className="form-label">Số lượng giường <span className="text-red-500">*</span></label>
+                <input id="owner-room-type-manage-SoGiuong" type="number" className={cn("input", errors.SoGiuong && "border-red-500")} {...register('SoGiuong', { valueAsNumber: true })} />
                 {errors.SoGiuong && <p className="text-xs text-red-500 mt-1">{errors.SoGiuong.message}</p>}
               </div>
             </div>
@@ -311,20 +311,20 @@ export default function OwnerRoomTypeManagePage() {
 
         <form onSubmit={handleRateSubmit(onRateBulkSubmit)} className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-slate-50 border border-border rounded-xl p-5 mb-6">
           <div>
-            <label className="form-label">Từ ngày <span className="text-red-500">*</span></label>
-            <input type="date" className={cn("input", rateErrors.from && "border-red-500")} {...registerRate('from')} />
+            <label htmlFor="owner-room-type-manage-from" className="form-label">Từ ngày <span className="text-red-500">*</span></label>
+            <input id="owner-room-type-manage-from" type="date" className={cn("input", rateErrors.from && "border-red-500")} {...registerRate('from')} />
           </div>
           <div>
-            <label className="form-label">Đến ngày <span className="text-red-500">*</span></label>
-            <input type="date" className={cn("input", rateErrors.to && "border-red-500")} {...registerRate('to')} />
+            <label htmlFor="owner-room-type-manage-to" className="form-label">Đến ngày <span className="text-red-500">*</span></label>
+            <input id="owner-room-type-manage-to" type="date" className={cn("input", rateErrors.to && "border-red-500")} {...registerRate('to')} />
           </div>
           <div>
-            <label className="form-label">Giá / đêm (VND) <span className="text-red-500">*</span></label>
-            <input type="number" min="0" className={cn("input", rateErrors.giaPhong && "border-red-500")} {...registerRate('giaPhong', { valueAsNumber: true })} />
+            <label htmlFor="owner-room-type-manage-giaPhong" className="form-label">Giá / đêm (VND) <span className="text-red-500">*</span></label>
+            <input id="owner-room-type-manage-giaPhong" type="number" min="0" className={cn("input", rateErrors.giaPhong && "border-red-500")} {...registerRate('giaPhong', { valueAsNumber: true })} />
           </div>
           <div>
-            <label className="form-label">Phòng trống bán <span className="text-red-500">*</span></label>
-            <input type="number" min="0" className={cn("input", rateErrors.soLuongPhong && "border-red-500")} {...registerRate('soLuongPhong', { valueAsNumber: true })} />
+            <label htmlFor="owner-room-type-manage-soLuongPhong" className="form-label">Phòng trống bán <span className="text-red-500">*</span></label>
+            <input id="owner-room-type-manage-soLuongPhong" type="number" min="0" className={cn("input", rateErrors.soLuongPhong && "border-red-500")} {...registerRate('soLuongPhong', { valueAsNumber: true })} />
           </div>
           <div className="col-span-2 md:col-span-4 mt-2">
             <button type="submit" disabled={isRateSubmitting || bulkUpsertMutation.isPending} className="btn btn-primary w-full md:w-auto">
@@ -337,7 +337,7 @@ export default function OwnerRoomTypeManagePage() {
           Lịch bán hiện tại: <span className="text-primary font-normal">{ratesRange.from} → {ratesRange.to}</span>
         </h3>
         {ratesQuery.isLoading ? (
-          <div className="flex justify-center py-6"><div className="spinner"></div></div>
+          <div className="flex justify-center py-6" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>
         ) : ratesQuery.data && ratesQuery.data.length === 0 ? (
           <p className="text-sm text-slate-500">Chưa có dữ liệu giá cho khoảng ngày này.</p>
         ) : (

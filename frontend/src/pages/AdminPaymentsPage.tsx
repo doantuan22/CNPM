@@ -1,34 +1,42 @@
 import { useState } from 'react';
+import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { ApiError } from '../services/apiClient';
 import { listAdminPayments } from '../features/admin/payments/api';
 
-const STATUSES = ['Thành công', 'Chờ xử lý', 'Thất bại', 'Hoàn tiền'];
+const STATUSES = ['Thành công', 'Chờ xử lý', 'Thất bại'];
 
 export default function AdminPaymentsPage() {
   const [page, setPage] = useState(1); 
-  const [search, setSearch] = useState(''); 
   const [searchInput, setSearchInput] = useState('');
+  const search = useDebouncedValue(searchInput.trim());
   const [status, setStatus] = useState('');
   const [method, setMethod] = useState('');
+  const [refundedOnly, setRefundedOnly] = useState(false);
 
   const query = useQuery({ 
-    queryKey: ['admin', 'payments', page, search, status, method], 
-    queryFn: () => listAdminPayments({ page, limit: 10, search: search || undefined, TrangThai: status === 'ALL' ? undefined : status || undefined }) 
+    queryKey: ['admin', 'payments', page, search, status, method, refundedOnly],
+    queryFn: () => listAdminPayments({
+      page,
+      limit: 10,
+      search: search || undefined,
+      TrangThai: status === 'ALL' ? undefined : status || undefined,
+      PhuongThucThanhToan: method === 'ALL' ? undefined : method || undefined,
+      coHoanTien: refundedOnly || undefined,
+    })
   });
 
   const handleSearchChange = (val: string) => {
     setSearchInput(val);
-    setSearch(val.trim());
     setPage(1);
   };
 
   const resetFilters = () => {
-    setSearch('');
     setSearchInput('');
     setStatus('');
     setMethod('');
+    setRefundedOnly(false);
     setPage(1);
   };
 
@@ -44,12 +52,12 @@ export default function AdminPaymentsPage() {
       <div className="bg-white p-5 rounded-[16px] border border-border shadow-sm space-y-3.5">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-3.5 text-xs">
           <div className="md:col-span-5 relative">
-            <label className="block font-semibold text-slate-600 mb-1.5">Tìm kiếm giao dịch</label>
+            <label htmlFor="admin-payments-field-1" className="block font-semibold text-slate-600 mb-1.5">Tìm kiếm giao dịch</label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                 <i className="ph ph-magnifying-glass text-[16px]"></i>
               </div>
-              <input 
+              <input id="admin-payments-field-1" 
                 type="text" 
                 value={searchInput} 
                 onChange={(e) => handleSearchChange(e.target.value)} 
@@ -60,8 +68,8 @@ export default function AdminPaymentsPage() {
           </div>
 
           <div className="md:col-span-3">
-            <label className="block font-semibold text-slate-600 mb-1.5">Trạng thái giao dịch</label>
-            <select 
+            <label htmlFor="admin-payments-field-2" className="block font-semibold text-slate-600 mb-1.5">Trạng thái giao dịch</label>
+            <select id="admin-payments-field-2" 
               value={status} 
               onChange={(e) => { setStatus(e.target.value); setPage(1); }} 
               className="w-full px-3 py-2.5 bg-slate-50 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-medium text-heading"
@@ -72,15 +80,14 @@ export default function AdminPaymentsPage() {
           </div>
 
           <div className="md:col-span-2">
-            <label className="block font-semibold text-slate-600 mb-1.5">Phương thức</label>
-            <select 
+            <label htmlFor="admin-payments-field-3" className="block font-semibold text-slate-600 mb-1.5">Phương thức</label>
+            <select id="admin-payments-field-3" 
               value={method} 
               onChange={(e) => { setMethod(e.target.value); setPage(1); }} 
               className="w-full px-3 py-2.5 bg-slate-50 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-medium text-heading"
             >
               <option value="ALL">Tất cả cổng</option>
               <option value="VNPAY">VNPAY</option>
-              <option value="CASH">Tiền mặt</option>
             </select>
           </div>
 
@@ -93,15 +100,15 @@ export default function AdminPaymentsPage() {
 
         <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100 text-xs mt-3">
           <span className="text-slate-400 font-medium">Lọc nhanh:</span>
-          <button onClick={() => { setStatus('Hoàn tiền'); setPage(1); }} className="px-2.5 py-1 rounded-lg bg-amber-50 text-amber-800 font-medium hover:bg-amber-100 transition">Giao dịch hoàn tiền</button>
-          <button onClick={() => { setStatus('Thất bại'); setPage(1); }} className="px-2.5 py-1 rounded-lg bg-rose-50 text-rose-700 font-medium hover:bg-rose-100 transition">Lệnh thất bại</button>
-          <button onClick={() => { setStatus('Thành công'); setPage(1); }} className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 font-medium hover:bg-emerald-100 transition">Đã quyết toán</button>
+          <button type="button" aria-pressed={refundedOnly} onClick={() => { setRefundedOnly((v) => !v); setPage(1); }} className="px-2.5 py-1 rounded-lg bg-amber-50 text-amber-800 font-medium hover:bg-amber-100 transition aria-pressed:ring-2 aria-pressed:ring-amber-300">Giao dịch có hoàn tiền</button>
+          <button type="button" onClick={() => { setStatus('Thất bại'); setPage(1); }} className="px-2.5 py-1 rounded-lg bg-rose-50 text-rose-700 font-medium hover:bg-rose-100 transition">Lệnh thất bại</button>
+          <button type="button" onClick={() => { setStatus('Thành công'); setPage(1); }} className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 font-medium hover:bg-emerald-100 transition">Đã quyết toán</button>
         </div>
       </div>
 
       <div className="bg-white rounded-[16px] border border-border shadow-sm overflow-hidden flex flex-col">
         {query.isLoading ? (
-          <div className="flex justify-center py-16"><div className="spinner"></div></div>
+          <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>
         ) : query.isError ? (
           <div role="alert" className="px-6 py-10 text-center text-sm text-red-700">
             {query.error instanceof ApiError ? query.error.message : 'Không thể tải giao dịch'}

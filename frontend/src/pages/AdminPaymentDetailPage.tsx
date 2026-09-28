@@ -8,7 +8,7 @@ export default function AdminPaymentDetailPage() {
   const query = useQuery({ queryKey: ['admin', 'payments', id], queryFn: () => getAdminPayment(id) });
 
   if (query.isLoading) {
-    return <div className="flex justify-center py-16"><div className="spinner"></div></div>;
+    return <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>;
   }
 
   if (query.isError || !query.data) {
@@ -131,10 +131,10 @@ export default function AdminPaymentDetailPage() {
                       <span className="text-amber-700/80 block text-[11px] mb-0.5">Ngày yêu cầu:</span>
                       <span className="font-medium">{refund.NgayYeuCau ? new Date(refund.NgayYeuCau).toLocaleString('vi-VN') : ''}</span>
                     </div>
-                    {(refund as any).LyDo && (
+                    {refund.LyDoHoanTien && (
                       <div className="col-span-2 mt-1">
                         <span className="text-amber-700/80 block text-[11px] mb-0.5">Lý do hoàn tiền:</span>
-                        <span className="italic text-amber-900/80 bg-white/50 px-2 py-1.5 rounded block border border-amber-100/50">{(refund as any).LyDo}</span>
+                        <span className="italic text-amber-900/80 bg-white/50 px-2 py-1.5 rounded block border border-amber-100/50">{refund.LyDoHoanTien}</span>
                       </div>
                     )}
                   </div>

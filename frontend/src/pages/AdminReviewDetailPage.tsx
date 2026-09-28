@@ -10,7 +10,7 @@ export default function AdminReviewDetailPage() {
   const removeMutation = useRemoveViolationReview();
 
   if (reviewQuery.isLoading) {
-    return <div className="flex justify-center py-16"><div className="spinner"></div></div>;
+    return <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>;
   }
 
   if (reviewQuery.isError || !reviewQuery.data) {
@@ -93,7 +93,7 @@ export default function AdminReviewDetailPage() {
           </div>
 
           <div>
-            <label className="block font-semibold text-slate-600 mb-1.5 text-[11px] uppercase tracking-wider">Nội dung đánh giá:</label>
+            <p className="block font-semibold text-slate-600 mb-1.5 text-[11px] uppercase tracking-wider">Nội dung đánh giá:</p>
             <div className="p-4 bg-white border border-border rounded-xl text-slate-700 leading-relaxed font-medium text-sm whitespace-pre-wrap shadow-sm">
               {r.NoiDung || <span className="text-slate-400 italic">Không có nội dung bình luận</span>}
             </div>
@@ -101,7 +101,7 @@ export default function AdminReviewDetailPage() {
 
           {r.HINH_ANH_DANH_GIA.length > 0 && (
             <div>
-              <label className="block font-semibold text-slate-600 mb-1.5 text-[11px] uppercase tracking-wider">Hình ảnh đính kèm:</label>
+              <p className="block font-semibold text-slate-600 mb-1.5 text-[11px] uppercase tracking-wider">Hình ảnh đính kèm:</p>
               <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                 {r.HINH_ANH_DANH_GIA.map((img) => (
                   <a key={img.MaHinhAnhDanhGia} href={img.URL} target="_blank" rel="noreferrer" className="block aspect-square rounded-xl overflow-hidden border border-border shadow-sm hover:opacity-90 transition">

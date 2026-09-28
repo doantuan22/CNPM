@@ -1,12 +1,15 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createAccount } from '../features/admin/accounts/api';
+import { useRoles } from '../features/admin/accounts/hooks';
 import { ApiError } from '../services/apiClient';
 
 export default function AdminCreateAccountPage() {
   const nav = useNavigate();
   const [error, setError] = useState<string>();
   const [saving, setSaving] = useState(false);
+  // Role ids are IDENTITY values that differ between databases — always resolve them from the API.
+  const roles = useRoles();
 
   const submit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -59,48 +62,42 @@ export default function AdminCreateAccountPage() {
 
           <form onSubmit={submit} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-600 block">Họ và tên <span className="text-rose-500">*</span></label>
-              <input type="text" name="HoTen" required placeholder="Ví dụ: Hoàng Văn Nam" className="w-full px-3 py-2 bg-white border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition" />
+              <label htmlFor="create-HoTen" className="text-xs font-semibold text-slate-600 block">Họ và tên <span className="text-rose-500" aria-hidden="true">*</span></label>
+              <input id="create-HoTen" type="text" name="HoTen" required minLength={2} placeholder="Ví dụ: Hoàng Văn Nam" className="w-full px-3 py-2 bg-white border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition" />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-600 block">Tên đăng nhập <span className="text-rose-500">*</span></label>
-                <input type="text" name="TenDangNhap" required placeholder="Ví dụ: hoangnam123" className="w-full px-3 py-2 bg-white border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition" />
+                <label htmlFor="create-TenDangNhap" className="text-xs font-semibold text-slate-600 block">Tên đăng nhập <span className="text-rose-500" aria-hidden="true">*</span></label>
+                <input id="create-TenDangNhap" type="text" name="TenDangNhap" required minLength={3} pattern="[A-Za-z0-9_.]+" title="Chỉ gồm chữ không dấu, số, dấu chấm hoặc gạch dưới" placeholder="Ví dụ: hoangnam123" className="w-full px-3 py-2 bg-white border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition" />
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-600 block">Địa chỉ Email <span className="text-rose-500">*</span></label>
-                <input type="email" name="Email" required placeholder="nam.hoang@example.com" className="w-full px-3 py-2 bg-white border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition" />
+                <label htmlFor="create-Email" className="text-xs font-semibold text-slate-600 block">Địa chỉ Email <span className="text-rose-500" aria-hidden="true">*</span></label>
+                <input id="create-Email" type="email" name="Email" required placeholder="nam.hoang@example.com" className="w-full px-3 py-2 bg-white border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition" />
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-600 block">Số điện thoại <span className="text-rose-500">*</span></label>
-                <input type="tel" name="SoDienThoai" required placeholder="0912 345 890" className="w-full px-3 py-2 bg-white border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition" />
+                <label htmlFor="create-SoDienThoai" className="text-xs font-semibold text-slate-600 block">Số điện thoại <span className="text-rose-500" aria-hidden="true">*</span></label>
+                <input id="create-SoDienThoai" type="tel" name="SoDienThoai" required minLength={8} maxLength={20} placeholder="0912 345 890" className="w-full px-3 py-2 bg-white border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition" />
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-600 block">Vai trò hệ thống <span className="text-rose-500">*</span></label>
-                <select name="MaVaiTro" required defaultValue="" className="w-full px-3 py-2 bg-white border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition">
-                  <option value="" disabled>Chọn vai trò</option>
-                  <option value="1">Khách hàng du lịch (Traveler)</option>
-                  <option value="2">Chủ khách sạn (Partner)</option>
-                  <option value="3">Quản trị viên (SuperAdmin)</option>
+                <label htmlFor="create-MaVaiTro" className="text-xs font-semibold text-slate-600 block">Vai trò hệ thống <span className="text-rose-500" aria-hidden="true">*</span></label>
+                <select id="create-MaVaiTro" name="MaVaiTro" required defaultValue="" disabled={roles.isLoading || roles.isError} className="w-full px-3 py-2 bg-white border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition">
+                  <option value="" disabled>{roles.isLoading ? 'Đang tải vai trò...' : 'Chọn vai trò'}</option>
+                  {roles.data?.map((role) => (
+                    <option key={role.MaVaiTro} value={role.MaVaiTro}>{role.TenVaiTro}</option>
+                  ))}
                 </select>
+                {roles.isError && <p role="alert" className="text-[11px] text-rose-600">Không tải được danh sách vai trò.</p>}
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-600 block">Mật khẩu ban đầu <span className="text-rose-500">*</span></label>
-              <input type="password" name="MatKhau" required placeholder="••••••••••••" className="w-full px-3 py-2 bg-white border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition" />
-              <span className="text-[10px] text-slate-400 mt-1 block">Tối thiểu 6 ký tự.</span>
-            </div>
-
-            <div className="p-3 bg-slate-50 border border-border rounded-xl flex items-start gap-2.5 mt-2">
-              <input type="checkbox" id="sendInviteMail" defaultChecked className="mt-0.5 rounded border-slate-300 text-primary focus:ring-primary" />
-              <label htmlFor="sendInviteMail" className="text-[11px] text-slate-600 leading-tight">
-                Gửi email thông báo kích hoạt tài khoản kèm hướng dẫn đăng nhập tự động đến hòm thư người dùng.
-              </label>
+              <label htmlFor="create-MatKhau" className="text-xs font-semibold text-slate-600 block">Mật khẩu ban đầu <span className="text-rose-500" aria-hidden="true">*</span></label>
+              <input id="create-MatKhau" type="password" name="MatKhau" required minLength={8} maxLength={128} aria-describedby="create-MatKhau-hint" placeholder="••••••••••••" className="w-full px-3 py-2 bg-white border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition" />
+              <span id="create-MatKhau-hint" className="text-[10px] text-slate-400 mt-1 block">Tối thiểu 8 ký tự. Hãy gửi mật khẩu này cho người dùng qua kênh riêng — hệ thống không tự gửi email.</span>
             </div>
 
             <div className="flex justify-end gap-2 pt-4 mt-4 border-t border-border">

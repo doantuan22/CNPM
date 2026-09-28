@@ -1,5 +1,7 @@
+import { useEffect, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useOwnerBookings, useMyHotel } from '../features/owner/hooks';
+import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { formatCurrencyVND } from '../lib/utils';
 
 
@@ -53,21 +55,38 @@ export default function OwnerBookingsPage() {
   
   const hotelQuery = useMyHotel(hotelId);
   const query = useOwnerBookings(hotelId, filters);
-  
-  const setFilter = (key: string, value: string) => { 
-    const next = new URLSearchParams(params); 
-    if (value) next.set(key, value); 
-    else next.delete(key); 
-    next.delete('page'); 
-    setParams(next); 
+
+  // Filters live in the URL, but replace the entry so typing doesn't flood browser history.
+  const setFilter = (key: string, value: string) => {
+    const next = new URLSearchParams(params);
+    if (value) next.set(key, value);
+    else next.delete(key);
+    next.delete('page');
+    setParams(next, { replace: true });
   };
+  const setPage = (page: number) => {
+    const next = new URLSearchParams(params);
+    if (page > 1) next.set('page', String(page));
+    else next.delete('page');
+    setParams(next);
+  };
+
+  // Local input + debounce: one request per pause instead of one per keystroke.
+  const [searchInput, setSearchInput] = useState(filters.search ?? '');
+  const debouncedSearch = useDebouncedValue(searchInput.trim());
+  useEffect(() => {
+    if (debouncedSearch !== (params.get('search') ?? '')) setFilter('search', debouncedSearch);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only react to the settled input
+  }, [debouncedSearch]);
 
   const resetFilters = () => {
-    setParams(new URLSearchParams());
+    setSearchInput('');
+    setParams(new URLSearchParams(), { replace: true });
   };
 
-  if (hotelQuery.isLoading || query.isLoading) {
-    return <div className="flex justify-center py-16"><div className="spinner"></div></div>;
+  // Only the first load replaces the page; later filter changes keep the previous rows visible.
+  if (hotelQuery.isLoading || (query.isLoading && !query.data)) {
+    return <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>;
   }
 
   if (hotelQuery.isError || query.isError) {
@@ -117,15 +136,15 @@ export default function OwnerBookingsPage() {
       <div className="bg-white p-5 rounded-[16px] border border-border shadow-sm space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-3.5">
           <div className="lg:col-span-4 relative">
-            <label className="block text-xs font-semibold text-slate-600 mb-1.5">Tìm kiếm booking</label>
+            <label htmlFor="owner-bookings-field-1" className="block text-xs font-semibold text-slate-600 mb-1.5">Tìm kiếm booking</label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                 <i className="ph ph-magnifying-glass"></i>
               </div>
-              <input 
+              <input id="owner-bookings-field-1" 
                 type="text" 
-                value={filters.search ?? ''} 
-                onChange={(e) => setFilter('search', e.target.value)} 
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
                 placeholder="Mã booking, tên khách..." 
                 className="w-full pl-10 pr-4 py-2.5 bg-slate-50/60 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
               />
@@ -133,8 +152,8 @@ export default function OwnerBookingsPage() {
           </div>
 
           <div className="lg:col-span-3">
-            <label className="block text-xs font-semibold text-slate-600 mb-1.5">Trạng thái đặt phòng</label>
-            <select 
+            <label htmlFor="owner-bookings-field-2" className="block text-xs font-semibold text-slate-600 mb-1.5">Trạng thái đặt phòng</label>
+            <select id="owner-bookings-field-2" 
               value={filters.trangThai ?? ''} 
               onChange={(e) => setFilter('trangThai', e.target.value)} 
               className="w-full px-3 py-2.5 bg-slate-50/60 border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition font-medium"
@@ -147,11 +166,11 @@ export default function OwnerBookingsPage() {
           </div>
 
           <div className="lg:col-span-4">
-            <label className="block text-xs font-semibold text-slate-600 mb-1.5">Khoảng ngày Check-in</label>
-            <div className="flex items-center gap-2">
-              <input type="date" value={filters.from ?? ''} onChange={(e) => setFilter('from', e.target.value)} className="flex-1 w-full px-2.5 py-2.5 bg-slate-50/60 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition" />
+            <p id="owner-bookings-range-label" className="block text-xs font-semibold text-slate-600 mb-1.5">Khoảng ngày Check-in</p>
+            <div role="group" aria-labelledby="owner-bookings-range-label" className="flex items-center gap-2">
+              <input type="date" aria-label="Nhận phòng từ ngày" value={filters.from ?? ''} onChange={(e) => setFilter('from', e.target.value)} className="flex-1 w-full px-2.5 py-2.5 bg-slate-50/60 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition" />
               <span className="text-slate-400 text-xs font-medium">→</span>
-              <input type="date" value={filters.to ?? ''} onChange={(e) => setFilter('to', e.target.value)} className="flex-1 w-full px-2.5 py-2.5 bg-slate-50/60 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition" />
+              <input type="date" aria-label="Nhận phòng đến ngày" min={filters.from} value={filters.to ?? ''} onChange={(e) => setFilter('to', e.target.value)} className="flex-1 w-full px-2.5 py-2.5 bg-slate-50/60 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition" />
             </div>
           </div>
 
@@ -194,7 +213,7 @@ export default function OwnerBookingsPage() {
                     <td className="py-4 px-4 font-mono font-bold text-primary">{b.MaXacNhanDatPhong}</td>
                     <td className="py-4 px-4">
                       <div className="font-bold text-slate-900">{b.KhachHang.HoTen}</div>
-                      <div className="text-xs text-slate-500">{(b.KhachHang as any).SoDienThoai}</div>
+                      <div className="text-xs text-slate-500">{b.KhachHang.SoDienThoai}</div>
                     </td>
                     <td className="py-4 px-4">
                       <div className="font-medium text-slate-800">{new Date(b.NgayNhanPhong).toLocaleDateString('vi-VN')}</div>
@@ -223,6 +242,13 @@ export default function OwnerBookingsPage() {
         )}
         <div className="px-6 py-4 border-t border-slate-200 bg-slate-50/50 flex items-center justify-between text-xs text-slate-500">
           <span>Tổng cộng {result.pagination.total} kết quả</span>
+          {result.pagination.totalPages > 1 && (
+            <nav aria-label="Phân trang đặt phòng" className="flex items-center gap-2">
+              <button type="button" onClick={() => setPage(filters.page - 1)} disabled={filters.page <= 1} className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white font-semibold text-slate-600 hover:bg-slate-100 disabled:opacity-40 transition">Trước</button>
+              <span aria-current="page">Trang {result.pagination.page}/{result.pagination.totalPages}</span>
+              <button type="button" onClick={() => setPage(filters.page + 1)} disabled={filters.page >= result.pagination.totalPages} className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white font-semibold text-slate-600 hover:bg-slate-100 disabled:opacity-40 transition">Sau</button>
+            </nav>
+          )}
         </div>
       </div>
     </div>

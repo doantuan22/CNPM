@@ -54,19 +54,35 @@ export default function RegisterPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div 
                 className="bg-white border-2 border-primary rounded-2xl p-6 shadow-md shadow-primary/10 flex flex-col items-center text-center transition-all cursor-pointer hover:shadow-lg"
+                role="button"
+                tabIndex={0}
                 onClick={() => setIntent('customer')}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    setIntent('customer');
+                  }
+                }}
               >
                 <div className="w-16 h-16 rounded-2xl bg-blue-50 text-primary flex items-center justify-center text-3xl mb-4">
                   <i className="ph-fill ph-suitcase-rolling"></i>
                 </div>
                 <h2 className="text-lg font-bold text-ink">Khách hàng</h2>
                 <p className="text-sm mt-2 mb-6 text-ink-muted flex-1">Đặt phòng, thanh toán, quản lý chuyến đi, đánh giá khách sạn và gửi yêu cầu hỗ trợ.</p>
-                <button type="button" className="w-full bg-primary text-white font-bold py-3 px-4 rounded-xl">Đăng ký khách hàng</button>
+                <span className="w-full bg-primary text-white font-bold py-3 px-4 rounded-xl">Đăng ký khách hàng</span>
               </div>
 
               <div 
                 className="bg-white border border-border rounded-2xl p-6 shadow-sm hover:border-blue-300 hover:shadow-md flex flex-col items-center text-center transition-all cursor-pointer"
+                role="button"
+                tabIndex={0}
                 onClick={() => setIntent('partner')}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    setIntent('partner');
+                  }
+                }}
               >
                 <div className="w-16 h-16 rounded-2xl bg-slate-100 text-ink flex items-center justify-center text-3xl mb-4">
                   <i className="ph-fill ph-buildings"></i>
@@ -115,14 +131,14 @@ export default function RegisterPage() {
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div className="space-y-1.5">
-                    <label className="block text-xs font-semibold text-ink uppercase tracking-wide">
+                    <label htmlFor="register-HoTen" className="block text-xs font-semibold text-ink uppercase tracking-wide">
                       Họ tên<span className="text-rose-500">*</span>
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                         <i className="ph ph-user text-lg"></i>
                       </div>
-                      <input 
+                      <input id="register-HoTen" 
                         type="text" 
                         placeholder="Vd: Nguyễn Văn A"
                         className={cn("w-full pl-10 pr-3.5 py-2.5 rounded-xl border bg-white text-ink text-sm placeholder:text-slate-400 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all", errors.HoTen ? "border-rose-500 bg-rose-50/20" : "border-border")}
@@ -133,8 +149,8 @@ export default function RegisterPage() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="block text-xs font-semibold text-ink uppercase tracking-wide">Ngày sinh</label>
-                    <input 
+                    <label htmlFor="register-field-1" className="block text-xs font-semibold text-ink uppercase tracking-wide">Ngày sinh</label>
+                    <input id="register-field-1" 
                       type="date" 
                       className={cn("w-full px-3.5 py-2.5 rounded-xl border bg-white text-ink text-sm focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all", errors.NgaySinh ? "border-rose-500 bg-rose-50/20" : "border-border")}
                       {...register('NgaySinh')}
@@ -142,14 +158,14 @@ export default function RegisterPage() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="block text-xs font-semibold text-ink uppercase tracking-wide">
+                    <label htmlFor="register-TenDangNhap" className="block text-xs font-semibold text-ink uppercase tracking-wide">
                       Tên đăng nhập<span className="text-rose-500">*</span>
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                         <i className="ph ph-identification-card text-lg"></i>
                       </div>
-                      <input 
+                      <input id="register-TenDangNhap" 
                         type="text" 
                         placeholder="Vd: nguyenvana123"
                         className={cn("w-full pl-10 pr-3.5 py-2.5 rounded-xl border bg-white text-ink text-sm placeholder:text-slate-400 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all", errors.TenDangNhap ? "border-rose-500 bg-rose-50/20" : "border-border")}
@@ -160,8 +176,8 @@ export default function RegisterPage() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="block text-xs font-semibold text-ink uppercase tracking-wide">Giới tính</label>
-                    <div className="flex items-center gap-5 h-[42px]">
+                    <p id="register-gender-label" className="block text-xs font-semibold text-ink uppercase tracking-wide">Giới tính</p>
+                    <div role="radiogroup" aria-labelledby="register-gender-label" className="flex items-center gap-5 h-[42px]">
                       <label className="flex items-center gap-2 cursor-pointer">
                         <input type="radio" value="Nam" {...register('GioiTinh')} className="w-4 h-4 text-primary border-border focus:ring-primary accent-primary" />
                         <span className="text-sm font-medium text-ink">Nam</span>
@@ -178,14 +194,14 @@ export default function RegisterPage() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="block text-xs font-semibold text-ink uppercase tracking-wide">
+                    <label htmlFor="register-Email" className="block text-xs font-semibold text-ink uppercase tracking-wide">
                       Email<span className="text-rose-500">*</span>
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                         <i className="ph ph-envelope-simple text-lg"></i>
                       </div>
-                      <input 
+                      <input id="register-Email" 
                         type="email" 
                         placeholder="nguyenvana@gmail.com"
                         className={cn("w-full pl-10 pr-3.5 py-2.5 rounded-xl border bg-white text-ink text-sm placeholder:text-slate-400 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all", errors.Email ? "border-rose-500 bg-rose-50/20" : "border-border")}
@@ -196,14 +212,14 @@ export default function RegisterPage() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="block text-xs font-semibold text-ink uppercase tracking-wide">
+                    <label htmlFor="register-SoDienThoai" className="block text-xs font-semibold text-ink uppercase tracking-wide">
                       Số điện thoại<span className="text-rose-500">*</span>
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                         <i className="ph ph-phone text-lg"></i>
                       </div>
-                      <input 
+                      <input id="register-SoDienThoai" 
                         type="tel" 
                         placeholder="0901234567"
                         className={cn("w-full pl-10 pr-3.5 py-2.5 rounded-xl border bg-white text-ink text-sm placeholder:text-slate-400 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all", errors.SoDienThoai ? "border-rose-500 bg-rose-50/20" : "border-border")}
@@ -214,14 +230,14 @@ export default function RegisterPage() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="block text-xs font-semibold text-ink uppercase tracking-wide">
+                    <label htmlFor="register-MatKhau" className="block text-xs font-semibold text-ink uppercase tracking-wide">
                       Mật khẩu<span className="text-rose-500">*</span>
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                         <i className="ph ph-lock-simple text-lg"></i>
                       </div>
-                      <input 
+                      <input id="register-MatKhau" 
                         type={showPwd ? "text" : "password"} 
                         placeholder="Tối thiểu 8 ký tự"
                         className={cn("w-full pl-10 pr-10 py-2.5 rounded-xl border bg-white text-ink text-sm placeholder:text-slate-400 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all", errors.MatKhau ? "border-rose-500 bg-rose-50/20" : "border-border")}
@@ -239,14 +255,14 @@ export default function RegisterPage() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="block text-xs font-semibold text-ink uppercase tracking-wide">
+                    <label htmlFor="register-confirmMatKhau" className="block text-xs font-semibold text-ink uppercase tracking-wide">
                       Xác nhận mật khẩu<span className="text-rose-500">*</span>
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                         <i className="ph ph-lock-key text-lg"></i>
                       </div>
-                      <input 
+                      <input id="register-confirmMatKhau" 
                         type={showConfirmPwd ? "text" : "password"} 
                         placeholder="Nhập lại mật khẩu"
                         className={cn("w-full pl-10 pr-10 py-2.5 rounded-xl border bg-white text-ink text-sm placeholder:text-slate-400 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all", errors.confirmMatKhau ? "border-rose-500 bg-rose-50/20" : "border-border")}
@@ -267,7 +283,7 @@ export default function RegisterPage() {
                 <label className="flex items-start gap-2 cursor-pointer mt-4 group">
                   <input type="checkbox" required className="mt-1 w-4 h-4 rounded text-primary border-border focus:ring-primary accent-primary flex-shrink-0" />
                   <span className="text-sm text-ink-muted group-hover:text-ink transition-colors">
-                    Tôi đồng ý với <Link to="#" className="font-semibold text-primary hover:underline">Điều khoản sử dụng</Link> và <Link to="#" className="font-semibold text-primary hover:underline">Chính sách bảo mật</Link> của Egode.
+                    Tôi đồng ý với Điều khoản sử dụng và Chính sách bảo mật của Egode.
                   </span>
                 </label>
 
@@ -277,7 +293,7 @@ export default function RegisterPage() {
                   className="w-full py-3 px-4 bg-primary hover:bg-primary-700 active:bg-primary-800 text-white font-semibold rounded-xl shadow-md transition-all duration-200 mt-6 disabled:opacity-70 flex justify-center items-center gap-2"
                 >
                   {isSubmitting || registerMutation.isPending ? (
-                     <>Đang xử lý... <div className="spinner w-4 h-4 border-2 border-white/20 border-t-white"></div></>
+                     <>Đang xử lý... <div className="spinner w-4 h-4 border-2 border-white/20 border-t-white" aria-hidden="true"></div></>
                   ) : (
                     'Đăng ký tài khoản'
                   )}

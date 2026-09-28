@@ -34,7 +34,7 @@ export default function PartnerApplyPage() {
   }, [existing?.TrangThaiDuyet, queryClient]);
 
   if (applicationQuery.isLoading) {
-    return <div className="flex justify-center py-16"><div className="spinner"></div></div>;
+    return <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>;
   }
   const displayedApplication = applyMutation.data ?? existing;
   const hasActiveApplication = displayedApplication && displayedApplication.TrangThaiDuyet !== 'Từ chối';
@@ -95,8 +95,8 @@ export default function PartnerApplyPage() {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
                   <div>
-                    <label className="form-label">Số CCCD / CMND <span className="text-red-500">*</span></label>
-                    <input 
+                    <label htmlFor="partner-apply-field-1" className="form-label">Số CCCD / CMND <span className="text-red-500">*</span></label>
+                    <input id="partner-apply-field-1" 
                       type="text" 
                       placeholder="Nhập số CCCD" 
                       className={cn("input", errors.SoCCCD && "border-red-500")}
@@ -106,8 +106,8 @@ export default function PartnerApplyPage() {
                   </div>
 
                   <div>
-                    <label className="form-label">Số giấy phép kinh doanh <span className="text-red-500">*</span></label>
-                    <input 
+                    <label htmlFor="partner-apply-field-2" className="form-label">Số giấy phép kinh doanh <span className="text-red-500">*</span></label>
+                    <input id="partner-apply-field-2" 
                       type="text" 
                       placeholder="Nhập số GPKD" 
                       className={cn("input", errors.SoGiayPhepKinhDoanh && "border-red-500")}
@@ -117,8 +117,8 @@ export default function PartnerApplyPage() {
                   </div>
 
                   <div>
-                    <label className="form-label">Mã số thuế <span className="text-red-500">*</span></label>
-                    <input 
+                    <label htmlFor="partner-apply-field-3" className="form-label">Mã số thuế <span className="text-red-500">*</span></label>
+                    <input id="partner-apply-field-3" 
                       type="text" 
                       placeholder="Nhập mã số thuế" 
                       className={cn("input", errors.MaSoThue && "border-red-500")}
@@ -128,8 +128,8 @@ export default function PartnerApplyPage() {
                   </div>
                   
                   <div>
-                    <label className="form-label">Đường dẫn tệp giấy tờ <span className="text-red-500">*</span></label>
-                    <input 
+                    <label htmlFor="partner-apply-field-4" className="form-label">Đường dẫn tệp giấy tờ <span className="text-red-500">*</span></label>
+                    <input id="partner-apply-field-4" 
                       type="text" 
                       placeholder="https://..." 
                       className={cn("input", errors.TepGiayTo && "border-red-500")}

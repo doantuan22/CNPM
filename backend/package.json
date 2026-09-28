@@ -12,10 +12,12 @@
     "start": "node dist/server.js",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
+    "test": "vitest run --no-file-parallelism",
     "prisma:generate": "prisma generate",
     "prisma:validate": "prisma validate",
-    "seed:discovery": "tsx prisma/seed-discovery.ts"
+    "seed:discovery": "tsx prisma/seed-discovery.ts",
+    "seed:demo:images": "tsx prisma/demo-seed/upload-images.ts",
+    "seed:demo:sql": "tsx prisma/demo-seed/build-sql.ts"
   },
   "keywords": [
     "hotel-booking",

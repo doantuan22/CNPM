@@ -9,7 +9,7 @@ export default function OwnerBookingDetailPage() {
   const booking = useOwnerBooking(hotelId, Number(bookingId));
   
   if (booking.isLoading) {
-    return <div className="flex justify-center py-16"><div className="spinner"></div></div>;
+    return <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>;
   }
   
   if (booking.isError || !booking.data) {
@@ -46,13 +46,13 @@ export default function OwnerBookingDetailPage() {
               <p className="text-xs text-slate-500 mt-0.5">Ngày tạo: {new Date(b.NgayTao).toLocaleString('vi-VN')}</p>
             </div>
           </div>
-          <button className="px-4 py-2 bg-white border border-border rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-50 shadow-sm flex items-center gap-2">
+          <button type="button" onClick={() => window.print()} className="px-4 py-2 bg-white border border-border rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-50 shadow-sm flex items-center gap-2 print:hidden">
             <i className="ph ph-printer"></i> In phiếu
           </button>
         </div>
 
         {/* Auto Confirm Notification Banner */}
-        {b.TrangThai !== 'Đã hủy' && (
+        {(b.TrangThai === 'Đã xác nhận' || b.TrangThai === 'Hoàn tất') && (
           <div className="bg-blue-50/80 px-6 py-3 border-b border-blue-100 flex items-start gap-2.5">
             <i className="ph-fill ph-info text-primary mt-0.5"></i>
             <p className="text-xs text-blue-900 leading-relaxed font-medium">
@@ -76,7 +76,7 @@ export default function OwnerBookingDetailPage() {
               </div>
               <div>
                 <span className="text-xs text-slate-400 block">Số điện thoại liên hệ:</span>
-                <span className="font-semibold text-slate-900">{(b.KhachHang as any).SoDienThoai}</span>
+                <a href={`tel:${b.KhachHang.SoDienThoai}`} className="font-semibold text-slate-900 hover:text-primary">{b.KhachHang.SoDienThoai}</a>
               </div>
             </div>
           </div>
@@ -105,24 +105,24 @@ export default function OwnerBookingDetailPage() {
               <div className="p-3 border border-border rounded-xl bg-slate-50/50">
                 <div className="text-[11px] uppercase font-bold text-slate-400">Nhận phòng (Check-in)</div>
                 <div className="font-bold text-slate-900 text-sm mt-0.5">{new Date(b.NgayNhanPhong).toLocaleDateString('vi-VN')}</div>
-                <div className="text-[11px] text-slate-500">Từ 14:00</div>
+                <div className="text-[11px] text-slate-500">Từ {b.GioNhanPhong.slice(11, 16)}</div>
               </div>
               <div className="p-3 border border-border rounded-xl bg-slate-50/50">
                 <div className="text-[11px] uppercase font-bold text-slate-400">Trả phòng (Check-out)</div>
                 <div className="font-bold text-slate-900 text-sm mt-0.5">{new Date(b.NgayTraPhong).toLocaleDateString('vi-VN')}</div>
-                <div className="text-[11px] text-slate-500">Trước 12:00</div>
+                <div className="text-[11px] text-slate-500">Trước {b.GioTraPhong.slice(11, 16)}</div>
               </div>
             </div>
           </div>
 
           {/* 3. Ghi chú (nếu có) */}
-          {(b as any).GhiChu && (
+          {b.GhiChu && (
             <div className="bg-white border border-border rounded-2xl p-4.5 shadow-sm space-y-2">
               <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
                 <i className="ph-fill ph-warning-circle text-amber-500"></i> Yêu cầu đặc biệt từ khách
               </h4>
               <div className="p-3 bg-amber-50/50 border border-amber-200/60 rounded-xl text-xs text-amber-900 leading-relaxed font-medium">
-                "{(b as any).GhiChu}"
+                "{b.GhiChu}"
               </div>
             </div>
           )}
@@ -154,7 +154,7 @@ export default function OwnerBookingDetailPage() {
                 </div>
                 <div className="flex justify-between">
                   <span>Trạng thái giao dịch:</span>
-                  <span className={`font-semibold ${p.TrangThai === 'Hoàn tất' ? 'text-emerald-600' : 'text-amber-600'}`}>
+                  <span className={`font-semibold ${p.TrangThai === 'Thành công' ? 'text-emerald-600' : p.TrangThai === 'Thất bại' ? 'text-rose-600' : 'text-amber-600'}`}>
                     {p.TrangThai}
                   </span>
                 </div>

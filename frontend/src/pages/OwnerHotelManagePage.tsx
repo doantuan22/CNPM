@@ -70,7 +70,7 @@ export default function OwnerHotelManagePage() {
   } = useForm<RoomTypeFormSchemaValues>({ resolver: zodResolver(roomTypeFormSchema) });
 
   if (hotelQuery.isLoading) {
-    return <div className="flex justify-center py-16"><div className="spinner"></div></div>;
+    return <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>;
   }
 
   if (hotelQuery.isError || !hotelQuery.data) {
@@ -173,15 +173,15 @@ export default function OwnerHotelManagePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div className="md:col-span-2">
-              <label className="form-label">Tên cơ sở khách sạn / Resort <span className="text-red-500">*</span></label>
-              <input type="text" className={cn("input", errors.TenKhachSan && "border-red-500")} {...register('TenKhachSan')} />
+              <label htmlFor="owner-hotel-manage-TenKhachSan" className="form-label">Tên cơ sở khách sạn / Resort <span className="text-red-500">*</span></label>
+              <input id="owner-hotel-manage-TenKhachSan" type="text" className={cn("input", errors.TenKhachSan && "border-red-500")} {...register('TenKhachSan')} />
               {errors.TenKhachSan && <p className="text-xs text-red-500 mt-1">{errors.TenKhachSan.message}</p>}
             </div>
 
             <div>
-              <label className="form-label">Xếp hạng sao tiêu chuẩn <span className="text-red-500">*</span></label>
+              <label htmlFor="owner-hotel-manage-HangSao" className="form-label">Xếp hạng sao tiêu chuẩn <span className="text-red-500">*</span></label>
               <div className="relative">
-                <select className={cn("select", errors.HangSao && "border-red-500")} {...register('HangSao', { valueAsNumber: true })}>
+                <select id="owner-hotel-manage-HangSao" className={cn("select", errors.HangSao && "border-red-500")} {...register('HangSao', { valueAsNumber: true })}>
                   <option value="">-- Chọn xếp hạng sao --</option>
                   {[1, 2, 3, 4, 5].map(s => <option key={s} value={s}>{s} Sao</option>)}
                 </select>
@@ -190,9 +190,9 @@ export default function OwnerHotelManagePage() {
             </div>
 
             <div>
-              <label className="form-label">Tỉnh / Thành phố <span className="text-red-500">*</span></label>
+              <label htmlFor="owner-hotel-manage-MaDiaPhuong" className="form-label">Tỉnh / Thành phố <span className="text-red-500">*</span></label>
               <div className="relative">
-                <select className={cn("select", errors.MaDiaPhuong && "border-red-500")} {...register('MaDiaPhuong', { valueAsNumber: true })}>
+                <select id="owner-hotel-manage-MaDiaPhuong" className={cn("select", errors.MaDiaPhuong && "border-red-500")} {...register('MaDiaPhuong', { valueAsNumber: true })}>
                   <option value="">-- Chọn tỉnh thành --</option>
                   {locationsQuery.data?.map(loc => (
                     <option key={loc.MaDiaPhuong} value={loc.MaDiaPhuong}>{loc.TenThanhPho}</option>
@@ -203,8 +203,8 @@ export default function OwnerHotelManagePage() {
             </div>
 
             <div className="md:col-span-2">
-              <label className="form-label">Địa chỉ chi tiết <span className="text-red-500">*</span></label>
-              <input type="text" className={cn("input", errors.DiaChiChiTiet && "border-red-500")} {...register('DiaChiChiTiet')} />
+              <label htmlFor="owner-hotel-manage-DiaChiChiTiet" className="form-label">Địa chỉ chi tiết <span className="text-red-500">*</span></label>
+              <input id="owner-hotel-manage-DiaChiChiTiet" type="text" className={cn("input", errors.DiaChiChiTiet && "border-red-500")} {...register('DiaChiChiTiet')} />
               {errors.DiaChiChiTiet && <p className="text-xs text-red-500 mt-1">{errors.DiaChiChiTiet.message}</p>}
             </div>
           </div>
@@ -217,13 +217,13 @@ export default function OwnerHotelManagePage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
-              <label className="form-label">Giờ nhận phòng tiêu chuẩn (Check-in) <span className="text-red-500">*</span></label>
-              <input type="time" className={cn("input", errors.GioNhanPhong && "border-red-500")} {...register('GioNhanPhong')} />
+              <label htmlFor="owner-hotel-manage-GioNhanPhong" className="form-label">Giờ nhận phòng tiêu chuẩn (Check-in) <span className="text-red-500">*</span></label>
+              <input id="owner-hotel-manage-GioNhanPhong" type="time" className={cn("input", errors.GioNhanPhong && "border-red-500")} {...register('GioNhanPhong')} />
               {errors.GioNhanPhong && <p className="text-xs text-red-500 mt-1">{errors.GioNhanPhong.message}</p>}
             </div>
             <div>
-              <label className="form-label">Giờ trả phòng tiêu chuẩn (Check-out) <span className="text-red-500">*</span></label>
-              <input type="time" className={cn("input", errors.GioTraPhong && "border-red-500")} {...register('GioTraPhong')} />
+              <label htmlFor="owner-hotel-manage-GioTraPhong" className="form-label">Giờ trả phòng tiêu chuẩn (Check-out) <span className="text-red-500">*</span></label>
+              <input id="owner-hotel-manage-GioTraPhong" type="time" className={cn("input", errors.GioTraPhong && "border-red-500")} {...register('GioTraPhong')} />
               {errors.GioTraPhong && <p className="text-xs text-red-500 mt-1">{errors.GioTraPhong.message}</p>}
             </div>
           </div>
@@ -347,24 +347,24 @@ export default function OwnerHotelManagePage() {
             <h3 className="font-bold text-heading text-[14px]">Thêm loại phòng mới</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="form-label text-[12px]">Tên loại phòng</label>
-                <input type="text" className={cn("input", roomTypeErrors.TenLoaiPhong && "border-red-500")} {...registerRoomType('TenLoaiPhong')} />
+                <label htmlFor="owner-hotel-manage-TenLoaiPhong" className="form-label text-[12px]">Tên loại phòng</label>
+                <input id="owner-hotel-manage-TenLoaiPhong" type="text" className={cn("input", roomTypeErrors.TenLoaiPhong && "border-red-500")} {...registerRoomType('TenLoaiPhong')} />
               </div>
               <div>
-                <label className="form-label text-[12px]">Loại giường</label>
-                <input type="text" className={cn("input")} {...registerRoomType('LoaiGiuong')} />
+                <label htmlFor="owner-hotel-manage-LoaiGiuong" className="form-label text-[12px]">Loại giường</label>
+                <input id="owner-hotel-manage-LoaiGiuong" type="text" className={cn("input")} {...registerRoomType('LoaiGiuong')} />
               </div>
               <div>
-                <label className="form-label text-[12px]">Số giường</label>
-                <input type="number" min="1" className={cn("input")} {...registerRoomType('SoGiuong', { valueAsNumber: true })} />
+                <label htmlFor="owner-hotel-manage-SoGiuong" className="form-label text-[12px]">Số giường</label>
+                <input id="owner-hotel-manage-SoGiuong" type="number" min="1" className={cn("input")} {...registerRoomType('SoGiuong', { valueAsNumber: true })} />
               </div>
               <div>
-                <label className="form-label text-[12px]">Sức chứa (Khách)</label>
-                <input type="number" min="1" className={cn("input")} {...registerRoomType('SucChua', { valueAsNumber: true })} />
+                <label htmlFor="owner-hotel-manage-SucChua" className="form-label text-[12px]">Sức chứa (Khách)</label>
+                <input id="owner-hotel-manage-SucChua" type="number" min="1" className={cn("input")} {...registerRoomType('SucChua', { valueAsNumber: true })} />
               </div>
               <div>
-                <label className="form-label text-[12px]">Diện tích (m²)</label>
-                <input type="number" min="1" step="0.1" className={cn("input")} {...registerRoomType('DienTich', { valueAsNumber: true })} />
+                <label htmlFor="owner-hotel-manage-DienTich" className="form-label text-[12px]">Diện tích (m²)</label>
+                <input id="owner-hotel-manage-DienTich" type="number" min="1" step="0.1" className={cn("input")} {...registerRoomType('DienTich', { valueAsNumber: true })} />
               </div>
             </div>
             <div className="flex gap-2">
@@ -376,7 +376,7 @@ export default function OwnerHotelManagePage() {
 
         <div className="flex flex-col gap-3">
           {roomTypesQuery.isLoading ? (
-            <div className="flex justify-center py-6"><div className="spinner"></div></div>
+            <div className="flex justify-center py-6" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>
           ) : roomTypesQuery.data && roomTypesQuery.data.length === 0 ? (
             <p className="text-sm text-slate-500">Chưa có loại phòng nào.</p>
           ) : (

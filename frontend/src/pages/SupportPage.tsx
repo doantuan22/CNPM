@@ -5,7 +5,7 @@ import { useCreateSupportRequest, useMySupportRequests } from '../features/suppo
 import { cn } from '../lib/utils';
 import { ApiError } from '../services/apiClient';
 
-const SUPPORT_TYPES = ['Hỗ trợ', 'Khiếu nại', 'Yêu cầu khác'];
+const SUPPORT_TYPES = ['Hỗ trợ', 'Khiếu nại'];
 
 function getBadgeClass(status: string) {
   switch (status) {
@@ -50,7 +50,10 @@ export default function SupportPage() {
   const scrollToForm = () => {
     setShowForm(true);
     setTimeout(() => {
-      formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const form = formRef.current;
+      if (typeof form?.scrollIntoView === 'function') {
+        form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     }, 100);
   };
 
@@ -60,7 +63,7 @@ export default function SupportPage() {
       <div className="page-header">
         <div>
           <h1>Hỗ trợ & Khiếu nại</h1>
-          <p className="page-header__desc">Trung tâm tiếp nhận thắc mắc và giải quyết khiếu nại dịch vụ khách hàng 24/7 của Egode.</p>
+          <p className="page-header__desc">Gửi thắc mắc hoặc khiếu nại về đặt phòng và theo dõi tiến độ xử lý của quản trị viên.</p>
         </div>
         <button type="button" className="btn btn-primary" onClick={scrollToForm}>
           <i className="ph ph-plus"></i> Tạo yêu cầu mới
@@ -71,7 +74,7 @@ export default function SupportPage() {
         <div className="card card-body animate-in slide-in-from-top-4 fade-in duration-300" ref={formRef}>
           <div className="flex justify-between items-center mb-5 pb-3.5 border-b border-border flex-wrap gap-2">
             <h2 className="text-[17px] font-bold text-heading">Gửi yêu cầu hoặc phản ánh dịch vụ</h2>
-            <span className="text-[13px] text-muted">Thời gian phản hồi thông thường: dưới 2 giờ</span>
+            <span className="text-[13px] text-muted">Trạng thái xử lý được cập nhật ngay trong danh sách yêu cầu</span>
           </div>
 
           <form onSubmit={submit} className="flex flex-col gap-5">
@@ -83,15 +86,15 @@ export default function SupportPage() {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="form-group">
-                <label className="form-label">Loại yêu cầu <span className="required">*</span></label>
-                <select className="select" required value={loaiYeuCau} onChange={e => setLoaiYeuCau(e.target.value)}>
+                <label htmlFor="support-field-1" className="form-label">Loại yêu cầu <span className="required">*</span></label>
+                <select id="support-field-1" className="select" required value={loaiYeuCau} onChange={e => setLoaiYeuCau(e.target.value)}>
                   {SUPPORT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
               </div>
 
               <div className="form-group">
-                <label className="form-label">Đơn đặt phòng liên quan <span className="form-hint inline ml-1">(Không bắt buộc)</span></label>
-                <select className="select" value={maDatPhong} onChange={e => setMaDatPhong(e.target.value)}>
+                <label htmlFor="support-field-2" className="form-label">Đơn đặt phòng liên quan <span className="form-hint inline ml-1">(Không bắt buộc)</span></label>
+                <select id="support-field-2" className="select" value={maDatPhong} onChange={e => setMaDatPhong(e.target.value)}>
                   <option value="">-- Không liên quan hoặc chọn mã đơn --</option>
                   {bookingsQuery.data?.map(b => (
                     <option key={b.MaDatPhong} value={b.MaDatPhong}>#{b.MaXacNhanDatPhong} - {b.TenKhachSan}</option>
@@ -100,8 +103,8 @@ export default function SupportPage() {
               </div>
 
               <div className="form-group md:col-span-2">
-                <label className="form-label">Tiêu đề yêu cầu <span className="required">*</span></label>
-                <input 
+                <label htmlFor="support-field-3" className="form-label">Tiêu đề yêu cầu <span className="required">*</span></label>
+                <input id="support-field-3" 
                   type="text" 
                   className="input" 
                   required 
@@ -112,8 +115,8 @@ export default function SupportPage() {
               </div>
 
               <div className="form-group md:col-span-2">
-                <label className="form-label">Nội dung chi tiết <span className="required">*</span></label>
-                <textarea 
+                <label htmlFor="support-field-4" className="form-label">Nội dung chi tiết <span className="required">*</span></label>
+                <textarea id="support-field-4" 
                   className="textarea" 
                   required 
                   rows={4}
@@ -141,9 +144,11 @@ export default function SupportPage() {
         </div>
 
         {requestsQuery.isLoading ? (
-          <div className="flex justify-center py-10"><div className="spinner"></div></div>
+          <div className="flex justify-center py-10" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>
         ) : requestsQuery.isError ? (
-          <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">Lỗi tải dữ liệu</div>
+          <div role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+            {requestsQuery.error instanceof ApiError ? requestsQuery.error.message : 'Không thể tải danh sách yêu cầu'}
+          </div>
         ) : requestsQuery.data?.length === 0 ? (
           <div className="text-center py-10 text-muted text-sm">Chưa có yêu cầu nào.</div>
         ) : (

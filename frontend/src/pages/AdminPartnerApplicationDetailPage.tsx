@@ -11,7 +11,7 @@ export default function AdminPartnerApplicationDetailPage() {
   const reject = useRejectPartnerApplication();
   const [reason, setReason] = useState('');
 
-  if (query.isLoading) return <div className="flex justify-center py-16"><div className="spinner"></div></div>;
+  if (query.isLoading) return <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>;
   if (query.isError || !query.data) return <div role="alert" className="mx-auto max-w-md rounded-lg bg-red-50 px-4 py-3 text-center text-sm text-red-700 border border-red-200">{query.error instanceof ApiError ? query.error.message : 'Không tìm thấy hồ sơ đối tác'}</div>;
 
   const application = query.data;
@@ -97,7 +97,7 @@ export default function AdminPartnerApplicationDetailPage() {
               </div>
               <div>
                 <span className="text-slate-400 block text-[11px]">Số điện thoại liên lạc:</span>
-                <strong className="text-heading text-sm">{(application.TAI_KHOAN_HO_SO_DOI_TAC_MaTaiKhoanToTAI_KHOAN as any).SoDienThoai}</strong>
+                <strong className="text-heading text-sm">{application.TAI_KHOAN_HO_SO_DOI_TAC_MaTaiKhoanToTAI_KHOAN.SoDienThoai ?? '—'}</strong>
               </div>
               <div>
                 <span className="text-slate-400 block text-[11px]">Địa chỉ Email:</span>
@@ -158,8 +158,8 @@ export default function AdminPartnerApplicationDetailPage() {
                </h4>
                
                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-600 block">Lý do chi tiết (bắt buộc nếu từ chối) <span className="text-rose-500">*</span></label>
-                  <textarea 
+                  <label htmlFor="admin-partner-application-detail-field-1" className="text-xs font-semibold text-slate-600 block">Lý do chi tiết (bắt buộc nếu từ chối) <span className="text-rose-500">*</span></label>
+                  <textarea id="admin-partner-application-detail-field-1" 
                     value={reason} 
                     onChange={(e) => setReason(e.target.value)} 
                     rows={3} 

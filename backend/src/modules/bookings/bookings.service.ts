@@ -83,6 +83,7 @@ export interface PaymentSummary {
 
 export interface BookingDetail extends Omit<BookingResponse, 'ChiTietPhong'> {
   ChiTietPhong: BookingRoomLine[];
+  TenKhachSan: string;
   MaTaiKhoanKhachHang: number;
   ThanhToan: PaymentSummary[];
 }
@@ -376,6 +377,7 @@ export class BookingsService {
       MaDatPhong: booking.MaDatPhong,
       MaXacNhanDatPhong: booking.MaXacNhanDatPhong,
       MaKhachSan: booking.MaKhachSan,
+      TenKhachSan: booking.KHACH_SAN.TenKhachSan,
       MaTaiKhoanKhachHang: booking.MaTaiKhoanKhachHang,
       NgayNhanPhong: booking.NgayNhanPhong.toISOString().slice(0, 10),
       NgayTraPhong: booking.NgayTraPhong.toISOString().slice(0, 10),

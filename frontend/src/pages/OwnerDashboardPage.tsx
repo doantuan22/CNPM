@@ -37,7 +37,7 @@ export default function OwnerDashboardPage() {
       </div>
 
       {hotelsQuery.isLoading ? (
-        <div className="flex justify-center py-16"><div className="spinner"></div></div>
+        <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>
       ) : hotelsQuery.isError ? (
         <div role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 border border-red-200">
           {hotelsQuery.error instanceof ApiError ? hotelsQuery.error.message : 'Không thể tải danh sách khách sạn'}
@@ -126,7 +126,7 @@ export default function OwnerDashboardPage() {
                   <div className="flex gap-7 flex-wrap pt-2.5 mt-1 border-t border-dashed border-border">
                     <div className="flex flex-col gap-0.5">
                       <span className="text-[12px] text-muted">Phòng</span>
-                      <strong className="text-[14px] font-semibold text-heading">{(hotel as any).LOAI_PHONG_COUNT || 0} loại</strong>
+                      <strong className="text-[14px] font-semibold text-heading">{hotel._count?.LOAI_PHONG ?? 0} loại</strong>
                     </div>
                     {hotel.TrangThai === 'Chờ duyệt' && (
                       <>

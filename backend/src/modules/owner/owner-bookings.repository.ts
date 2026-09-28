@@ -1,8 +1,11 @@
 import { getPrismaClient } from '../../config/prisma';
 import type { OwnerBookingsQuery } from './owner-bookings.schemas';
 
+// Phone + the guest's note are operational data the hotel needs to serve the
+// stay; email and every other account field stay private to the platform.
 const bookingInclude = {
-  TAI_KHOAN: { select: { MaTaiKhoan: true, HoTen: true } },
+  TAI_KHOAN: { select: { MaTaiKhoan: true, HoTen: true, SoDienThoai: true } },
+  KHACH_SAN: { select: { GioNhanPhong: true, GioTraPhong: true } },
   CHI_TIET_DAT_PHONG: { include: { LOAI_PHONG: { select: { MaLoaiPhong: true, TenLoaiPhong: true } } } },
   THANH_TOAN: { select: { MaThanhToan: true, TrangThai: true, PhuongThucThanhToan: true, SoTien: true, ThoiGianGiaoDich: true } },
 } as const;
@@ -13,7 +16,7 @@ export class OwnerBookingsRepository {
     const where = {
       MaKhachSan: hotelId,
       ...(query.trangThai ? { TrangThai: query.trangThai } : {}),
-      ...(query.search ? { MaXacNhanDatPhong: { contains: query.search } } : {}),
+      ...(query.search ? { OR: [{ MaXacNhanDatPhong: { contains: query.search } }, { TAI_KHOAN: { HoTen: { contains: query.search } } }] } : {}),
       ...((query.from || query.to) ? { NgayNhanPhong: { ...(query.from ? { gte: query.from } : {}), ...(query.to ? { lte: query.to } : {}) } } : {}),
     };
     const [items, total] = await Promise.all([

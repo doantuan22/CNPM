@@ -2,6 +2,7 @@ import { apiClient } from '../../../services/apiClient';
 import type { PaginatedApiResponse } from '../../../types/api';
 import type {
   Account,
+  Role,
   AccountListQuery,
   UpdateAccountPayload,
   PaginationMeta,
@@ -27,6 +28,11 @@ export const listAccounts = async (query: AccountListQuery): Promise<AccountList
     `/admin/accounts?${buildQueryString(query)}`
   );
   return { items: res.data ?? [], pagination: res.pagination };
+};
+
+export const listRoles = async (): Promise<Role[]> => {
+  const res = await apiClient<Role[]>('/admin/accounts/roles');
+  return res.data ?? [];
 };
 
 export const getAccount = async (id: number): Promise<Account> => {

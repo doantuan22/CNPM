@@ -41,7 +41,7 @@ export class PartnersRepository {
     return prisma.hO_SO_DOI_TAC.findUnique({
       where: { MaHoSoDoiTac: maHoSoDoiTac },
       include: {
-        TAI_KHOAN_HO_SO_DOI_TAC_MaTaiKhoanToTAI_KHOAN: { select: { MaTaiKhoan: true, HoTen: true, Email: true, MaVaiTro: true } },
+        TAI_KHOAN_HO_SO_DOI_TAC_MaTaiKhoanToTAI_KHOAN: { select: { MaTaiKhoan: true, HoTen: true, Email: true, SoDienThoai: true, MaVaiTro: true } },
         TAI_KHOAN_HO_SO_DOI_TAC_MaTaiKhoanDuyetToTAI_KHOAN: { select: { MaTaiKhoan: true, HoTen: true, Email: true } },
       },
     });

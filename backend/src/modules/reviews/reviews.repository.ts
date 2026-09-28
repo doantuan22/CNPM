@@ -61,6 +61,7 @@ export class ReviewsRepository {
     const prisma = getPrismaClient();
     const where: Prisma.DANH_GIAWhereInput = {
       ...(query.trangThai ? { TrangThai: query.trangThai } : {}),
+      ...(query.diemDanhGia ? { DiemDanhGia: query.diemDanhGia } : {}),
       ...(query.search
         ? {
             OR: [

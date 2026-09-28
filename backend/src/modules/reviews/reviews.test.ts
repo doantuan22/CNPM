@@ -294,6 +294,23 @@ describe('Admin review moderation', () => {
     expect(moderated.body.data.TrangThai).toBe(REVIEW_STATUS.VIOLATION);
   });
 
+  it('admin can filter the list by star score', async () => {
+    const low = await makeBooking(BOOKING_STATUS.COMPLETED, addDays(-20), addDays(-18));
+    const high = await makeBooking(BOOKING_STATUS.COMPLETED, addDays(-16), addDays(-14));
+    const lowReview = await request(app).post(`/api/bookings/${low.MaDatPhong}/review`).set('Authorization', `Bearer ${customerToken}`).send({ diemDanhGia: 1 });
+    const highReview = await request(app).post(`/api/bookings/${high.MaDatPhong}/review`).set('Authorization', `Bearer ${customerToken}`).send({ diemDanhGia: 5 });
+
+    const ones = await request(app).get('/api/admin/reviews').query({ diemDanhGia: 1, limit: 100 }).set('Authorization', `Bearer ${adminToken}`);
+    expect(ones.status).toBe(200);
+    const ids = ones.body.data.map((r: { MaDanhGia: number }) => r.MaDanhGia);
+    expect(ids).toContain(lowReview.body.data.MaDanhGia);
+    expect(ids).not.toContain(highReview.body.data.MaDanhGia);
+    expect(ones.body.data.every((r: { DiemDanhGia: number }) => r.DiemDanhGia === 1)).toBe(true);
+
+    const invalid = await request(app).get('/api/admin/reviews').query({ diemDanhGia: 9 }).set('Authorization', `Bearer ${adminToken}`);
+    expect(invalid.status).toBe(400);
+  });
+
   it('404 moderating a non-existent review', async () => {
     const res = await request(app)
       .patch('/api/admin/reviews/999999999/moderate')

@@ -2,6 +2,10 @@ import { getPrismaClient } from '../../config/prisma';
 import type { Prisma } from '../../generated/prisma/client';
 import type { ListAccountsQuery } from './accounts.schemas';
 
+// Role name travels with the account so clients never have to map MaVaiTro
+// (an IDENTITY value that differs between databases) back to a name.
+const withRole = { VAI_TRO: { select: { TenVaiTro: true } } } as const;
+
 export class AccountsRepository {
   async list(query: ListAccountsQuery) {
     const prisma = getPrismaClient();
@@ -22,6 +26,7 @@ export class AccountsRepository {
     const [items, total] = await Promise.all([
       prisma.tAI_KHOAN.findMany({
         where,
+        include: withRole,
         orderBy: { NgayTao: 'desc' },
         skip: (query.page - 1) * query.limit,
         take: query.limit,
@@ -34,7 +39,7 @@ export class AccountsRepository {
 
   async findById(maTaiKhoan: number) {
     const prisma = getPrismaClient();
-    return prisma.tAI_KHOAN.findUnique({ where: { MaTaiKhoan: maTaiKhoan } });
+    return prisma.tAI_KHOAN.findUnique({ where: { MaTaiKhoan: maTaiKhoan }, include: withRole });
   }
 
   async findByEmail(email: string) {
@@ -49,12 +54,12 @@ export class AccountsRepository {
 
   async create(data: Prisma.TAI_KHOANCreateInput) {
     const prisma = getPrismaClient();
-    return prisma.tAI_KHOAN.create({ data });
+    return prisma.tAI_KHOAN.create({ data, include: withRole });
   }
 
   async update(maTaiKhoan: number, data: Prisma.TAI_KHOANUpdateInput) {
     const prisma = getPrismaClient();
-    return prisma.tAI_KHOAN.update({ where: { MaTaiKhoan: maTaiKhoan }, data });
+    return prisma.tAI_KHOAN.update({ where: { MaTaiKhoan: maTaiKhoan }, data, include: withRole });
   }
 
   async setStatus(maTaiKhoan: number, trangThai: string) {
@@ -62,6 +67,7 @@ export class AccountsRepository {
     return prisma.tAI_KHOAN.update({
       where: { MaTaiKhoan: maTaiKhoan },
       data: { TrangThai: trangThai, NgayCapNhat: new Date() },
+      include: withRole,
     });
   }
 
@@ -88,6 +94,11 @@ export class AccountsRepository {
 
     if (!counts) return false;
     return Object.values(counts._count).some((count) => count > 0);
+  }
+
+  async listRoles() {
+    const prisma = getPrismaClient();
+    return prisma.vAI_TRO.findMany({ select: { MaVaiTro: true, TenVaiTro: true, MoTa: true }, orderBy: { MaVaiTro: 'asc' } });
   }
 
   async hardDelete(maTaiKhoan: number) {

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { Link } from 'react-router-dom';
 import { useAdminSupportList } from '../features/support/hooks';
 import { ApiError } from '../services/apiClient';
@@ -10,7 +11,7 @@ const TYPES = ['Hỗ trợ', 'Khiếu nại'];
 export default function AdminSupportPage() {
   const [page, setPage] = useState(1);
   const [searchInput, setSearchInput] = useState('');
-  const [search, setSearch] = useState('');
+  const search = useDebouncedValue(searchInput.trim());
   const [status, setStatus] = useState('');
   const [type, setType] = useState('');
 
@@ -24,7 +25,6 @@ export default function AdminSupportPage() {
 
   const handleSearchChange = (val: string) => {
     setSearchInput(val);
-    setSearch(val.trim());
     setPage(1);
   };
 
@@ -84,7 +84,7 @@ export default function AdminSupportPage() {
 
       <div className="bg-white rounded-[16px] border border-border shadow-sm overflow-hidden flex flex-col">
         {query.isLoading ? (
-          <div className="flex justify-center py-16"><div className="spinner"></div></div>
+          <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>
         ) : query.isError ? (
           <div role="alert" className="px-6 py-10 text-center text-sm text-red-700">
             {query.error instanceof ApiError ? query.error.message : 'Không thể tải danh sách yêu cầu'}

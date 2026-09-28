@@ -57,7 +57,7 @@ export default function AdminPromotionFormPage() {
   const mutation = isEdit ? updateMutation : createMutation;
 
   if (isEdit && detailQuery.isLoading) {
-    return <div className="flex justify-center py-16"><div className="spinner"></div></div>;
+    return <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>;
   }
 
   if (isEdit && (detailQuery.isError || !detailQuery.data)) {
@@ -109,8 +109,8 @@ export default function AdminPromotionFormPage() {
           <div className="bg-slate-50 border border-border rounded-2xl p-5 space-y-4">
              <form onSubmit={submit} className="space-y-4 pt-1">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-600 block">Mã code <span className="text-rose-500">*</span></label>
-                  <input 
+                  <label htmlFor="admin-promotion-form-field-1" className="text-xs font-semibold text-slate-600 block">Mã code <span className="text-rose-500">*</span></label>
+                  <input id="admin-promotion-form-field-1" 
                     type="text" 
                     required 
                     value={form.MaCode}
@@ -122,8 +122,8 @@ export default function AdminPromotionFormPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-600 block">Loại giảm giá <span className="text-rose-500">*</span></label>
-                    <select 
+                    <label htmlFor="admin-promotion-form-field-2" className="text-xs font-semibold text-slate-600 block">Loại giảm giá <span className="text-rose-500">*</span></label>
+                    <select id="admin-promotion-form-field-2" 
                       required
                       value={form.LoaiGiamGia}
                       onChange={(e) => setForm((f) => ({ ...f, LoaiGiamGia: e.target.value }))}
@@ -133,10 +133,10 @@ export default function AdminPromotionFormPage() {
                     </select>
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-600 block">
+                    <label htmlFor="admin-promotion-form-ml-1" className="text-xs font-semibold text-slate-600 block">
                       Giá trị giảm {form.LoaiGiamGia === 'Phần trăm' ? '(%, tối đa 100)' : '(VNĐ)'} <span className="text-rose-500">*</span>
                     </label>
-                    <input 
+                    <input id="admin-promotion-form-ml-1" 
                       type="number" 
                       required 
                       min={1}
@@ -150,8 +150,8 @@ export default function AdminPromotionFormPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-600 block">Giá trị đơn tối thiểu (VNĐ)</label>
-                    <input 
+                    <label htmlFor="admin-promotion-form-field-3" className="text-xs font-semibold text-slate-600 block">Giá trị đơn tối thiểu (VNĐ)</label>
+                    <input id="admin-promotion-form-field-3" 
                       type="number" 
                       min={0}
                       value={form.GiaTriDonToiThieu}
@@ -160,8 +160,8 @@ export default function AdminPromotionFormPage() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-600 block">Mức giảm tối đa (VNĐ, 0 = không giới hạn)</label>
-                    <input 
+                    <label htmlFor="admin-promotion-form-field-4" className="text-xs font-semibold text-slate-600 block">Mức giảm tối đa (VNĐ, 0 = không giới hạn)</label>
+                    <input id="admin-promotion-form-field-4" 
                       type="number" 
                       min={0}
                       value={form.MucGiamToiDa}
@@ -172,8 +172,8 @@ export default function AdminPromotionFormPage() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-600 block">Số lượng giới hạn (0 = không giới hạn)</label>
-                  <input 
+                  <label htmlFor="admin-promotion-form-field-5" className="text-xs font-semibold text-slate-600 block">Số lượng giới hạn (0 = không giới hạn)</label>
+                  <input id="admin-promotion-form-field-5" 
                     type="number" 
                     min={0}
                     value={form.SoLuongGioiHan}
@@ -187,8 +187,8 @@ export default function AdminPromotionFormPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-600 block">Ngày bắt đầu <span className="text-rose-500">*</span></label>
-                    <input 
+                    <label htmlFor="admin-promotion-form-field-6" className="text-xs font-semibold text-slate-600 block">Ngày bắt đầu <span className="text-rose-500">*</span></label>
+                    <input id="admin-promotion-form-field-6" 
                       type="date" 
                       required 
                       value={form.NgayBatDau}
@@ -197,8 +197,8 @@ export default function AdminPromotionFormPage() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-600 block">Ngày kết thúc <span className="text-rose-500">*</span></label>
-                    <input 
+                    <label htmlFor="admin-promotion-form-field-7" className="text-xs font-semibold text-slate-600 block">Ngày kết thúc <span className="text-rose-500">*</span></label>
+                    <input id="admin-promotion-form-field-7" 
                       type="date" 
                       required 
                       value={form.NgayKetThuc}

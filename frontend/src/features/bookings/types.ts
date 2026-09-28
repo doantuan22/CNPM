@@ -86,6 +86,7 @@ export interface PaymentView {
  */
 export interface BookingDetail extends Omit<Booking, 'ChiTietPhong'> {
   ChiTietPhong: BookingRoomLine[];
+  TenKhachSan: string;
   MaTaiKhoanKhachHang: number;
   ThanhToan: PaymentView[];
 }

@@ -16,6 +16,14 @@ export class AccountsController {
     }
   };
 
+  listRoles = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      sendSuccess(res, await this.accountsService.listRoles());
+    } catch (error) {
+      next(error);
+    }
+  };
+
   getById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { id } = req.params as unknown as { id: number };

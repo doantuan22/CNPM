@@ -37,6 +37,10 @@ export class AccountsService {
     return toSafeAccount(account);
   }
 
+  async listRoles() {
+    return this.accountsRepository.listRoles();
+  }
+
   async create(input: CreateAccountInput): Promise<SafeAccount> {
     const [existingEmail, existingUsername, role] = await Promise.all([
       this.accountsRepository.findByEmail(input.Email),

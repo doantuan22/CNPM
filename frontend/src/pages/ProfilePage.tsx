@@ -46,7 +46,7 @@ export default function ProfilePage() {
     });
 
   if (meQuery.isLoading) {
-    return <div className="flex justify-center py-16"><div className="spinner"></div></div>;
+    return <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>;
   }
 
   if (meQuery.isError) {
@@ -112,7 +112,7 @@ export default function ProfilePage() {
                   </div>
                 )}
                 {updateMutation.isError && (
-                  <div className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 border border-red-200">
+                  <div role="alert" className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 border border-red-200">
                     {updateMutation.error instanceof ApiError ? updateMutation.error.message : 'Cập nhật thất bại, vui lòng thử lại'}
                   </div>
                 )}
@@ -120,8 +120,8 @@ export default function ProfilePage() {
                 <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                   
                   <div className="sm:col-span-2">
-                    <label className="block text-xs font-semibold text-ink mb-1.5">Họ và tên</label>
-                    <input 
+                    <label htmlFor="profile-field-1" className="block text-xs font-semibold text-ink mb-1.5">Họ và tên</label>
+                    <input id="profile-field-1" 
                       type="text" 
                       className={cn("w-full px-3.5 py-2.5 rounded-xl border bg-white text-ink text-sm focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all", errors.HoTen ? "border-rose-500 bg-rose-50/20" : "border-border")}
                       {...register('HoTen')} 
@@ -130,8 +130,8 @@ export default function ProfilePage() {
                   </div>
 
                   <div className="sm:col-span-2">
-                    <label className="block text-xs font-semibold text-ink mb-1.5">Email</label>
-                    <input 
+                    <label htmlFor="profile-field-2" className="block text-xs font-semibold text-ink mb-1.5">Email</label>
+                    <input id="profile-field-2" 
                       type="email" 
                       className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-slate-50 text-slate-500 text-sm cursor-not-allowed"
                       value={meQuery.data?.Email || ''} 
@@ -141,8 +141,8 @@ export default function ProfilePage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-ink mb-1.5">Số điện thoại</label>
-                    <input 
+                    <label htmlFor="profile-field-3" className="block text-xs font-semibold text-ink mb-1.5">Số điện thoại</label>
+                    <input id="profile-field-3" 
                       type="tel" 
                       className={cn("w-full px-3.5 py-2.5 rounded-xl border bg-white text-ink text-sm focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all", errors.SoDienThoai ? "border-rose-500 bg-rose-50/20" : "border-border")}
                       {...register('SoDienThoai')} 
@@ -151,8 +151,8 @@ export default function ProfilePage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-ink mb-1.5">Ngày sinh</label>
-                    <input 
+                    <label htmlFor="profile-field-4" className="block text-xs font-semibold text-ink mb-1.5">Ngày sinh</label>
+                    <input id="profile-field-4" 
                       type="date" 
                       className={cn("w-full px-3.5 py-2.5 rounded-xl border bg-white text-ink text-sm focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all", errors.NgaySinh ? "border-rose-500 bg-rose-50/20" : "border-border")}
                       {...register('NgaySinh')} 
@@ -160,8 +160,8 @@ export default function ProfilePage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-ink mb-1.5">Giới tính</label>
-                    <select 
+                    <label htmlFor="profile-field-5" className="block text-xs font-semibold text-ink mb-1.5">Giới tính</label>
+                    <select id="profile-field-5" 
                       className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-white text-ink text-sm focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all"
                       {...register('GioiTinh')}
                     >

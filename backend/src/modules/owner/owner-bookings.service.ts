@@ -13,6 +13,8 @@ export class OwnerBookingsService {
       MaDatPhong: booking.MaDatPhong, MaXacNhanDatPhong: booking.MaXacNhanDatPhong,
       KhachHang: booking.TAI_KHOAN, NgayNhanPhong: booking.NgayNhanPhong.toISOString().slice(0, 10), NgayTraPhong: booking.NgayTraPhong.toISOString().slice(0, 10),
       TongTienThanhToan: toNumber(booking.TongTienThanhToan), TrangThai: booking.TrangThai, NgayTao: booking.NgayTao.toISOString(),
+      GhiChu: booking.GhiChu,
+      GioNhanPhong: booking.KHACH_SAN.GioNhanPhong.toISOString(), GioTraPhong: booking.KHACH_SAN.GioTraPhong.toISOString(),
       ChiTietPhong: booking.CHI_TIET_DAT_PHONG.map((line) => ({ MaLoaiPhong: line.MaLoaiPhong, TenLoaiPhong: line.LOAI_PHONG.TenLoaiPhong, SoLuong: line.SoLuongPhong })),
       ThanhToan: booking.THANH_TOAN.map((payment) => ({ MaThanhToan: payment.MaThanhToan, TrangThai: payment.TrangThai, PhuongThucThanhToan: payment.PhuongThucThanhToan, SoTien: toNumber(payment.SoTien), ThoiGianGiaoDich: payment.ThoiGianGiaoDich.toISOString() })),
     };

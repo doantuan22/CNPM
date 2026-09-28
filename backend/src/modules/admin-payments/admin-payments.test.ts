@@ -30,5 +30,14 @@ describe('admin payments (UC35)', () => {
     const detail = await request(app).get(`/api/admin/payments/${paymentId}`).set('Authorization', `Bearer ${adminToken}`);
     expect(detail.status).toBe(200); expect(detail.body.data.HOAN_TIEN).toHaveLength(1); expect(detail.body.data.DAT_PHONG).toHaveProperty('MaXacNhanDatPhong');
     const serialized = JSON.stringify(detail.body.data); expect(serialized).not.toContain('MatKhau'); expect(serialized).not.toContain('Email'); expect(serialized).not.toContain('vnp_SecureHash');
+  });  it('filters by refunded payments and by payment method', async () => {
+    const refunded = await request(app).get('/api/admin/payments?page=1&limit=100&coHoanTien=true').set('Authorization', `Bearer ${adminToken}`);
+    expect(refunded.status).toBe(200);
+    expect(refunded.body.data.some((p: { MaThanhToan: number }) => p.MaThanhToan === paymentId)).toBe(true);
+    expect(refunded.body.data.every((p: { HOAN_TIEN: unknown[] }) => p.HOAN_TIEN.length > 0)).toBe(true);
+    const notRefunded = await request(app).get('/api/admin/payments?page=1&limit=100&coHoanTien=false').set('Authorization', `Bearer ${adminToken}`);
+    expect(notRefunded.body.data.some((p: { MaThanhToan: number }) => p.MaThanhToan === paymentId)).toBe(false);
+    const otherMethod = await request(app).get('/api/admin/payments?page=1&limit=100&PhuongThucThanhToan=CASH').set('Authorization', `Bearer ${adminToken}`);
+    expect(otherMethod.body.data.some((p: { MaThanhToan: number }) => p.MaThanhToan === paymentId)).toBe(false);
   });
 });

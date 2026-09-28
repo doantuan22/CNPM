@@ -20,7 +20,7 @@ export default function SupportDetailPage() {
   const requestQuery = useMySupportRequest(Number(id));
 
   if (requestQuery.isLoading) {
-    return <div className="flex justify-center py-16"><div className="spinner"></div></div>;
+    return <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>;
   }
 
   if (requestQuery.isError || !requestQuery.data) {

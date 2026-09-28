@@ -126,6 +126,7 @@ describe('GET /bookings and GET /bookings/:id (M6 §5 — booking history/detail
     expect(own.status).toBe(200);
     expect(own.body.data.MaDatPhong).toBe(booking.MaDatPhong);
     expect(own.body.data.TongTienThanhToan).toBe(800_000);
+    expect(own.body.data.TenKhachSan).toMatch(/^Test Hotel /);
   });
 });
 
