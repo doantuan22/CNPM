@@ -55,6 +55,7 @@ export function useLogout() {
     onSettled: () => {
       clear();
       queryClient.removeQueries({ queryKey: meQueryKey });
+      queryClient.removeQueries({ queryKey: ['owner'] });
     },
   });
 }

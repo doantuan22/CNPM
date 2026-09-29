@@ -9,16 +9,16 @@ type DashboardRole = typeof ROLE_NAMES.ADMIN | typeof ROLE_NAMES.PARTNER;
 
 const ownerGroups = [
   { title: 'Quản lý khách sạn', items: [
-    { to: '/partner/dashboard', label: 'Tổng quan', icon: LayoutDashboard },
-    { to: '/partner/hotels', label: 'Khách sạn của tôi', icon: Building2 },
-    { to: '/partner/room-types', label: 'Loại phòng', icon: Hotel },
-    { to: '/partner/inventory-pricing', label: 'Quỹ phòng & giá bán', icon: CalendarCheck },
-    { to: '/partner/bookings', label: 'Đặt phòng', icon: FileText },
+    { to: '/owner/overview', label: 'Tổng quan', icon: LayoutDashboard },
+    { to: '/owner/hotels', label: 'Khách sạn của tôi', icon: Building2 },
+    { to: '/owner/room-types', label: 'Loại phòng', icon: Hotel },
+    { to: '/owner/inventory-pricing', label: 'Quỹ phòng & giá bán', icon: CalendarCheck },
+    { to: '/owner/bookings', label: 'Đặt phòng', icon: FileText },
   ]},
   { title: 'Kinh doanh & báo cáo', items: [
-    { to: '/partner/revenue', label: 'Doanh thu', icon: BarChart3 },
-    { to: '/partner/reports', label: 'Báo cáo thống kê', icon: BarChart3 },
-    { to: '/profile', label: 'Hồ sơ cá nhân', icon: UserRound },
+    { to: '/owner/revenue', label: 'Doanh thu', icon: CreditCard },
+    { to: '/owner/reports', label: 'Báo cáo thống kê', icon: BarChart3 },
+    { to: '/owner/profile', label: 'Hồ sơ cá nhân', icon: UserRound },
   ]},
 ];
 
@@ -40,12 +40,10 @@ const adminGroups = [
 
 function activePath(pathname: string, to: string) {
   if (to === '/admin') return pathname === to;
-  if (to === '/partner/dashboard') return pathname === to;
-  if (to === '/partner/hotels') return pathname === '/owner' || pathname === to || pathname.startsWith('/owner/hotels/') || pathname.startsWith('/partner/hotels/');
-  if (to === '/partner/room-types') return pathname.startsWith('/partner/room-types') || pathname.startsWith('/owner/room-types/') || pathname.endsWith('/room-types');
-  if (to === '/partner/bookings') return pathname === to || /\/(owner|partner)\/hotels\/[^/]+\/bookings(?:\/|$)/.test(pathname);
-  if (to === '/partner/reports') return pathname === to || /\/owner\/hotels\/[^/]+\/analytics$/.test(pathname);
-  if (to === '/partner/revenue') return pathname === to;
+  if (to === '/owner/overview') return pathname === to;
+  if (to === '/owner/hotels') return pathname === to || pathname === '/owner/hotels/new' || /^\/owner\/hotels\/\d+$/.test(pathname);
+  if (to === '/owner/room-types') return pathname === to || pathname.startsWith('/owner/room-types/');
+  if (to === '/owner/bookings') return pathname === to || pathname.startsWith('/owner/bookings/');
   return pathname === to || pathname.startsWith(`${to}/`);
 }
 
@@ -55,13 +53,20 @@ export function DashboardNavigation({ role }: { role: DashboardRole }) {
   const { isSidebarOpen, setSidebarOpen } = useUiStore();
   const logoutMutation = useLogout();
   const groups = role === ROLE_NAMES.ADMIN ? adminGroups : ownerGroups;
-  const label = role === ROLE_NAMES.ADMIN ? 'Quản trị' : 'Đối tác';
+  const label = role === ROLE_NAMES.ADMIN ? 'Quản trị' : 'Chủ khách sạn';
 
   const logout = async () => {
     await logoutMutation.mutateAsync();
     navigate('/login', { replace: true });
   };
   const closeSidebar = () => setSidebarOpen(false);
+  const selectedHotelId = new URLSearchParams(location.search).get('hotelId')
+    ?? location.pathname.match(/^\/owner\/hotels\/(\d+)/)?.[1]
+    ?? location.pathname.match(/^\/partner\/hotels\/(\d+)/)?.[1];
+  const destinationFor = (to: string) => {
+    if (role !== ROLE_NAMES.PARTNER || !selectedHotelId || !['/owner/room-types', '/owner/inventory-pricing', '/owner/bookings', '/owner/revenue', '/owner/reports'].includes(to)) return to;
+    return `${to}?hotelId=${encodeURIComponent(selectedHotelId)}`;
+  };
 
   return (
     <>
@@ -80,7 +85,7 @@ export function DashboardNavigation({ role }: { role: DashboardRole }) {
               {group.items.map((item) => {
                 const Icon = item.icon;
                 const active = activePath(location.pathname, item.to);
-                return <Link key={`${item.to}-${item.label}`} to={item.to} onClick={closeSidebar} className={cn('dashboard-sidebar__item', active && 'active')} aria-current={active ? 'page' : undefined}><Icon className="h-[18px] w-[18px]" /><span>{item.label}</span></Link>;
+                return <Link key={`${item.to}-${item.label}`} to={destinationFor(item.to)} onClick={closeSidebar} className={cn('dashboard-sidebar__item', active && 'active')} aria-current={active ? 'page' : undefined}><Icon className="h-[18px] w-[18px]" /><span>{item.label}</span></Link>;
               })}
             </div>
           ))}
@@ -98,5 +103,6 @@ export function DashboardTopbar({ role }: { role: DashboardRole }) {
   const { toggleSidebar } = useUiStore();
   const meQuery = useMe();
   const name = meQuery.data?.HoTen ?? (role === ROLE_NAMES.ADMIN ? 'Quản trị viên' : 'Đối tác');
-  return <header className="dashboard-topbar"><button type="button" className="dashboard-sidebar-toggle btn btn-icon btn-ghost" onClick={toggleSidebar} aria-label="Mở menu"><Menu className="h-5 w-5" /></button><div className="dashboard-topbar__search"><span aria-hidden="true">⌕</span><input aria-label="Tìm kiếm" placeholder="Tìm kiếm..." /></div><div className="dashboard-topbar__actions"><button type="button" className="site-header__icon-btn" aria-label="Thông báo"><Bell className="h-[18px] w-[18px]" /><span className="dot" /></button><Link to="/profile" className="site-header__user"><span className="site-header__avatar dashboard-user-avatar">{name.charAt(0).toUpperCase()}</span><span className="dashboard-user-meta hidden text-left sm:block"><strong>{name}</strong><small>{role === ROLE_NAMES.ADMIN ? 'Quản trị viên' : 'Chủ khách sạn'}</small></span><ChevronDown className="h-4 w-4 text-slate-400" /></Link></div></header>;
+  const profilePath = role === ROLE_NAMES.PARTNER ? '/owner/profile' : '/profile';
+  return <header className="dashboard-topbar"><button type="button" className="dashboard-sidebar-toggle btn btn-icon btn-ghost" onClick={toggleSidebar} aria-label="Mở menu"><Menu className="h-5 w-5" /></button><div className="dashboard-topbar__search"><span aria-hidden="true">⌕</span><input aria-label="Tìm kiếm" placeholder="Tìm kiếm..." /></div><div className="dashboard-topbar__actions"><button type="button" className="site-header__icon-btn" aria-label="Thông báo"><Bell className="h-[18px] w-[18px]" /><span className="dot" /></button><Link to={profilePath} className="site-header__user"><span className="site-header__avatar dashboard-user-avatar">{name.charAt(0).toUpperCase()}</span><span className="dashboard-user-meta hidden text-left sm:block"><strong>{name}</strong><small>{role === ROLE_NAMES.ADMIN ? 'Quản trị viên' : 'Chủ khách sạn'}</small></span><ChevronDown className="h-4 w-4 text-slate-400" /></Link></div></header>;
 }

@@ -1,11 +1,11 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useMemo, useState } from 'react';
 import { useMyHotels } from '../features/owner/hooks';
 import { ApiError } from '../services/apiClient';
 import { StatusBadge } from '../components/domain/StatusBadge';
 
-export default function OwnerDashboardPage() {
-  const isOverview = useLocation().pathname === '/partner/dashboard';
+export default function OwnerDashboardPage({ mode }: { mode: 'overview' | 'hotels' }) {
+  const isOverview = mode === 'overview';
   const hotelsQuery = useMyHotels();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -28,7 +28,7 @@ export default function OwnerDashboardPage() {
       <div className="page-header">
         <div>
           <h1>{isOverview ? 'Tổng quan' : 'Khách sạn của tôi'}</h1>
-          <p className="page-header__desc">{isOverview ? 'Tổng quan tình trạng hoạt động và các cơ sở lưu trú của bạn.' : 'Quản lý hồ sơ, cấu hình phòng và theo dõi tình trạng phê duyệt của các cơ sở lưu trú.'}</p>
+          <p className="page-header__desc">{isOverview ? 'Tổng quan tình trạng hoạt động và các cơ sở lưu trú của bạn.' : 'Tìm kiếm và quản lý hồ sơ, hình ảnh, tiện nghi và trạng thái khách sạn.'}</p>
         </div>
         <Link to="/owner/hotels/new" className="btn btn-primary">
           <i className="ph ph-plus"></i> Thêm khách sạn mới
@@ -142,7 +142,7 @@ export default function OwnerDashboardPage() {
                 <div className="flex flex-col gap-2 min-w-[160px] flex-shrink-0">
                   {hotel.TrangThai === 'Hoạt động' && (
                     <Link to={`/owner/hotels/${hotel.MaKhachSan}`} className="btn btn-primary btn-sm flex justify-center py-2">
-                      Quản lý & Quỹ phòng
+                      Quản lý khách sạn
                     </Link>
                   )}
                   {hotel.TrangThai === 'Chờ duyệt' && (

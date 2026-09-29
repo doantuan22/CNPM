@@ -2,10 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useParams, Link } from 'react-router-dom';
-import { useMyHotel, useUpdateHotel, useReplaceHotelAmenities, useUploadHotelImage, useDeleteHotelImage, useSetPrimaryHotelImage, useRoomTypes, useCreateRoomType, useDeactivateHotel } from '../features/owner/hooks';
+import { useMyHotel, useUpdateHotel, useReplaceHotelAmenities, useUploadHotelImage, useDeleteHotelImage, useSetPrimaryHotelImage, useDeactivateHotel } from '../features/owner/hooks';
 import { useLocations } from '../features/locations/hooks';
 import { useAmenities } from '../features/amenities/hooks';
-import { hotelFormSchema, HotelFormSchemaValues, roomTypeFormSchema, RoomTypeFormSchemaValues } from '../features/owner/schemas';
+import { hotelFormSchema, HotelFormSchemaValues } from '../features/owner/schemas';
 import { ApiError } from '../services/apiClient';
 import { fileToDataUrl, imageFileError, cn } from '../lib/utils';
 import { useConfirm } from '../components/common/FeedbackProvider';
@@ -13,8 +13,8 @@ import { StatusBadge } from '../components/domain/StatusBadge';
 import { Combobox } from '../components/common/Combobox';
 
 export default function OwnerHotelManagePage() {
-  const { id } = useParams<{ id: string }>();
-  const hotelId = Number(id);
+  const { hotelId: hotelParam } = useParams<{ hotelId: string }>();
+  const hotelId = Number(hotelParam);
   const hotelQuery = useMyHotel(hotelId);
   const locationsQuery = useLocations();
   const amenitiesQuery = useAmenities();
@@ -23,12 +23,9 @@ export default function OwnerHotelManagePage() {
   const uploadImageMutation = useUploadHotelImage(hotelId);
   const deleteImageMutation = useDeleteHotelImage(hotelId);
   const setPrimaryMutation = useSetPrimaryHotelImage(hotelId);
-  const roomTypesQuery = useRoomTypes(hotelId);
-  const createRoomTypeMutation = useCreateRoomType(hotelId);
   const deactivateMutation = useDeactivateHotel(hotelId);
   const confirm = useConfirm();
 
-  const [showRoomTypeForm, setShowRoomTypeForm] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -53,13 +50,6 @@ export default function OwnerHotelManagePage() {
       });
     }
   }, [hotelQuery.data, reset]);
-
-  const {
-    register: registerRoomType,
-    handleSubmit: handleRoomTypeSubmit,
-    reset: resetRoomTypeForm,
-    formState: { errors: roomTypeErrors, isSubmitting: isRoomTypeSubmitting },
-  } = useForm<RoomTypeFormSchemaValues>({ resolver: zodResolver(roomTypeFormSchema) });
 
   if (hotelQuery.isLoading) {
     return <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>;
@@ -98,15 +88,9 @@ export default function OwnerHotelManagePage() {
     }
   };
 
-  const onCreateRoomType = async (values: RoomTypeFormSchemaValues) => {
-    await createRoomTypeMutation.mutateAsync(values);
-    resetRoomTypeForm();
-    setShowRoomTypeForm(false);
-  };
-
   return (
     <div className="owner-hotel-manage flex flex-col gap-5 max-w-[1200px] mx-auto w-full">
-      <Link to="/owner" className="breadcrumb w-fit">
+      <Link to="/owner/hotels" className="breadcrumb w-fit">
         <i className="ph ph-arrow-left"></i>
         <span>Quay lại danh sách khách sạn</span>
       </Link>
@@ -129,8 +113,8 @@ export default function OwnerHotelManagePage() {
           }}>
             <summary aria-label="Thao tác khác với khách sạn">Thao tác khác <span aria-hidden="true">⌄</span></summary>
             <nav aria-label="Thao tác khách sạn">
-              <Link to={`/owner/hotels/${hotelId}/analytics`}>Xem thống kê</Link>
-              <Link to={`/owner/hotels/${hotelId}/bookings`}>Quản lý đặt phòng</Link>
+              <Link to={`/owner/revenue?hotelId=${hotelId}`}>Doanh thu</Link>
+              <Link to={`/owner/bookings?hotelId=${hotelId}`}>Quản lý đặt phòng</Link>
               {hotel.TrangThai !== 'Ngừng hoạt động' && <button type="button" className="is-danger" disabled={deactivateMutation.isPending} onClick={async () => { if (await confirm({ title: 'Ngừng kinh doanh khách sạn?', description: 'Các đặt phòng lịch sử sẽ được giữ lại.', confirmLabel: 'Ngừng kinh doanh', variant: 'danger' })) deactivateMutation.mutate(); }}>{deactivateMutation.isPending ? 'Đang xử lý...' : 'Ngừng kinh doanh'}</button>}
             </nav>
           </details>
@@ -296,77 +280,7 @@ export default function OwnerHotelManagePage() {
         </div>
       </section>
 
-      <section className="owner-editor-section border-t border-border py-6">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h2 className="text-lg font-bold text-heading mb-1">Các loại phòng</h2>
-            <p className="text-sm text-muted">Danh sách loại phòng của khách sạn</p>
-          </div>
-          <button type="button" className="btn btn-outline btn-sm" onClick={() => setShowRoomTypeForm(v => !v)}>
-            <i className="ph ph-plus"></i> Thêm loại phòng
-          </button>
-        </div>
-
-        {showRoomTypeForm && (
-          <form onSubmit={handleRoomTypeSubmit(onCreateRoomType)} className="bg-slate-50 border border-border rounded-lg p-5 mb-5 flex flex-col gap-4">
-            <h3 className="font-bold text-heading text-[14px]">Thêm loại phòng mới</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="owner-hotel-manage-TenLoaiPhong" className="form-label text-[12px]">Tên loại phòng</label>
-                <input id="owner-hotel-manage-TenLoaiPhong" type="text" className={cn("input", roomTypeErrors.TenLoaiPhong && "border-red-500")} {...registerRoomType('TenLoaiPhong')} />
-              </div>
-              <div>
-                <label htmlFor="owner-hotel-manage-LoaiGiuong" className="form-label text-[12px]">Loại giường</label>
-                <input id="owner-hotel-manage-LoaiGiuong" type="text" className={cn("input")} {...registerRoomType('LoaiGiuong')} />
-              </div>
-              <div>
-                <label htmlFor="owner-hotel-manage-SoGiuong" className="form-label text-[12px]">Số giường</label>
-                <input id="owner-hotel-manage-SoGiuong" type="number" min="1" className={cn("input")} {...registerRoomType('SoGiuong', { valueAsNumber: true })} />
-              </div>
-              <div>
-                <label htmlFor="owner-hotel-manage-SucChua" className="form-label text-[12px]">Sức chứa (Khách)</label>
-                <input id="owner-hotel-manage-SucChua" type="number" min="1" className={cn("input")} {...registerRoomType('SucChua', { valueAsNumber: true })} />
-              </div>
-              <div>
-                <label htmlFor="owner-hotel-manage-DienTich" className="form-label text-[12px]">Diện tích (m²)</label>
-                <input id="owner-hotel-manage-DienTich" type="number" min="1" step="0.1" className={cn("input")} {...registerRoomType('DienTich', { valueAsNumber: true })} />
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <button type="submit" disabled={isRoomTypeSubmitting || createRoomTypeMutation.isPending} className="btn btn-primary btn-sm">Tạo mới</button>
-              <button type="button" onClick={() => setShowRoomTypeForm(false)} className="btn btn-secondary btn-sm">Hủy</button>
-            </div>
-          </form>
-        )}
-
-        <div className="flex flex-col gap-3">
-          {roomTypesQuery.isLoading ? (
-            <div className="flex justify-center py-6" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>
-          ) : roomTypesQuery.data && roomTypesQuery.data.length === 0 ? (
-            <p className="text-sm text-slate-500">Chưa có loại phòng nào.</p>
-          ) : (
-            roomTypesQuery.data?.map(rt => (
-              <Link 
-                key={rt.MaLoaiPhong} 
-                to={`/owner/room-types/${rt.MaLoaiPhong}`}
-                className="flex items-center justify-between p-4 rounded-lg border border-border hover:border-blue-300 transition-colors bg-white"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-primary text-xl"><i className="ph-duotone ph-bed"></i></div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-heading text-[15px]">{rt.TenLoaiPhong}</span>
-                      <StatusBadge domain="roomType" status={rt.TrangThai} />
-                    </div>
-                    <span className="text-[13px] text-muted">{rt.SucChua} khách · {rt.DienTich} m² · {rt.SoGiuong} giường ({rt.LoaiGiuong})</span>
-                  </div>
-                </div>
-                <i className="ph ph-caret-right text-slate-400"></i>
-              </Link>
-            ))
-          )}
-        </div>
-      </section>
+      <section className="owner-editor-section border-t border-border py-6"><div><h2 className="text-lg font-bold text-heading mb-1">Loại phòng</h2><p className="text-sm text-muted">Danh sách và thao tác với loại phòng đã được gom trong module Loại phòng.</p></div><Link className="btn btn-secondary mt-3" to={`/owner/room-types?hotelId=${hotelId}`}>Mở Loại phòng</Link></section>
 
     </div>
   );

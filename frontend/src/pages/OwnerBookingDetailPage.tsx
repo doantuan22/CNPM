@@ -1,19 +1,22 @@
 import { Link, useParams } from 'react-router-dom';
 import { useOwnerBooking } from '../features/owner/hooks';
+import { OwnerHotelContextSelector, OwnerHotelScopeState } from '../components/owner/OwnerHotelContext';
+import { useOwnerHotelContext } from '../features/owner/context';
 import { formatCurrencyVND } from '../lib/utils';
 import { ApiError } from '../services/apiClient';
 import { StatusBadge } from '../components/domain/StatusBadge';
 
 export default function OwnerBookingDetailPage() {
-  const { id, bookingId } = useParams<{ id: string; bookingId: string }>(); 
-  const hotelId = Number(id); 
+  const { bookingId } = useParams<{ bookingId: string }>();
+  const scope = useOwnerHotelContext();
+  const hotelId = scope.hotelId ?? 0;
   const booking = useOwnerBooking(hotelId, Number(bookingId));
   
-  if (booking.isLoading) {
+  if (scope.hotelsQuery.isLoading || (hotelId > 0 && booking.isLoading)) {
     return <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>;
   }
   
-  if (booking.isError || !booking.data) {
+  if (scope.hotelsQuery.isError || (hotelId > 0 && (booking.isError || !booking.data))) {
     return (
       <div role="alert" className="mx-auto max-w-md rounded-lg bg-red-50 px-4 py-3 text-center text-sm text-red-700 border border-red-200">
         {booking.error instanceof ApiError ? booking.error.message : 'Không tìm thấy booking'}
@@ -23,12 +26,15 @@ export default function OwnerBookingDetailPage() {
   
   const b = booking.data;
 
+  if (!hotelId || !b) return <main className="owner-module space-y-5"><header className="owner-module__header"><div><h1>Chi tiết đặt phòng</h1><p>Chi tiết thuộc phạm vi khách sạn đã chọn.</p></div></header><OwnerHotelContextSelector hotels={scope.hotels} hotelId={scope.hotelId} onChange={scope.selectHotel} /><OwnerHotelScopeState loading={false} error={scope.hotelsQuery.error} empty={scope.hotels.length === 0} invalid={scope.invalidHotelId} />{scope.hotels.length > 1 && !hotelId && <div className="owner-scope-state">Chọn khách sạn để tiếp tục.</div>}</main>;
+
   return (
-    <div className="flex flex-col gap-6 max-w-[800px] mx-auto w-full">
-      <Link to={`/owner/hotels/${hotelId}/bookings`} className="breadcrumb w-fit">
+    <div className="owner-module flex flex-col gap-6 max-w-[800px] mx-auto w-full">
+      <Link to={`/owner/bookings?hotelId=${hotelId}`} className="breadcrumb w-fit">
         <i className="ph ph-arrow-left"></i>
         <span>Quay lại danh sách booking</span>
       </Link>
+      <OwnerHotelContextSelector hotels={scope.hotels} hotelId={scope.hotelId} onChange={scope.selectHotel} />
 
       <div className="bg-white border border-border rounded-[16px] shadow-sm overflow-hidden">
         {/* Header */}

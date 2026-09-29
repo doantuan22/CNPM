@@ -4,13 +4,10 @@ import MainLayout from '../components/layouts/MainLayout';
 import { ProtectedRoute } from '../components/auth/ProtectedRoute';
 import { ROLE_NAMES } from '../lib/roles';
 import HomePage from '../pages/HomePage';
+import { LegacyOwnerBookingDetailRoute, LegacyOwnerHotelDetailRoute, LegacyOwnerHotelRoute, LegacyOwnerModuleRoute, LegacyOwnerRoomTypeRoute } from './OwnerRouteRedirects';
 import {
   BookingConfirmPage,
   BookingRoomPage,
-  PartnerInventoryPage,
-  PartnerBookingsPage,
-  PartnerReportsPage,
-  PartnerRevenuePage,
   PaymentPage,
   WriteReviewPage,
 } from '../pages/EcodeFlowPages';
@@ -32,9 +29,12 @@ const OwnerDashboardPage = lazy(() => import('../pages/OwnerDashboardPage'));
 const OwnerHotelFormPage = lazy(() => import('../pages/OwnerHotelFormPage'));
 const OwnerHotelManagePage = lazy(() => import('../pages/OwnerHotelManagePage'));
 const OwnerRoomTypeManagePage = lazy(() => import('../pages/OwnerRoomTypeManagePage'));
-const OwnerAnalyticsPage = lazy(() => import('../pages/OwnerAnalyticsPage'));
 const OwnerBookingsPage = lazy(() => import('../pages/OwnerBookingsPage'));
 const OwnerBookingDetailPage = lazy(() => import('../pages/OwnerBookingDetailPage'));
+const OwnerRoomTypesPage = lazy(() => import('../pages/OwnerModulesPage').then((module) => ({ default: module.OwnerRoomTypesPage })));
+const OwnerInventoryPricingPage = lazy(() => import('../pages/OwnerModulesPage').then((module) => ({ default: module.OwnerInventoryPricingPage })));
+const OwnerRevenuePage = lazy(() => import('../pages/OwnerModulesPage').then((module) => ({ default: module.OwnerRevenuePage })));
+const OwnerReportsPage = lazy(() => import('../pages/OwnerModulesPage').then((module) => ({ default: module.OwnerReportsPage })));
 const AdminDashboardPage = lazy(() => import('../pages/AdminDashboardPage'));
 const AdminAnalyticsPage = lazy(() => import('../pages/AdminAnalyticsPage'));
 const AdminPromotionsPage = lazy(() => import('../pages/AdminPromotionsPage'));
@@ -91,28 +91,38 @@ export default function AppRoutes() {
 
         {/* Chủ khách sạn */}
         <Route element={<ProtectedRoute allowedRoles={[ROLE_NAMES.PARTNER]} />}>
-          <Route path="/owner" element={<OwnerDashboardPage />} />
+          <Route path="/owner" element={<LegacyOwnerModuleRoute to="/owner/overview" />} />
+          <Route path="/owner/overview" element={<OwnerDashboardPage mode="overview" />} />
+          <Route path="/owner/hotels" element={<OwnerDashboardPage mode="hotels" />} />
           <Route path="/owner/hotels/new" element={<OwnerHotelFormPage />} />
-          <Route path="/owner/hotels/:id" element={<OwnerHotelManagePage />} />
-          <Route path="/owner/room-types/:id" element={<OwnerRoomTypeManagePage />} />
-          <Route path="/owner/hotels/:id/analytics" element={<OwnerAnalyticsPage />} />
-          <Route path="/owner/hotels/:id/bookings" element={<OwnerBookingsPage />} />
-          <Route path="/owner/hotels/:id/bookings/:bookingId" element={<OwnerBookingDetailPage />} />
+          <Route path="/owner/hotels/:hotelId" element={<OwnerHotelManagePage />} />
+          <Route path="/owner/room-types" element={<OwnerRoomTypesPage />} />
+          <Route path="/owner/room-types/:roomTypeId" element={<OwnerRoomTypeManagePage />} />
+          <Route path="/owner/inventory-pricing" element={<OwnerInventoryPricingPage />} />
+          <Route path="/owner/bookings" element={<OwnerBookingsPage />} />
+          <Route path="/owner/bookings/:bookingId" element={<OwnerBookingDetailPage />} />
+          <Route path="/owner/revenue" element={<OwnerRevenuePage />} />
+          <Route path="/owner/reports" element={<OwnerReportsPage />} />
+          <Route path="/owner/profile" element={<ProfilePage />} />
 
-          {/* UI_EGODE partner screens mapped to the API-backed owner portal. */}
-          <Route path="/partner/dashboard" element={<OwnerDashboardPage />} />
-          <Route path="/partner/hotels" element={<OwnerDashboardPage />} />
-          <Route path="/partner/hotels/new" element={<OwnerHotelFormPage />} />
-          <Route path="/partner/hotels/:id" element={<OwnerHotelManagePage />} />
-          <Route path="/partner/hotels/:id/bookings" element={<OwnerBookingsPage />} />
-          <Route path="/partner/bookings" element={<PartnerBookingsPage />} />
-          <Route path="/partner/hotels/:id/room-types" element={<OwnerRoomTypeManagePage />} />
-          <Route path="/partner/inventory-pricing" element={<PartnerInventoryPage />} />
-          <Route path="/partner/reports" element={<PartnerReportsPage />} />
-          <Route path="/partner/revenue" element={<PartnerRevenuePage />} />
-          <Route path="/partner/room-types" element={<PartnerInventoryPage mode="rooms" />} />
-          <Route path="/partner/room-type-form" element={<PartnerInventoryPage mode="rooms" />} />
-          <Route path="/partner/hotel-form" element={<OwnerHotelFormPage />} />
+          {/* Controlled legacy aliases retain semantic IDs and hotel context. */}
+          <Route path="/partner/dashboard" element={<LegacyOwnerModuleRoute to="/owner/overview" />} />
+          <Route path="/partner/hotels" element={<LegacyOwnerModuleRoute to="/owner/hotels" />} />
+          <Route path="/partner/hotels/new" element={<LegacyOwnerModuleRoute to="/owner/hotels/new" />} />
+          <Route path="/partner/hotels/:hotelId" element={<LegacyOwnerHotelDetailRoute />} />
+          <Route path="/partner/hotels/:hotelId/bookings/:bookingId" element={<LegacyOwnerBookingDetailRoute />} />
+          <Route path="/partner/hotels/:hotelId/bookings" element={<LegacyOwnerHotelRoute destination="bookings" />} />
+          <Route path="/partner/hotels/:hotelId/room-types" element={<LegacyOwnerRoomTypeRoute />} />
+          <Route path="/owner/hotels/:hotelId/bookings/:bookingId" element={<LegacyOwnerBookingDetailRoute />} />
+          <Route path="/owner/hotels/:hotelId/bookings" element={<LegacyOwnerHotelRoute destination="bookings" />} />
+          <Route path="/owner/hotels/:hotelId/analytics" element={<LegacyOwnerHotelRoute destination="revenue" />} />
+          <Route path="/partner/bookings" element={<LegacyOwnerModuleRoute to="/owner/bookings" />} />
+          <Route path="/partner/inventory-pricing" element={<LegacyOwnerModuleRoute to="/owner/inventory-pricing" />} />
+          <Route path="/partner/reports" element={<LegacyOwnerModuleRoute to="/owner/reports" />} />
+          <Route path="/partner/revenue" element={<LegacyOwnerModuleRoute to="/owner/revenue" />} />
+          <Route path="/partner/room-types" element={<LegacyOwnerModuleRoute to="/owner/room-types" />} />
+          <Route path="/partner/room-type-form" element={<LegacyOwnerModuleRoute to="/owner/room-types" />} />
+          <Route path="/partner/hotel-form" element={<LegacyOwnerModuleRoute to="/owner/hotels/new" />} />
         </Route>
 
         {/* Quản trị hệ thống */}

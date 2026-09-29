@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useSearchParams } from 'react-router-dom';
 import {
   useRoomType,
   useUpdateRoomType,
@@ -10,25 +10,22 @@ import {
   useUploadRoomTypeImage,
   useDeleteRoomTypeImage,
   useSetPrimaryRoomTypeImage,
-  useRates,
-  useBulkUpsertRates,
 } from '../features/owner/hooks';
 import { useAmenities } from '../features/amenities/hooks';
 import {
   roomTypeFormSchema,
   RoomTypeFormSchemaValues,
-  rateBulkFormSchema,
-  RateBulkFormValues,
 } from '../features/owner/schemas';
 import { ApiError } from '../services/apiClient';
-import { fileToDataUrl, imageFileError, formatCurrencyVND, toDateInputValue, cn } from '../lib/utils';
+import { fileToDataUrl, imageFileError, cn } from '../lib/utils';
 import { useConfirm } from '../components/common/FeedbackProvider';
 import { StatusBadge } from '../components/domain/StatusBadge';
 
 export default function OwnerRoomTypeManagePage() {
-  const { id } = useParams<{ id: string }>();
-  const roomTypeId = Number(id);
+  const { roomTypeId: roomTypeParam } = useParams<{ roomTypeId: string }>();
+  const roomTypeId = Number(roomTypeParam);
   const roomTypeQuery = useRoomType(roomTypeId);
+  const [routeParams, setRouteParams] = useSearchParams();
   const amenitiesQuery = useAmenities();
   const updateMutation = useUpdateRoomType(roomTypeId);
   const deactivateMutation = useDeactivateRoomType(roomTypeId);
@@ -39,11 +36,6 @@ export default function OwnerRoomTypeManagePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [imageError, setImageError] = useState<string | null>(null);
 
-  const today = toDateInputValue(new Date());
-  const twoWeeksOut = toDateInputValue(new Date(Date.now() + 13 * 86400000));
-  const [ratesRange, setRatesRange] = useState({ from: today, to: twoWeeksOut });
-  const ratesQuery = useRates(roomTypeId, ratesRange.from, ratesRange.to);
-  const bulkUpsertMutation = useBulkUpsertRates(roomTypeId);
   const confirm = useConfirm();
 
   const {
@@ -53,27 +45,25 @@ export default function OwnerRoomTypeManagePage() {
     formState: { errors, isDirty },
   } = useForm<RoomTypeFormSchemaValues>({ resolver: zodResolver(roomTypeFormSchema) });
 
-  const {
-    register: registerRate,
-    handleSubmit: handleRateSubmit,
-    formState: { errors: rateErrors, isSubmitting: isRateSubmitting },
-  } = useForm<RateBulkFormValues>({
-    resolver: zodResolver(rateBulkFormSchema),
-    defaultValues: { from: today, to: twoWeeksOut, giaPhong: 0, soLuongPhong: 0 },
-  });
-
   useEffect(() => {
-    if (roomTypeQuery.data) {
-      reset({
+    if (!roomTypeQuery.data) return;
+    reset({
         TenLoaiPhong: roomTypeQuery.data.TenLoaiPhong,
         SoGiuong: roomTypeQuery.data.SoGiuong,
         SucChua: roomTypeQuery.data.SucChua,
         DienTich: roomTypeQuery.data.DienTich,
         LoaiGiuong: roomTypeQuery.data.LoaiGiuong,
         MoTa: roomTypeQuery.data.MoTa ?? '',
-      });
-    }
+    });
   }, [roomTypeQuery.data, reset]);
+
+  useEffect(() => {
+    if (roomTypeQuery.data && routeParams.get('hotelId') !== String(roomTypeQuery.data.MaKhachSan)) {
+      const next = new URLSearchParams(routeParams);
+      next.set('hotelId', String(roomTypeQuery.data.MaKhachSan));
+      setRouteParams(next, { replace: true });
+    }
+  }, [roomTypeQuery.data, routeParams, setRouteParams]);
 
   if (roomTypeQuery.isLoading) {
     return <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>;
@@ -112,26 +102,11 @@ export default function OwnerRoomTypeManagePage() {
     }
   };
 
-  const onRateBulkSubmit = async (values: RateBulkFormValues) => {
-    const rates: { NgayApDung: string; GiaPhong: number; SoLuongPhong: number }[] = [];
-    const start = new Date(`${values.from}T00:00:00Z`);
-    const end = new Date(`${values.to}T00:00:00Z`);
-    for (let t = start.getTime(); t <= end.getTime(); t += 86400000) {
-      rates.push({
-        NgayApDung: new Date(t).toISOString().slice(0, 10),
-        GiaPhong: values.giaPhong,
-        SoLuongPhong: values.soLuongPhong,
-      });
-    }
-    await bulkUpsertMutation.mutateAsync(rates);
-    setRatesRange({ from: values.from, to: values.to });
-  };
-
   return (
     <div className="flex flex-col gap-5 max-w-[1040px] mx-auto w-full">
-      <Link to={`/owner/hotels/${roomType.MaKhachSan}`} className="breadcrumb w-fit">
+      <Link to={`/owner/room-types?hotelId=${roomType.MaKhachSan}`} className="breadcrumb w-fit">
         <i className="ph ph-arrow-left"></i>
-        <span>Quay lại {roomType.KHACH_SAN?.TenKhachSan ?? 'khách sạn'}</span>
+        <span>Quay lại loại phòng · {roomType.KHACH_SAN?.TenKhachSan ?? 'khách sạn'}</span>
       </Link>
 
       <div className="flex justify-between items-center flex-wrap gap-3 bg-white border border-border rounded-[14px] px-6 py-4">
@@ -294,75 +269,7 @@ export default function OwnerRoomTypeManagePage() {
         </div>
       </section>
 
-      {/* Inventory & Pricing */}
-      <section className="owner-editor-section border-t border-border py-6">
-        <div className="mb-6">
-          <h2 className="text-lg font-bold text-heading mb-1">Giá & quỹ phòng theo ngày</h2>
-          <p className="text-sm text-muted">Khoảng ngày bên dưới là thao tác áp dụng hàng loạt; hệ thống lưu một bản ghi riêng cho từng ngày áp dụng.</p>
-        </div>
-
-        {bulkUpsertMutation.isSuccess && (
-          <div role="status" className="rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700 mb-4">Cập nhật thành công</div>
-        )}
-
-        <form onSubmit={handleRateSubmit(onRateBulkSubmit)} className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-slate-50 border border-border rounded-xl p-5 mb-6">
-          <div>
-            <label htmlFor="owner-room-type-manage-from" className="form-label">Từ ngày <span className="text-red-500">*</span></label>
-            <input id="owner-room-type-manage-from" type="date" className={cn("input", rateErrors.from && "border-red-500")} {...registerRate('from')} />
-          </div>
-          <div>
-            <label htmlFor="owner-room-type-manage-to" className="form-label">Đến ngày <span className="text-red-500">*</span></label>
-            <input id="owner-room-type-manage-to" type="date" className={cn("input", rateErrors.to && "border-red-500")} {...registerRate('to')} />
-          </div>
-          <div>
-            <label htmlFor="owner-room-type-manage-giaPhong" className="form-label">Giá / đêm (VND) <span className="text-red-500">*</span></label>
-            <input id="owner-room-type-manage-giaPhong" type="number" min="0" className={cn("input", rateErrors.giaPhong && "border-red-500")} {...registerRate('giaPhong', { valueAsNumber: true })} />
-          </div>
-          <div>
-            <label htmlFor="owner-room-type-manage-soLuongPhong" className="form-label">Phòng trống bán <span className="text-red-500">*</span></label>
-            <input id="owner-room-type-manage-soLuongPhong" type="number" min="0" className={cn("input", rateErrors.soLuongPhong && "border-red-500")} {...registerRate('soLuongPhong', { valueAsNumber: true })} />
-          </div>
-          <div className="col-span-2 md:col-span-4 mt-2">
-            <button type="submit" disabled={isRateSubmitting || bulkUpsertMutation.isPending} className="btn btn-primary w-full md:w-auto">
-              {bulkUpsertMutation.isPending ? 'Đang áp dụng...' : 'Áp dụng mức này cho từng ngày'}
-            </button>
-          </div>
-        </form>
-
-        <h3 className="mb-3 text-[15px] font-bold text-heading">
-          Lịch bán hiện tại: <span className="text-primary font-normal">{ratesRange.from} → {ratesRange.to}</span>
-        </h3>
-        {ratesQuery.isLoading ? (
-          <div className="flex justify-center py-6" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>
-        ) : ratesQuery.data && ratesQuery.data.length === 0 ? (
-          <p className="text-sm text-slate-500">Chưa có dữ liệu giá cho khoảng ngày này.</p>
-        ) : (
-          <div className="overflow-auto border border-border rounded-xl max-h-[400px]">
-            <table className="w-full text-left border-collapse">
-              <thead className="sticky top-0 bg-slate-50 border-b border-border text-[12px] uppercase font-bold text-muted">
-                <tr>
-                  <th className="px-4 py-3">Ngày</th>
-                  <th className="px-4 py-3">Giá (VND)</th>
-                  <th className="px-4 py-3">Số lượng mở bán</th>
-                  <th className="px-4 py-3">Trạng thái</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {ratesQuery.data?.map((rate) => (
-                  <tr key={rate.MaQuyPhong} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-4 py-3 font-medium text-heading">{rate.NgayApDung.slice(0, 10)}</td>
-                    <td className="px-4 py-3 text-primary font-semibold">{formatCurrencyVND(rate.GiaPhong)}</td>
-                    <td className="px-4 py-3 font-medium text-heading">{rate.SoLuongPhong} phòng</td>
-                    <td className="px-4 py-3">
-                      <StatusBadge domain="roomRate" status={rate.TrangThai} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
+      <section className="owner-editor-section border-t border-border py-6"><h2 className="text-lg font-bold text-heading mb-1">Giá &amp; quỹ phòng</h2><p className="text-sm text-muted">Bảng giá được quản lý tập trung trong workspace Quỹ phòng &amp; giá bán.</p><Link className="btn btn-secondary mt-3" to={`/owner/inventory-pricing?hotelId=${roomType.MaKhachSan}&roomTypeId=${roomType.MaLoaiPhong}`}>Mở Quỹ phòng &amp; giá bán</Link></section>
     </div>
   );
 }

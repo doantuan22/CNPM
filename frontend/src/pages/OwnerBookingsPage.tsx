@@ -1,16 +1,18 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
-import { useOwnerBookings, useMyHotel } from '../features/owner/hooks';
+import { Link, useSearchParams } from 'react-router-dom';
+import { useOwnerBookings } from '../features/owner/hooks';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { formatCurrencyVND } from '../lib/utils';
 import { StatusBadge } from '../components/domain/StatusBadge';
+import { OwnerHotelContextSelector, OwnerHotelScopeState } from '../components/owner/OwnerHotelContext';
+import { useOwnerHotelContext } from '../features/owner/context';
 
 
 function getStatusBadge(status: string) { return <StatusBadge domain="booking" status={status} />; }
 
 export default function OwnerBookingsPage() {
-  const { id } = useParams<{ id: string }>(); 
-  const hotelId = Number(id); 
+  const scope = useOwnerHotelContext();
+  const hotelId = scope.hotelId ?? 0;
   const [params, setParams] = useSearchParams();
   
   const filters = { 
@@ -22,7 +24,6 @@ export default function OwnerBookingsPage() {
     to: params.get('to') ?? undefined 
   };
   
-  const hotelQuery = useMyHotel(hotelId);
   const query = useOwnerBookings(hotelId, filters);
 
   // Filters live in the URL, but replace the entry so typing doesn't flood browser history.
@@ -50,15 +51,17 @@ export default function OwnerBookingsPage() {
 
   const resetFilters = () => {
     setSearchInput('');
-    setParams(new URLSearchParams(), { replace: true });
+    const next = new URLSearchParams();
+    if (scope.hotelId) next.set('hotelId', String(scope.hotelId));
+    setParams(next, { replace: true });
   };
 
   // Only the first load replaces the page; later filter changes keep the previous rows visible.
-  if (hotelQuery.isLoading || (query.isLoading && !query.data)) {
+  if (scope.hotelsQuery.isLoading) {
     return <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>;
   }
 
-  if (hotelQuery.isError || query.isError) {
+  if (scope.hotelsQuery.isError) {
     return (
       <div role="alert" className="mx-auto max-w-md rounded-lg bg-red-50 px-4 py-3 text-center text-sm text-red-700 border border-red-200">
         Lỗi tải dữ liệu. Vui lòng thử lại.
@@ -66,15 +69,18 @@ export default function OwnerBookingsPage() {
     );
   }
 
-  const hotel = hotelQuery.data!;
-  const result = query.data!;
+  const hotel = scope.hotel;
+  const result = query.data;
 
   return (
-    <div className="flex flex-col gap-6 max-w-[1200px] mx-auto w-full">
-      <Link to={`/owner/hotels/${hotelId}`} className="breadcrumb w-fit">
-        <i className="ph ph-arrow-left"></i>
-        <span>Quay lại khách sạn</span>
-      </Link>
+    <div className="owner-module flex flex-col gap-6 max-w-[1200px] mx-auto w-full">
+      <header className="owner-module__header"><div><h1>Đặt phòng</h1><p className="page-header__desc">Tra cứu và theo dõi các đặt phòng của khách sạn đang chọn.</p></div></header>
+      <OwnerHotelContextSelector hotels={scope.hotels} hotelId={scope.hotelId} onChange={scope.selectHotel} />
+      <OwnerHotelScopeState loading={false} error={scope.hotelsQuery.error} empty={scope.hotels.length === 0} invalid={scope.invalidHotelId} />
+      {!hotelId && scope.hotels.length > 1 && <div className="owner-scope-state">Chọn khách sạn để tải danh sách đặt phòng.</div>}
+      {hotelId > 0 && query.isLoading && !result && <div role="status" className="owner-scope-state">Đang tải đặt phòng…</div>}
+      {hotelId > 0 && query.isError && <div role="alert" className="owner-scope-state is-error">Không thể tải danh sách đặt phòng.</div>}
+      {hotelId > 0 && hotel && result && <>
 
       <div className="flex items-center gap-3">
         <div className="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600 border border-slate-200">
@@ -89,8 +95,7 @@ export default function OwnerBookingsPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 mb-1">Danh sách đặt phòng</h1>
-            <span className="bg-primary-100 text-primary-800 text-xs px-2.5 py-0.5 rounded-full font-bold">Partner</span>
+            <h2 className="text-xl font-bold tracking-tight text-slate-900 mb-1">Đặt phòng · {hotel.TenKhachSan}</h2>
           </div>
           <p className="text-sm text-slate-500">Theo dõi, kiểm tra chi tiết và tiếp đón khách hàng theo thời gian thực.</p>
         </div>
@@ -203,7 +208,7 @@ export default function OwnerBookingsPage() {
                       {getStatusBadge(b.TrangThai)}
                     </td>
                     <td className="py-4 px-4 text-center">
-                      <Link to={`/owner/hotels/${hotelId}/bookings/${b.MaDatPhong}`} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-primary-700 bg-primary-50 hover:bg-primary-100 transition border border-primary-200/60">
+                      <Link to={`/owner/bookings/${b.MaDatPhong}?hotelId=${hotelId}`} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-primary-700 bg-primary-50 hover:bg-primary-100 transition border border-primary-200/60">
                         <span>Chi tiết</span>
                         <i className="ph ph-caret-right"></i>
                       </Link>
@@ -230,7 +235,7 @@ export default function OwnerBookingsPage() {
                   <div className="col-span-2"><dt className="text-xs text-muted">Phòng</dt><dd className="font-medium text-heading">{booking.ChiTietPhong.map((room) => `${room.TenLoaiPhong} × ${room.SoLuong}`).join(', ')}</dd></div>
                   <div className="col-span-2"><dt className="text-xs text-muted">Tổng thanh toán</dt><dd className="font-bold text-heading">{formatCurrencyVND(booking.TongTienThanhToan)}</dd></div>
                 </dl>
-                <Link to={`/owner/hotels/${hotelId}/bookings/${booking.MaDatPhong}`} className="btn btn-outline btn-sm w-full justify-center">Xem chi tiết</Link>
+                <Link to={`/owner/bookings/${booking.MaDatPhong}?hotelId=${hotelId}`} className="btn btn-outline btn-sm w-full justify-center">Xem chi tiết</Link>
               </article>
             ))}
           </div>
@@ -247,6 +252,7 @@ export default function OwnerBookingsPage() {
           )}
         </div>
       </div>
+      </>}
     </div>
   );
 }
