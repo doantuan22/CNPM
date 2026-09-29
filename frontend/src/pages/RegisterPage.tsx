@@ -6,12 +6,14 @@ import { useRegister } from '../features/auth/hooks';
 import { registerSchema, RegisterFormValues } from '../features/auth/schemas';
 import { ApiError } from '../services/apiClient';
 import { cn } from '../lib/utils';
+import { Button } from '../components/common/Button';
 
 type RegisterIntent = 'customer' | 'partner' | null;
 
 export default function RegisterPage() {
   const navigate = useNavigate();
   const [intent, setIntent] = useState<RegisterIntent>(null);
+  const [selectedIntent, setSelectedIntent] = useState<Exclude<RegisterIntent, null> | null>(null);
   const registerMutation = useRegister();
 
   const {
@@ -51,47 +53,18 @@ export default function RegisterPage() {
               <p className="mt-2 text-ink-muted">Bạn muốn sử dụng nền tảng Egode với mục đích nào?</p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              <div 
-                className="bg-white border-2 border-primary rounded-2xl p-6 shadow-md shadow-primary/10 flex flex-col items-center text-center transition-all cursor-pointer hover:shadow-lg"
-                role="button"
-                tabIndex={0}
-                onClick={() => setIntent('customer')}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault();
-                    setIntent('customer');
-                  }
-                }}
-              >
-                <div className="w-16 h-16 rounded-2xl bg-blue-50 text-primary flex items-center justify-center text-3xl mb-4">
-                  <i className="ph-fill ph-suitcase-rolling"></i>
-                </div>
-                <h2 className="text-lg font-bold text-ink">Khách hàng</h2>
-                <p className="text-sm mt-2 mb-6 text-ink-muted flex-1">Đặt phòng, thanh toán, quản lý chuyến đi, đánh giá khách sạn và gửi yêu cầu hỗ trợ.</p>
-                <span className="w-full bg-primary text-white font-bold py-3 px-4 rounded-xl">Đăng ký khách hàng</span>
-              </div>
-
-              <div 
-                className="bg-white border border-border rounded-2xl p-6 shadow-sm hover:border-blue-300 hover:shadow-md flex flex-col items-center text-center transition-all cursor-pointer"
-                role="button"
-                tabIndex={0}
-                onClick={() => setIntent('partner')}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault();
-                    setIntent('partner');
-                  }
-                }}
-              >
-                <div className="w-16 h-16 rounded-2xl bg-slate-100 text-ink flex items-center justify-center text-3xl mb-4">
-                  <i className="ph-fill ph-buildings"></i>
-                </div>
-                <h2 className="text-lg font-bold text-ink">Đối tác khách sạn</h2>
-                <p className="text-sm mt-2 mb-6 text-ink-muted flex-1">Đăng khách sạn lên Egode, quản lý phòng, giá bán và hoạt động kinh doanh.</p>
-                <span className="w-full bg-slate-100 text-ink hover:bg-slate-200 font-bold py-3 px-4 rounded-xl transition-colors">Đăng ký đối tác</span>
-              </div>
-            </div>
+            <fieldset className="register-intent-list">
+              <legend className="sr-only">Chọn mục đích đăng ký</legend>
+              <label className={`register-intent ${selectedIntent === 'customer' ? 'is-selected' : ''}`}>
+                <input type="radio" name="register-intent" value="customer" checked={selectedIntent === 'customer'} onChange={() => setSelectedIntent('customer')} />
+                <span className="register-intent__content"><strong>Khách hàng</strong><span>Đặt phòng, quản lý chuyến đi, đánh giá khách sạn và gửi yêu cầu hỗ trợ.</span></span>
+              </label>
+              <label className={`register-intent ${selectedIntent === 'partner' ? 'is-selected' : ''}`}>
+                <input type="radio" name="register-intent" value="partner" checked={selectedIntent === 'partner'} onChange={() => setSelectedIntent('partner')} />
+                <span className="register-intent__content"><strong>Đối tác khách sạn</strong><span>Đăng chỗ nghỉ lên Egode và quản lý phòng, giá bán, hoạt động kinh doanh.</span></span>
+              </label>
+            </fieldset>
+            <div className="register-intent__actions"><Button type="button" disabled={!selectedIntent} onClick={() => selectedIntent && setIntent(selectedIntent)}>Tiếp tục</Button></div>
 
             <p className="text-center text-sm mt-8 text-ink-muted">
               Đã có tài khoản? <Link to="/login" className="font-semibold text-primary">Đăng nhập</Link>

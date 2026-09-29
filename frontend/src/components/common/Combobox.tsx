@@ -2,16 +2,19 @@ import { useId, useMemo, useState, type FocusEvent, type KeyboardEvent } from 'r
 
 export interface ComboboxOption { value: string; label: string }
 
-export function Combobox({ id, label, value, options, onValueChange, placeholder = 'Tìm và chọn...', error, hint, disabled }: {
+export function Combobox({ id, label, value, options, onValueChange, onInputChange, onSelect, placeholder = 'Tìm và chọn...', error, hint, disabled, allowCustomValue = false }: {
   id?: string;
   label: string;
   value: string;
   options: ComboboxOption[];
   onValueChange: (value: string) => void;
+  onInputChange?: (value: string) => void;
+  onSelect?: (value: string) => void;
   placeholder?: string;
   error?: string;
   hint?: string;
   disabled?: boolean;
+  allowCustomValue?: boolean;
 }) {
   const generatedId = useId();
   const inputId = id ?? generatedId;
@@ -29,6 +32,7 @@ export function Combobox({ id, label, value, options, onValueChange, placeholder
 
   const choose = (option: ComboboxOption) => {
     onValueChange(option.value);
+    onSelect?.(option.value);
     setQuery('');
     setOpen(false);
   };
@@ -42,9 +46,17 @@ export function Combobox({ id, label, value, options, onValueChange, placeholder
       event.preventDefault();
       setOpen(true);
       setActiveIndex((index) => index <= 0 ? filtered.length - 1 : index - 1);
-    } else if (event.key === 'Enter' && open && filtered[activeIndex]) {
-      event.preventDefault();
-      choose(filtered[activeIndex]);
+    } else if (event.key === 'Enter' && open) {
+      if (filtered[activeIndex]) {
+        event.preventDefault();
+        choose(filtered[activeIndex]);
+      } else if (allowCustomValue && query.trim()) {
+        event.preventDefault();
+        onValueChange(query.trim());
+        onSelect?.(query.trim());
+        setQuery('');
+        setOpen(false);
+      }
     } else if (event.key === 'Escape' && open) {
       event.preventDefault();
       setOpen(false);
@@ -54,6 +66,7 @@ export function Combobox({ id, label, value, options, onValueChange, placeholder
 
   const onBlur = (event: FocusEvent<HTMLDivElement>) => {
     if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+      if (allowCustomValue && query.trim()) onValueChange(query.trim());
       setOpen(false);
       setQuery('');
     }
@@ -75,11 +88,11 @@ export function Combobox({ id, label, value, options, onValueChange, placeholder
         aria-describedby={error ? errorId : hint ? hintId : undefined}
         autoComplete="off"
         className="ui-field"
-        value={open ? query : selected?.label ?? ''}
+        value={open ? query : selected?.label ?? value}
         placeholder={placeholder}
         disabled={disabled}
         onFocus={() => { setQuery(''); setActiveIndex(-1); setOpen(true); }}
-        onChange={(event) => { setQuery(event.target.value); setActiveIndex(-1); setOpen(true); onValueChange(''); }}
+        onChange={(event) => { setQuery(event.target.value); setActiveIndex(-1); setOpen(true); onValueChange(''); onInputChange?.(event.target.value); }}
         onKeyDown={onKeyDown}
       />
       {open && (

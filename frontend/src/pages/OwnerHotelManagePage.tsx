@@ -111,46 +111,36 @@ export default function OwnerHotelManagePage() {
         <span>Quay lại danh sách khách sạn</span>
       </Link>
 
-      <div className="owner-hotel-manage__identity flex justify-between items-center flex-wrap gap-3">
-        <div>
-          <h1 className="text-[20px] font-bold text-heading mb-0.5">Hồ sơ khách sạn</h1>
-          <p className="text-[13px] text-muted">Cập nhật thông tin chi tiết, quy định nhận phòng và hình ảnh cơ sở lưu trú.</p>
-        </div>
-
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="flex items-center gap-2 px-1 py-2">
-            <div>
-              <span className="text-[12px] text-muted font-medium block leading-tight">Đang quản lý:</span>
-              <div className="text-[13px] font-bold text-heading leading-tight flex items-center gap-1.5"><i className="ph-fill ph-buildings text-primary"></i> {hotel.TenKhachSan}</div>
-            </div>
-          </div>
+      <header className="owner-entity-header">
+        <div className="owner-entity-header__identity">
+          <div><p className="owner-entity-header__eyebrow">Hồ sơ khách sạn</p><h1>{hotel.TenKhachSan}</h1><p>Cập nhật thông tin, quy định nhận phòng và hình ảnh cơ sở lưu trú.</p></div>
           <StatusBadge domain="hotel" status={hotel.TrangThai} />
         </div>
-      </div>
-
-      <nav className="owner-hotel-manage__actions flex items-center gap-3 flex-wrap" aria-label="Thao tác khách sạn">
-        <Link to={`/owner/hotels/${hotelId}/analytics`} className="btn btn-outline btn-sm">
-          <i className="ph ph-chart-bar"></i> Xem thống kê
-        </Link>
-        <Link to={`/owner/hotels/${hotelId}/bookings`} className="btn btn-outline btn-sm">
-          <i className="ph ph-calendar"></i> Quản lý Booking
-        </Link>
-        {hotel.TrangThai !== 'Ngừng hoạt động' && (
-          <button 
-            type="button" 
-            className="btn btn-danger-outline btn-sm"
-            disabled={deactivateMutation.isPending}
-            onClick={async () => { if (await confirm({ title: 'Ngừng kinh doanh khách sạn?', description: 'Các đặt phòng lịch sử sẽ được giữ lại.', confirmLabel: 'Ngừng kinh doanh', variant: 'danger' })) deactivateMutation.mutate(); }}
-          >
-            {deactivateMutation.isPending ? 'Đang xử lý...' : 'Ngừng kinh doanh'}
+        <div className="owner-entity-header__actions">
+          <button type="submit" form="owner-hotel-editor" disabled={!isDirty || updateMutation.isPending} className="btn btn-primary">
+            {updateMutation.isPending ? 'Đang lưu...' : 'Lưu thay đổi'}
           </button>
-        )}
-      </nav>
+          <details className="owner-action-menu" onKeyDown={(event) => {
+            if (event.key === 'Escape') {
+              event.preventDefault();
+              event.currentTarget.open = false;
+              event.currentTarget.querySelector('summary')?.focus();
+            }
+          }}>
+            <summary aria-label="Thao tác khác với khách sạn">Thao tác khác <span aria-hidden="true">⌄</span></summary>
+            <nav aria-label="Thao tác khách sạn">
+              <Link to={`/owner/hotels/${hotelId}/analytics`}>Xem thống kê</Link>
+              <Link to={`/owner/hotels/${hotelId}/bookings`}>Quản lý đặt phòng</Link>
+              {hotel.TrangThai !== 'Ngừng hoạt động' && <button type="button" className="is-danger" disabled={deactivateMutation.isPending} onClick={async () => { if (await confirm({ title: 'Ngừng kinh doanh khách sạn?', description: 'Các đặt phòng lịch sử sẽ được giữ lại.', confirmLabel: 'Ngừng kinh doanh', variant: 'danger' })) deactivateMutation.mutate(); }}>{deactivateMutation.isPending ? 'Đang xử lý...' : 'Ngừng kinh doanh'}</button>}
+            </nav>
+          </details>
+        </div>
+      </header>
 
       {deactivateMutation.isSuccess && <div role="status" className="rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">Khách sạn đã ngừng kinh doanh; lịch sử booking được giữ lại.</div>}
       {deactivateMutation.isError && <div role="alert" className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">{deactivateMutation.error instanceof ApiError ? deactivateMutation.error.message : 'Không thể ngừng kinh doanh khách sạn'}</div>}
 
-      <form onSubmit={handleSubmit((v) => updateMutation.mutate(v))} noValidate className="flex flex-col gap-5">
+      <form id="owner-hotel-editor" onSubmit={handleSubmit((v) => updateMutation.mutate(v))} noValidate className="flex flex-col gap-5">
         {updateMutation.isError && (
           <div role="alert" className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
             {updateMutation.error instanceof ApiError ? updateMutation.error.message : 'Cập nhật thất bại'}
@@ -256,16 +246,7 @@ export default function OwnerHotelManagePage() {
           )}
         </section>
 
-        <div className="flex justify-between items-center flex-wrap gap-3 bg-white border border-border rounded-[14px] px-6 py-4 shadow-sm">
-          <span className="text-[13px] text-muted flex items-center gap-1.5">
-            <i className="ph ph-clock"></i> Hãy nhớ bấm lưu sau khi thay đổi
-          </span>
-          <div className="flex gap-3">
-            <button type="submit" disabled={!isDirty || updateMutation.isPending} className="btn btn-primary">
-              {updateMutation.isPending ? 'Đang lưu...' : 'Lưu thay đổi hồ sơ'}
-            </button>
-          </div>
-        </div>
+        {isDirty && <p className="text-sm text-muted" role="status">Có thay đổi chưa được lưu.</p>}
         {updateMutation.isSuccess && (
           <div role="status" className="rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">Cập nhật thành công</div>
         )}

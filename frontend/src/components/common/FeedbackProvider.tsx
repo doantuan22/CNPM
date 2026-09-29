@@ -48,6 +48,8 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
   const [confirmation, setConfirmation] = useState<ConfirmItem | null>(null);
   const activeConfirmation = useRef<ConfirmItem | null>(null);
   const nextToastId = useRef(0);
+  const toastTimers = useRef(new Map<number, number>());
+  const toastOrder = useRef<number[]>([]);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const id = useId();
   const titleId = `confirm-title-${id}`;
@@ -55,10 +57,26 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
 
   const notify = useCallback((options: ToastOptions) => {
     const id = ++nextToastId.current;
-    setToasts((current) => [...current, { ...options, id }]);
+    const evictedId = toastOrder.current.length >= 3 ? toastOrder.current.shift() : undefined;
+    if (evictedId !== undefined) {
+      const timer = toastTimers.current.get(evictedId);
+      if (timer !== undefined) window.clearTimeout(timer);
+      toastTimers.current.delete(evictedId);
+    }
+    toastOrder.current.push(id);
+    setToasts((current) => [...current.filter((toast) => toast.id !== evictedId), { ...options, id }].slice(-3));
+    toastTimers.current.set(id, window.setTimeout(() => {
+      setToasts((current) => current.filter((toast) => toast.id !== id));
+      toastTimers.current.delete(id);
+      toastOrder.current = toastOrder.current.filter((toastId) => toastId !== id);
+    }, options.duration ?? 5000));
   }, []);
 
   const dismissToast = useCallback((id: number) => {
+    const timer = toastTimers.current.get(id);
+    if (timer !== undefined) window.clearTimeout(timer);
+    toastTimers.current.delete(id);
+    toastOrder.current = toastOrder.current.filter((toastId) => toastId !== id);
     setToasts((current) => current.filter((toast) => toast.id !== id));
   }, []);
 
@@ -90,11 +108,7 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
     else dialog.setAttribute('open', '');
   }, [confirmation]);
 
-  useEffect(() => {
-    if (!toasts.length) return;
-    const timers = toasts.map((toast) => window.setTimeout(() => dismissToast(toast.id), toast.duration ?? 5000));
-    return () => timers.forEach(window.clearTimeout);
-  }, [toasts, dismissToast]);
+  useEffect(() => () => toastTimers.current.forEach((timer) => window.clearTimeout(timer)), []);
 
   const feedbackValue = { confirm, notify };
 

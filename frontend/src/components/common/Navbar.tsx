@@ -4,7 +4,7 @@ import { useAuthStore } from '../../lib/authStore';
 import { useLogout, useMe } from '../../features/auth/hooks';
 import { ROLE_NAMES } from '../../lib/roles';
 import { cn } from '../../lib/utils';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export function Navbar() {
   const location = useLocation();
@@ -16,6 +16,48 @@ export function Navbar() {
   const logoutMutation = useLogout();
   
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const menuTriggerRef = useRef<HTMLButtonElement>(null);
+  const drawerTriggerRef = useRef<HTMLButtonElement>(null);
+  const drawerRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (!isSidebarOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const focusable = () => drawerRef.current?.querySelectorAll<HTMLElement>('a[href], button:not(:disabled), input:not(:disabled), [tabindex]:not([tabindex="-1"])') ?? [];
+    requestAnimationFrame(() => focusable()[0]?.focus());
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        toggleSidebar();
+        drawerTriggerRef.current?.focus();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const items = [...focusable()];
+      if (!items.length) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isSidebarOpen, toggleSidebar]);
+
+  useEffect(() => {
+    if (!isDropdownOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsDropdownOpen(false);
+        menuTriggerRef.current?.focus();
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [isDropdownOpen]);
 
   const navLinks = [
     { to: '/', label: 'Trang chủ' },
@@ -58,15 +100,13 @@ export function Navbar() {
           <div className="site-header__actions">
             {accessToken ? (
               <>
-                <button className="site-header__icon-btn" aria-label="Thông báo">
-                  <i className="ph ph-bell"></i>
-                  <span className="dot"></span>
-                </button>
                 <div className="dropdown">
-                  <button 
+                  <button
+                    ref={menuTriggerRef}
                     className="site-header__user" 
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                     aria-expanded={isDropdownOpen}
+                    aria-haspopup="menu"
                   >
                     <div className="site-header__avatar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--color-primary-light)', color: 'var(--color-primary)', fontWeight: 'bold' }}>
                       {meQuery.data?.HoTen?.charAt(0) ?? 'U'}
@@ -107,9 +147,13 @@ export function Navbar() {
             )}
             
             <button
+              ref={drawerTriggerRef}
               className="site-header__icon-btn site-header__menu-toggle"
               onClick={toggleSidebar}
               aria-label="Mở menu"
+              aria-expanded={isSidebarOpen}
+              aria-controls="public-mobile-navigation"
+              aria-haspopup="dialog"
             >
               <i className="ph ph-list"></i>
             </button>
@@ -119,10 +163,10 @@ export function Navbar() {
 
       {/* Mobile drawer */}
       <div className={cn("mobile-drawer", isSidebarOpen && "open")}>
-        <div className="mobile-drawer__backdrop" onClick={toggleSidebar}></div>
-        <div className="mobile-drawer__panel">
+        <button type="button" className="mobile-drawer__backdrop" aria-label="Đóng menu" tabIndex={isSidebarOpen ? 0 : -1} onClick={toggleSidebar}></button>
+        <aside id="public-mobile-navigation" ref={drawerRef} className="mobile-drawer__panel" role="dialog" aria-modal="true" aria-label="Điều hướng chính" aria-hidden={!isSidebarOpen} inert={!isSidebarOpen}>
           <div className="flex justify-end mb-4">
-            <button onClick={toggleSidebar} className="btn-icon btn-ghost"><i className="ph ph-x text-2xl"></i></button>
+            <button type="button" onClick={toggleSidebar} className="btn-icon btn-ghost" aria-label="Đóng menu"><i className="ph ph-x text-2xl" aria-hidden="true"></i></button>
           </div>
           <div className="space-y-1">
             {navLinks.map((link) => (
@@ -135,6 +179,11 @@ export function Navbar() {
                 {link.label}
               </Link>
             ))}
+            {accessToken && <>
+              {roleDashboard && <Link to={roleDashboard.to} onClick={toggleSidebar} className="mobile-drawer__link">{roleDashboard.label}</Link>}
+              <Link to="/profile" onClick={toggleSidebar} className="mobile-drawer__link">Tài khoản của tôi</Link>
+              <Link to="/bookings" onClick={toggleSidebar} className="mobile-drawer__link">Đơn đặt phòng</Link>
+            </>}
             {!accessToken && (
               <>
                 <div className="dropdown-divider my-4"></div>
@@ -143,7 +192,7 @@ export function Navbar() {
               </>
             )}
           </div>
-        </div>
+        </aside>
       </div>
     </>
   );

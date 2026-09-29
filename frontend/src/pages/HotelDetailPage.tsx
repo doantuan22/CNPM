@@ -1,7 +1,4 @@
 import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { useParams, useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { useHotelDetail, useHotelRooms } from '../features/hotels/hooks';
 import { defaultSearchDates } from '../features/hotels/schemas';
@@ -13,15 +10,8 @@ import { ApiError } from '../services/apiClient';
 import { formatCurrencyVND, cn } from '../lib/utils';
 import { Input } from '../components/common/Input';
 import { Textarea } from '../components/common/Textarea';
-
-const dateGuestSchema = z
-  .object({
-    checkIn: z.string().min(1),
-    checkOut: z.string().min(1),
-    guests: z.coerce.number().int().min(1).max(50),
-  })
-  .refine((d) => d.checkOut > d.checkIn, { message: 'Ngày trả phòng phải sau ngày nhận phòng', path: ['checkOut'] });
-type DateGuestValues = z.infer<typeof dateGuestSchema>;
+import { RoomOffer } from '../components/hotels/RoomOffer';
+import { TravelSearchBar } from '../components/hotels/TravelSearchBar';
 
 export default function HotelDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -48,16 +38,7 @@ export default function HotelDetailPage() {
   const hotelQuery = useHotelDetail(hotelId);
   const roomsQuery = useHotelRooms(hotelId, { checkIn, checkOut, guests });
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<DateGuestValues>({
-    resolver: zodResolver(dateGuestSchema),
-    values: { checkIn, checkOut, guests },
-  });
-
-  const onDatesSubmit = (values: DateGuestValues) => {
+  const onDatesSubmit = (values: { checkIn: string; checkOut: string; guests: number }) => {
     setSelectedRooms({});
     quoteMutation.reset();
     bookingMutation.reset();
@@ -290,26 +271,12 @@ export default function HotelDetailPage() {
                 </div>
               </div>
 
-              {/* SEARCH DATES FORM */}
-              <div className="bg-white rounded-2xl border border-border p-5 mb-6 shadow-sm">
-                <form onSubmit={handleSubmit(onDatesSubmit)} noValidate className="grid grid-cols-1 gap-3 sm:grid-cols-4 items-end">
-                  <div>
-                    <label htmlFor="hotel-detail-checkIn" className="mb-1 block text-xs font-medium text-slate-600">Nhận phòng</label>
-                    <Input id="hotel-detail-checkIn" type="date" {...register('checkIn')} />
-                  </div>
-                  <div>
-                    <label htmlFor="hotel-detail-checkOut" className="mb-1 block text-xs font-medium text-slate-600">Trả phòng</label>
-                    <Input id="hotel-detail-checkOut" type="date" error={errors.checkOut?.message} {...register('checkOut')} />
-                  </div>
-                  <div>
-                    <label htmlFor="hotel-detail-guests" className="mb-1 block text-xs font-medium text-slate-600">Số khách</label>
-                    <Input id="hotel-detail-guests" type="number" min={1} max={50} {...register('guests')} />
-                  </div>
-                  <button type="submit" className="w-full h-[42px] bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-medium transition-colors text-sm">
-                    Kiểm tra phòng
-                  </button>
-                </form>
-              </div>
+              <TravelSearchBar
+                variant="stay"
+                currentSearch={{ checkIn, checkOut, guests }}
+                onSearch={onDatesSubmit}
+                loading={roomsQuery.isFetching}
+              />
 
               {roomsQuery.isLoading ? (
                 <div className="flex justify-center py-10" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>
@@ -319,58 +286,7 @@ export default function HotelDetailPage() {
                  <div className="rounded-lg bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">Không có loại phòng phù hợp.</div>
               ) : (
                 <div className="space-y-6">
-                  {roomsQuery.data?.map((room) => (
-                    <div key={room.MaLoaiPhong} className={cn("bg-white rounded-2xl border p-5 sm:p-6 shadow-sm hover:border-primary/60 transition-colors grid grid-cols-1 md:grid-cols-12 gap-6", (selectedRooms[room.MaLoaiPhong] ?? 0) > 0 ? "border-primary ring-1 ring-primary" : "border-border", !room.ConHang && 'opacity-60 grayscale-[50%] pointer-events-none')}>
-                      <div className="md:col-span-4 relative rounded-xl overflow-hidden bg-slate-100 flex items-center justify-center">
-                        <i className="ph-duotone ph-image text-4xl text-slate-300"></i>
-                      </div>
-                      
-                      <div className="md:col-span-5 flex flex-col justify-between">
-                        <div>
-                          <h3 className="text-lg font-bold text-ink">{room.TenLoaiPhong}</h3>
-                          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-2.5 text-xs text-ink-muted">
-                            <span className="flex items-center gap-1.5"><i className="ph ph-arrows-out text-sm"></i> {room.DienTich} m²</span>
-                            <span className="flex items-center gap-1.5"><i className="ph ph-bed text-sm"></i> {room.LoaiGiuong}</span>
-                            <span className="flex items-center gap-1.5"><i className="ph ph-user text-sm"></i> Tối đa {room.SucChua} khách</span>
-                          </div>
-                          {!room.ConHang && (
-                            <div className="mt-3">
-                              <span className="inline-block rounded bg-red-50 px-2 py-1 text-xs font-medium text-red-600">Hết phòng cho khoảng ngày đã chọn</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="md:col-span-3 flex flex-col justify-between md:items-end md:text-right border-t md:border-t-0 md:border-l border-border pt-4 md:pt-0 md:pl-6">
-                        <div>
-                           {room.GiaTheoDem !== null ? (
-                             <>
-                              <div className="text-2xl font-extrabold text-primary tracking-tight">{formatCurrencyVND(room.GiaTheoDem)}</div>
-                              <span className="text-[11px] text-ink-muted block">/phòng /đêm</span>
-                             </>
-                           ) : <span className="text-sm text-slate-500">Không có giá</span>}
-                        </div>
-                        <div className="mt-4 w-full">
-                          <label htmlFor={"hotel-detail-room-quantity-" + room.MaLoaiPhong} className="mb-1.5 block text-xs font-semibold text-ink-muted md:text-right">
-                            Số phòng muốn đặt
-                          </label>
-                          <Input
-                            id={"hotel-detail-room-quantity-" + room.MaLoaiPhong}
-                            aria-label={"Số phòng " + room.TenLoaiPhong + " muốn đặt"}
-                            type="number"
-                            min={0}
-                            max={room.SoPhongConLai}
-                            step={1}
-                            disabled={!room.ConHang}
-                            value={selectedRooms[room.MaLoaiPhong] ?? 0}
-                            onChange={(e) => setRoomQuantity(room.MaLoaiPhong, Number(e.target.value), room.SoPhongConLai)}
-                            className="h-10 md:ml-auto md:w-28"
-                          />
-                          {room.ConHang && <p className="text-[10px] text-ink-muted text-center mt-1.5">Còn {room.SoPhongConLai} phòng</p>}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                  {roomsQuery.data?.map((room) => <RoomOffer key={room.MaLoaiPhong} room={room} selectedQuantity={selectedRooms[room.MaLoaiPhong] ?? 0} onQuantityChange={(quantity) => setRoomQuantity(room.MaLoaiPhong, quantity, room.SoPhongConLai)} />)}
                 </div>
               )}
             </section>

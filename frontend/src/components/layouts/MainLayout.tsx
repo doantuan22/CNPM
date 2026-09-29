@@ -40,7 +40,7 @@ export function MainLayout() {
                   <div className="site-footer__brand mb-4">
                     <div className="site-header__logo-mark" style={{ width: '38px', height: '38px' }}>E</div>Egode
                   </div>
-                  <p style={{ fontSize: '14px', color: 'var(--color-muted)', lineHeight: 1.6 }}>Nền tảng đặt phòng trực tuyến hàng đầu, mang đến trải nghiệm lưu trú hoàn hảo cho mọi chuyến đi.</p>
+                  <p style={{ fontSize: '14px', color: 'var(--color-muted)', lineHeight: 1.6 }}>Tìm nơi lưu trú, theo dõi chuyến đi và quản lý cơ sở trên Egode.</p>
                 </div>
                 <div className="site-footer__col">
                   <h4>Về Egode</h4>

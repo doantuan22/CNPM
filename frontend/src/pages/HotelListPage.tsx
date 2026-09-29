@@ -1,12 +1,13 @@
 import { useMemo, useState } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { useSearchHotels } from '../features/hotels/hooks';
 import { useAmenities } from '../features/amenities/hooks';
 import { defaultSearchDates } from '../features/hotels/schemas';
 import type { HotelSearchParams, SortOption } from '../features/hotels/types';
 import { ApiError } from '../services/apiClient';
-import { formatCurrencyVND, cn } from '../lib/utils';
-import { SearchForm } from '../components/hotels/SearchForm';
+import { cn } from '../lib/utils';
+import { TravelSearchBar } from '../components/hotels/TravelSearchBar';
+import { HotelCard } from '../components/hotels/HotelCard';
 
 const PAGE_SIZE = 12;
 
@@ -34,7 +35,6 @@ export default function HotelListPage() {
   const query = useSearchHotels(params);
   const amenitiesQuery = useAmenities();
   
-  const [isSearchFormOpen, setIsSearchFormOpen] = useState(false);
   const [areFiltersOpen, setAreFiltersOpen] = useState(false);
 
   const updateParams = (patch: Record<string, string | undefined>, resetPage = true) => {
@@ -60,61 +60,20 @@ export default function HotelListPage() {
   return (
     <div className="booking-flow bg-surface-secondary text-ink min-h-[80vh] flex flex-col w-full !max-w-full !px-0 !py-0">
       
-      {/* QUICK SEARCH BAR (Sticky Sub-header for Fast Refinement) */}
-      <section className="bg-white border-b border-border py-3.5 shadow-sm sticky top-[4.5rem] z-30">
+      {/* Persistent search context: edits remain draft until explicit submit. */}
+      <section className="bg-surface-secondary border-b border-border py-3.5 sticky top-[4.5rem] z-30">
         <div className="max-w-[1440px] mx-auto px-6 lg:px-12">
-          {isSearchFormOpen ? (
-            <div className="relative">
-               <button onClick={() => setIsSearchFormOpen(false)} className="absolute -top-2 right-0 text-slate-400 hover:text-red-500 z-10"><i className="ph-bold ph-x"></i> Đóng</button>
-               <SearchForm
-                initialValues={{
-                  location: params.location,
-                  checkIn: params.checkIn,
-                  checkOut: params.checkOut,
-                  guests: params.guests,
-                }}
-                onSubmit={(values) => {
-                  updateParams({
-                    location: values.location || undefined,
-                    checkIn: values.checkIn,
-                    checkOut: values.checkOut,
-                    guests: String(values.guests),
-                  });
-                  setIsSearchFormOpen(false);
-                }}
-              />
-            </div>
-          ) : (
-            <div className="hotel-stay-context flex flex-col lg:flex-row items-center justify-between gap-2.5">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-2 w-full lg:flex-1">
-                <button type="button" onClick={() => setIsSearchFormOpen(true)} className="hotel-stay-context__item flex items-center gap-3 bg-white px-4 py-2.5 rounded-xl border border-slate-200 hover:border-primary transition-colors cursor-pointer group text-left min-w-0">
-                  <i className="ph-duotone ph-map-pin text-xl text-primary group-hover:scale-110 transition-transform"></i>
-                  <div className="flex flex-col text-left truncate">
-                    <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Điểm đến</span>
-                    <span className="text-sm font-semibold text-slate-800 truncate">{params.location || 'Tất cả'}</span>
-                  </div>
-                </button>
-                <button type="button" onClick={() => setIsSearchFormOpen(true)} className="hotel-stay-context__item flex items-center gap-3 bg-white px-4 py-2.5 rounded-xl border border-slate-200 hover:border-primary transition-colors cursor-pointer group text-left min-w-0">
-                  <i className="ph-duotone ph-calendar-blank text-xl text-primary group-hover:scale-110 transition-transform"></i>
-                  <div className="flex flex-col text-left truncate">
-                    <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Nhận & Trả phòng</span>
-                    <span className="text-sm font-semibold text-slate-800 truncate">{params.checkIn} - {params.checkOut}</span>
-                  </div>
-                </button>
-                <button type="button" onClick={() => setIsSearchFormOpen(true)} className="hotel-stay-context__item flex items-center gap-3 bg-white px-4 py-2.5 rounded-xl border border-slate-200 hover:border-primary transition-colors cursor-pointer group text-left min-w-0">
-                  <i className="ph-duotone ph-users text-xl text-primary group-hover:scale-110 transition-transform"></i>
-                  <div className="flex flex-col text-left truncate">
-                    <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Số khách</span>
-                    <span className="text-sm font-semibold text-slate-800 truncate">{params.guests} người</span>
-                  </div>
-                </button>
-              </div>
-              <button type="button" onClick={() => setIsSearchFormOpen(true)} className="w-full lg:w-auto px-7 py-3 bg-primary hover:bg-blue-600 text-white font-semibold text-sm rounded-xl transition-all shadow-md shadow-blue-500/25 flex items-center justify-center gap-2 whitespace-nowrap active:scale-[0.98]">
-                <i className="ph-bold ph-magnifying-glass text-base"></i>
-                <span>Sửa tìm kiếm</span>
-              </button>
-            </div>
-          )}
+          <TravelSearchBar
+            variant="compact"
+            currentSearch={{ location: params.location, checkIn: params.checkIn, checkOut: params.checkOut, guests: params.guests }}
+            loading={query.isFetching}
+            onSearch={(values) => updateParams({
+              location: values.location || undefined,
+              checkIn: values.checkIn,
+              checkOut: values.checkOut,
+              guests: String(values.guests),
+            })}
+          />
         </div>
       </section>
 
@@ -228,64 +187,7 @@ export default function HotelListPage() {
               </div>
             ) : (
               <div className="space-y-4">
-                {query.data?.items.map((hotel) => (
-                  <article key={hotel.MaKhachSan} className="bg-white rounded-2xl border border-border shadow-md hover:shadow-lg transition-all duration-300 p-4 flex flex-col md:flex-row gap-5 group">
-                    <div className="w-full md:w-[280px] shrink-0 flex gap-2">
-                      <div className="relative flex-1 h-52 md:h-48 rounded-xl overflow-hidden bg-slate-100">
-                        {hotel.AnhDaiDien ? (
-                          <img src={hotel.AnhDaiDien} alt={hotel.TenKhachSan} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-slate-300"><i className="ph-duotone ph-image text-4xl"></i></div>
-                        )}
-                        <button className="fav-btn absolute top-2.5 left-2.5 w-8 h-8 rounded-full bg-white/80 backdrop-blur hover:bg-white text-slate-600 hover:text-red-500 flex items-center justify-center transition-all shadow-sm">
-                          <i className="ph ph-heart text-base"></i>
-                        </button>
-                      </div>
-                    </div>
-                    
-                    <div className="flex-1 flex flex-col justify-between py-1 min-w-0">
-                      <div className="space-y-2">
-                        <div>
-                          <h3 className="text-base font-bold text-slate-900 group-hover:text-primary transition-colors truncate">
-                            {hotel.TenKhachSan}
-                          </h3>
-                          <div className="flex items-center gap-1.5 mt-1">
-                            <div className="flex text-amber-400 text-xs">
-                              {Array(5).fill(0).map((_, i) => <i key={i} className={cn("ph-fill ph-star", i >= hotel.HangSao && "text-slate-300 ph")}></i>)}
-                            </div>
-                            <span className="text-xs font-semibold text-slate-500">• {hotel.HangSao} sao</span>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-1 text-xs text-slate-500">
-                          <i className="ph-bold ph-map-pin text-primary"></i>
-                          <span className="font-medium text-slate-700 truncate">{hotel.DiaPhuong.TenThanhPho}</span>
-                        </div>
-                        {!hotel.ConPhong && (
-                          <div className="pt-2">
-                            <span className="bg-red-50 text-red-600 text-[11px] font-semibold px-2 py-0.5 rounded-md border border-red-100">Hết phòng</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="w-full md:w-[220px] md:border-l md:border-slate-100 md:pl-5 flex flex-col justify-between items-start md:items-end text-left md:text-right shrink-0 py-1">
-                      <div className="mt-4 md:mt-auto space-y-0.5 w-full">
-                        <span className="text-[11px] text-slate-400 font-medium block">Giá mỗi đêm từ</span>
-                        {hotel.GiaTuDauTu !== null ? (
-                           <div className="flex md:justify-end items-baseline gap-1.5">
-                             <span className="text-xl font-bold text-primary">{formatCurrencyVND(hotel.GiaTuDauTu)}</span>
-                           </div>
-                        ) : (
-                          <span className="text-xs text-slate-400 block">Không có giá</span>
-                        )}
-                      </div>
-                      <Link to={`/hotels/${hotel.MaKhachSan}?checkIn=${params.checkIn}&checkOut=${params.checkOut}&guests=${params.guests}`} className="w-full mt-3 py-2.5 px-4 bg-primary hover:bg-blue-600 text-white font-semibold text-xs rounded-xl shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-1.5 active:scale-[0.98]">
-                        <span>Xem chi tiết</span>
-                        <i className="ph-bold ph-arrow-right"></i>
-                      </Link>
-                    </div>
-                  </article>
-                ))}
+                {query.data?.items.map((hotel) => <HotelCard key={hotel.MaKhachSan} hotel={hotel} search={`checkIn=${params.checkIn}&checkOut=${params.checkOut}&guests=${params.guests}`} />)}
               </div>
             )}
 

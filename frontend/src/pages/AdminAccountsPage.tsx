@@ -3,26 +3,20 @@ import { Link } from 'react-router-dom';
 import { useAccountList } from '../features/admin/accounts/hooks';
 import { ApiError } from '../services/apiClient';
 import { StatusBadge } from '../components/domain/StatusBadge';
+import { useDebouncedValue } from '../hooks/useDebouncedValue';
 
 const PAGE_SIZE = 10;
 
 export default function AdminAccountsPage() {
   const [page, setPage] = useState(1);
   const [searchInput, setSearchInput] = useState('');
-  const [search, setSearch] = useState('');
   const [status, setStatus] = useState('');
+  const search = useDebouncedValue(searchInput.trim(), 350);
 
   const query = useAccountList({ page, limit: PAGE_SIZE, search: search || undefined, TrangThai: status || undefined });
 
-  const onSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setPage(1);
-    setSearch(searchInput.trim());
-  };
-
   const resetFilters = () => {
     setSearchInput('');
-    setSearch('');
     setStatus('');
     setPage(1);
   };
@@ -44,7 +38,7 @@ export default function AdminAccountsPage() {
       </div>
 
       <div className="bg-white p-5 rounded-[16px] border border-border shadow-sm space-y-4">
-        <form onSubmit={onSearchSubmit} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-3.5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-3.5">
           <div className="lg:col-span-6 relative">
             <label htmlFor="admin-accounts-field-1" className="block text-xs font-semibold text-slate-600 mb-1.5">Tìm kiếm tài khoản</label>
             <div className="relative">
@@ -54,7 +48,7 @@ export default function AdminAccountsPage() {
               <input id="admin-accounts-field-1" 
                 type="text" 
                 value={searchInput} 
-                onChange={(e) => setSearchInput(e.target.value)} 
+                onChange={(e) => { setSearchInput(e.target.value); setPage(1); }}
                 placeholder="Nhập họ tên, email, tên đăng nhập..." 
                 className="w-full pl-10 pr-4 py-2.5 bg-slate-50/60 border border-border rounded-xl text-sm text-heading placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
               />
@@ -63,7 +57,7 @@ export default function AdminAccountsPage() {
 
           <div className="lg:col-span-4">
             <label htmlFor="admin-accounts-field-2" className="block text-xs font-semibold text-slate-600 mb-1.5">Trạng thái hoạt động</label>
-            <select id="admin-accounts-field-2" 
+              <select id="admin-accounts-field-2"
               value={status} 
               onChange={(e) => { setStatus(e.target.value); setPage(1); }} 
               className="w-full px-3 py-2.5 bg-slate-50/60 border border-border rounded-xl text-sm text-heading focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition font-medium"
@@ -74,15 +68,12 @@ export default function AdminAccountsPage() {
             </select>
           </div>
 
-          <div className="lg:col-span-2 flex flex-row items-end gap-2">
-            <button type="submit" className="flex-1 py-2.5 px-3 bg-primary/10 text-primary-700 hover:bg-primary/20 rounded-xl text-xs font-semibold transition">
-              Tìm
-            </button>
-            <button type="button" onClick={resetFilters} title="Đặt lại bộ lọc" className="flex-1 py-2.5 px-3 border border-border rounded-xl text-slate-600 hover:bg-slate-100 flex items-center justify-center gap-1 text-xs font-semibold transition">
-              <i className="ph ph-arrow-counter-clockwise"></i> Reset
-            </button>
-          </div>
-        </form>
+        </div>
+        {(search || status) && <div className="admin-active-filters" aria-label="Bộ lọc đang dùng">
+          {search && <button type="button" onClick={() => { setSearchInput(''); setPage(1); }}>Tìm kiếm: {search} <span aria-hidden="true">×</span></button>}
+          {status && <button type="button" onClick={() => { setStatus(''); setPage(1); }}>Trạng thái: {status} <span aria-hidden="true">×</span></button>}
+          <button type="button" className="admin-active-filters__clear" onClick={resetFilters}>Xóa bộ lọc</button>
+        </div>}
       </div>
 
       <div className="bg-white rounded-[16px] border border-border shadow-sm overflow-hidden flex flex-col">
@@ -110,7 +101,7 @@ export default function AdminAccountsPage() {
                   <th className="py-3.5 px-5">Họ tên & Email</th>
                   <th className="py-3.5 px-4 text-center">Vai trò</th>
                   <th className="py-3.5 px-4 text-center">Trạng thái</th>
-                  <th className="py-3.5 px-4 text-center">Thao tác</th>
+              <th className="py-3.5 px-4 text-center">Hồ sơ</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-xs">
@@ -123,7 +114,7 @@ export default function AdminAccountsPage() {
                       <div className="text-[11px] text-slate-400">{account.Email}</div>
                     </td>
                     <td className="py-3.5 px-4 text-center">
-                      <span className="text-[11px] font-semibold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200">
+                      <span className="text-xs text-slate-600">
                         {account.VAI_TRO?.TenVaiTro ?? '—'}
                       </span>
                     </td>
@@ -131,9 +122,9 @@ export default function AdminAccountsPage() {
                       <StatusBadge domain="account" status={account.TrangThai} />
                     </td>
                     <td className="py-3.5 px-4 text-center">
-                      <Link to={`/admin/accounts/${account.MaTaiKhoan}`} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-primary-700 bg-primary-50 hover:bg-primary-100 transition border border-primary-200/60">
-                        <span>Chi tiết</span>
-                        <i className="ph ph-caret-right"></i>
+                      <Link to={`/admin/accounts/${account.MaTaiKhoan}`} className="admin-row-link">
+                        <span>Mở hồ sơ</span>
+                        <i className="ph ph-arrow-up-right" aria-hidden="true"></i>
                       </Link>
                     </td>
                   </tr>

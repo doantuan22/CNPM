@@ -6,6 +6,8 @@ import { Button } from './Button';
 import { Combobox } from './Combobox';
 import { FeedbackProvider, useConfirm, useToast } from './FeedbackProvider';
 import { Input } from './Input';
+import { GuestPicker } from './GuestPicker';
+import { QuantityStepper } from './QuantityStepper';
 import { StatusBadge, getStatusTone } from '../domain/StatusBadge';
 
 function ConfirmationHarness() {
@@ -22,6 +24,11 @@ function ToastHarness() {
 function ComboboxHarness() {
   const [value, setValue] = useState('');
   return <Combobox label="Tỉnh / Thành phố" value={value} onValueChange={setValue} options={[{ value: '1', label: 'Hà Nội' }, { value: '2', label: 'Hải Phòng' }]} />;
+}
+
+function GuestPickerHarness() {
+  const [value, setValue] = useState(2);
+  return <GuestPicker value={value} onChange={setValue} />;
 }
 
 describe('shared interaction components', () => {
@@ -54,6 +61,31 @@ describe('shared interaction components', () => {
     fireEvent.keyDown(input, { key: 'Enter' });
     await waitFor(() => expect(input).toHaveValue('Hải Phòng'));
     expect(input).toHaveValue('Hải Phòng');
+  });
+
+  it('bounds room counts and announces the selected quantity', async () => {
+    const user = userEvent.setup();
+    function Harness() {
+      const [value, setValue] = useState(1);
+      return <QuantityStepper label="phòng Deluxe" value={value} min={0} max={2} onChange={setValue} />;
+    }
+    render(<Harness />);
+    await user.click(screen.getByRole('button', { name: 'Tăng phòng Deluxe' }));
+    expect(screen.getByText('2')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Tăng phòng Deluxe' })).toBeDisabled();
+  });
+
+  it('opens the guest picker, updates the contract value and closes on Escape', async () => {
+    const user = userEvent.setup();
+    render(<GuestPickerHarness />);
+    const trigger = screen.getByRole('button', { name: 'Số khách, 2 khách' });
+    await user.click(trigger);
+    expect(screen.getByRole('dialog', { name: 'Chọn số khách' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Tăng khách' }));
+    expect(screen.getByRole('button', { name: 'Số khách, 3 khách' })).toBeInTheDocument();
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog', { name: 'Chọn số khách' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Số khách, 3 khách' })).toHaveFocus();
   });
 
   it('uses the shared confirmation dialog and resolves cancellation', async () => {
