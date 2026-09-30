@@ -4,6 +4,7 @@ import { ApiError } from '../services/apiClient';
 import { useConfirm } from '../components/common/FeedbackProvider';
 import { StatusBadge } from '../components/domain/StatusBadge';
 import { formatDateRangeVi } from '../lib/utils';
+import { PageSpinner } from '../components/common/PageSpinner';
 
 export default function AdminReviewDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -14,7 +15,7 @@ export default function AdminReviewDetailPage() {
   const confirm = useConfirm();
 
   if (reviewQuery.isLoading) {
-    return <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>;
+    return <PageSpinner />;
   }
 
   if (reviewQuery.isError || !reviewQuery.data) {

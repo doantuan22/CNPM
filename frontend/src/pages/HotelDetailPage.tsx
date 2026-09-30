@@ -15,6 +15,7 @@ import { TravelSearchBar } from '../components/hotels/TravelSearchBar';
 import { HotelGalleryDialog } from '../components/hotels/HotelGalleryDialog';
 import { useToast } from '../components/common/FeedbackProvider';
 import { shareUrl } from '../lib/share';
+import { PageSpinner } from '../components/common/PageSpinner';
 
 export default function HotelDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -109,7 +110,7 @@ export default function HotelDetailPage() {
   };
 
   if (hotelQuery.isLoading) {
-    return <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>;
+    return <PageSpinner />;
   }
 
   if (hotelQuery.isError || !hotelQuery.data) {
@@ -312,7 +313,7 @@ export default function HotelDetailPage() {
               />
 
               {roomsQuery.isLoading ? (
-                <div className="flex justify-center py-10" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>
+                <PageSpinner className="py-10" />
               ) : roomsQuery.isError ? (
                  <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">Không thể tải danh sách phòng</div>
               ) : roomsQuery.data && roomsQuery.data.length === 0 ? (
@@ -373,7 +374,7 @@ export default function HotelDetailPage() {
                     </div>
 
                     {quoteQuery.isLoading ? (
-                       <div className="flex justify-center py-6" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>
+                       <PageSpinner className="py-6" />
                     ) : quoteQuery.isError ? (
                        <div role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">{quoteQuery.error instanceof ApiError ? quoteQuery.error.message : 'Lỗi tạo báo giá'}</div>
                     ) : !quoteMatchesSelection ? (

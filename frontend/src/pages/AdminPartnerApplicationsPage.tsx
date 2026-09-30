@@ -4,6 +4,7 @@ import { ApiError } from '../services/apiClient';
 import { StatusBadge } from '../components/domain/StatusBadge';
 import { formatDateTimeVi } from '../lib/utils';
 import { useListParams } from '../hooks/useListParams';
+import { PageSpinner } from '../components/common/PageSpinner';
 
 const FILTER_DEFAULTS = { status: 'Chờ duyệt' };
 
@@ -48,7 +49,7 @@ export default function AdminPartnerApplicationsPage() {
 
       <div className="bg-white rounded-[16px] border border-border shadow-sm overflow-hidden flex flex-col">
         {query.isLoading ? (
-          <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>
+          <PageSpinner />
         ) : query.isError ? (
           <div role="alert" className="px-6 py-10 text-center text-sm text-red-700">
             {query.error instanceof ApiError ? query.error.message : 'Không thể tải hồ sơ đối tác'}

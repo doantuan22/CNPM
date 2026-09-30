@@ -6,6 +6,7 @@ import { formatCurrencyVND, formatDateVi, formatDateTimeVi } from '../lib/utils'
 import { ApiError } from '../services/apiClient';
 import { StatusBadge } from '../components/domain/StatusBadge';
 import { BOOKING_STATUS } from '../features/bookings/status';
+import { PageSpinner } from '../components/common/PageSpinner';
 
 export default function OwnerBookingDetailPage() {
   const { bookingId } = useParams<{ bookingId: string }>();
@@ -14,7 +15,7 @@ export default function OwnerBookingDetailPage() {
   const booking = useOwnerBooking(hotelId, Number(bookingId));
   
   if (scope.hotelsQuery.isLoading || (hotelId > 0 && booking.isLoading)) {
-    return <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>;
+    return <PageSpinner />;
   }
   
   if (scope.hotelsQuery.isError || (hotelId > 0 && (booking.isError || !booking.data))) {

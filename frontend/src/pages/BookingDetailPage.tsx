@@ -11,6 +11,7 @@ import { ApiError } from '../services/apiClient';
 import { CustomerCenterNavigation } from '../components/layouts/CustomerCenterNavigation';
 import { StatusBadge } from '../components/domain/StatusBadge';
 import { BOOKING_STATUS, CANCELLABLE_BOOKING_STATUSES } from '../features/bookings/status';
+import { PageSpinner } from '../components/common/PageSpinner';
 
 export default function BookingDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -33,7 +34,7 @@ export default function BookingDetailPage() {
   }, [bookingLoaded, location.hash]);
 
   if (bookingQuery.isLoading) {
-    return <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>;
+    return <PageSpinner />;
   }
 
   if (bookingQuery.isError || !bookingQuery.data) {

@@ -7,6 +7,7 @@ import { updateProfileSchema, UpdateProfileFormValues } from '../features/auth/s
 import { ApiError } from '../services/apiClient';
 
 import { cn } from '../lib/utils';
+import { PageSpinner } from '../components/common/PageSpinner';
 
 export default function ProfilePage() {
   const meQuery = useMe();
@@ -46,7 +47,7 @@ export default function ProfilePage() {
     });
 
   if (meQuery.isLoading) {
-    return <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>;
+    return <PageSpinner />;
   }
 
   if (meQuery.isError) {

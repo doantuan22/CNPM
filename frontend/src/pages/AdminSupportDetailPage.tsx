@@ -5,6 +5,7 @@ import { ApiError } from '../services/apiClient';
 import { Alert } from '../components/common/Alert';
 import { StatusBadge } from '../components/domain/StatusBadge';
 import { formatDateTimeVi } from '../lib/utils';
+import { PageSpinner } from '../components/common/PageSpinner';
 
 export default function AdminSupportDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -15,7 +16,7 @@ export default function AdminSupportDetailPage() {
   const [resolutionError, setResolutionError] = useState('');
 
   if (requestQuery.isLoading) {
-    return <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>;
+    return <PageSpinner />;
   }
 
   if (requestQuery.isError || !requestQuery.data) {

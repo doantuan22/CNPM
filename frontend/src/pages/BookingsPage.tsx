@@ -6,6 +6,7 @@ import { formatCurrencyVND, formatDateVi } from '../lib/utils';
 import { ApiError } from '../services/apiClient';
 import { StatusBadge } from '../components/domain/StatusBadge';
 import { BOOKING_TABS, canReviewBooking, matchesBookingTab, type BookingTab } from '../features/bookings/status';
+import { PageSpinner } from '../components/common/PageSpinner';
 
 export default function BookingsPage() {
   const bookingsQuery = useMyBookings();
@@ -25,7 +26,7 @@ export default function BookingsPage() {
       </div>
 
       {bookingsQuery.isLoading ? (
-        <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>
+        <PageSpinner />
       ) : bookingsQuery.isError ? (
         <div role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
           {bookingsQuery.error instanceof ApiError ? bookingsQuery.error.message : 'Không thể tải danh sách đặt phòng'}

@@ -5,6 +5,7 @@ import { CustomerCenterNavigation } from '../components/layouts/CustomerCenterNa
 import { resolvePaymentResult, type PaymentResult } from '../features/payments/result';
 import { BOOKING_STATUS } from '../features/bookings/status';
 import { ApiError } from '../services/apiClient';
+import { PageSpinner } from '../components/common/PageSpinner';
 
 const resultCardClass = 'bg-white rounded-3xl border border-border p-8 md:p-12 shadow-md w-full max-w-2xl text-center';
 
@@ -58,7 +59,7 @@ export default function PaymentResultPage() {
             </div>
           </div>
         ) : statusQuery.isLoading ? (
-          <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>
+          <PageSpinner />
         ) : statusQuery.isError && !booking ? (
           <div className={resultCardClass}>
             <h1 className="text-2xl font-bold text-heading mb-2">Không thể tải kết quả thanh toán</h1>

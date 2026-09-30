@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useState } from 'react';
 import { ApiError } from '../services/apiClient';
 import { useConfirm } from '../components/common/FeedbackProvider';
 import { getAdminHotel, reactivateAdminHotel, suspendAdminHotel, updateAdminHotel, type UpdateAdminHotelPayload } from '../features/admin/hotels/api';
+import { PageSpinner } from '../components/common/PageSpinner';
 
 export default function AdminHotelDetailPage() {
   const id = Number(useParams().id); 
@@ -21,7 +22,7 @@ export default function AdminHotelDetailPage() {
   
   useEffect(() => { if (mutation.isError) setSaved(false); }, [mutation.isError]);
   
-  if (query.isLoading) return <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>;
+  if (query.isLoading) return <PageSpinner />;
   if (query.isError || !query.data) return <div role="alert" className="mx-auto max-w-md rounded-lg bg-red-50 px-4 py-3 text-center text-sm text-red-700 border border-red-200">{query.error instanceof ApiError ? query.error.message : 'Không tìm thấy khách sạn'}</div>;
   
   const hotel = query.data;

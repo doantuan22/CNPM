@@ -11,6 +11,7 @@ import { fileToDataUrl, imageFileError, cn } from '../lib/utils';
 import { useConfirm } from '../components/common/FeedbackProvider';
 import { StatusBadge } from '../components/domain/StatusBadge';
 import { Combobox } from '../components/common/Combobox';
+import { PageSpinner } from '../components/common/PageSpinner';
 
 export default function OwnerHotelManagePage() {
   const { hotelId: hotelParam } = useParams<{ hotelId: string }>();
@@ -52,7 +53,7 @@ export default function OwnerHotelManagePage() {
   }, [hotelQuery.data, reset]);
 
   if (hotelQuery.isLoading) {
-    return <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>;
+    return <PageSpinner />;
   }
 
   if (hotelQuery.isError || !hotelQuery.data) {

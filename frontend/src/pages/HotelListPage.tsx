@@ -8,6 +8,7 @@ import { ApiError } from '../services/apiClient';
 import { cn, formatDateRangeVi } from '../lib/utils';
 import { TravelSearchBar } from '../components/hotels/TravelSearchBar';
 import { HotelCard } from '../components/hotels/HotelCard';
+import { PageSpinner } from '../components/common/PageSpinner';
 
 const PAGE_SIZE = 12;
 
@@ -174,7 +175,7 @@ export default function HotelListPage() {
             </div>
 
             {query.isLoading ? (
-              <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>
+              <PageSpinner />
             ) : query.isError ? (
               <div role="alert" className="rounded-xl border border-red-200 bg-red-50 px-6 py-10 text-center text-sm text-red-700">
                 {query.error instanceof ApiError ? query.error.message : 'Không thể tải danh sách khách sạn'}

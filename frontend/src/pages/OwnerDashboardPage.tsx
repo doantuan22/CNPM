@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { useMyHotels } from '../features/owner/hooks';
 import { ApiError } from '../services/apiClient';
 import { StatusBadge } from '../components/domain/StatusBadge';
+import { PageSpinner } from '../components/common/PageSpinner';
 
 export default function OwnerDashboardPage({ mode }: { mode: 'overview' | 'hotels' }) {
   const isOverview = mode === 'overview';
@@ -36,7 +37,7 @@ export default function OwnerDashboardPage({ mode }: { mode: 'overview' | 'hotel
       </div>
 
       {hotelsQuery.isLoading ? (
-        <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>
+        <PageSpinner />
       ) : hotelsQuery.isError ? (
         <div role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 border border-red-200">
           {hotelsQuery.error instanceof ApiError ? hotelsQuery.error.message : 'Không thể tải danh sách khách sạn'}

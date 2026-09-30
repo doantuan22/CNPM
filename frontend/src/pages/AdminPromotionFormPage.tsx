@@ -4,6 +4,7 @@ import { useCreatePromotion, usePromotionDetail, useSetPromotionStatus, useUpdat
 import { ApiError } from '../services/apiClient';
 import type { PromotionFormValues } from '../features/promotions/types';
 import { useConfirm } from '../components/common/FeedbackProvider';
+import { PageSpinner } from '../components/common/PageSpinner';
 
 const DISCOUNT_TYPES = ['Phần trăm', 'Số tiền cố định'];
 
@@ -59,7 +60,7 @@ export default function AdminPromotionFormPage() {
   const mutation = isEdit ? updateMutation : createMutation;
 
   if (isEdit && detailQuery.isLoading) {
-    return <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>;
+    return <PageSpinner />;
   }
 
   if (isEdit && (detailQuery.isError || !detailQuery.data)) {

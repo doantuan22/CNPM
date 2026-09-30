@@ -8,6 +8,7 @@ import { refreshSession } from '../services/apiClient';
 import { useQueryClient } from '@tanstack/react-query';
 import { meQueryKey } from '../features/auth/hooks';
 import { cn } from '../lib/utils';
+import { PageSpinner } from '../components/common/PageSpinner';
 
 const statusLabel: Record<string, { text: string; className: string }> = {
   'Chờ duyệt': { text: 'Đang chờ duyệt', className: 'text-amber-600 bg-amber-50 border-amber-200' },
@@ -34,7 +35,7 @@ export default function PartnerApplyPage() {
   }, [existing?.TrangThaiDuyet, queryClient]);
 
   if (applicationQuery.isLoading) {
-    return <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>;
+    return <PageSpinner />;
   }
   const displayedApplication = applyMutation.data ?? existing;
   const hasActiveApplication = displayedApplication && displayedApplication.TrangThaiDuyet !== 'Từ chối';

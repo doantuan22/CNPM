@@ -5,6 +5,7 @@ import { ApiError } from '../services/apiClient';
 import { StatusBadge } from '../components/domain/StatusBadge';
 import { useListParams, useUrlSearchInput } from '../hooks/useListParams';
 import { Pagination } from '../components/common/Pagination';
+import { PageSpinner } from '../components/common/PageSpinner';
 
 const PAGE_SIZE = 10;
 const STATUSES = ['Hoạt động', 'Ngừng'];
@@ -98,7 +99,7 @@ export default function AdminPromotionsPage() {
 
       <div className="bg-white rounded-[16px] border border-border shadow-sm overflow-hidden flex flex-col">
         {query.isLoading ? (
-          <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>
+          <PageSpinner />
         ) : query.isError ? (
           <div role="alert" className="px-6 py-10 text-center text-sm text-red-700">
             {query.error instanceof ApiError ? query.error.message : 'Không thể tải danh sách khuyến mãi'}

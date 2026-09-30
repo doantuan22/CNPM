@@ -4,6 +4,7 @@ import { DateRangeFilter } from '../components/analytics/DateRangeFilter';
 import { useAdminAnalytics } from '../features/analytics/hooks';
 import { formatCurrencyVND } from '../lib/utils';
 import { ApiError } from '../services/apiClient';
+import { PageSpinner } from '../components/common/PageSpinner';
 
 export default function AdminAnalyticsPage() {
   const [fromInput, setFromInput] = useState('');
@@ -55,7 +56,7 @@ export default function AdminAnalyticsPage() {
       </div>
 
       {analyticsQuery.isLoading ? (
-        <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>
+        <PageSpinner />
       ) : analyticsQuery.isError || !data ? (
         <div role="alert" className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-sm font-medium">
           {analyticsQuery.error instanceof ApiError ? analyticsQuery.error.message : 'Không thể tải thống kê'}

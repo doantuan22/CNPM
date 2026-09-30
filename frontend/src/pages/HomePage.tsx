@@ -7,6 +7,7 @@ import type { LocationSummary } from '../features/hotels/types';
 import { TravelSearchBar } from '../components/hotels/TravelSearchBar';
 import { HotelCard } from '../components/hotels/HotelCard';
 import { formatDateRangeVi } from '../lib/utils';
+import { PageSpinner } from '../components/common/PageSpinner';
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -48,7 +49,7 @@ export default function HomePage() {
             <p className="text-ink-muted text-lg">Những địa phương có nhiều khách sạn đang nhận đặt phòng nhất</p>
           </div>
           {locations.isLoading ? (
-            <div className="flex justify-center py-12" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải điểm đến...</span></div>
+            <PageSpinner label="Đang tải điểm đến..." className="py-12" />
           ) : locations.isError ? (
             <p role="alert" className="text-center text-sm text-rose-600">Không thể tải danh sách điểm đến.</p>
           ) : destinations.length === 0 ? (
@@ -74,7 +75,7 @@ export default function HomePage() {
             </Link>
           </div>
           {featured.isLoading ? (
-            <div className="flex justify-center py-12" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải khách sạn nổi bật...</span></div>
+            <PageSpinner label="Đang tải khách sạn nổi bật..." className="py-12" />
           ) : featured.isError ? (
             <p role="alert" className="text-center text-sm text-rose-600">Không thể tải danh sách khách sạn.</p>
           ) : !featured.data?.items.length ? (

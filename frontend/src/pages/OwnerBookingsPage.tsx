@@ -7,6 +7,7 @@ import { StatusBadge } from '../components/domain/StatusBadge';
 import { OwnerHotelContextSelector, OwnerHotelScopeState } from '../components/owner/OwnerHotelContext';
 import { useOwnerHotelContext } from '../features/owner/context';
 import { BOOKING_STATUS } from '../features/bookings/status';
+import { PageSpinner } from '../components/common/PageSpinner';
 
 
 function getStatusBadge(status: string) { return <StatusBadge domain="booking" status={status} />; }
@@ -59,7 +60,7 @@ export default function OwnerBookingsPage() {
 
   // Only the first load replaces the page; later filter changes keep the previous rows visible.
   if (scope.hotelsQuery.isLoading) {
-    return <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>;
+    return <PageSpinner />;
   }
 
   if (scope.hotelsQuery.isError) {

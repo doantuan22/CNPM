@@ -6,6 +6,7 @@ import { cn, formatDateVi } from '../lib/utils';
 import { ApiError } from '../services/apiClient';
 import { CustomerCenterNavigation } from '../components/layouts/CustomerCenterNavigation';
 import { StatusBadge } from '../components/domain/StatusBadge';
+import { PageSpinner } from '../components/common/PageSpinner';
 
 const SUPPORT_TYPES = ['Hỗ trợ', 'Khiếu nại'];
 
@@ -133,7 +134,7 @@ export default function SupportPage() {
         </div>
 
         {requestsQuery.isLoading ? (
-          <div className="flex justify-center py-10" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>
+          <PageSpinner className="py-10" />
         ) : requestsQuery.isError ? (
           <div role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
             {requestsQuery.error instanceof ApiError ? requestsQuery.error.message : 'Không thể tải danh sách yêu cầu'}
