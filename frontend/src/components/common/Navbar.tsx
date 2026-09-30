@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useUiStore } from '../../lib/store';
 import { useAuthStore } from '../../lib/authStore';
-import { useLogout, useMe } from '../../features/auth/hooks';
+import { useSignOut, useMe } from '../../features/auth/hooks';
 import { ROLE_NAMES } from '../../lib/roles';
 import { cn } from '../../lib/utils';
 import { useEffect, useRef, useState } from 'react';
@@ -13,7 +13,7 @@ export function Navbar() {
   const accessToken = useAuthStore((s) => s.accessToken);
   const role = useAuthStore((s) => s.role);
   const meQuery = useMe();
-  const logoutMutation = useLogout();
+  const { signOut, isPending: isSigningOut } = useSignOut();
   
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const menuTriggerRef = useRef<HTMLButtonElement>(null);
@@ -73,7 +73,7 @@ export function Navbar() {
         : null;
 
   const handleLogout = async () => {
-    await logoutMutation.mutateAsync();
+    await signOut();
     navigate('/', { replace: true });
   };
 
@@ -132,9 +132,9 @@ export function Navbar() {
                     <button 
                       className="dropdown-item danger" 
                       onClick={() => { setIsDropdownOpen(false); handleLogout(); }}
-                      disabled={logoutMutation.isPending}
+                      disabled={isSigningOut}
                     >
-                      <i className="ph ph-sign-out text-lg"></i> {logoutMutation.isPending ? 'Đang thoát...' : 'Đăng xuất'}
+                      <i className="ph ph-sign-out text-lg"></i> {isSigningOut ? 'Đang thoát...' : 'Đăng xuất'}
                     </button>
                   </div>
                 </div>

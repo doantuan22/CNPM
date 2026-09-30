@@ -1,7 +1,7 @@
 import { Building2, CalendarCheck, ChevronDown, CreditCard, FileText, Hotel, LayoutDashboard, LogOut, Menu, MessageSquare, Percent, Star, UserRound, Users, BarChart3 } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useUiStore } from '../../lib/store';
-import { useLogout, useMe } from '../../features/auth/hooks';
+import { useSignOut, useMe } from '../../features/auth/hooks';
 import { ROLE_NAMES } from '../../lib/roles';
 import { cn } from '../../lib/utils';
 
@@ -51,12 +51,12 @@ export function DashboardNavigation({ role }: { role: DashboardRole }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { isSidebarOpen, setSidebarOpen } = useUiStore();
-  const logoutMutation = useLogout();
+  const { signOut, isPending: isSigningOut } = useSignOut();
   const groups = role === ROLE_NAMES.ADMIN ? adminGroups : ownerGroups;
   const label = role === ROLE_NAMES.ADMIN ? 'Quản trị' : 'Chủ khách sạn';
 
   const logout = async () => {
-    await logoutMutation.mutateAsync();
+    await signOut();
     navigate('/login', { replace: true });
   };
   const closeSidebar = () => setSidebarOpen(false);
@@ -91,7 +91,7 @@ export function DashboardNavigation({ role }: { role: DashboardRole }) {
           ))}
         </nav>
         <div className="dashboard-sidebar__footer">
-          <button type="button" className="dashboard-sidebar__item text-red-600 hover:bg-red-50" onClick={logout} disabled={logoutMutation.isPending}><LogOut className="h-[18px] w-[18px]" /><span>{logoutMutation.isPending ? 'Đang thoát...' : 'Đăng xuất'}</span></button>
+          <button type="button" className="dashboard-sidebar__item text-red-600 hover:bg-red-50" onClick={logout} disabled={isSigningOut}><LogOut className="h-[18px] w-[18px]" /><span>{isSigningOut ? 'Đang thoát...' : 'Đăng xuất'}</span></button>
         </div>
       </aside>
       {isSidebarOpen && <button type="button" aria-label="Đóng menu" className="sidebar-scrim open" onClick={closeSidebar} />}

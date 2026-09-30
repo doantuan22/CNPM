@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, useNavigate } from 'react-router-dom';
-import { useMe, useUpdateProfile, useLogout } from '../features/auth/hooks';
+import { useMe, useUpdateProfile, useSignOut } from '../features/auth/hooks';
 import { updateProfileSchema, UpdateProfileFormValues } from '../features/auth/schemas';
 import { ApiError } from '../services/apiClient';
 
@@ -12,7 +12,7 @@ export default function ProfilePage() {
   const meQuery = useMe();
   const updateMutation = useUpdateProfile();
   const navigate = useNavigate();
-  const logoutMutation = useLogout();
+  const { signOut } = useSignOut();
 
   const {
     register,
@@ -32,9 +32,9 @@ export default function ProfilePage() {
     }
   }, [meQuery.data, reset]);
 
-  const handleLogout = () => {
-    logoutMutation.mutate();
-    navigate('/login');
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/login', { replace: true });
   };
 
   const onSubmit = (data: UpdateProfileFormValues) =>

@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { meQueryKey, useLogin, useLogout } from './hooks';
+import { meQueryKey, useLogin, useLogout, useSignOut } from './hooks';
 import * as authApi from './api';
 import { useAuthStore } from '../../lib/authStore';
 import { makeFakeAccessToken } from '../../test/testUtils';
@@ -73,5 +73,32 @@ describe('useLogin', () => {
     expect(queryClient.getQueryData(meQueryKey)).toEqual(newUser);
     expect(cachedKeys(queryClient)).toEqual([...PUBLIC_KEYS, meQueryKey]);
     expect(useAuthStore.getState().accessToken).toBe(accessToken);
+  });
+});
+
+describe('useSignOut', () => {
+  it('resolves after the server call finished and the local session and user cache are gone', async () => {
+    let finish!: () => void;
+    vi.mocked(authApi.logout).mockReturnValue(new Promise<void>((resolve) => { finish = resolve; }));
+    const { queryClient, result } = setup(useSignOut);
+
+    let done = false;
+    const pending = result.current.signOut().then(() => { done = true; });
+    await Promise.resolve();
+    expect(done).toBe(false);
+
+    finish();
+    await pending;
+
+    expect(useAuthStore.getState().accessToken).toBeNull();
+    expect(cachedKeys(queryClient)).toEqual(PUBLIC_KEYS);
+  });
+
+  it('still resolves (never rejects) when the logout request fails, so callers can always navigate away', async () => {
+    vi.mocked(authApi.logout).mockRejectedValue(new Error('offline'));
+    const { result } = setup(useSignOut);
+
+    await expect(result.current.signOut()).resolves.toBeUndefined();
+    expect(useAuthStore.getState().accessToken).toBeNull();
   });
 });

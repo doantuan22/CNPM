@@ -63,6 +63,17 @@ export function useLogout() {
   });
 }
 
+/**
+ * Signs the user out and resolves once the local session and user cache are gone. It never
+ * rejects: if the server request fails the local sign-out has still happened (useLogout clears
+ * it in onSettled), so callers can always navigate away afterwards.
+ */
+export function useSignOut() {
+  const { mutateAsync, isPending } = useLogout();
+  const signOut = () => mutateAsync().then(() => undefined, () => undefined);
+  return { signOut, isPending };
+}
+
 export function useForgotPassword() {
   return useMutation({ mutationFn: (payload: ForgotPasswordPayload) => authApi.forgotPassword(payload) });
 }
