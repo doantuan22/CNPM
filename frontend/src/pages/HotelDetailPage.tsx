@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { useHotelDetail, useHotelRooms } from '../features/hotels/hooks';
 import { defaultSearchDates } from '../features/hotels/schemas';
-import { useCreateQuote } from '../features/quotes/hooks';
+import { useQuote } from '../features/quotes/hooks';
 import { useCreateBooking } from '../features/bookings/hooks';
 import { useAuthStore } from '../lib/authStore';
 import { ROLE_NAMES } from '../lib/roles';
@@ -23,10 +23,11 @@ export default function HotelDetailPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedRooms, setSelectedRooms] = useState<Record<number, number>>({});
   const [promoCode, setPromoCode] = useState('');
+  // The promo code the quote is requested with. It follows the typed code when "Áp dụng" is pressed or the rooms change.
+  const [appliedPromo, setAppliedPromo] = useState('');
   const [ghiChu, setGhiChu] = useState('');
   const [galleryIndex, setGalleryIndex] = useState<number | null>(null);
   const notify = useToast();
-  const quoteMutation = useCreateQuote(hotelId);
   const bookingMutation = useCreateBooking(hotelId);
   const accessToken = useAuthStore((s) => s.accessToken);
   const role = useAuthStore((s) => s.role);
@@ -39,6 +40,7 @@ export default function HotelDetailPage() {
     .map(([maLoaiPhong, soLuong]) => ({ maLoaiPhong: Number(maLoaiPhong), soLuong }))
     .filter((line) => line.soLuong > 0);
   const selectedRoomCount = selectedRoomLines.reduce((sum, line) => sum + line.soLuong, 0);
+  const quoteQuery = useQuote(hotelId, selectedRoomLines.length > 0 ? { checkIn, checkOut, rooms: selectedRoomLines, promoCode: appliedPromo || undefined } : null);
 
   const hotelQuery = useHotelDetail(hotelId);
   const hotelLoaded = Boolean(hotelQuery.data);
@@ -55,14 +57,13 @@ export default function HotelDetailPage() {
 
   const onDatesSubmit = (values: { checkIn: string; checkOut: string; guests: number }) => {
     setSelectedRooms({});
-    quoteMutation.reset();
     bookingMutation.reset();
     setSearchParams({ checkIn: values.checkIn, checkOut: values.checkOut, guests: String(values.guests) });
   };
 
   const setRoomQuantity = (maLoaiPhong: number, quantity: number, available: number) => {
-    quoteMutation.reset();
     bookingMutation.reset();
+    setAppliedPromo(promoCode.trim());
     const safeQuantity = Math.min(available, Math.max(0, Math.floor(Number.isFinite(quantity) ? quantity : 0)));
     setSelectedRooms((current) => {
       const next = { ...current };
@@ -72,26 +73,13 @@ export default function HotelDetailPage() {
     });
   };
 
-  const requestQuote = (withPromo: boolean) => {
-    if (selectedRoomLines.length === 0) return;
+  const applyPromo = () => {
     bookingMutation.reset();
-    quoteMutation.mutate({
-      checkIn,
-      checkOut,
-      rooms: selectedRoomLines,
-      promoCode: withPromo && promoCode.trim() ? promoCode.trim() : undefined,
-    });
+    setAppliedPromo(promoCode.trim());
   };
 
-  // Re-quote the complete selection whenever a room type or quantity changes.
-  useEffect(() => {
-    if (selectedRoomLines.length > 0) requestQuote(Boolean(promoCode.trim()));
-    else quoteMutation.reset();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedRooms]);
-
   const quoteMatchesSelection = (() => {
-    const quote = quoteMutation.data;
+    const quote = quoteQuery.data;
     if (!quote || quote.NgayNhanPhong !== checkIn || quote.NgayTraPhong !== checkOut) return false;
     if (quote.ChiTietPhong.length !== selectedRoomLines.length) return false;
     return selectedRoomLines.every((line) =>
@@ -100,16 +88,16 @@ export default function HotelDetailPage() {
       )
     );
   })();
-  const quoteMatchesPromo = (quoteMutation.variables?.promoCode ?? '') === (promoCode.trim() || '');
+  const quoteMatchesPromo = appliedPromo === promoCode.trim();
 
   const confirmBooking = () => {
-    if (selectedRoomLines.length === 0 || !quoteMatchesSelection || !quoteMutation.data?.KhaDung) return;
+    if (selectedRoomLines.length === 0 || !quoteMatchesSelection || !quoteQuery.data?.KhaDung) return;
     bookingMutation.mutate(
       {
         checkIn,
         checkOut,
         rooms: selectedRoomLines,
-        promoCode: quoteMutation.data.PromoHopLe ? quoteMutation.variables?.promoCode : undefined,
+        promoCode: quoteQuery.data.PromoHopLe ? appliedPromo : undefined,
         ghiChu: ghiChu.trim() || undefined,
       },
       {
@@ -135,10 +123,10 @@ export default function HotelDetailPage() {
   const hotel = hotelQuery.data;
 
   const goToBookingPanel = () => document.getElementById('dat-phong')?.scrollIntoView({ block: 'start' });
-  const summaryTotal = quoteMutation.isError
+  const summaryTotal = quoteQuery.isError
     ? 'Không thể báo giá'
-    : quoteMatchesSelection && quoteMutation.data
-      ? (quoteMutation.data.KhaDung ? formatCurrencyVND(quoteMutation.data.TongTienThanhToan) : 'Cần điều chỉnh lựa chọn')
+    : quoteMatchesSelection && quoteQuery.data
+      ? (quoteQuery.data.KhaDung ? formatCurrencyVND(quoteQuery.data.TongTienThanhToan) : 'Cần điều chỉnh lựa chọn')
       : 'Đang cập nhật báo giá…';
 
   const shareHotel = async () => {
@@ -384,28 +372,28 @@ export default function HotelDetailPage() {
                       <span className="text-ink-muted">{selectedRoomCount} phòng</span>
                     </div>
 
-                    {quoteMutation.isPending ? (
+                    {quoteQuery.isLoading ? (
                        <div className="flex justify-center py-6" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>
-                    ) : quoteMutation.isError ? (
-                       <div role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">{quoteMutation.error instanceof ApiError ? quoteMutation.error.message : 'Lỗi tạo báo giá'}</div>
+                    ) : quoteQuery.isError ? (
+                       <div role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">{quoteQuery.error instanceof ApiError ? quoteQuery.error.message : 'Lỗi tạo báo giá'}</div>
                     ) : !quoteMatchesSelection ? (
                        <div className="flex justify-center py-6 text-sm text-ink-muted" role="status" aria-live="polite">Đang cập nhật báo giá...</div>
-                    ) : quoteMutation.data ? (
+                    ) : quoteQuery.data ? (
                       <>
-                        {!quoteMutation.data.KhaDung && (
+                        {!quoteQuery.data.KhaDung && (
                            <div className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700">
                              Một hoặc nhiều loại phòng không đủ số lượng hoặc chưa có giá cho toàn bộ ngày lưu trú.
                            </div>
                         )}
                         <div className="space-y-3 border-b border-border pb-3 text-sm">
-                          {quoteMutation.data.ChiTietPhong.map((line) => (
+                          {quoteQuery.data.ChiTietPhong.map((line) => (
                             <div key={line.MaLoaiPhong} className="space-y-1">
                               <div className="flex justify-between gap-3 font-semibold text-ink">
                                 <span>{line.TenLoaiPhong}</span>
                                 <span className="shrink-0">{formatCurrencyVND(line.ThanhTien ?? 0)}</span>
                               </div>
                               <div className="flex justify-between gap-3 text-xs text-ink-muted">
-                                <span>{line.SoLuongYeuCau} phòng × {quoteMutation.data.SoDem} đêm</span>
+                                <span>{line.SoLuongYeuCau} phòng × {quoteQuery.data.SoDem} đêm</span>
                                 <span>{line.GiaTheoDem !== null ? formatCurrencyVND(line.GiaTheoDem) + '/phòng/đêm' : 'Chưa có giá'}</span>
                               </div>
                               {!line.DuPhong && <p className="text-xs text-amber-700">Chỉ còn {line.SoPhongConLai} phòng cho loại này.</p>}
@@ -416,7 +404,7 @@ export default function HotelDetailPage() {
                         <div className="space-y-2 border-b border-border pb-3 text-sm">
                           <div className="flex justify-between font-bold text-ink">
                             <span>Tổng tiền phòng</span>
-                            <span>{formatCurrencyVND(quoteMutation.data.TongTienPhong)}</span>
+                            <span>{formatCurrencyVND(quoteQuery.data.TongTienPhong)}</span>
                           </div>
                         </div>
 
@@ -431,29 +419,29 @@ export default function HotelDetailPage() {
                               onChange={(e) => {
                                 const value = e.target.value;
                                 setPromoCode(value);
-                                if (!value.trim()) requestQuote(false);
+                                if (!value.trim()) setAppliedPromo('');
                               }}
                               placeholder="Nhập mã (nếu có)"
                               className="uppercase h-10"
                             />
-                            <button onClick={() => requestQuote(true)} disabled={!promoCode.trim() || quoteMutation.isPending} className="h-10 px-4 bg-slate-900 text-white rounded-lg font-medium text-xs whitespace-nowrap disabled:opacity-50">
+                            <button onClick={applyPromo} disabled={!promoCode.trim() || quoteQuery.isFetching} className="h-10 px-4 bg-slate-900 text-white rounded-lg font-medium text-xs whitespace-nowrap disabled:opacity-50">
                               Áp dụng
                             </button>
                           </div>
                           {!quoteMatchesPromo && (
                             <p className="text-xs text-amber-700">Áp dụng mã để cập nhật báo giá trước khi tiếp tục.</p>
                           )}
-                          {quoteMutation.data.PromoThongBao && quoteMatchesPromo && (
-                             <p className={cn('text-xs font-medium', quoteMutation.data.PromoHopLe ? 'text-emerald-600' : 'text-red-600')}>
-                               {quoteMutation.data.PromoThongBao}
+                          {quoteQuery.data.PromoThongBao && quoteMatchesPromo && (
+                             <p className={cn('text-xs font-medium', quoteQuery.data.PromoHopLe ? 'text-emerald-600' : 'text-red-600')}>
+                               {quoteQuery.data.PromoThongBao}
                              </p>
                           )}
                         </div>
 
-                        {quoteMutation.data.PromoHopLe && (
+                        {quoteQuery.data.PromoHopLe && (
                            <div className="flex justify-between text-sm text-emerald-600 font-bold bg-emerald-50 p-2 rounded-lg border border-emerald-100">
                              <span>Khuyến mãi giảm</span>
-                             <span>−{formatCurrencyVND(quoteMutation.data.SoTienGiam)}</span>
+                             <span>−{formatCurrencyVND(quoteQuery.data.SoTienGiam)}</span>
                            </div>
                         )}
 
@@ -461,7 +449,7 @@ export default function HotelDetailPage() {
                            <div className="flex items-center justify-between">
                              <span className="font-bold text-ink">Tổng thanh toán</span>
                              <div className="text-right">
-                               <span className="text-2xl font-black text-primary leading-none block">{formatCurrencyVND(quoteMutation.data.TongTienThanhToan)}</span>
+                               <span className="text-2xl font-black text-primary leading-none block">{formatCurrencyVND(quoteQuery.data.TongTienThanhToan)}</span>
                                <span className="text-[10px] text-primary/70 font-semibold uppercase">Đã bao gồm thuế phí</span>
                              </div>
                            </div>
@@ -497,7 +485,7 @@ export default function HotelDetailPage() {
                           ) : (
                             <button
                               onClick={confirmBooking}
-                              disabled={!quoteMatchesSelection || !quoteMatchesPromo || !quoteMutation.data.KhaDung || quoteMutation.isPending || bookingMutation.isPending}
+                              disabled={!quoteMatchesSelection || !quoteMatchesPromo || !quoteQuery.data.KhaDung || quoteQuery.isFetching || bookingMutation.isPending}
                               className="w-full h-12 bg-primary hover:bg-primary-700 text-white font-bold text-sm rounded-xl shadow-lg shadow-primary/30 transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
                             >
                               {bookingMutation.isPending ? 'Đang xử lý...' : (
@@ -510,14 +498,14 @@ export default function HotelDetailPage() {
                           )}
                         </div>
                         
-                        {quoteMutation.data.ChinhSachHuy && (
+                        {quoteQuery.data.ChinhSachHuy && (
                            <div className="mt-4 p-3 bg-emerald-50 border border-emerald-100 rounded-xl">
                              <div className="flex items-center gap-2 text-emerald-700 font-bold text-xs mb-1">
                                <i className="ph-fill ph-shield-check text-sm"></i>
-                               {quoteMutation.data.ChinhSachHuy.TenChinhSach}
+                               {quoteQuery.data.ChinhSachHuy.TenChinhSach}
                              </div>
                              <ul className="text-[11px] text-emerald-700/80 pl-6 list-disc">
-                               {quoteMutation.data.ChinhSachHuy.ChiTiet.map((tier, i) => (
+                               {quoteQuery.data.ChinhSachHuy.ChiTiet.map((tier, i) => (
                                  <li key={i}>Hủy trước {tier.SoGioTruocNhanPhong}h hoàn {tier.TyLeHoanTien}%</li>
                                ))}
                              </ul>

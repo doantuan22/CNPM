@@ -5,10 +5,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import HotelDetailPage from './HotelDetailPage';
 import { FeedbackProvider } from '../components/common/FeedbackProvider';
 import { useHotelDetail, useHotelRooms } from '../features/hotels/hooks';
-import { useCreateQuote } from '../features/quotes/hooks';
+import { useQuote } from '../features/quotes/hooks';
 import { useCreateBooking } from '../features/bookings/hooks';
 import { useLocations } from '../features/locations/hooks';
 import { shareUrl } from '../lib/share';
+import { useAuthStore } from '../lib/authStore';
+import { ApiError } from '../services/apiClient';
 import { formatCurrencyVND } from '../lib/utils';
 import { renderWithProviders } from '../test/testUtils';
 
@@ -29,11 +31,14 @@ const hotel = {
   TienNghi: [],
 };
 const idle = { mutate: vi.fn(), reset: vi.fn(), isPending: false, isError: false, data: undefined, variables: undefined };
+const quoteIdle = { data: undefined, isLoading: false, isFetching: false, isError: false, error: null };
+const mockQuote = (patch: object) => vi.mocked(useQuote).mockReturnValue({ ...quoteIdle, ...patch } as unknown as ReturnType<typeof useQuote>);
 
 beforeEach(() => {
   vi.mocked(useHotelDetail).mockReturnValue({ isLoading: false, isError: false, data: hotel } as unknown as ReturnType<typeof useHotelDetail>);
   vi.mocked(useHotelRooms).mockReturnValue({ isLoading: false, isError: false, isFetching: false, data: [] } as unknown as ReturnType<typeof useHotelRooms>);
-  vi.mocked(useCreateQuote).mockReturnValue(idle as unknown as ReturnType<typeof useCreateQuote>);
+  vi.mocked(useQuote).mockReset();
+  mockQuote({});
   vi.mocked(useCreateBooking).mockReturnValue(idle as unknown as ReturnType<typeof useCreateBooking>);
   vi.mocked(useLocations).mockReturnValue({ data: [] } as unknown as ReturnType<typeof useLocations>);
   vi.mocked(shareUrl).mockReset();
@@ -136,7 +141,7 @@ describe('HotelDetailPage mobile summary bar', () => {
   });
 
   it('shows the room count and the quoted total once a room is selected, so the price is visible without scrolling', async () => {
-    vi.mocked(useCreateQuote).mockReturnValue({ ...idle, data: quote, variables: { promoCode: undefined } } as unknown as ReturnType<typeof useCreateQuote>);
+    mockQuote({ data: quote });
     open();
 
     await userEvent.setup().click(screen.getByRole('button', { name: 'Tăng phòng Phòng Superior' }));
@@ -162,5 +167,119 @@ describe('HotelDetailPage mobile summary bar', () => {
 
     const target = vi.mocked(Element.prototype.scrollIntoView).mock.contexts.at(-1) as HTMLElement;
     expect(target.id).toBe('dat-phong');
+  });
+});
+
+describe('HotelDetailPage price quote', () => {
+  const room = {
+    MaLoaiPhong: 11, TenLoaiPhong: 'Phòng Superior', SoGiuong: 1, SucChua: 2, DienTich: 24, LoaiGiuong: 'Giường đôi', MoTa: null,
+    HinhAnh: [], TienNghi: [], GiaTheoDem: 700000, TongTien: 700000, SoDem: 1, SoPhongConLai: 5, ConHang: true,
+  };
+  const line = { MaLoaiPhong: 11, TenLoaiPhong: 'Phòng Superior', SoLuongYeuCau: 1, SoPhongConLai: 5, DuPhong: true, CoGiaDayDu: true, GiaTheoDem: 700000, ThanhTien: 700000 };
+  const quote = {
+    MaKhachSan: 1, NgayNhanPhong: '2030-01-01', NgayTraPhong: '2030-01-02', SoDem: 1, KhaDung: true, ChiTietPhong: [line],
+    TongTienPhong: 700000, KhuyenMai: null, SoTienGiam: 0, TongTienThanhToan: 700000, PromoHopLe: false, PromoThongBao: null, ChinhSachHuy: null,
+  };
+  const request = (extra: object = {}) => ({ checkIn: '2030-01-01', checkOut: '2030-01-02', rooms: [{ maLoaiPhong: 11, soLuong: 1 }], ...extra });
+  const lastRequest = () => vi.mocked(useQuote).mock.calls.at(-1)?.[1];
+  const addRoom = (user: ReturnType<typeof userEvent.setup>) => user.click(screen.getByRole('button', { name: 'Tăng phòng Phòng Superior' }));
+  const promoInput = () => screen.getByPlaceholderText('Nhập mã (nếu có)');
+
+  beforeEach(() => {
+    vi.mocked(useHotelRooms).mockReturnValue({ isLoading: false, isError: false, isFetching: false, data: [room] } as unknown as ReturnType<typeof useHotelRooms>);
+    mockQuote({ data: quote });
+    useAuthStore.setState({ accessToken: 'token', role: 'Khách hàng' });
+  });
+
+  it('asks for no quote until a room is chosen', () => {
+    open();
+    expect(lastRequest()).toBeNull();
+  });
+
+  it('quotes the chosen rooms for the stay dates', async () => {
+    open();
+    await addRoom(userEvent.setup());
+
+    expect(vi.mocked(useQuote).mock.calls.at(-1)).toEqual([1, request()]);
+  });
+
+  it('does not send a promo code that is only typed; "Áp dụng" sends it', async () => {
+    open();
+    const user = userEvent.setup();
+    await addRoom(user);
+
+    await user.type(promoInput(), 'SALE10');
+    expect(lastRequest()).toEqual(request());
+    expect(screen.getByText('Áp dụng mã để cập nhật báo giá trước khi tiếp tục.')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Áp dụng' }));
+    expect(lastRequest()).toEqual(request({ promoCode: 'SALE10' }));
+    expect(screen.queryByText('Áp dụng mã để cập nhật báo giá trước khi tiếp tục.')).not.toBeInTheDocument();
+  });
+
+  it('drops the promo code from the quote as soon as the box is emptied', async () => {
+    open();
+    const user = userEvent.setup();
+    await addRoom(user);
+    await user.type(promoInput(), 'SALE10');
+    await user.click(screen.getByRole('button', { name: 'Áp dụng' }));
+
+    await user.clear(promoInput());
+
+    expect(lastRequest()).toEqual(request());
+  });
+
+  it('re-quotes with the promo code that is typed when the room count changes', async () => {
+    open();
+    const user = userEvent.setup();
+    await addRoom(user);
+    await user.type(promoInput(), 'SALE10');
+
+    await addRoom(user);
+
+    expect(lastRequest()).toEqual(request({ rooms: [{ maLoaiPhong: 11, soLuong: 2 }], promoCode: 'SALE10' }));
+  });
+
+  it('shows a spinner while the quote loads and the error when it fails', async () => {
+    mockQuote({ data: undefined, isLoading: true });
+    const { unmount } = open();
+    await addRoom(userEvent.setup());
+    expect(document.getElementById('dat-phong')?.querySelector('.spinner')).not.toBeNull();
+    unmount();
+
+    mockQuote({ data: undefined, isError: true, error: new ApiError('Hết phòng', 409) });
+    open();
+    await addRoom(userEvent.setup());
+    expect(screen.getAllByText('Hết phòng').length).toBeGreaterThan(0);
+  });
+
+  it('books with the promo code only when the quote says it is valid', async () => {
+    const bookingMutate = vi.fn();
+    vi.mocked(useCreateBooking).mockReturnValue({ ...idle, mutate: bookingMutate } as unknown as ReturnType<typeof useCreateBooking>);
+    mockQuote({ data: { ...quote, PromoHopLe: true, SoTienGiam: 70000, TongTienThanhToan: 630000, PromoThongBao: 'Áp dụng thành công' } });
+    open();
+    const user = userEvent.setup();
+    await addRoom(user);
+    await user.type(promoInput(), 'SALE10');
+    await user.click(screen.getByRole('button', { name: 'Áp dụng' }));
+
+    await user.click(screen.getByRole('button', { name: /Tạo đặt phòng/ }));
+
+    expect(bookingMutate.mock.calls[0][0]).toEqual({ ...request({ promoCode: 'SALE10' }), ghiChu: undefined });
+  });
+
+  it('books without a promo code when the quote says it is not valid', async () => {
+    const bookingMutate = vi.fn();
+    vi.mocked(useCreateBooking).mockReturnValue({ ...idle, mutate: bookingMutate } as unknown as ReturnType<typeof useCreateBooking>);
+    mockQuote({ data: { ...quote, PromoHopLe: false, PromoThongBao: 'Mã không hợp lệ' } });
+    open();
+    const user = userEvent.setup();
+    await addRoom(user);
+    await user.type(promoInput(), 'WRONG');
+    await user.click(screen.getByRole('button', { name: 'Áp dụng' }));
+
+    await user.click(screen.getByRole('button', { name: /Tạo đặt phòng/ }));
+
+    expect(bookingMutate.mock.calls[0][0]).toEqual({ ...request(), promoCode: undefined, ghiChu: undefined });
   });
 });
