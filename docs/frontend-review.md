@@ -1,7 +1,7 @@
 # Báo cáo rà soát Frontend (cấu trúc, bố cục, luồng) và đề xuất chỉnh sửa
 
 - Phạm vi: thư mục `frontend/` (React 19, React Router 7, TanStack Query 5, Zustand 5, Tailwind 4, Vite 8).
-- Ngày rà soát: 2026-09-30.
+- Ngày rà soát: 2026-09-30. Cập nhật lần cuối: 2026-09-30, sau khi sửa Giai đoạn 1 (xem [Tiến độ xử lý](#tiến-độ-xử-lý)).
 - Phương pháp: chỉ **đọc code**, chưa chạy ứng dụng. Các lỗi luồng được suy ra từ code và cần chạy thử để xác nhận trước khi sửa. Các điểm chưa chắc được đánh dấu **[cần xác nhận]**.
 - Nguyên tắc cho phần đề xuất: chỉ dùng API/kỹ thuật có trong tài liệu chính thức của thư viện đang dùng (React, React Router, TanStack Query, HTML/WAI-ARIA, CSS, Tailwind). Chỗ nào phụ thuộc thay đổi ở backend thì ghi rõ, không giả định backend đã có.
 
@@ -9,8 +9,32 @@ Mức ưu tiên: **P0** = sai chức năng / rủi ro dữ liệu, **P1** = ản
 
 ---
 
+## Tiến độ xử lý
+
+Giai đoạn 1 (sửa luồng) đã được thực hiện trong 6 commit trên `main`. Mỗi lỗi được xác nhận bằng test thất bại trước khi sửa. Sau các commit này: `npm run lint`, `npm run typecheck`, `npm test` (15 file / 83 test) và `npm run build` đều pass. Chưa thử trên trình duyệt thật.
+
+| Mục | Trạng thái | Commit |
+| --- | --- | --- |
+| 1.1 Cache sau đặt phòng và thanh toán | **Xong, có điều chỉnh so với đề xuất ban đầu** (không dùng polling) | `c8da627`, `fddcf64` |
+| 1.2 Cache khi đăng xuất/hết phiên | **Xong**, dùng `clearUserCache` (giữ dữ liệu công khai) | `7bd88d4`, `3f97ce6` |
+| 1.3 Tab lọc "Đặt phòng của tôi" | **Xong** | `9249e6f` |
+| 1.4 Hai luồng đặt phòng, hai UI đánh giá | Chưa làm | — |
+| 1.5 Hạn giữ chỗ, banner "thành công" | Chưa làm (cần backend trả trường hạn thanh toán) | — |
+| 1.6 Điều hướng khi đã đăng nhập / sai vai trò | **Xong**, không có trang 403 | `5a8ba04` |
+| 2 – 6 | Chưa làm | — |
+
+**Những điểm bản rà soát ban đầu sai hoặc lệch so với code thật** (phát hiện khi xác nhận trước khi sửa):
+
+- **Chi tiết đơn bị cũ sau khi thanh toán VNPAY: không tái hiện được.** Chuyển sang cổng thanh toán dùng `window.location.href` (tải lại toàn trang), nên cache của `QueryClient` bị xóa trước khi quay về `/payment/result`.
+- **Polling trang kết quả không cần thiết.** `vnpayReturn` gọi `handleCallback` và chỉ redirect sau khi transaction xong, nên khi trang kết quả mở, trạng thái trong DB đã là trạng thái cuối. Các trường hợp trang kẹt ở "Đang xử lý…" có nguyên nhân khác (xem 1.1).
+- **Guard `GuestOnlyRoute` cần phức tạp hơn mô tả.** Bản "có token thì redirect" xung đột với `RegisterPage` (tự chuyển sang `/partner/apply`) và `LoginPage` (tự quay về `returnTo`). Xem 1.6.
+- **`queryClient.clear()` xóa cả dữ liệu công khai.** Đã thay bằng `clearUserCache` (xem 1.2).
+
+---
+
 ## Mục lục
 
+0. [Tiến độ xử lý](#tiến-độ-xử-lý)
 1. [Luồng đang sai](#1-luồng-đang-sai)
 2. [Cấu trúc code bất hợp lý](#2-cấu-trúc-code-bất-hợp-lý)
 3. [Bố cục và giao diện chưa ổn](#3-bố-cục-và-giao-diện-chưa-ổn)
@@ -23,18 +47,17 @@ Mức ưu tiên: **P0** = sai chức năng / rủi ro dữ liệu, **P1** = ản
 
 ## 1. Luồng đang sai
 
-### 1.1. Cache không được làm mới sau khi đặt phòng và thanh toán — P0
+### 1.1. Cache không được làm mới sau khi đặt phòng và thanh toán — P0 — ĐÃ XỬ LÝ
 
-**Hiện trạng**
+**Hiện trạng ban đầu**
 
 - [queryClient.ts](../frontend/src/lib/queryClient.ts) đặt `staleTime` mặc định 5 phút.
-- `useCreateBooking` ([bookings/hooks.ts](../frontend/src/features/bookings/hooks.ts)) không có `onSuccess`, nên không invalidate `['bookings']`. Đơn mới tạo có thể không xuất hiện trong "Đặt phòng của tôi" nếu danh sách đã được tải trước đó.
-- Sau khi thanh toán VNPAY, backend redirect về `/payment/result` ([payments.controller.ts:39](../backend/src/modules/payments/payments.controller.ts#L39)). Trang [PaymentResultPage.tsx](../frontend/src/pages/PaymentResultPage.tsx) chỉ đọc khóa `['payment-status', id]` và không invalidate `['bookings', id]`. Bấm "Xem đơn đặt phòng" có thể vẫn thấy dữ liệu cũ (còn "Chờ thanh toán" và nút "Thanh toán ngay") **[cần xác nhận]**.
-- `usePaymentStatus` ([payments/hooks.ts](../frontend/src/features/payments/hooks.ts)) có tham số `refetchInterval` nhưng trang kết quả không truyền. Ở nhánh "Đang xử lý kết quả…" trang không tự cập nhật, người dùng phải F5.
+- `useCreateBooking` ([bookings/hooks.ts](../frontend/src/features/bookings/hooks.ts)) không có `onSuccess`, nên không invalidate `['bookings']`. Đơn mới tạo có thể không xuất hiện trong "Đặt phòng của tôi" nếu danh sách đã được tải trước đó. **Đã xác nhận bằng test.**
+- Bản rà soát ban đầu còn nêu hai điểm khác, sau khi đối chiếu code đã thấy **không đúng như mô tả** (xem bên dưới): chi tiết đơn bị cũ sau thanh toán, và trang kết quả cần polling.
 
-**Đề xuất (kỹ thuật chuẩn của TanStack Query v5)**
+**Đã làm**
 
-1. Invalidate theo tiền tố khóa. `invalidateQueries({ queryKey: ['bookings'] })` khớp theo tiền tố nên cũng làm mới `['bookings', id]`.
+1. `useCreateBooking` invalidate theo tiền tố khóa. `invalidateQueries({ queryKey: ['bookings'] })` khớp theo tiền tố nên cũng làm mới `['bookings', id]` (commit `c8da627`, có test với `QueryClient` thật):
 
 ```ts
 export function useCreateBooking(hotelId: number) {
@@ -46,55 +69,60 @@ export function useCreateBooking(hotelId: number) {
 }
 ```
 
-2. Ở trang kết quả, polling có điều kiện bằng dạng hàm của `refetchInterval` (v5 nhận `query`), dừng khi đã có kết quả cuối cùng:
+2. Trang kết quả thanh toán [PaymentResultPage.tsx](../frontend/src/pages/PaymentResultPage.tsx) được sửa để xử lý đúng các trường hợp trước đây rơi vào nhánh cuối "Đang xử lý…" (commit `fddcf64`). Logic quyết định là hàm thuần `resolvePaymentResult` trong [features/payments/result.ts](../frontend/src/features/payments/result.ts):
+   - **Không có `bookingId`** (`status=unknown`, chữ ký sai): query bị tắt nên trước đây kẹt mãi. Nay hiện "Chưa xác định được kết quả thanh toán" kèm link tới "Đặt phòng của tôi" và hỗ trợ, không khẳng định thành công hay thất bại.
+   - **Đơn `Đã hủy` nhưng payment `Thành công`** (đơn hết hạn khi đang thanh toán, backend tự hoàn 100%): trước đây kẹt vì `isConfirmed` và `isFailed` đều sai. Nay hiện "Đơn đặt phòng không được xác nhận" cùng trạng thái hoàn tiền thật: đã hoàn đầy đủ, hoàn một phần (kèm số tiền), đang xử lý, thất bại (trỏ tới nút "Thử lại" trong chi tiết đơn), hoặc chưa ghi nhận (kèm mã đơn).
+   - **Request lỗi** (403, 404, mạng): hiện lỗi kèm nút "Thử lại" thay vì "Đang xử lý".
 
-```ts
-useQuery({
-  queryKey: ['payment-status', bookingId],
-  queryFn: () => getPaymentStatus(bookingId),
-  refetchInterval: (query) => {
-    const d = query.state.data;
-    const settled = d?.TrangThaiDatPhong === 'Đã xác nhận' || d?.ThanhToan[0]?.TrangThai === 'Thất bại';
-    return settled ? false : 3000;
-  },
-});
-```
+**Vì sao không dùng polling / invalidate khi trạng thái cuối (đề xuất ban đầu)**
 
-   Nên giới hạn tổng thời gian polling (ví dụ 60 giây) rồi hiện thông báo "kiểm tra lại trong đơn đặt phòng".
-3. Khi trạng thái chuyển sang cuối cùng, gọi `invalidateQueries({ queryKey: ['bookings'] })` (có thể trong `useEffect` theo `isConfirmed`/`isFailed`).
-4. Có thể thêm `refetchOnMount: 'always'` cho `useBookingDetail` để trang chi tiết luôn lấy dữ liệu mới khi mở, thay vì tin vào cache 5 phút.
+- Backend `vnpayReturn` gọi `handleCallback` và chỉ redirect sau khi transaction hoàn tất. Khi `/payment/result?status=success&bookingId=…` mở, DB đã ở trạng thái cuối. Không có kịch bản trạng thái thay đổi sau đó để polling bắt được.
+- Các kịch bản "Đang xử lý…" thực tế (không có `bookingId`; payment `Chờ xử lý` do sai số tiền; đơn hết hạn nhưng đã thu tiền) đều không tự thay đổi theo thời gian, nên polling không giúp mà chỉ che lỗi.
+- Chuyển sang cổng VNPAY là tải lại toàn trang, cache bị xóa, nên cũng không có "chi tiết đơn bị cũ" để invalidate. `refetchOnMount: 'always'` cho `useBookingDetail` vì vậy cũng không được thêm.
 
-### 1.2. Đăng xuất / hết phiên không xóa cache dữ liệu người dùng — P0
+**Còn tồn đọng**
 
-**Hiện trạng**
+- Đơn `Hoàn tất` đã thanh toán, khi mở lại link kết quả cũ, vẫn rơi vào "Đang xử lý…" (chỉ `Đã xác nhận` được coi là thành công). Ca ít gặp, chưa sửa.
+- Trang vẫn hiển thị `MaDatPhong` như mã đơn (xem 6.6).
 
-- `useLogout` ([auth/hooks.ts:55-59](../frontend/src/features/auth/hooks.ts#L55)) chỉ `removeQueries` cho `me` và `owner`. Các khóa `bookings`, `support`, `admin`, `payment-status`, `hotels`… vẫn còn.
+### 1.2. Đăng xuất / hết phiên không xóa cache dữ liệu người dùng — P0 — ĐÃ XỬ LÝ
+
+**Hiện trạng ban đầu**
+
+- `useLogout` chỉ `removeQueries` cho `me` và `owner`. Các khóa `bookings`, `support`, `admin`, `payment-status`… vẫn còn.
 - `expireSession` ([authStore.ts](../frontend/src/lib/authStore.ts)) chỉ xóa token, không xóa cache.
-- Nếu tài khoản B đăng nhập trên cùng tab sau tài khoản A, dữ liệu cache của A có thể hiển thị đến 5 phút **[cần xác nhận]**.
+- Nếu tài khoản B đăng nhập trên cùng tab sau tài khoản A, dữ liệu cache của A hiển thị được đến 5 phút. **Đã xác nhận bằng test** (logout, đăng nhập, hết phiên).
 
-**Đề xuất**
+**Đã làm** (commit `7bd88d4`, sau đó điều chỉnh ở `3f97ce6`)
 
-- Dùng `queryClient.clear()` (API chính thức, xóa toàn bộ cache) khi đăng xuất và khi phiên hết hạn.
-  - `useLogout`: gọi `queryClient.clear()` trong `onSettled`.
-  - `expireSession`: `queryClient` là singleton ở [lib/queryClient.ts](../frontend/src/lib/queryClient.ts) nên có thể import và gọi `clear()` trong `apiClient` ngay trước `expireSession()`. Cách này tránh làm `authStore` phụ thuộc ngược vào query layer.
-- Đăng nhập thành công cũng nên `clear()` trước khi `setQueryData(meQueryKey, …)` để đảm bảo không lẫn dữ liệu phiên trước.
+Giải pháp đầu tiên dùng `queryClient.clear()` (xóa toàn bộ). Sau đó đổi sang `clearUserCache` ([lib/queryClient.ts](../frontend/src/lib/queryClient.ts)) vì `clear()` cũng xóa cache dữ liệu công khai (danh sách khách sạn, địa điểm, tiện nghi) mà không cần thiết:
 
-### 1.3. Tab lọc "Đặt phòng của tôi" map sai trạng thái — P0
+- `clearUserCache` gọi `removeQueries({ predicate })` xóa mọi query **trừ** nhóm công khai `hotels`, `locations`, `amenities`, `health`, và xóa mutation cache (nơi còn giữ dữ liệu như thông tin đăng nhập vừa gửi).
+- Các endpoint của nhóm công khai không qua `authenticate` (đã kiểm tra `hotels.routes.ts`, `locations.routes.ts`, `amenities.routes.ts`, `health.routes.ts`), dữ liệu giống nhau cho mọi người.
+- Đây là **danh sách cho phép** giữ lại, không phải danh sách cấm. Một query mới chưa được khai báo sẽ bị xóa như dữ liệu riêng tư, nên quên đăng ký không thể làm lộ dữ liệu cho người dùng sau. Khi thêm một query công khai mới, cần thêm khóa gốc vào `PUBLIC_QUERY_ROOTS`.
+- Điểm gọi: `useLogout` (`onSettled`), `useLogin` (`onSuccess`, trước khi `setQueryData(meQueryKey, …)`), và `apiClient` ngay trước `expireSession()`. `authStore` không import ngược query layer.
 
-**Hiện trạng**
+**Còn tồn đọng**
 
-[BookingsPage.tsx:9-19](../frontend/src/pages/BookingsPage.tsx#L9): `getStatusFilterTag` xếp `Đã xác nhận`, `Thành công`, `Hoàn tất` vào tab "Hoàn tất". Hậu quả:
+- `useRegister` chưa gọi `clearUserCache`. Sau đăng xuất cache đã sạch nên rủi ro thấp, nhưng nên làm cho nhất quán.
 
-- Đơn đã xác nhận nhưng chưa đến ngày ở bị coi là "Hoàn tất" và hiện nút "Đánh giá" ([dòng 89](../frontend/src/pages/BookingsPage.tsx#L89)).
-- Tab "Sắp tới" chỉ còn "Chờ thanh toán" và các trạng thái lạ (nhánh `default`).
-- Backend định nghĩa 4 trạng thái riêng: `Chờ thanh toán`, `Đã xác nhận`, `Đã hủy`, `Hoàn tất` (xem `backend/src/common/constants/hotel-status.ts`). Trạng thái `Thành công` là của thanh toán, không phải của đặt phòng.
+### 1.3. Tab lọc "Đặt phòng của tôi" map sai trạng thái — P0 — ĐÃ XỬ LÝ
 
-**Đề xuất**
+**Hiện trạng ban đầu**
 
-- Chia tab theo đúng trạng thái backend: "Chờ thanh toán", "Đã xác nhận" (sắp tới), "Hoàn tất", "Đã hủy".
-- Đặt hằng số trạng thái vào [features/bookings/status.ts](../frontend/src/features/bookings/status.ts) (file đã có) và dùng chung cho `BookingsPage`, `BookingDetailPage` (`CANCELLABLE`), `ReviewSection` (`isCompleted`), thay vì so sánh chuỗi rải rác.
-- Nút "Đánh giá" chỉ hiện khi `TrangThai === 'Hoàn tất'`.
-- Với chuỗi trạng thái "mở" (backend ghi "open domain"), nhánh `default` nên hiển thị nhãn gốc chứ không âm thầm gộp vào một tab.
+`getStatusFilterTag` trong [BookingsPage.tsx](../frontend/src/pages/BookingsPage.tsx) xếp `Đã xác nhận`, `Thành công`, `Hoàn tất` vào tab "Hoàn tất". Hậu quả: đơn đã xác nhận nhưng chưa lưu trú xong bị coi là "Hoàn tất" và hiện nút "Đánh giá", trong khi backend chỉ chuyển `Đã xác nhận` sang `Hoàn tất` sau ngày trả phòng (`booking-completion.ts`) và chỉ cho đánh giá khi `Hoàn tất`. Backend định nghĩa 4 trạng thái đặt phòng: `Chờ thanh toán`, `Đã xác nhận`, `Đã hủy`, `Hoàn tất`; `Thành công` là của thanh toán. **Đã xác nhận bằng test.**
+
+**Đã làm** (commit `9249e6f`)
+
+- [features/bookings/status.ts](../frontend/src/features/bookings/status.ts) có `BOOKING_STATUS`, `CANCELLABLE_BOOKING_STATUSES`, `canReviewBooking`, `BOOKING_TABS`, `getBookingTab`, `matchesBookingTab` (hàm thuần, có test).
+- `BookingsPage` chia tab theo đúng trạng thái backend: Tất cả, Chờ thanh toán, **Đã xác nhận** (thay cho "Sắp tới"), Hoàn tất, Đã hủy. Trạng thái lạ (chuỗi "mở") chỉ hiện ở "Tất cả" với nhãn gốc.
+- Nút "Đánh giá" chỉ hiện khi `canReviewBooking(TrangThai)`.
+- `BookingDetailPage` và `ReviewSection` dùng hằng số/hàm chung.
+
+**Còn tồn đọng**
+
+- Một số nơi vẫn so sánh chuỗi trạng thái trực tiếp: `OwnerBookingsPage`, `OwnerBookingDetailPage`, `StatusBadge`, `bookingStatusBadgeClass`.
+- Nút "Đánh giá" vẫn dẫn tới `WriteReviewPage` (xem 1.4).
 
 ### 1.4. Hai luồng đặt phòng song song, một luồng là code chết — P1
 
@@ -123,18 +151,24 @@ useQuery({
 - Khi có trường đó, hiển thị đếm ngược bằng `setInterval` hoặc so sánh với `Date.now()` (nhớ `clearInterval` trong cleanup của `useEffect`). Hết hạn thì `invalidateQueries` để lấy trạng thái thật.
 - Đổi nội dung banner thành thông điệp theo trạng thái thật của đơn: "Đơn đã được tạo, vui lòng thanh toán trước hh:mm". Có thể hiển thị dựa trên `booking.TrangThai === 'Chờ thanh toán'` thay vì `location.state`, để F5 không làm mất.
 
-### 1.6. Điều hướng khi sai quyền / đã đăng nhập không có phản hồi — P2
+### 1.6. Điều hướng khi sai quyền / đã đăng nhập không có phản hồi — P2 — ĐÃ XỬ LÝ
 
-**Hiện trạng**
+**Hiện trạng ban đầu**
 
-- [ProtectedRoute.tsx:32](../frontend/src/components/auth/ProtectedRoute.tsx#L32): sai vai trò thì `<Navigate to="/" replace />` mà không báo lý do.
-- `/login`, `/register` không chuyển hướng khi người dùng đã đăng nhập.
+- `ProtectedRoute`: sai vai trò thì `<Navigate to="/" replace />` mà không báo lý do.
+- `/login`, `/register`, `/forgot-password` không chuyển hướng khi người dùng đã đăng nhập.
 
-**Đề xuất**
+**Đã làm** (commit `5a8ba04`)
 
-- Sai vai trò: có thể dùng một trang "403 – Bạn không có quyền truy cập" (route con) thay vì về `/` âm thầm. Hoặc giữ redirect nhưng truyền `state` và hiển thị toast qua `useToast()` (đã có trong `FeedbackProvider`).
-- Thêm một guard đối xứng (ví dụ `GuestOnlyRoute`) cho `/login`, `/register`, `/forgot-password`: nếu `accessToken` tồn tại thì `<Navigate>` về trang chủ theo vai trò (tái sử dụng `roleHome` trong `LoginPage`).
-- Chờ `isBootstrapping === false` trước khi quyết định, như `ProtectedRoute` đang làm, để tránh nháy trang.
+- **`GuestOnlyRoute`** ([components/auth/GuestOnlyRoute.tsx](../frontend/src/components/auth/GuestOnlyRoute.tsx)) bọc `/login`, `/register`, `/forgot-password`. Người dùng đã có phiên được chuyển về trang theo vai trò (`ROLE_HOME` trong `lib/roles.ts`, chuyển từ `LoginPage`). Chờ `isBootstrapping === false` trước khi quyết định. `/reset-password` cố ý không đưa vào vì link từ email có thể mở khi đang đăng nhập.
+- **Chỉ chuyển hướng với phiên có trước khi form hiện ra.** Bản đơn giản "có token thì redirect" xung đột với `RegisterPage` (sau khi đăng ký tự `navigate('/partner/apply')`) và `LoginPage` (tự quay về `returnTo`), vì token được lưu ngay khi form thành công, trước lệnh `navigate` của trang. Test chứng minh xung đột này với bản đơn giản. Bản chốt ghi nhớ ("latch") việc form đã hiện với trạng thái chưa đăng nhập bằng `useState` (cập nhật trong lúc render, đúng mẫu React cho state dẫn xuất) và không redirect với token xuất hiện sau đó.
+- **`ProtectedRoute`**: sai vai trò vẫn về `/` nhưng hiện toast "Bạn không có quyền truy cập trang này" qua `useToast()`, đúng một lần kể cả trong StrictMode (dùng `useRef` chống chạy effect hai lần). Không thêm trang 403.
+- Có test cho cả hai guard, gồm trường hợp đang bootstrapping.
+
+**Còn tồn đọng**
+
+- Chưa có trang 403 riêng (chủ ý, để giai đoạn sau nếu cần).
+- Chưa thử luồng đăng ký/đăng nhập thực tế trên trình duyệt sau khi thêm guard.
 
 ---
 
@@ -413,8 +447,8 @@ useQuery({
 
 | Giai đoạn | Nội dung | Mục | Ước lượng rủi ro |
 | --- | --- | --- | --- |
-| 1 — Sửa luồng | Invalidate cache sau tạo đơn và thanh toán, polling trang kết quả, `queryClient.clear()` khi đăng xuất/hết phiên, sửa map trạng thái booking, guard cho `/login` | 1.1, 1.2, 1.3, 1.6 | Thấp; thay đổi nhỏ, nên có test đi kèm (2.6) |
-| 2 — Dọn dẹp | Xóa luồng đặt phòng cũ và `WriteReviewPage`; alias route thành `<Navigate>`; bỏ UI giả | 1.4, 2.1, 4 | Thấp–trung bình; cần grep link còn dùng |
+| 1 — Sửa luồng | **ĐÃ XONG** (trừ 1.4 và 1.5): invalidate cache sau tạo đơn, xử lý đúng trang kết quả thanh toán (không cần polling), `clearUserCache` khi đăng xuất/đăng nhập/hết phiên, sửa map trạng thái booking, guard cho `/login` và toast sai vai trò | 1.1, 1.2, 1.3, 1.6 | Đã có test đi kèm |
+| 2 — Dọn dẹp | Xóa luồng đặt phòng cũ và `WriteReviewPage` (nút "Đánh giá" ở danh sách đang dẫn tới trang này); alias route thành `<Navigate>`; bỏ UI giả | 1.4, 2.1, 4 | Thấp–trung bình; cần grep link còn dùng. **Bước tiếp theo đề xuất** |
 | 3 — Layout | Một container chung, bỏ `<main>` lồng, thanh đặt phòng mobile, `OwnerLayout`, route layout thay `pathname` | 3.1–3.8 | Trung bình; nên chụp ảnh trước/sau từng trang |
 | 4 — Cấu trúc | Tổ chức lại `pages/` và `features/`, `QueryState`/`Pagination`/`DataTable` dùng chung, Prettier | 2.2–2.5 | Trung bình; đổi đường dẫn import nhiều, làm ngoài giờ cao điểm PR |
 | 5 — Nền tảng style | Một bộ icon npm, token thay màu thô, gỡ `booking-flow.css`, ngày định dạng thống nhất | 5.x | Cao về khối lượng; chia nhỏ theo trang |
