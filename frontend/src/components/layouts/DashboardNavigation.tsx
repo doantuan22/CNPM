@@ -1,9 +1,12 @@
 import { Building2, CalendarCheck, ChevronDown, CreditCard, FileText, Hotel, LayoutDashboard, LogOut, Menu, MessageSquare, Percent, Star, UserRound, Users, BarChart3 } from 'lucide-react';
+import { useCallback, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useUiStore } from '../../lib/store';
 import { useSignOut, useMe } from '../../features/auth/hooks';
 import { ROLE_NAMES } from '../../lib/roles';
 import { cn } from '../../lib/utils';
+import { useDrawerBehavior } from '../../hooks/useDrawerBehavior';
+import { useMediaQuery } from '../../hooks/useMediaQuery';
 
 type DashboardRole = typeof ROLE_NAMES.ADMIN | typeof ROLE_NAMES.PARTNER;
 
@@ -59,7 +62,12 @@ export function DashboardNavigation({ role }: { role: DashboardRole }) {
     await signOut();
     navigate('/login', { replace: true });
   };
-  const closeSidebar = () => setSidebarOpen(false);
+  const closeSidebar = useCallback(() => setSidebarOpen(false), [setSidebarOpen]);
+  // Below this width (same breakpoint as layout.css) the sidebar is an off-canvas drawer, above it a permanent landmark.
+  const isOffCanvas = useMediaQuery('(max-width: 1180px)');
+  const sidebarRef = useRef<HTMLElement>(null);
+  useDrawerBehavior({ open: isSidebarOpen, onClose: closeSidebar, containerRef: sidebarRef, enabled: isOffCanvas });
+  const drawerOpen = isOffCanvas && isSidebarOpen;
   const selectedHotelId = new URLSearchParams(location.search).get('hotelId')
     ?? location.pathname.match(/^\/owner\/hotels\/(\d+)/)?.[1]
     ?? location.pathname.match(/^\/partner\/hotels\/(\d+)/)?.[1];
@@ -70,7 +78,14 @@ export function DashboardNavigation({ role }: { role: DashboardRole }) {
 
   return (
     <>
-      <aside className={cn('dashboard-sidebar', isSidebarOpen && 'open')} aria-label={`Điều hướng ${label}`}>
+      <aside
+        ref={sidebarRef}
+        className={cn('dashboard-sidebar', isSidebarOpen && 'open')}
+        aria-label={`Điều hướng ${label}`}
+        role={drawerOpen ? 'dialog' : undefined}
+        aria-modal={drawerOpen ? true : undefined}
+        inert={isOffCanvas && !isSidebarOpen}
+      >
         <div className="dashboard-sidebar__brand">
           <Link to="/" className="site-header__logo" onClick={closeSidebar}>
             <span className="site-header__logo-mark">E</span>

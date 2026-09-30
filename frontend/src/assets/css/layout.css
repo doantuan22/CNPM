@@ -28,6 +28,9 @@
 .site-header__user { display: flex; align-items: center; gap: 8px; padding: 6px 10px 6px 6px; border-radius: var(--radius-pill); background: none; border: 1px solid transparent; }
 .site-header__user:hover { background: var(--color-bg-secondary); }
 .site-header__avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: var(--color-primary-light); }
+.site-header__avatar--initial { display: flex; align-items: center; justify-content: center; color: var(--color-primary); font-weight: 700; }
+.site-header__user-name { font-size: 14px; font-weight: 600; color: var(--color-heading); }
+.site-header__user-caret { font-size: 13px; color: var(--color-muted); }
 .site-header__menu-toggle { display: none; }
 
 @media (max-width: 960px) {
@@ -42,6 +45,7 @@
 .mobile-drawer__panel { position: absolute; top: 0; right: 0; width: 82%; max-width: 320px; height: 100%; background: #fff; box-shadow: var(--shadow-lg); padding: 20px; overflow-y: auto; }
 .mobile-drawer__panel a, .mobile-drawer__panel button { display: block; width: 100%; text-align: left; padding: 12px 14px; border-radius: var(--radius-md); font-size: 15px; font-weight: 600; color: var(--color-heading); background: none; border: none; }
 .mobile-drawer__panel a:hover, .mobile-drawer__panel button:hover { background: var(--color-bg-secondary); }
+.mobile-drawer__panel a.is-active { color: var(--color-primary); }
 
 /* ---------- Site footer ---------- */
 .site-footer { background: var(--color-bg-secondary); border-top: 1px solid var(--color-border); margin-top: 64px; }

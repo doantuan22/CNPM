@@ -4,12 +4,13 @@ import { useAuthStore } from '../../lib/authStore';
 import { useSignOut, useMe } from '../../features/auth/hooks';
 import { ROLE_NAMES } from '../../lib/roles';
 import { cn } from '../../lib/utils';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useDrawerBehavior } from '../../hooks/useDrawerBehavior';
 
 export function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { isSidebarOpen, toggleSidebar } = useUiStore();
+  const { isSidebarOpen, toggleSidebar, setSidebarOpen } = useUiStore();
   const accessToken = useAuthStore((s) => s.accessToken);
   const role = useAuthStore((s) => s.role);
   const meQuery = useMe();
@@ -17,35 +18,10 @@ export function Navbar() {
   
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const menuTriggerRef = useRef<HTMLButtonElement>(null);
-  const drawerTriggerRef = useRef<HTMLButtonElement>(null);
   const drawerRef = useRef<HTMLElement>(null);
 
-  useEffect(() => {
-    if (!isSidebarOpen) return;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    const focusable = () => drawerRef.current?.querySelectorAll<HTMLElement>('a[href], button:not(:disabled), input:not(:disabled), [tabindex]:not([tabindex="-1"])') ?? [];
-    requestAnimationFrame(() => focusable()[0]?.focus());
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        toggleSidebar();
-        drawerTriggerRef.current?.focus();
-        return;
-      }
-      if (event.key !== 'Tab') return;
-      const items = [...focusable()];
-      if (!items.length) return;
-      const first = items[0];
-      const last = items[items.length - 1];
-      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
-      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
-    };
-    document.addEventListener('keydown', onKeyDown);
-    return () => {
-      document.removeEventListener('keydown', onKeyDown);
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [isSidebarOpen, toggleSidebar]);
+  const closeDrawer = useCallback(() => setSidebarOpen(false), [setSidebarOpen]);
+  useDrawerBehavior({ open: isSidebarOpen, onClose: closeDrawer, containerRef: drawerRef });
 
   useEffect(() => {
     if (!isDropdownOpen) return;
@@ -108,13 +84,13 @@ export function Navbar() {
                     aria-expanded={isDropdownOpen}
                     aria-haspopup="menu"
                   >
-                    <div className="site-header__avatar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--color-primary-light)', color: 'var(--color-primary)', fontWeight: 'bold' }}>
+                    <div className="site-header__avatar site-header__avatar--initial">
                       {meQuery.data?.HoTen?.charAt(0) ?? 'U'}
                     </div>
-                    <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-heading)' }}>
+                    <span className="site-header__user-name">
                       {meQuery.data?.HoTen ?? 'Tài khoản'}
                     </span>
-                    <i className="ph ph-caret-down" style={{ fontSize: '13px', color: 'var(--color-muted)' }}></i>
+                    <i className="ph ph-caret-down site-header__user-caret"></i>
                   </button>
                   <div className={cn("dropdown-menu", isDropdownOpen && "open")}>
                     {roleDashboard && (
@@ -147,7 +123,6 @@ export function Navbar() {
             )}
             
             <button
-              ref={drawerTriggerRef}
               className="site-header__icon-btn site-header__menu-toggle"
               onClick={toggleSidebar}
               aria-label="Mở menu"
@@ -174,7 +149,7 @@ export function Navbar() {
                 key={link.to}
                 to={link.to}
                 onClick={toggleSidebar}
-                style={{ display: 'block', padding: '12px 14px', borderRadius: 'var(--radius-md)', fontWeight: 600, color: location.pathname === link.to ? 'var(--color-primary)' : 'var(--color-heading)' }}
+                className={cn('mobile-drawer__link', location.pathname === link.to && 'is-active')}
               >
                 {link.label}
               </Link>
@@ -187,8 +162,8 @@ export function Navbar() {
             {!accessToken && (
               <>
                 <div className="dropdown-divider my-4"></div>
-                <Link to="/login" onClick={toggleSidebar} style={{ display: 'block', padding: '12px 14px', fontWeight: 600 }}>Đăng nhập</Link>
-                <Link to="/register" onClick={toggleSidebar} style={{ display: 'block', padding: '12px 14px', fontWeight: 600, color: 'var(--color-primary)' }}>Đăng ký</Link>
+                <Link to="/login" onClick={toggleSidebar} className="mobile-drawer__link">Đăng nhập</Link>
+                <Link to="/register" onClick={toggleSidebar} className="mobile-drawer__link is-active">Đăng ký</Link>
               </>
             )}
           </div>
