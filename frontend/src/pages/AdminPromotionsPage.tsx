@@ -1,30 +1,28 @@
-import { useState } from 'react';
-import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { Link } from 'react-router-dom';
 import { usePromotionList } from '../features/promotions/hooks';
 import { formatCurrencyVND } from '../lib/utils';
 import { ApiError } from '../services/apiClient';
 import { StatusBadge } from '../components/domain/StatusBadge';
+import { useListParams, useUrlSearchInput } from '../hooks/useListParams';
 
 const PAGE_SIZE = 10;
 const STATUSES = ['Hoạt động', 'Ngừng'];
 const TYPES = ['Phần trăm', 'Số tiền cố định'];
 
+const FILTER_DEFAULTS = { search: '', status: '', type: '' };
+
 export default function AdminPromotionsPage() {
-  const [page, setPage] = useState(1);
-  const [searchInput, setSearchInput] = useState('');
-  const search = useDebouncedValue(searchInput.trim());
-  const [status, setStatus] = useState('');
-  const [type, setType] = useState('');
+  const { values, page, setValue, setPage, reset } = useListParams(FILTER_DEFAULTS);
+  const [searchInput, setSearchInput] = useUrlSearchInput(values.search, (value) => setValue('search', value));
+  const search = values.search;
+  const status = values.status;
+  const setStatus = (value: string) => setValue('status', value);
+  const type = values.type;
+  const setType = (value: string) => setValue('type', value);
 
   const query = usePromotionList({ page, limit: PAGE_SIZE, search: search || undefined, TrangThai: status || undefined, LoaiGiamGia: type || undefined });
 
-  const resetFilters = () => {
-    setSearchInput('');
-    setStatus('');
-    setType('');
-    setPage(1);
-  };
+  const resetFilters = () => reset();
 
   const handleSearchChange = (val: string) => {
     setSearchInput(val);

@@ -1,27 +1,25 @@
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
-import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { ApiError } from '../services/apiClient';
 import { StatusBadge } from '../components/domain/StatusBadge';
 import { listAdminHotels } from '../features/admin/hotels/api';
+import { useListParams, useUrlSearchInput } from '../hooks/useListParams';
+
+const FILTER_DEFAULTS = { search: '', status: '' };
 
 export default function AdminHotelsPage() {
-  const [page, setPage] = useState(1); 
-  const [search, setSearch] = useState(''); 
-  const debouncedSearch = useDebouncedValue(search.trim());
-  const [status, setStatus] = useState('');
+  const { values, page, setValue, setPage, reset } = useListParams(FILTER_DEFAULTS);
+  const [search, setSearch] = useUrlSearchInput(values.search, (value) => setValue('search', value));
+  const debouncedSearch = values.search;
+  const status = values.status;
+  const setStatus = (value: string) => setValue('status', value);
   
   const query = useQuery({ 
     queryKey: ['admin', 'hotels', page, debouncedSearch, status], 
     queryFn: () => listAdminHotels({ page, limit: 20, search: debouncedSearch || undefined, TrangThai: status || undefined }) 
   });
   
-  const resetFilters = () => {
-    setSearch('');
-    setStatus('');
-    setPage(1);
-  };
+  const resetFilters = () => reset();
 
   return (
     <div className="admin-list-page flex flex-col gap-6 max-w-[1200px] mx-auto w-full">

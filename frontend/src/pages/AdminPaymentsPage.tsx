@@ -1,21 +1,24 @@
-import { useState } from 'react';
-import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { ApiError } from '../services/apiClient';
 import { listAdminPayments } from '../features/admin/payments/api';
 import { StatusBadge } from '../components/domain/StatusBadge';
 import { formatDateTimeVi } from '../lib/utils';
+import { useListParams, useUrlSearchInput } from '../hooks/useListParams';
 
 const STATUSES = ['Thành công', 'Chờ xử lý', 'Thất bại'];
 
+const FILTER_DEFAULTS = { search: '', status: '', method: '', refunded: '' };
+
 export default function AdminPaymentsPage() {
-  const [page, setPage] = useState(1); 
-  const [searchInput, setSearchInput] = useState('');
-  const search = useDebouncedValue(searchInput.trim());
-  const [status, setStatus] = useState('');
-  const [method, setMethod] = useState('');
-  const [refundedOnly, setRefundedOnly] = useState(false);
+  const { values, page, setValue, setPage, reset } = useListParams(FILTER_DEFAULTS);
+  const [searchInput, setSearchInput] = useUrlSearchInput(values.search, (value) => setValue('search', value));
+  const search = values.search;
+  const status = values.status;
+  const setStatus = (value: string) => setValue('status', value);
+  const method = values.method;
+  const setMethod = (value: string) => setValue('method', value);
+  const refundedOnly = values.refunded === '1';
 
   const query = useQuery({ 
     queryKey: ['admin', 'payments', page, search, status, method, refundedOnly],
@@ -34,13 +37,7 @@ export default function AdminPaymentsPage() {
     setPage(1);
   };
 
-  const resetFilters = () => {
-    setSearchInput('');
-    setStatus('');
-    setMethod('');
-    setRefundedOnly(false);
-    setPage(1);
-  };
+  const resetFilters = () => reset();
 
   return (
     <div className="admin-list-page flex flex-col gap-6 max-w-[1200px] mx-auto w-full">
@@ -102,7 +99,7 @@ export default function AdminPaymentsPage() {
 
         <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100 text-xs mt-3">
           <span className="text-slate-400 font-medium">Lọc nhanh:</span>
-          <button type="button" aria-pressed={refundedOnly} onClick={() => { setRefundedOnly((v) => !v); setPage(1); }} className="px-2.5 py-1 rounded-lg bg-amber-50 text-amber-800 font-medium hover:bg-amber-100 transition aria-pressed:ring-2 aria-pressed:ring-amber-300">Giao dịch có hoàn tiền</button>
+          <button type="button" aria-pressed={refundedOnly} onClick={() => { setValue('refunded', refundedOnly ? '' : '1'); setPage(1); }} className="px-2.5 py-1 rounded-lg bg-amber-50 text-amber-800 font-medium hover:bg-amber-100 transition aria-pressed:ring-2 aria-pressed:ring-amber-300">Giao dịch có hoàn tiền</button>
           <button type="button" onClick={() => { setStatus('Thất bại'); setPage(1); }} className="px-2.5 py-1 rounded-lg bg-rose-50 text-rose-700 font-medium hover:bg-rose-100 transition">Lệnh thất bại</button>
           <button type="button" onClick={() => { setStatus('Thành công'); setPage(1); }} className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 font-medium hover:bg-emerald-100 transition">Đã quyết toán</button>
         </div>

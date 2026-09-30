@@ -1,12 +1,16 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAdminPartnerApplications } from '../features/partners/hooks';
 import { ApiError } from '../services/apiClient';
 import { StatusBadge } from '../components/domain/StatusBadge';
 import { formatDateTimeVi } from '../lib/utils';
+import { useListParams } from '../hooks/useListParams';
+
+const FILTER_DEFAULTS = { status: 'Chờ duyệt' };
 
 export default function AdminPartnerApplicationsPage() {
-  const [status, setStatus] = useState('Chờ duyệt');
+  const { values, setValue } = useListParams(FILTER_DEFAULTS);
+  const status = values.status;
+  const setStatus = (value: string) => setValue('status', value);
   const query = useAdminPartnerApplications(status === 'ALL' ? undefined : status);
 
   return (

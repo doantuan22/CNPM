@@ -1,25 +1,23 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAccountList } from '../features/admin/accounts/hooks';
 import { ApiError } from '../services/apiClient';
 import { StatusBadge } from '../components/domain/StatusBadge';
-import { useDebouncedValue } from '../hooks/useDebouncedValue';
+import { useListParams, useUrlSearchInput } from '../hooks/useListParams';
 
 const PAGE_SIZE = 10;
 
+const FILTER_DEFAULTS = { search: '', status: '' };
+
 export default function AdminAccountsPage() {
-  const [page, setPage] = useState(1);
-  const [searchInput, setSearchInput] = useState('');
-  const [status, setStatus] = useState('');
-  const search = useDebouncedValue(searchInput.trim(), 350);
+  const { values, page, setValue, setPage, reset } = useListParams(FILTER_DEFAULTS);
+  const [searchInput, setSearchInput] = useUrlSearchInput(values.search, (value) => setValue('search', value));
+  const search = values.search;
+  const status = values.status;
+  const setStatus = (value: string) => setValue('status', value);
 
   const query = useAccountList({ page, limit: PAGE_SIZE, search: search || undefined, TrangThai: status || undefined });
 
-  const resetFilters = () => {
-    setSearchInput('');
-    setStatus('');
-    setPage(1);
-  };
+  const resetFilters = () => reset();
 
   return (
     <div className="admin-list-page flex flex-col gap-6 max-w-[1200px] mx-auto w-full">

@@ -1,20 +1,23 @@
-import { useState } from 'react';
-import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { Link } from 'react-router-dom';
 import { useAdminSupportList } from '../features/support/hooks';
 import { ApiError } from '../services/apiClient';
 import { StatusBadge } from '../components/domain/StatusBadge';
+import { useListParams, useUrlSearchInput } from '../hooks/useListParams';
 
 const PAGE_SIZE = 10;
 const STATUSES = ['Mới', 'Đang xử lý', 'Đã xử lý'];
 const TYPES = ['Hỗ trợ', 'Khiếu nại'];
 
+const FILTER_DEFAULTS = { search: '', status: '', type: '' };
+
 export default function AdminSupportPage() {
-  const [page, setPage] = useState(1);
-  const [searchInput, setSearchInput] = useState('');
-  const search = useDebouncedValue(searchInput.trim());
-  const [status, setStatus] = useState('');
-  const [type, setType] = useState('');
+  const { values, page, setValue, setPage } = useListParams(FILTER_DEFAULTS);
+  const [searchInput, setSearchInput] = useUrlSearchInput(values.search, (value) => setValue('search', value));
+  const search = values.search;
+  const status = values.status;
+  const setStatus = (value: string) => setValue('status', value);
+  const type = values.type;
+  const setType = (value: string) => setValue('type', value);
 
   const query = useAdminSupportList({
     page,

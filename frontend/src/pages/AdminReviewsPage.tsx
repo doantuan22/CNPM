@@ -1,20 +1,23 @@
-import { useState } from 'react';
-import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { Link } from 'react-router-dom';
 import { useAdminReviewList, useRemoveViolationReview } from '../features/reviews/hooks';
 import { ApiError } from '../services/apiClient';
 import { useConfirm } from '../components/common/FeedbackProvider';
 import { StatusBadge } from '../components/domain/StatusBadge';
+import { useListParams, useUrlSearchInput } from '../hooks/useListParams';
 
 const PAGE_SIZE = 10;
 const STATUSES = ['Chờ duyệt', 'Hiển thị', 'Ẩn', 'Vi phạm'];
 
+const FILTER_DEFAULTS = { search: '', status: '', star: '' };
+
 export default function AdminReviewsPage() {
-  const [page, setPage] = useState(1);
-  const [searchInput, setSearchInput] = useState('');
-  const search = useDebouncedValue(searchInput.trim());
-  const [status, setStatus] = useState('');
-  const [star, setStar] = useState('');
+  const { values, page, setValue, setPage } = useListParams(FILTER_DEFAULTS);
+  const [searchInput, setSearchInput] = useUrlSearchInput(values.search, (value) => setValue('search', value));
+  const search = values.search;
+  const status = values.status;
+  const setStatus = (value: string) => setValue('status', value);
+  const star = values.star;
+  const setStar = (value: string) => setValue('star', value);
 
   const query = useAdminReviewList({
     page,
