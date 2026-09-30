@@ -5,16 +5,10 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useLogin } from '../features/auth/hooks';
 import { loginSchema, LoginFormValues } from '../features/auth/schemas';
 import { ApiError } from '../services/apiClient';
-import { ROLE_NAMES } from '../lib/roles';
+import { ROLE_HOME } from '../lib/roles';
 import { decodeAccessToken } from '../lib/jwt';
 import { useAuthStore } from '../lib/authStore';
 import { cn } from '../lib/utils';
-
-const roleHome: Record<string, string> = {
-  [ROLE_NAMES.ADMIN]: '/admin',
-  [ROLE_NAMES.PARTNER]: '/owner',
-  [ROLE_NAMES.CUSTOMER]: '/',
-};
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -36,7 +30,7 @@ export default function LoginPage() {
     try {
       const result = await loginMutation.mutateAsync(data);
       const decoded = decodeAccessToken(result.accessToken);
-      const fallback = (decoded && roleHome[decoded.role]) || '/';
+      const fallback = (decoded && ROLE_HOME[decoded.role]) || '/';
       const returnTo = location.state?.from;
       navigate(returnTo?.pathname ? `${returnTo.pathname}${returnTo.search ?? ''}` : fallback, { replace: true });
     } catch {

@@ -2,6 +2,7 @@ import { Route, Routes } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import MainLayout from '../components/layouts/MainLayout';
 import { ProtectedRoute } from '../components/auth/ProtectedRoute';
+import { GuestOnlyRoute } from '../components/auth/GuestOnlyRoute';
 import { ROLE_NAMES } from '../lib/roles';
 import HomePage from '../pages/HomePage';
 import { LegacyOwnerBookingDetailRoute, LegacyOwnerHotelDetailRoute, LegacyOwnerHotelRoute, LegacyOwnerModuleRoute, LegacyOwnerRoomTypeRoute } from './OwnerRouteRedirects';
@@ -58,9 +59,11 @@ export default function AppRoutes() {
       <Route element={<MainLayout />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/home" element={<HomePage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route element={<GuestOnlyRoute />}>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        </Route>
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/hotels" element={<HotelListPage />} />
         <Route path="/search-results" element={<HotelListPage />} />
