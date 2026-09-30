@@ -605,6 +605,9 @@ select.ui-field { appearance: none; padding-right: 38px; background-image: url("
 .owner-module__form p, .owner-module__note { margin: 0; color: var(--color-text-secondary); font-size: 13px; }
 .owner-module__form-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
 .owner-module__form-grid label, .owner-module__filters label { display: grid; gap: 6px; color: var(--color-text-secondary); font-size: 12px; font-weight: 650; }
+.owner-module__weekdays { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin: 0; padding: 0; border: 0; }
+.owner-module__weekdays legend { padding: 0; margin-bottom: 6px; color: var(--color-text-secondary); font-size: 12px; font-weight: 600; }
+.owner-module__weekdays label { display: inline-flex; align-items: center; gap: 6px; color: var(--color-text-primary); font-size: 13px; }
 .owner-module__form-grid input, .owner-module__filters input, .owner-module__filters select { width: 100%; min-height: 40px; padding: 8px 10px; border: 1px solid var(--color-border-default); border-radius: 8px; background: var(--color-surface-raised); color: var(--color-text-primary); font: inherit; font-size: 14px; }
 .owner-module__filters { justify-content: flex-start; flex-wrap: wrap; }
 .owner-module__filters label { min-width: min(100%, 190px); }

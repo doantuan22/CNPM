@@ -3,8 +3,9 @@ import { CalendarDays } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { OwnerHotelContextSelector } from '../../components/owner/OwnerHotelContext';
 import { useBulkUpsertRates, useRates, useRoomTypes } from '../../features/owner/hooks';
-import { RateItemInput } from '../../features/owner/types';
-import { formatCurrencyVND, toDateInputValue } from '../../lib/utils';
+import { ALL_WEEKDAYS, WEEKDAYS, buildRatePayload, countDays } from '../../features/owner/rate-range';
+import { useConfirm, useToast } from '../../components/common/FeedbackProvider';
+import { formatCurrencyVND, formatDateRangeVi, formatDateVi, toDateInputValue } from '../../lib/utils';
 import { ApiError } from '../../services/apiClient';
 import { useScopedHotels } from '../../components/owner/useScopedHotels';
 
@@ -22,6 +23,9 @@ export default function OwnerInventoryPricingPage() {
   const rates = useRates(roomType?.MaLoaiPhong ?? 0, from, to);
   const update = useBulkUpsertRates(roomType?.MaLoaiPhong ?? 0);
   const [error, setError] = useState('');
+  const [weekdays, setWeekdays] = useState<number[]>([...ALL_WEEKDAYS]);
+  const confirm = useConfirm();
+  const notify = useToast();
   useEffect(() => {
     if (!roomTypesQuery.data?.length) return;
     const found = roomTypesQuery.data.some((item) => item.MaLoaiPhong === roomTypeId);
@@ -39,23 +43,41 @@ export default function OwnerInventoryPricingPage() {
       setError('Chọn ngày hợp lệ và một loại phòng.');
       return;
     }
-    const days = Math.floor((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86400000) + 1;
-    if (days > 366) {
+    if (countDays(from, to) > 366) {
       setError('Mỗi lần cập nhật tối đa 366 ngày theo giới hạn hệ thống.');
       return;
     }
+    if (weekdays.length === 0) {
+      setError('Chọn ít nhất một thứ trong tuần để áp dụng.');
+      return;
+    }
     const data = new FormData(event.currentTarget);
-    const ratesPayload: RateItemInput[] = Array.from({ length: days }, (_, index) => {
-      const date = new Date(Date.parse(`${from}T00:00:00Z`) + index * 86400000).toISOString().slice(0, 10);
-      return {
-        NgayApDung: date,
-        GiaPhong: Number(data.get('price')),
-        SoLuongPhong: Number(data.get('quantity')),
-        TrangThai: String(data.get('status')),
-      };
+    const rates = buildRatePayload({
+      from,
+      to,
+      weekdays,
+      price: Number(data.get('price')),
+      quantity: Number(data.get('quantity')),
+      status: String(data.get('status')),
     });
+    if (rates.length === 0) {
+      setError('Không có ngày nào trong khoảng đã chọn rơi vào các thứ đã tick.');
+      return;
+    }
+    const ok = await confirm({
+      title: 'Ghi đè giá và quỹ phòng?',
+      description: `${rates.length} ngày (${formatDateRangeVi(from, to)}) của "${roomType.TenLoaiPhong}" sẽ được đặt: giá ${formatCurrencyVND(rates[0].GiaPhong)}, ${rates[0].SoLuongPhong} phòng, ${rates[0].TrangThai}. Dữ liệu hiện có của các ngày này sẽ bị thay thế.`,
+      confirmLabel: 'Ghi đè',
+      variant: 'danger',
+    });
+    if (!ok) return;
     try {
-      await update.mutateAsync(ratesPayload);
+      await update.mutateAsync(rates);
+      notify({
+        title: 'Đã cập nhật giá và quỹ phòng',
+        description: `${rates.length} ngày của "${roomType.TenLoaiPhong}"`,
+        tone: 'success',
+      });
     } catch (reason) {
       setError(reason instanceof ApiError ? reason.message : 'Không thể cập nhật giá và quỹ phòng.');
     }
@@ -145,7 +167,7 @@ export default function OwnerInventoryPricingPage() {
                       <tbody>
                         {rows.map((row) => (
                           <tr key={row.MaQuyPhong}>
-                            <td>{new Date(`${row.NgayApDung.slice(0, 10)}T00:00:00`).toLocaleDateString('vi-VN')}</td>
+                            <td>{formatDateVi(row.NgayApDung.slice(0, 10))}</td>
                             <td>{formatCurrencyVND(row.GiaPhong)}</td>
                             <td>{row.SoLuongPhong}</td>
                             <td>{row.TrangThai}</td>
@@ -159,8 +181,11 @@ export default function OwnerInventoryPricingPage() {
                 )}
               </section>
               <form className="owner-module__form" onSubmit={updateRange}>
-                <h2>Cập nhật toàn bộ khoảng ngày đã chọn</h2>
-                <p>Gửi đúng ngày, giá, số lượng và trạng thái đến API hiện tại. Không tạo dữ liệu tồn kho suy diễn.</p>
+                <h2>Cập nhật khoảng ngày đã chọn</h2>
+                <p>
+                  Đặt cùng một giá, số lượng và trạng thái cho các ngày đã chọn (có thể chỉ một số thứ trong tuần). Bạn sẽ được hỏi xác nhận
+                  trước khi ghi đè.
+                </p>
                 {error && (
                   <p role="alert" className="is-error">
                     {error}
@@ -183,6 +208,23 @@ export default function OwnerInventoryPricingPage() {
                     </select>
                   </label>
                 </div>
+                <fieldset className="owner-module__weekdays">
+                  <legend>Áp dụng cho các thứ</legend>
+                  {WEEKDAYS.map((day) => (
+                    <label key={day.value}>
+                      <input
+                        type="checkbox"
+                        checked={weekdays.includes(day.value)}
+                        onChange={(event) =>
+                          setWeekdays((current) =>
+                            event.target.checked ? [...current, day.value] : current.filter((value) => value !== day.value)
+                          )
+                        }
+                      />
+                      {day.label}
+                    </label>
+                  ))}
+                </fieldset>
                 <button className="btn btn-primary" disabled={update.isPending || !roomType}>
                   {update.isPending ? 'Đang lưu…' : 'Cập nhật khoảng ngày'}
                 </button>
