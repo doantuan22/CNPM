@@ -6,6 +6,7 @@ import { formatCurrencyVND, formatDateVi } from '../lib/utils';
 import { StatusBadge } from '../components/domain/StatusBadge';
 import { OwnerHotelContextSelector, OwnerHotelScopeState } from '../components/owner/OwnerHotelContext';
 import { useOwnerHotelContext } from '../features/owner/context';
+import { BOOKING_STATUS } from '../features/bookings/status';
 
 
 function getStatusBadge(status: string) { return <StatusBadge domain="booking" status={status} />; }
@@ -133,7 +134,7 @@ export default function OwnerBookingsPage() {
               className="w-full px-3 py-2.5 bg-slate-50/60 border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition font-medium"
             >
               <option value="">Tất cả trạng thái</option>
-              {['Chờ thanh toán', 'Đã xác nhận', 'Đã hủy', 'Hoàn tất'].map((s) => (
+              {Object.values(BOOKING_STATUS).map((s) => (
                 <option key={s} value={s}>{s}</option>
               ))}
             </select>
@@ -202,7 +203,7 @@ export default function OwnerBookingsPage() {
                     </td>
                     <td className="py-4 px-4 text-right">
                       <div className="font-extrabold text-slate-900">{formatCurrencyVND(b.TongTienThanhToan)}</div>
-                      {b.TrangThai === 'Đã xác nhận' && <span className="text-[10px] text-emerald-600 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded">Đã thanh toán</span>}
+                      {b.TrangThai === BOOKING_STATUS.CONFIRMED && <span className="text-[10px] text-emerald-600 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded">Đã thanh toán</span>}
                     </td>
                     <td className="py-4 px-4 text-center">
                       {getStatusBadge(b.TrangThai)}

@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { meQueryKey, useLogin, useLogout, useSignOut } from './hooks';
+import { meQueryKey, useLogin, useLogout, useRegister, useSignOut } from './hooks';
 import * as authApi from './api';
 import { useAuthStore } from '../../lib/authStore';
 import { makeFakeAccessToken } from '../../test/testUtils';
@@ -100,5 +100,20 @@ describe('useSignOut', () => {
 
     await expect(result.current.signOut()).resolves.toBeUndefined();
     expect(useAuthStore.getState().accessToken).toBeNull();
+  });
+});
+
+describe('useRegister', () => {
+  it('starts from a clean cache: nothing of the previous user survives, the new account is in "me"', async () => {
+    const accessToken = makeFakeAccessToken({ sub: '2', role: 'Khách hàng', exp: 9999999999 });
+    vi.mocked(authApi.register).mockResolvedValue({ account: newUser, accessToken } as AuthResult);
+    const { queryClient, result } = setup(useRegister);
+
+    result.current.mutate({ TenDangNhap: 'moi', Email: 'moi@example.com', MatKhau: 'x', HoTen: 'Mới', SoDienThoai: '0900000000' });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(queryClient.getQueryData(meQueryKey)).toEqual(newUser);
+    expect(cachedKeys(queryClient)).toEqual([...PUBLIC_KEYS, meQueryKey]);
+    expect(useAuthStore.getState().accessToken).toBe(accessToken);
   });
 });

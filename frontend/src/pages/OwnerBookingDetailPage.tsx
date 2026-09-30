@@ -5,6 +5,7 @@ import { useOwnerHotelContext } from '../features/owner/context';
 import { formatCurrencyVND, formatDateVi, formatDateTimeVi } from '../lib/utils';
 import { ApiError } from '../services/apiClient';
 import { StatusBadge } from '../components/domain/StatusBadge';
+import { BOOKING_STATUS } from '../features/bookings/status';
 
 export default function OwnerBookingDetailPage() {
   const { bookingId } = useParams<{ bookingId: string }>();
@@ -57,7 +58,7 @@ export default function OwnerBookingDetailPage() {
         </div>
 
         {/* Auto Confirm Notification Banner */}
-        {(b.TrangThai === 'Đã xác nhận' || b.TrangThai === 'Hoàn tất') && (
+        {(b.TrangThai === BOOKING_STATUS.CONFIRMED || b.TrangThai === BOOKING_STATUS.COMPLETED) && (
           <div className="bg-blue-50/80 px-6 py-3 border-b border-blue-100 flex items-start gap-2.5">
             <i className="ph-fill ph-info text-primary mt-0.5"></i>
             <p className="text-xs text-blue-900 leading-relaxed font-medium">
