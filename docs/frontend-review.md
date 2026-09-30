@@ -1,8 +1,8 @@
 # Báo cáo rà soát Frontend (cấu trúc, bố cục, luồng) và đề xuất chỉnh sửa
 
 - Phạm vi: thư mục `frontend/` (React 19, React Router 7, TanStack Query 5, Zustand 5, Tailwind 4, Vite 8).
-- Ngày rà soát: 2026-09-30. Cập nhật lần cuối: 2026-09-30, sau khi sửa Giai đoạn 1 và Giai đoạn 2 (xem [Tiến độ xử lý](#tiến-độ-xử-lý)).
-- Phương pháp: chỉ **đọc code**, chưa chạy ứng dụng. Các lỗi luồng được suy ra từ code và cần chạy thử để xác nhận trước khi sửa. Các điểm chưa chắc được đánh dấu **[cần xác nhận]**.
+- Ngày rà soát: 2026-09-30. Cập nhật lần cuối: 2026-09-30, sau khi sửa các Giai đoạn 1–4 và một phần Giai đoạn 5, 6 (xem [Tiến độ xử lý](#tiến-độ-xử-lý)).
+- Phương pháp: bản rà soát ban đầu chỉ **đọc code**. Khi sửa, từng lỗi được xác nhận bằng test thất bại trước, và các thay đổi giao diện được kiểm tra lại bằng trình duyệt thật (Edge headless, xem phần Tiến độ). Các điểm chưa chắc được đánh dấu **[cần xác nhận]**.
 - Nguyên tắc cho phần đề xuất: chỉ dùng API/kỹ thuật có trong tài liệu chính thức của thư viện đang dùng (React, React Router, TanStack Query, HTML/WAI-ARIA, CSS, Tailwind). Chỗ nào phụ thuộc thay đổi ở backend thì ghi rõ, không giả định backend đã có.
 
 Mức ưu tiên: **P0** = sai chức năng / rủi ro dữ liệu, **P1** = ảnh hưởng rõ tới trải nghiệm hoặc bảo trì, **P2** = cải thiện, dọn dẹp.
@@ -11,19 +11,38 @@ Mức ưu tiên: **P0** = sai chức năng / rủi ro dữ liệu, **P1** = ản
 
 ## Tiến độ xử lý
 
-Giai đoạn 1 (sửa luồng) và Giai đoạn 2 (dọn dẹp: mục 1.4, 2.1 và 4) đã được thực hiện trong 10 commit trên `main`. Mỗi lỗi được xác nhận bằng test thất bại trước khi sửa. Sau các commit này: `npm run lint`, `npm run typecheck`, `npm test` (23 file / 131 test) và `npm run build` đều pass. **Chưa thử trên trình duyệt thật.**
+Giai đoạn 1 (sửa luồng), 2 (dọn dẹp), 3 (bố cục), 4 (cấu trúc) và phần lớn mục 5, 6 đã được thực hiện trong 37 commit trên `main` (10 commit đầu đã push; 27 commit sau chưa push tại thời điểm cập nhật này). Mỗi lỗi hành vi được xác nhận bằng test thất bại trước khi sửa. Kết quả hiện tại: `npm run lint`, `npm run typecheck`, `npm test` (45 file / 294 test) và `npm run build` đều pass; backend có thêm test cho trường hạn thanh toán.
+
+**Kiểm tra trên trình duyệt thật** (Edge headless điều khiển bằng CDP, backend và frontend chạy thật): đã chạy các luồng đăng ký/đăng nhập/đăng xuất, redirect của guard, alias, đặt phòng, trang kết quả thanh toán, thư viện ảnh, chia sẻ, drawer mobile, tab cuộn của trang khách sạn, bộ lọc trên URL của trang admin, cập nhật giá theo khoảng ngày. Rà soát bố cục lần cuối trên 4 cỡ màn hình (desktop, tablet, mobile, màn rộng) qua 57 lượt trang: mỗi trang đúng một `<main>`, không tràn ngang, một lề trái duy nhất theo từng cỡ màn hình, không có lỗi console. Việc đổi bố cục ở 3.1, 3.2, 2.2 (tách trang) và 2.4 được so sánh ảnh chụp trước/sau theo từng điểm (md5) và giữ nguyên hiển thị.
 
 | Mục | Trạng thái | Commit |
 | --- | --- | --- |
-| 1.1 Cache sau đặt phòng và thanh toán | **Xong, có điều chỉnh so với đề xuất ban đầu** (không dùng polling) | `c8da627`, `fddcf64` |
-| 1.2 Cache khi đăng xuất/hết phiên | **Xong**, dùng `clearUserCache` (giữ dữ liệu công khai) | `7bd88d4`, `3f97ce6` |
+| 1.1 Cache sau đặt phòng và thanh toán | **Xong, có điều chỉnh so với đề xuất ban đầu** (không dùng polling) | `c8da627`, `fddcf64`, `ff75d1c` |
+| 1.2 Cache khi đăng xuất/hết phiên | **Xong**, dùng `clearUserCache` (giữ dữ liệu công khai); `useRegister` cũng dọn cache | `7bd88d4`, `3f97ce6`, `441bf11` |
 | 1.3 Tab lọc "Đặt phòng của tôi" | **Xong** | `9249e6f` |
 | 1.4 Hai luồng đặt phòng, hai UI đánh giá | **Xong**, URL cũ giữ dưới dạng redirect | `db35e15` |
-| 1.5 Hạn giữ chỗ, banner "thành công" | Chưa làm (cần backend trả trường hạn thanh toán) | — |
+| 1.5 Hạn giữ chỗ, banner "thành công" | **Xong** (backend trả `HanThanhToan`, `SoGiayConLai`; frontend đếm ngược) | `4b032ee` (backend), `68c013d` |
 | 1.6 Điều hướng khi đã đăng nhập / sai vai trò | **Xong**, không có trang 403 | `5a8ba04` |
-| 2.1 Route trùng lặp | **Xong một phần**: alias thành redirect; chưa tách route thành module | `9d834e4`, `db35e15` |
+| 2.1 Route trùng lặp | **Xong**: alias thành redirect, route tách module theo khu vực | `9d834e4`, `db35e15`, `5affc61` |
+| 2.2 `pages/` phẳng, file đa trang | **Xong**: chia `auth/public/customer/owner/admin`, tách `OwnerModulesPage`, thêm Prettier (chỉ áp cho file mới/sửa) | `da035ca`, `d0c736d` |
+| 2.3 Ranh giới `features/` | **Xong một phần**: xóa mã và thư mục giữ chỗ không dùng; chưa sắp xếp lại `features/` | `ca92baf` |
+| 2.4 Khối UI lặp | **Xong một phần**: `Pagination`, `PageSpinner`, `OwnerScopeGate`; chưa có `DataTable` | `555cb68`, `2d9c9e3`, `370b569`, `b8430ad` |
+| 2.5 Bootstrap auth | **Xong** | `9f07312` |
+| 2.6 Test | Mỗi lỗi đã sửa có test đi kèm (131 → 294 test) | — |
+| 3.1 Một container | **Xong** | `f74b497` |
+| 3.2 `<main>` lồng nhau | **Xong**, kèm luật ESLint chặn `<main>` trong `pages/` | `8dffb42` |
+| 3.3 Thanh đặt phòng mobile | **Xong** | `a06b9db` |
+| 3.4 Thứ tự DOM và tab theo vị trí cuộn | **Xong** | `173c510` |
+| 3.5 Suspense | **Không phải lỗi**, xem bên dưới | — |
+| 3.6 Hồ sơ theo vai trò | **Xong** | `a2748aa` |
+| 3.7 Trang tổng quan Owner/Admin | Chưa làm | — |
+| 3.8 Giá/quỹ phòng theo khoảng ngày | **Xong** | `491c7f6` |
 | 4 UI giả | **Xong** (bỏ hoặc làm cho hoạt động thật) | `f834a03`, `36ca0da` |
-| 2.2 – 2.6, 3, 5, 6 | Chưa làm | — |
+| 5.1 Một hệ style, token thay màu thô | Chưa làm (lớn, nên theo từng trang) | — |
+| 5.2 Icon từ npm thay vì CDN | **Xong** (gói `@phosphor-icons/web`, không đổi giao diện); chưa gộp về một bộ icon | `ef4b2c9` |
+| 5.3 Ngày dd/mm/yyyy | **Xong** | `15cb110` |
+| 5.4 Số khách mặc định | **Xong** (mặc định 2) | `12f4695` |
+| 6.1 – 6.8 | **Xong** cả 8 mục | `3f7997e`, `3696242`, `8affc21`, `d3e846d`, `73e43aa`, `ff75d1c` |
 
 **Những điểm bản rà soát ban đầu sai hoặc lệch so với code thật** (phát hiện khi xác nhận trước khi sửa):
 
@@ -34,6 +53,16 @@ Giai đoạn 1 (sửa luồng) và Giai đoạn 2 (dọn dẹp: mục 1.4, 2.1 v
 - **Alias và luồng cũ không bị xóa hẳn.** Đề xuất ban đầu là xóa route; tài liệu `docs/uiux/part-2-booking-route-map.md` quy định chỉ bỏ sau khi kiểm tra link ngoài. Phía backend đã kiểm tra (chỉ tạo link `/payment/result` và `/reset-password`) nhưng link người dùng tự lưu thì không kiểm tra được, nên các URL cũ được giữ dưới dạng redirect (xem 1.4, 2.1).
 - **`/payment/:id` (alias động) trùng khuôn với `/payment/result` (URL thật mà VNPAY redirect về).** Route tĩnh được ưu tiên hơn route động nên vẫn đúng, nhưng đây là chỗ dễ vỡ nhất; đã có test riêng.
 - **Không dựng được link bản đồ.** API chi tiết đơn chỉ trả `MaKhachSan` và tên khách sạn, không có địa chỉ (xem mục 4).
+- **3.5 (Suspense ngoài `<Routes>`) không gây hiện tượng mô tả.** Đo trên trình duyệt thật: khi mở trang `lazy()` lần đầu, không quan sát thấy navbar bị thay bằng fallback. Không sửa.
+- **Đề xuất `OwnerLayout` dùng `<Outlet context>` (2.4) không cần thiết.** Phần lặp thực chất là khối "chọn khách sạn / chưa có khách sạn"; đã gom bằng hook `useScopedHotels` và `OwnerScopeGate`, không đổi cấu trúc route.
+- **Backend: `authLimiter` dùng chung cho `/auth/login` và `/auth/refresh` (10 lượt / 15 phút / IP).** Phát hiện khi chạy trình duyệt thật: mỗi lần tải lại trang đã đăng nhập gọi `/auth/refresh`, nên vài lần F5 hoặc mở nhiều tab có thể chặn cả đăng nhập (HTTP 429). Đây là lỗi thật nhưng **chưa sửa** vì nằm ngoài phạm vi được phép chỉnh backend (chỉ 1.5). Đề xuất: tách limiter riêng cho `/refresh` với hạn mức cao hơn (hoặc không giới hạn theo IP, vì refresh cần cookie hợp lệ), giữ 10 lượt cho `/login`.
+
+**Chưa làm, có chủ ý:**
+
+- **3.7** (trang tổng quan Owner/Admin có số liệu thật): cần quyết định sản phẩm về chỉ số nào hiển thị.
+- **5.1** (token thay màu thô, gỡ `booking-flow.css`, thống nhất `<Button>`/`.btn`): khối lượng lớn, dễ đổi hình ảnh, nên làm theo từng trang với ảnh chụp trước/sau.
+- Chạy Prettier trên toàn repo (sẽ tạo diff rất lớn che lịch sử); Prettier hiện chỉ áp dụng cho file mới/đã sửa.
+- Sắp xếp lại `features/` (2.3), `DataTable` dùng chung (2.4), gộp về một bộ icon (5.2), tự host font Inter.
 
 ---
 
@@ -87,8 +116,7 @@ export function useCreateBooking(hotelId: number) {
 
 **Còn tồn đọng**
 
-- Đơn `Hoàn tất` đã thanh toán, khi mở lại link kết quả cũ, vẫn rơi vào "Đang xử lý…" (chỉ `Đã xác nhận` được coi là thành công). Ca ít gặp, chưa sửa.
-- Trang vẫn hiển thị `MaDatPhong` như mã đơn (xem 6.6).
+- Không còn tồn đọng. Đơn `Hoàn tất` đã thanh toán được coi là thành công, và trang hiển thị `MaXacNhanDatPhong` thay vì `MaDatPhong` (commit `ff75d1c`, xem 6.6, 6.7).
 
 ### 1.2. Đăng xuất / hết phiên không xóa cache dữ liệu người dùng — P0 — ĐÃ XỬ LÝ
 
@@ -107,9 +135,7 @@ Giải pháp đầu tiên dùng `queryClient.clear()` (xóa toàn bộ). Sau đ�
 - Đây là **danh sách cho phép** giữ lại, không phải danh sách cấm. Một query mới chưa được khai báo sẽ bị xóa như dữ liệu riêng tư, nên quên đăng ký không thể làm lộ dữ liệu cho người dùng sau. Khi thêm một query công khai mới, cần thêm khóa gốc vào `PUBLIC_QUERY_ROOTS`.
 - Điểm gọi: `useLogout` (`onSettled`), `useLogin` (`onSuccess`, trước khi `setQueryData(meQueryKey, …)`), và `apiClient` ngay trước `expireSession()`. `authStore` không import ngược query layer.
 
-**Còn tồn đọng**
-
-- `useRegister` chưa gọi `clearUserCache`. Sau đăng xuất cache đã sạch nên rủi ro thấp, nhưng nên làm cho nhất quán.
+**Đã làm thêm**: `useRegister` cũng gọi `clearUserCache` (commit `441bf11`).
 
 ### 1.3. Tab lọc "Đặt phòng của tôi" map sai trạng thái — P0 — ĐÃ XỬ LÝ
 
@@ -126,8 +152,7 @@ Giải pháp đầu tiên dùng `queryClient.clear()` (xóa toàn bộ). Sau đ�
 
 **Còn tồn đọng**
 
-- Một số nơi vẫn so sánh chuỗi trạng thái trực tiếp: `OwnerBookingsPage`, `OwnerBookingDetailPage`, `StatusBadge`, `bookingStatusBadgeClass`.
-- Nút "Đánh giá" vẫn dẫn tới `WriteReviewPage` (xem 1.4).
+- Một số nơi vẫn so sánh chuỗi trạng thái trực tiếp: `OwnerBookingsPage`, `OwnerBookingDetailPage`, `StatusBadge`, `bookingStatusBadgeClass`. Nút "Đánh giá" đã dẫn tới `ReviewSection` (xem 1.4).
 
 ### 1.4. Hai luồng đặt phòng song song, một luồng là code chết — P1 — ĐÃ XỬ LÝ
 
@@ -150,9 +175,14 @@ Giải pháp đầu tiên dùng `queryClient.clear()` (xóa toàn bộ). Sau đ�
 - `StayContext`, `PriceDisplay`, `HotelIdentity` không còn nơi nào dùng. Chúng là component dùng chung nên được giữ lại; có thể dọn ở giai đoạn cấu trúc (mục 2.3).
 - Bước "xác nhận trước khi tạo đơn" (nếu sản phẩm cần) chưa có; nếu làm thì đặt **trước** `createBooking`, không thêm trang sau khi đơn đã tồn tại.
 
-### 1.5. Thiếu hạn giữ chỗ và banner "thành công" gây hiểu nhầm — P1
+### 1.5. Thiếu hạn giữ chỗ và banner "thành công" gây hiểu nhầm — P1 — ĐÃ XỬ LÝ
 
-**Hiện trạng**
+**Đã làm** (backend `4b032ee`, frontend `68c013d`; backend chỉ được sửa ở đúng mục này)
+
+- **Backend**: `GET /bookings/:id` và phản hồi tạo đơn có thêm `HanThanhToan` (thời điểm hết hạn, ISO) và `SoGiayConLai` (giây còn lại tính theo đồng hồ **máy chủ**, làm tròn lên, không âm) khi đơn ở `Chờ thanh toán`; các trạng thái khác trả `null`. Hạn tính bằng cùng công thức với việc tự hủy (`paymentDeadlineOf` trong `booking-expiry.ts`), nên giao diện và cron không thể lệch nhau. Có test cho hàm thuần và cho cả hai endpoint, và mô tả OpenAPI được cập nhật.
+- **Frontend**: dùng `SoGiayConLai` (không so `Date.now()` với `HanThanhToan`, để đồng hồ máy khách lệch không làm đếm sai) trong hook `useCountdown` (mốc bắt đầu là `dataUpdatedAt` của query, dọn `setInterval` khi unmount, gọi `onEnd` một lần). Hết giờ thì `invalidateQueries` để lấy trạng thái thật. Component `PaymentHoldNotice` hiển thị "Vui lòng thanh toán trước hh:mm" cùng đồng hồ đếm ngược, thay cho banner "Đặt phòng thành công!" (không còn phụ thuộc `location.state`, nên F5 không làm mất).
+
+**Hiện trạng ban đầu**
 
 - Backend tự hủy đơn "Chờ thanh toán" quá `PAYMENT_TIMEOUT_MINUTES` ([booking-expiry.ts](../backend/src/modules/bookings/booking-expiry.ts)), tính từ `NgayTao`. Frontend không hiển thị hạn thanh toán và không giải thích vì sao đơn tự chuyển "Đã hủy".
 - Banner "Đặt phòng thành công!" ([BookingDetailPage.tsx:68](../frontend/src/pages/BookingDetailPage.tsx#L68)) phụ thuộc `location.state`. State này mất khi F5 và thông điệp dễ gây hiểu nhầm vì đơn chưa thanh toán.
@@ -180,13 +210,13 @@ Giải pháp đầu tiên dùng `queryClient.clear()` (xóa toàn bộ). Sau đ�
 **Còn tồn đọng**
 
 - Chưa có trang 403 riêng (chủ ý, để giai đoạn sau nếu cần).
-- Chưa thử luồng đăng ký/đăng nhập thực tế trên trình duyệt sau khi thêm guard.
+- Luồng đăng ký, đăng nhập và redirect của guard đã được chạy lại trên trình duyệt thật, đúng như test.
 
 ---
 
 ## 2. Cấu trúc code bất hợp lý
 
-### 2.1. Route trùng lặp và route alias — P1 — ĐÃ XỬ LÝ MỘT PHẦN
+### 2.1. Route trùng lặp và route alias — P1 — ĐÃ XỬ LÝ
 
 **Hiện trạng ban đầu**
 
@@ -199,15 +229,18 @@ Cùng một component có nhiều URL: `/` và `/home`; `/hotels` và `/search-r
 - Test kiểm tra từng alias, giữ query/hash, điền tham số, không có alias trỏ tới alias khác, và route tĩnh `/payment/result` vẫn thắng alias động `/payment/:id`.
 - Các alias không bị xóa hẳn vì lý do đã nêu ở mục 1.4.
 
+**Đã làm thêm** (commit `5affc61`): route được tách thành `publicRoutes.tsx`, `customerRoutes.tsx`, `ownerRoutes.tsx`, `adminRoutes.tsx` (mỗi file là một fragment `<Route>`), `AppRoutes.tsx` chỉ ghép lại, thêm Suspense và trang 404. Test `routeTable.test.tsx` kiểm tra không có đường dẫn nào khai báo hai lần giữa các nhóm và guard của từng nhóm (đăng nhập, vai trò Chủ khách sạn, vai trò admin, khách).
+
 **Còn tồn đọng**
 
-- Chưa tách route thành các module riêng (`customerRoutes`, `ownerRoutes`, `adminRoutes`). Việc này chỉ có tính tổ chức, không đổi hành vi, nên để cùng đợt sắp xếp lại `pages/` (mục 2.2).
 - Khoảng 20 alias `/partner/*` và `/owner/hotels/:hotelId/*` của Owner vẫn nằm trong `OwnerRouteRedirects` (đã là `<Navigate>` từ trước), chưa gộp vào bảng chung.
 - Khi thật sự chắc không còn link cũ, có thể xóa hẳn các dòng trong `ROUTE_ALIASES`.
 
-### 2.2. `pages/` phẳng và file đa trang — P1
+### 2.2. `pages/` phẳng và file đa trang — P1 — ĐÃ XỬ LÝ
 
-**Hiện trạng**
+**Đã làm** (commit `da035ca`, `d0c736d`): `pages/` chia thành `auth/`, `public/`, `customer/`, `owner/`, `admin/` (đổi tên bằng `git mv` để giữ lịch sử). `OwnerModulesPage` tách thành `OwnerRoomTypesPage`, `OwnerInventoryPricingPage`, `OwnerRevenuePage`, `OwnerReportsPage` (hai trang cuối dùng chung `OwnerAnalyticsModule`) và hook `useScopedHotels`. Đã thêm Prettier 3 (`.prettierrc.json`, script `format`); **chỉ áp dụng cho file mới/đã sửa**, không format cả repo để không tạo diff khổng lồ che lịch sử. Việc tách được kiểm tra bằng so sánh ảnh chụp trước/sau: giao diện giữ nguyên.
+
+**Hiện trạng ban đầu**
 
 - 44 file trong [pages/](../frontend/src/pages/), phân nhóm bằng tiền tố (`Admin*`, `Owner*`).
 - [OwnerModulesPage.tsx](../frontend/src/pages/OwnerModulesPage.tsx) chứa 4 trang; [EcodeFlowPages.tsx](../frontend/src/pages/EcodeFlowPages.tsx) chứa 4 trang; "Ecode" là tên cũ không còn ý nghĩa.
@@ -219,9 +252,11 @@ Cùng một component có nhiều URL: `/` và `/home`; `/hotels` và `/search-r
 - Bật Prettier (hiện chỉ có ESLint và oxlint) để tự xuống dòng JSX và thống nhất định dạng. Đây là công cụ chuẩn của hệ sinh thái, không đổi hành vi code.
 - Đổi tên file theo domain, không theo tên dự án cũ.
 
-### 2.3. Ranh giới `features/` không nhất quán — P2
+### 2.3. Ranh giới `features/` không nhất quán — P2 — ĐÃ XỬ LÝ MỘT PHẦN
 
-**Hiện trạng**
+**Đã làm** (commit `ca92baf`): xóa mã không còn dùng và thư mục giữ chỗ chỉ có `.gitkeep`. **Chưa làm**: quy ước chung cho `features/` và tách `api.ts` khách/admin (đổi đường dẫn import trên diện rộng, giá trị thấp so với rủi ro).
+
+**Hiện trạng ban đầu**
 
 - Admin accounts/hotels/payments nằm ở `features/admin/*`, nhưng reviews/support/promotions/partners (cũng có phần admin) nằm ở các thư mục top-level riêng.
 - Một `api.ts` trộn API khách và admin (ví dụ [support/api.ts](../frontend/src/features/support/api.ts)).
@@ -234,9 +269,11 @@ Cùng một component có nhiều URL: `/` và `/home`; `/hotels` và `/search-r
 - Đưa type về sát domain của chúng, chỉ để `types/api.ts` cho type dùng chung.
 - Xóa thư mục rỗng chỉ có `.gitkeep`: `src/contexts`, `src/hooks` (nếu không dùng; hiện có `useDebouncedValue`, `useHealth` thì giữ), `src/utils`, `src/components`.
 
-### 2.4. Khối UI lặp lại thay vì dùng chung — P1
+### 2.4. Khối UI lặp lại thay vì dùng chung — P1 — ĐÃ XỬ LÝ MỘT PHẦN
 
-**Hiện trạng**
+**Đã làm**: `Pagination` dùng chung cho các trang danh sách admin (`555cb68`); `PageSpinner` thay 33 spinner viết tay (`2d9c9e3`), `QueryState` không còn nơi dùng nên bị xóa (`b8430ad`); `OwnerScopeGate` gom khối "chọn khách sạn / chưa có khách sạn" ở đầu các trang module của Owner (`370b569`). **Chưa làm**: `DataTable` dùng chung (bảng mỗi trang khác cột và hành vi, gom lúc này dễ làm hỏng hiển thị).
+
+**Hiện trạng ban đầu**
 
 - Markup spinner tự viết lại ở khoảng 30 trang, dù đã có `LoadingState`, `ErrorState`, `EmptyState`, `QueryState` trong [QueryState.tsx](../frontend/src/components/common/QueryState.tsx). Chỉ `EcodeFlowPages` dùng.
 - Bảng, bộ lọc, phân trang của admin (Accounts, Hotels, Payments, Promotions, Reviews, Support) và Owner Bookings viết riêng từng trang; chưa có `DataTable`/`Pagination` dùng chung.
@@ -248,7 +285,9 @@ Cùng một component có nhiều URL: `/` và `/home`; `/hotels` và `/search-r
 - Tạo `Pagination` và (nếu cần) `DataTable` trong `components/common`, dùng thẻ `<table>` với `<caption>` hoặc `aria-label` và `<th scope="col">` theo chuẩn HTML.
 - Owner: tạo `OwnerLayout` (route cha dùng `<Outlet context={…}>` hoặc React Context) chứa bộ chọn khách sạn và trạng thái phạm vi một lần; các trang con đọc bằng `useOutletContext()`. Có thể đặt bộ chọn ở topbar dashboard để khớp với mô hình "hotel scope" trong sidebar.
 
-### 2.5. Bootstrap auth trùng logic refresh — P2
+### 2.5. Bootstrap auth trùng logic refresh — P2 — ĐÃ XỬ LÝ
+
+**Đã làm** (commit `9f07312`): `useAuthBootstrap` gọi `refreshSession()` của `apiClient` (dùng chung promise đang chạy) và `finishBootstrap()` trong `finally`.
 
 **Hiện trạng**
 
@@ -261,7 +300,9 @@ Cùng một component có nhiều URL: `/` và `/home`; `/hotels` và `/search-r
 
 ### 2.6. Test còn mỏng ở luồng quan trọng — P1
 
-**Hiện trạng**: chỉ có 5 file test (search bar, interaction, owner context, owner redirects). Luồng đặt phòng, thanh toán, lọc booking, auth chưa có test.
+**Hiện trạng ban đầu**: chỉ có 5 file test (search bar, interaction, owner context, owner redirects). Luồng đặt phòng, thanh toán, lọc booking, auth chưa có test.
+
+**Cập nhật**: mỗi lỗi/tính năng ở các mục trên đều có test đi kèm, hiện 45 file / 294 test (dùng Vitest và Testing Library, `QueryClient` thật thay vì mock từng hàm). Chưa dùng MSW.
 
 **Đề xuất**
 
@@ -272,9 +313,11 @@ Cùng một component có nhiều URL: `/` và `/home`; `/hotels` và `/search-r
 
 ## 3. Bố cục và giao diện chưa ổn
 
-### 3.1. Bốn hệ container khác nhau — P1
+### 3.1. Bốn hệ container khác nhau — P1 — ĐÃ XỬ LÝ
 
-**Hiện trạng**
+**Đã làm** (commit `f74b497`): một class `.page-container` duy nhất, `width: min(100% - 2 * var(--gutter), var(--container-max))` với `--container-max: 1280px` và `--gutter` 16/24/32px theo breakpoint; dùng cho header, footer và mọi trang. Đo trên 4 cỡ màn hình: mỗi cỡ chỉ còn một lề trái (desktop 80, tablet 24, mobile 16, màn rộng 320px). Lưu ý: bề rộng nội dung đổi nhẹ so với trước (các giá trị cũ là 1536/1440/1280/1200) vì phải chọn một số duy nhất.
+
+**Hiện trạng ban đầu**
 
 - `.container` và `.site-header__inner`: `width: 80%` + `max-width: var(--container-max)` (1536px) + padding 24px ([base.css](../frontend/src/assets/css/base.css), [layout.css](../frontend/src/assets/css/layout.css)).
 - HotelDetail/HotelList: `max-w-[1440px] mx-auto px-6 lg:px-12`.
@@ -287,9 +330,11 @@ Cùng một component có nhiều URL: `/` và `/home`; `/hotels` và `/search-r
 - Định nghĩa **một** container duy nhất. Với Tailwind 4 có thể tạo utility bằng `@utility container-page { … }` hoặc một class CSS dựa trên token, rồi dùng cho header, footer và mọi trang. Trong đó dùng `width: min(100% - 2rem, var(--container-max)); margin-inline: auto;` (kỹ thuật CSS chuẩn, không cần `80%` cộng thêm padding).
 - Nếu trang cần bề rộng khác (form hẹp, admin rộng), khai báo qua biến thể (`container-page--narrow`) chứ không viết lại số ở từng trang.
 
-### 3.2. `<main>` lồng nhau và layout "đánh nhau" với trang — P1
+### 3.2. `<main>` lồng nhau và layout "đánh nhau" với trang — P1 — ĐÃ XỬ LÝ
 
-**Hiện trạng**
+**Đã làm** (commit `8dffb42`): trang trong `pages/` dùng `<div>`/`<section>`; chỉ `MainLayout` giữ `<main>`. Bỏ các class `!max-w-full !px-0 !py-0` vô tác dụng. Thêm luật ESLint `no-restricted-syntax` chặn `<main>` trong `src/pages/**/*.tsx` để không tái phát. Đo trên 57 lượt trang: mỗi trang đúng một `<main>`. Việc bỏ padding xung đột làm đổi Login và HotelDetail; đã được phát hiện bằng so sánh ảnh và chỉnh lại để giữ nguyên hiển thị.
+
+**Hiện trạng ban đầu**
 
 - [MainLayout.tsx](../frontend/src/components/layouts/MainLayout.tsx) đã render `<main id="main-content">`, nhưng khoảng 10 trang lại render `<main>` (HotelList, HotelDetail, Register, Forgot/Reset, Profile, PaymentResult, OwnerModules, OwnerBookingDetail, PartnerApply) và `AppErrorBoundary`.
 - Nhiều trang phải chèn `!max-w-full !px-0 !py-0` (từ khóa `!important` của Tailwind) để triệt tiêu padding của layout cha.
@@ -302,9 +347,11 @@ Cùng một component có nhiều URL: `/` và `/home`; `/hotels` và `/search-r
 - Thống nhất: layout **không** áp padding/max-width cho nội dung; mỗi trang tự bọc bằng container ở 3.1. Khi đó bỏ được toàn bộ `!max-w-full !px-0 !py-0`.
 - Trang toàn màn hình (Login, Register) có thể đặt ở một route layout riêng ("AuthLayout") thay vì bọc trong MainLayout rồi triệt tiêu nó.
 
-### 3.3. HotelDetail trên mobile: không thấy tổng tiền và nút đặt — P1
+### 3.3. HotelDetail trên mobile: không thấy tổng tiền và nút đặt — P1 — ĐÃ XỬ LÝ
 
-**Hiện trạng** ([HotelDetailPage.tsx](../frontend/src/pages/HotelDetailPage.tsx))
+**Đã làm** (commit `a06b9db`): thanh tóm tắt cố định ở đáy (`.hotel-mobile-bar`) hiện khi đã chọn phòng, có số phòng, tổng tiền và nút cuộn tới `#dat-phong`; dùng `env(safe-area-inset-bottom)` cùng `viewport-fit=cover` trong `index.html`; ẩn từ `lg:` trở lên; tự ẩn khi panel đặt phòng đang trong màn hình (`IntersectionObserver`). Chọn cách cuộn tới panel thay vì `<dialog>` để không nhân đôi form.
+
+**Hiện trạng ban đầu** ([HotelDetailPage.tsx](../frontend/src/pages/HotelDetailPage.tsx))
 
 - Lưới `grid-cols-1 lg:grid-cols-12`. Ở màn nhỏ, cột "Chi tiết đặt phòng" nằm dưới Tổng quan và Tiện nghi. Chọn phòng xong người dùng không có phản hồi, phải cuộn hết trang mới thấy nút "Tạo đặt phòng".
 
@@ -314,9 +361,11 @@ Cùng một component có nhiều URL: `/` và `/home`; `/hotels` và `/search-r
 - Panel đặt phòng đầy đủ có thể mở bằng `<dialog>` (đã dùng trong `FeedbackProvider`) hoặc bottom sheet ở mobile.
 - Ẩn thanh này ở `lg:` trở lên (`lg:hidden`) vì đã có cột phải dính (`lg:sticky`).
 
-### 3.4. HotelDetail: thứ tự hiển thị khác thứ tự DOM, tab không phản ánh vị trí — P1
+### 3.4. HotelDetail: thứ tự hiển thị khác thứ tự DOM, tab không phản ánh vị trí — P1 — ĐÃ XỬ LÝ
 
-**Hiện trạng**
+**Đã làm** (commit `173c510`): DOM theo đúng thứ tự hiển thị (phòng, tổng quan, tiện nghi), bỏ `order-*`, menu tab cùng thứ tự. Hook `useActiveSection` (`IntersectionObserver`) đánh dấu tab theo vị trí cuộn với `aria-current="location"`; hai quy tắc bổ sung phát hiện được khi chạy trình duyệt thật: cuộn tới cuối trang thì chọn mục cuối, và bấm tab thì giữ mục đó cho tới khi cuộn xong. `sticky` dùng `top: var(--header-height)` thay cho giá trị cứng.
+
+**Hiện trạng ban đầu**
 
 - Các section dùng `order-1/2/3` ([dòng 240, 263, 295](../frontend/src/pages/HotelDetailPage.tsx#L240)) để đảo thứ tự: DOM là Tổng quan → Loại phòng → Tiện nghi, hiển thị là Loại phòng → Tổng quan → Tiện nghi. Menu tab liệt kê "Tổng quan" trước. Bàn phím và trình đọc màn hình theo DOM nên thứ tự không khớp mắt nhìn (WCAG 1.3.2 Meaningful Sequence và 2.4.3 Focus Order).
 - Tab dính có `nav-tab active` cố định, không cập nhật theo vị trí cuộn.
@@ -328,13 +377,17 @@ Cùng một component có nhiều URL: `/` và `/home`; `/hotels` và `/search-r
 - Cập nhật tab đang active bằng `IntersectionObserver` (API trình duyệt chuẩn) theo section đang trong viewport, hoặc dùng `aria-current="location"` theo section hiện tại. Dùng `scroll-margin-top` (đã dùng `scroll-mt-36`) theo `--header-height` cộng chiều cao thanh tab.
 - Thay các giá trị cứng `4.5rem`, `top-28`, `top-40` bằng biến CSS (`top: var(--header-height)`, `calc(var(--header-height) + …)`).
 
-### 3.5. Suspense đặt ngoài `<Routes>` — P2 **[cần xác nhận]**
+### 3.5. Suspense đặt ngoài `<Routes>` — P2 — ĐÃ XÁC NHẬN: KHÔNG PHẢI LỖI
+
+**Kết quả kiểm tra**: đo trên trình duyệt thật, không quan sát thấy navbar/sidebar bị thay bằng fallback khi mở trang `lazy()` lần đầu, nên không sửa. Phần dưới là mô tả ban đầu.
 
 **Hiện trạng**: [AppRoutes.tsx:56](../frontend/src/routes/AppRoutes.tsx#L56) đặt `<Suspense>` bao quanh `<Routes>`, trong khi `MainLayout` nằm bên trong `<Routes>`. Khi một trang `lazy()` tải lần đầu và không nằm trong transition, fallback sẽ thay cả cây chứa navbar/sidebar.
 
 **Đề xuất**: đặt `<Suspense>` quanh `<Outlet />` trong `MainLayout` (và layout dashboard), để navbar/sidebar giữ nguyên và chỉ vùng nội dung hiện fallback. Đây là cách dùng chuẩn của `React.lazy`. Chạy thử điều hướng lần đầu tới một trang lazy để xác nhận hiện tượng trước khi sửa.
 
-### 3.6. Admin/Owner vào trang hồ sơ bị rơi khỏi khung dashboard — P1
+### 3.6. Admin/Owner vào trang hồ sơ bị rơi khỏi khung dashboard — P1 — ĐÃ XỬ LÝ
+
+**Đã làm** (commit `a2748aa`): thêm `/admin/profile`; `lib/roles.ts` có `PROFILE_PATH` và `profilePathFor(role)`, dùng ở `Navbar`, `DashboardNavigation` và `ProfilePage`; liên kết "Đặt phòng của tôi" chỉ hiện với khách. Chưa chuyển sang route layout của React Router (đề xuất thứ hai bên dưới): khung dashboard vẫn suy ra từ đường dẫn, vì hồ sơ đã có route dưới `/admin` và `/owner` nên điều kiện đó không còn sai.
 
 **Hiện trạng**
 
@@ -347,7 +400,9 @@ Cùng một component có nhiều URL: `/` và `/home`; `/hotels` và `/search-r
 - Thay vì suy ra layout bằng `pathname` + vai trò trong một component, dùng **route layout** của React Router: nhánh `/admin/*` bọc `DashboardLayout`, nhánh công khai bọc `PublicLayout`. Khi đó việc chọn layout nằm trong cây route (khai báo), không cần `if` theo đường dẫn.
 - Menu dropdown ở Navbar nên trỏ hồ sơ theo vai trò (dùng cùng bảng `profilePath`).
 
-### 3.7. Trang tổng quan Owner/Admin chưa mang tính tổng quan — P2
+### 3.7. Trang tổng quan Owner/Admin chưa mang tính tổng quan — P2 — CHƯA LÀM
+
+**Lý do chưa làm**: cần quyết định sản phẩm về chỉ số nào cần hiển thị.
 
 **Hiện trạng**
 
@@ -359,7 +414,9 @@ Cùng một component có nhiều URL: `/` và `/home`; `/hotels` và `/search-r
 - Tách `OwnerOverviewPage` và `OwnerHotelsPage` (hiện chỉ khác bằng cờ `mode`).
 - Bổ sung chỉ số từ API đã có: backend đã có `owner-analytics` và `admin-analytics` ([analytics/hooks.ts](../frontend/src/features/analytics/hooks.ts) đã có hook). Hiển thị đơn cần xử lý, doanh thu kỳ hiện tại, số hồ sơ chờ duyệt, số yêu cầu hỗ trợ mở. Chỉ hiển thị số liệu API thực sự trả về, không dựng số giả.
 
-### 3.8. Quỹ phòng và giá của Owner: ghi đè cả khoảng ngày — P1
+### 3.8. Quỹ phòng và giá của Owner: ghi đè cả khoảng ngày — P1 — ĐÃ XỬ LÝ
+
+**Đã làm** (commit `491c7f6`): checkbox chọn thứ trong tuần (`features/owner/rate-range.ts`: `WEEKDAYS`, `countDays`, `buildRatePayload`, có test), hộp xác nhận `useConfirm` "Ghi đè giá và quỹ phòng?" nêu số ngày và loại phòng, toast khi lưu xong. Vẫn dùng `bulkUpsertRates` hiện có, không thêm API. Chưa có sửa từng dòng trong bảng.
 
 **Hiện trạng**: [OwnerModulesPage.tsx](../frontend/src/pages/OwnerModulesPage.tsx) (`OwnerInventoryPricingPage`) hiển thị bảng chỉ đọc; form bên dưới gửi cùng một giá, số lượng, trạng thái cho **mọi ngày** trong khoảng đã chọn. Dễ ghi đè nhầm dữ liệu từng ngày đã thiết lập.
 
@@ -394,7 +451,9 @@ Cùng một component có nhiều URL: `/` và `/home`; `/hotels` và `/search-r
 
 ## 5. Hệ thống style và thư viện
 
-### 5.1. Ba cách style cùng tồn tại; token bị bỏ qua — P1
+### 5.1. Ba cách style cùng tồn tại; token bị bỏ qua — P1 — CHƯA LÀM
+
+**Lý do chưa làm**: phạm vi rất lớn (khoảng 1000 chỗ dùng màu thô) và dễ đổi hình ảnh; nên làm theo từng trang, mỗi bước có ảnh chụp trước/sau.
 
 **Hiện trạng**
 
@@ -409,7 +468,9 @@ Cùng một component có nhiều URL: `/` và `/home`; `/hotels` và `/search-r
 - Thay `booking-flow.css` bằng chỉnh sửa trực tiếp ở component/token. Xóa dần từng khối và kiểm tra trực quan sau mỗi bước.
 - Lộ trình chuyển đổi nên theo trang, không đổi một lượt, vì phạm vi lớn.
 
-### 5.2. Hai bộ icon, một bộ nạp từ CDN bằng `<script>` — P1
+### 5.2. Hai bộ icon, một bộ nạp từ CDN bằng `<script>` — P1 — ĐÃ XỬ LÝ MỘT PHẦN
+
+**Đã làm** (commit `ef4b2c9`): gỡ `<script>` từ unpkg; cài `@phosphor-icons/web@2.1.2` (pin phiên bản) và import các kiểu `regular`, `fill`, `bold`, `duotone` trong `main.tsx`. Class `ph ph-*` giữ nguyên nên không phải sửa 43 file, và không còn phụ thuộc CDN lúc chạy. **Chưa làm**: gộp về một bộ icon (Phosphor và `lucide-react` vẫn cùng tồn tại) và tree-shaking.
 
 **Hiện trạng**
 
@@ -423,7 +484,9 @@ Cùng một component có nhiều URL: `/` và `/home`; `/hotels` và `/search-r
 - Tối thiểu: nếu tạm giữ script CDN, pin phiên bản cụ thể và thêm `integrity` + `crossorigin="anonymous"` (SRI), và cân nhắc `defer`.
 - Icon thuần trang trí cần `aria-hidden="true"`; icon là nút cần `aria-label` (nhiều chỗ đã làm, cần thống nhất).
 
-### 5.3. Ngày hiển thị dạng ISO thô — P1
+### 5.3. Ngày hiển thị dạng ISO thô — P1 — ĐÃ XỬ LÝ
+
+**Đã làm** (commit `15cb110`): `formatDateTimeVi` xuất `dd/mm/yyyy` kèm giờ, thêm `formatDateRangeVi`, `formatCountdown`; các trang Home, HotelList, HotelDetail, Bookings, BookingDetail và các trang khác dùng chúng, có test.
 
 **Hiện trạng**: Home ("2026-10-01 → 2026-10-02"), HotelList chips, HotelDetail, BookingsPage (`NgayNhanPhong`), BookingDetail hiển thị chuỗi từ API. [lib/utils.ts](../frontend/src/lib/utils.ts) đã có `formatDateVi` và `formatDateTimeVi`, nhưng chỉ `StayContext` dùng. Còn khoảng 30 chỗ gọi `toLocale*String` rải rác.
 
@@ -433,7 +496,9 @@ Cùng một component có nhiều URL: `/` và `/home`; `/hotels` và `/search-r
 - Thay các `toLocale*String` rải rác bằng các hàm này để có một định dạng và một nơi sửa.
 - Ô `<input type="date">` vẫn dùng `YYYY-MM-DD` (theo chuẩn HTML).
 
-### 5.4. Mặc định số khách không thống nhất — P2
+### 5.4. Mặc định số khách không thống nhất — P2 — ĐÃ XỬ LÝ
+
+**Đã làm** (commit `12f4695`): mặc định 2 khách ở mọi trang (`DEFAULT_GUESTS`, `parseGuests`). Đây là quyết định sản phẩm nhỏ: trước đây HotelList/HotelDetail mặc định 1.
 
 **Hiện trạng**: [HomePage.tsx](../frontend/src/pages/HomePage.tsx) đặt search bar mặc định 2 khách nhưng truy vấn "nổi bật" dùng 1 khách; `HotelListPage` và `HotelDetailPage` mặc định 1.
 
@@ -441,7 +506,9 @@ Cùng một component có nhiều URL: `/` và `/home`; `/hotels` và `/search-r
 
 ---
 
-## 6. Các điểm nhỏ khác
+## 6. Các điểm nhỏ khác — ĐÃ XỬ LÝ CẢ 8 MỤC
+
+Commit: 6.1 `3f7997e`; 6.2, 6.8 `3696242`; 6.3 `8affc21`; 6.4 `d3e846d`; 6.5 `73e43aa`; 6.6, 6.7 `ff75d1c`. Bảng dưới giữ nguyên mô tả ban đầu. Chi tiết đã làm: error boundary theo từng trang trong `MainLayout` (có `resetKey`); hook `useDrawerBehavior` (focus trap, Escape, khóa cuộn, trả focus, `inert`) cho cả Navbar và sidebar dashboard, hai drawer tách trạng thái; `useSignOut` chờ đăng xuất xong rồi mới điều hướng và không bao giờ reject; báo giá là `useQuery` theo (ngày, phòng, mã khuyến mãi) và bỏ `eslint-disable`; bộ lọc và trang của các danh sách admin nằm trong URL (`useListParams`, `useUrlSearchInput`); trang kết quả thanh toán hiển thị mã xác nhận đúng và có nút "Thử thanh toán lại".
 
 | # | Vấn đề | Đề xuất |
 | --- | --- | --- |
@@ -460,12 +527,14 @@ Cùng một component có nhiều URL: `/` và `/home`; `/hotels` và `/search-r
 
 | Giai đoạn | Nội dung | Mục | Ước lượng rủi ro |
 | --- | --- | --- | --- |
-| 1 — Sửa luồng | **ĐÃ XONG** (trừ 1.4 và 1.5): invalidate cache sau tạo đơn, xử lý đúng trang kết quả thanh toán (không cần polling), `clearUserCache` khi đăng xuất/đăng nhập/hết phiên, sửa map trạng thái booking, guard cho `/login` và toast sai vai trò | 1.1, 1.2, 1.3, 1.6 | Đã có test đi kèm |
-| 2 — Dọn dẹp | **ĐÃ XONG** (2.1 còn việc tách module route): bỏ luồng đặt phòng cũ và `WriteReviewPage`, alias thành redirect, bỏ hoặc làm thật UI giả | 1.4, 2.1, 4 | Đã có test đi kèm. **Bước tiếp theo đề xuất: Giai đoạn 3 (layout), bắt đầu từ 3.2, 3.1, 3.3** |
-| 3 — Layout | Một container chung, bỏ `<main>` lồng, thanh đặt phòng mobile, `OwnerLayout`, route layout thay `pathname` | 3.1–3.8 | Trung bình; nên chụp ảnh trước/sau từng trang |
-| 4 — Cấu trúc | Tổ chức lại `pages/` và `features/`, `QueryState`/`Pagination`/`DataTable` dùng chung, Prettier | 2.2–2.5 | Trung bình; đổi đường dẫn import nhiều, làm ngoài giờ cao điểm PR |
-| 5 — Nền tảng style | Một bộ icon npm, token thay màu thô, gỡ `booking-flow.css`, ngày định dạng thống nhất | 5.x | Cao về khối lượng; chia nhỏ theo trang |
-| 6 — Cần backend | Trường hạn thanh toán, ảnh trong danh sách đặt phòng | 1.5, 4 | Cần thống nhất API |
+| 1 — Sửa luồng | **ĐÃ XONG**: cache sau tạo đơn, trang kết quả thanh toán, `clearUserCache`, map trạng thái, guard, hạn giữ chỗ (có sửa backend) | 1.1–1.6 | Đã có test đi kèm |
+| 2 — Dọn dẹp | **ĐÃ XONG**: bỏ luồng đặt phòng cũ, alias thành redirect, UI giả, tách route thành module | 1.4, 2.1, 4 | Đã có test đi kèm |
+| 3 — Layout | **ĐÃ XONG** (trừ 3.7): một container, một `<main>`, thanh đặt phòng mobile, thứ tự DOM, hồ sơ theo vai trò, cập nhật giá theo ngày | 3.1–3.6, 3.8 | Đã kiểm tra trên trình duyệt thật ở 4 cỡ màn hình |
+| 4 — Cấu trúc | **ĐÃ XONG MỘT PHẦN**: `pages/` theo khu vực, tách trang Owner, `Pagination`, `PageSpinner`, `OwnerScopeGate`, bootstrap auth, Prettier. Chưa làm: `features/`, `DataTable` | 2.2–2.5 | Đã so sánh ảnh trước/sau |
+| 5 — Nền tảng style | **ĐÃ XONG MỘT PHẦN**: icon từ npm, ngày dd/mm/yyyy, số khách mặc định. Chưa làm: 5.1 (token thay màu thô, gỡ `booking-flow.css`), gộp về một bộ icon | 5.2–5.4 | 5.1 cao về khối lượng; chia nhỏ theo trang |
+| 6 — Cần backend | Hạn thanh toán **đã xong** (1.5). Chưa làm: ảnh và địa chỉ trong danh sách/chi tiết đặt phòng; tách rate limiter của `/auth/refresh` khỏi `/auth/login` | 1.5, 4 | Cần thống nhất API |
+
+**Việc còn lại đề xuất**: (1) tách `authLimiter` cho `/auth/refresh` (lỗi thật, xem phần Tiến độ); (2) 3.7 sau khi chốt chỉ số cần hiển thị; (3) 5.1 theo từng trang; (4) API ảnh/địa chỉ nếu muốn lại ảnh khách sạn và link bản đồ.
 
 **Nguyên tắc khi thực hiện**
 
