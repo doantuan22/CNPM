@@ -27,10 +27,10 @@ const OwnerHotelManagePage = lazy(() => import('../pages/owner/OwnerHotelManageP
 const OwnerRoomTypeManagePage = lazy(() => import('../pages/owner/OwnerRoomTypeManagePage'));
 const OwnerBookingsPage = lazy(() => import('../pages/owner/OwnerBookingsPage'));
 const OwnerBookingDetailPage = lazy(() => import('../pages/owner/OwnerBookingDetailPage'));
-const OwnerRoomTypesPage = lazy(() => import('../pages/owner/OwnerModulesPage').then((module) => ({ default: module.OwnerRoomTypesPage })));
-const OwnerInventoryPricingPage = lazy(() => import('../pages/owner/OwnerModulesPage').then((module) => ({ default: module.OwnerInventoryPricingPage })));
-const OwnerRevenuePage = lazy(() => import('../pages/owner/OwnerModulesPage').then((module) => ({ default: module.OwnerRevenuePage })));
-const OwnerReportsPage = lazy(() => import('../pages/owner/OwnerModulesPage').then((module) => ({ default: module.OwnerReportsPage })));
+const OwnerRoomTypesPage = lazy(() => import('../pages/owner/OwnerRoomTypesPage'));
+const OwnerInventoryPricingPage = lazy(() => import('../pages/owner/OwnerInventoryPricingPage'));
+const OwnerRevenuePage = lazy(() => import('../pages/owner/OwnerRevenuePage'));
+const OwnerReportsPage = lazy(() => import('../pages/owner/OwnerReportsPage'));
 const AdminDashboardPage = lazy(() => import('../pages/admin/AdminDashboardPage'));
 const AdminAnalyticsPage = lazy(() => import('../pages/admin/AdminAnalyticsPage'));
 const AdminPromotionsPage = lazy(() => import('../pages/admin/AdminPromotionsPage'));
