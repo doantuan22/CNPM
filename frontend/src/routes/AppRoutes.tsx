@@ -4,6 +4,7 @@ import MainLayout from '../components/layouts/MainLayout';
 import { ProtectedRoute } from '../components/auth/ProtectedRoute';
 import { GuestOnlyRoute } from '../components/auth/GuestOnlyRoute';
 import { ROLE_NAMES } from '../lib/roles';
+import { aliasRoutes } from './aliases';
 import HomePage from '../pages/HomePage';
 import { LegacyOwnerBookingDetailRoute, LegacyOwnerHotelDetailRoute, LegacyOwnerHotelRoute, LegacyOwnerModuleRoute, LegacyOwnerRoomTypeRoute } from './OwnerRouteRedirects';
 import {
@@ -43,7 +44,10 @@ const AdminPromotionFormPage = lazy(() => import('../pages/AdminPromotionFormPag
 const AdminAccountsPage = lazy(() => import('../pages/AdminAccountsPage'));
 const AdminAccountDetailPage = lazy(() => import('../pages/AdminAccountDetailPage'));
 const AdminCreateAccountPage = lazy(() => import('../pages/AdminCreateAccountPage'));
-const AdminHotelsPage = lazy(() => import('../pages/AdminHotelsPage')); const AdminHotelDetailPage = lazy(() => import('../pages/AdminHotelDetailPage')); const AdminPaymentsPage = lazy(() => import('../pages/AdminPaymentsPage')); const AdminPaymentDetailPage = lazy(() => import('../pages/AdminPaymentDetailPage'));
+const AdminHotelsPage = lazy(() => import('../pages/AdminHotelsPage'));
+const AdminHotelDetailPage = lazy(() => import('../pages/AdminHotelDetailPage'));
+const AdminPaymentsPage = lazy(() => import('../pages/AdminPaymentsPage'));
+const AdminPaymentDetailPage = lazy(() => import('../pages/AdminPaymentDetailPage'));
 const AdminReviewsPage = lazy(() => import('../pages/AdminReviewsPage'));
 const AdminReviewDetailPage = lazy(() => import('../pages/AdminReviewDetailPage'));
 const AdminSupportPage = lazy(() => import('../pages/AdminSupportPage'));
@@ -58,7 +62,6 @@ export default function AppRoutes() {
     <Routes>
       <Route element={<MainLayout />}>
         <Route path="/" element={<HomePage />} />
-        <Route path="/home" element={<HomePage />} />
         <Route element={<GuestOnlyRoute />}>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
@@ -66,28 +69,20 @@ export default function AppRoutes() {
         </Route>
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/hotels" element={<HotelListPage />} />
-        <Route path="/search-results" element={<HotelListPage />} />
         <Route path="/hotels/:id" element={<HotelDetailPage />} />
-        <Route path="/hotel-detail/:id" element={<HotelDetailPage />} />
 
         {/* Any authenticated account */}
         <Route element={<ProtectedRoute />}>
           <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/account-profile" element={<ProfilePage />} />
           <Route path="/partner/apply" element={<PartnerApplyPage />} />
-          <Route path="/register-partner" element={<PartnerApplyPage />} />
           <Route path="/bookings" element={<BookingsPage />} />
-          <Route path="/my-bookings" element={<BookingsPage />} />
           <Route path="/bookings/:id" element={<BookingDetailPage />} />
-          <Route path="/booking-detail/:id" element={<BookingDetailPage />} />
           <Route path="/booking/:id/room" element={<BookingRoomPage />} />
           <Route path="/booking/:id/confirm" element={<BookingConfirmPage />} />
           <Route path="/booking/:id/payment" element={<PaymentPage />} />
           <Route path="/payment/:id" element={<PaymentPage />} />
           <Route path="/payment/result" element={<PaymentResultPage />} />
-          <Route path="/payment-result" element={<PaymentResultPage />} />
           <Route path="/support" element={<SupportPage />} />
-          <Route path="/support-request" element={<SupportPage />} />
           <Route path="/support/:id" element={<SupportDetailPage />} />
           <Route path="/write-review/:id" element={<WriteReviewPage />} />
         </Route>
@@ -133,7 +128,10 @@ export default function AppRoutes() {
           <Route path="/admin" element={<AdminDashboardPage />} />
           <Route path="/admin/accounts" element={<AdminAccountsPage />} />
           <Route path="/admin/accounts/new" element={<AdminCreateAccountPage />} />
-          <Route path="/admin/hotels" element={<AdminHotelsPage />} /><Route path="/admin/hotels/:id" element={<AdminHotelDetailPage />} /><Route path="/admin/payments" element={<AdminPaymentsPage />} /><Route path="/admin/payments/:id" element={<AdminPaymentDetailPage />} />
+          <Route path="/admin/hotels" element={<AdminHotelsPage />} />
+          <Route path="/admin/hotels/:id" element={<AdminHotelDetailPage />} />
+          <Route path="/admin/payments" element={<AdminPaymentsPage />} />
+          <Route path="/admin/payments/:id" element={<AdminPaymentDetailPage />} />
           <Route path="/admin/accounts/:id" element={<AdminAccountDetailPage />} />
           <Route path="/admin/reviews" element={<AdminReviewsPage />} />
           <Route path="/admin/reviews/:id" element={<AdminReviewDetailPage />} />
@@ -145,9 +143,10 @@ export default function AppRoutes() {
           <Route path="/admin/promotions" element={<AdminPromotionsPage />} />
           <Route path="/admin/promotions/new" element={<AdminPromotionFormPage />} />
           <Route path="/admin/promotions/:id" element={<AdminPromotionFormPage />} />
-          <Route path="/admin/onboarding" element={<AdminPartnerApplicationsPage />} />
-          <Route path="/admin/operations" element={<AdminDashboardPage />} />
         </Route>
+
+        {/* Legacy URLs kept only as redirects to their canonical route. */}
+        {aliasRoutes()}
 
         <Route path="*" element={<NotFoundPage />} />
       </Route>
