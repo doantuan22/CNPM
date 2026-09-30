@@ -180,7 +180,7 @@ Giải pháp đầu tiên dùng `queryClient.clear()` (xóa toàn bộ). Sau đ�
 **Đã làm** (backend `4b032ee`, frontend `68c013d`; backend chỉ được sửa ở đúng mục này)
 
 - **Backend**: `GET /bookings/:id` và phản hồi tạo đơn có thêm `HanThanhToan` (thời điểm hết hạn, ISO) và `SoGiayConLai` (giây còn lại tính theo đồng hồ **máy chủ**, làm tròn lên, không âm) khi đơn ở `Chờ thanh toán`; các trạng thái khác trả `null`. Hạn tính bằng cùng công thức với việc tự hủy (`paymentDeadlineOf` trong `booking-expiry.ts`), nên giao diện và cron không thể lệch nhau. Có test cho hàm thuần và cho cả hai endpoint, và mô tả OpenAPI được cập nhật.
-- **Frontend**: dùng `SoGiayConLai` (không so `Date.now()` với `HanThanhToan`, để đồng hồ máy khách lệch không làm đếm sai) trong hook `useCountdown` (mốc bắt đầu là `dataUpdatedAt` của query, dọn `setInterval` khi unmount, gọi `onEnd` một lần). Hết giờ thì `invalidateQueries` để lấy trạng thái thật. Component `PaymentHoldNotice` hiển thị "Vui lòng thanh toán trước hh:mm" cùng đồng hồ đếm ngược, thay cho banner "Đặt phòng thành công!" (không còn phụ thuộc `location.state`, nên F5 không làm mất).
+- **Frontend**: dùng `SoGiayConLai` (không so `Date.now()` với `HanThanhToan`, để đồng hồ máy khách lệch không làm đếm sai) trong hook `useCountdown` (mốc bắt đầu là `dataUpdatedAt` của query, dọn `setInterval` khi unmount, gọi `onEnd` một lần). Hết giờ thì tải lại đơn (`refetch`) để lấy trạng thái thật. Component `PaymentHoldNotice` hiển thị "Vui lòng thanh toán trước hh:mm" cùng đồng hồ đếm ngược, thay cho banner "Đặt phòng thành công!" (không còn phụ thuộc `location.state`, nên F5 không làm mất).
 
 **Hiện trạng ban đầu**
 
@@ -349,7 +349,7 @@ Cùng một component có nhiều URL: `/` và `/home`; `/hotels` và `/search-r
 
 ### 3.3. HotelDetail trên mobile: không thấy tổng tiền và nút đặt — P1 — ĐÃ XỬ LÝ
 
-**Đã làm** (commit `a06b9db`): thanh tóm tắt cố định ở đáy (`.hotel-mobile-bar`) hiện khi đã chọn phòng, có số phòng, tổng tiền và nút cuộn tới `#dat-phong`; dùng `env(safe-area-inset-bottom)` cùng `viewport-fit=cover` trong `index.html`; ẩn từ `lg:` trở lên; tự ẩn khi panel đặt phòng đang trong màn hình (`IntersectionObserver`). Chọn cách cuộn tới panel thay vì `<dialog>` để không nhân đôi form.
+**Đã làm** (commit `a06b9db`): thanh tóm tắt cố định ở đáy (`.hotel-mobile-bar`) hiện khi đã chọn phòng, có số phòng, tổng tiền và nút cuộn tới `#dat-phong`; dùng `env(safe-area-inset-bottom)` cùng `viewport-fit=cover` trong `index.html`; ẩn từ `lg:` trở lên; tự ẩn khi panel đặt phòng đang trong màn hình (`IntersectionObserver`).
 
 **Hiện trạng ban đầu** ([HotelDetailPage.tsx](../frontend/src/pages/HotelDetailPage.tsx))
 
