@@ -5,28 +5,13 @@ import { CustomerCenterNavigation } from '../components/layouts/CustomerCenterNa
 import { formatCurrencyVND } from '../lib/utils';
 import { ApiError } from '../services/apiClient';
 import { StatusBadge } from '../components/domain/StatusBadge';
-
-function getStatusFilterTag(status: string) {
-  switch (status) {
-    case 'Đã xác nhận':
-    case 'Thành công':
-    case 'Hoàn tất':
-      return 'completed';
-    case 'Đã hủy':
-      return 'cancelled';
-    default:
-      return 'upcoming'; 
-  }
-}
+import { BOOKING_TABS, canReviewBooking, matchesBookingTab, type BookingTab } from '../features/bookings/status';
 
 export default function BookingsPage() {
   const bookingsQuery = useMyBookings();
-  const [activeTab, setActiveTab] = useState('all');
+  const [activeTab, setActiveTab] = useState<BookingTab>('all');
 
-  const filteredBookings = bookingsQuery.data?.filter(b => {
-    if (activeTab === 'all') return true;
-    return getStatusFilterTag(b.TrangThai) === activeTab;
-  });
+  const filteredBookings = bookingsQuery.data?.filter((b) => matchesBookingTab(b.TrangThai, activeTab));
 
   return (
     <div className="container" style={{ paddingTop: '32px', paddingBottom: '60px' }}>
@@ -36,10 +21,7 @@ export default function BookingsPage() {
       </div>
 
       <div className="pill-tabs mb-5">
-        <button type="button" className={`pill-tab ${activeTab === 'all' ? 'active' : ''}`} onClick={() => setActiveTab('all')}>Tất cả</button>
-        <button type="button" className={`pill-tab ${activeTab === 'upcoming' ? 'active' : ''}`} onClick={() => setActiveTab('upcoming')}>Sắp tới</button>
-        <button type="button" className={`pill-tab ${activeTab === 'completed' ? 'active' : ''}`} onClick={() => setActiveTab('completed')}>Hoàn tất</button>
-        <button type="button" className={`pill-tab ${activeTab === 'cancelled' ? 'active' : ''}`} onClick={() => setActiveTab('cancelled')}>Đã hủy</button>
+        {BOOKING_TABS.map((tab) => (<button key={tab.key} type="button" className={`pill-tab ${activeTab === tab.key ? 'active' : ''}`} onClick={() => setActiveTab(tab.key)}>{tab.label}</button>))}
       </div>
 
       {bookingsQuery.isLoading ? (
@@ -86,7 +68,7 @@ export default function BookingsPage() {
                 <div className="text-lg font-bold text-primary">{formatCurrencyVND(b.TongTienThanhToan)}</div>
                 <div className="flex gap-2">
                   <Link to={`/bookings/${b.MaDatPhong}`} className="btn btn-outline btn-sm">Chi tiết</Link>
-                  {getStatusFilterTag(b.TrangThai) === 'completed' && (
+                  {canReviewBooking(b.TrangThai) && (
                     <Link to={`/write-review/${b.MaDatPhong}`} className="btn btn-primary btn-sm">Đánh giá</Link>
                   )}
                 </div>

@@ -3,6 +3,7 @@ import { Button } from '../common/Button';
 import { Textarea } from '../common/Textarea';
 import { useCreateReview, useMyReview } from '../../features/reviews/hooks';
 import { reviewStatusBadgeClass } from '../../features/reviews/status';
+import { canReviewBooking } from '../../features/bookings/status';
 import { fileToDataUrl, imageFileError, cn } from '../../lib/utils';
 import { ApiError } from '../../services/apiClient';
 
@@ -14,7 +15,7 @@ interface ReviewSectionProps {
 }
 
 export function ReviewSection({ bookingId, bookingStatus }: ReviewSectionProps) {
-  const isCompleted = bookingStatus === 'Hoàn tất';
+  const isCompleted = canReviewBooking(bookingStatus);
   const reviewQuery = useMyReview(bookingId, isCompleted);
   const createMutation = useCreateReview(bookingId);
 

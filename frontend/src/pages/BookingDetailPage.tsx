@@ -9,8 +9,7 @@ import { formatCurrencyVND, cn } from '../lib/utils';
 import { ApiError } from '../services/apiClient';
 import { CustomerCenterNavigation } from '../components/layouts/CustomerCenterNavigation';
 import { StatusBadge } from '../components/domain/StatusBadge';
-
-const CANCELLABLE = ['Chờ thanh toán', 'Đã xác nhận'];
+import { BOOKING_STATUS, CANCELLABLE_BOOKING_STATUSES } from '../features/bookings/status';
 
 export default function BookingDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -39,7 +38,7 @@ export default function BookingDetailPage() {
   }
 
   const booking = bookingQuery.data;
-  const canCancel = CANCELLABLE.includes(booking.TrangThai);
+  const canCancel = CANCELLABLE_BOOKING_STATUSES.includes(booking.TrangThai);
   const successfulPaid = booking.ThanhToan.filter((p) => p.TrangThai === 'Thành công').reduce((sum, p) => sum + p.SoTien, 0);
   const previewHours = hoursBeforeCheckIn(booking.NgayNhanPhong);
   const previewPercent = selectRefundPercentPreview(booking.ChinhSachHuy.ChiTiet, previewHours);
@@ -208,7 +207,7 @@ export default function BookingDetailPage() {
             </div>
           </div>
 
-          {booking.TrangThai === 'Chờ thanh toán' && (
+          {booking.TrangThai === BOOKING_STATUS.PENDING_PAYMENT && (
              <div className="flex flex-col gap-2">
                {payMutation.isError && (
                   <div role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">
