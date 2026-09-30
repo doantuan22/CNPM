@@ -3,7 +3,7 @@ import { useCallback, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useUiStore } from '../../lib/store';
 import { useSignOut, useMe } from '../../features/auth/hooks';
-import { ROLE_NAMES } from '../../lib/roles';
+import { ROLE_NAMES, profilePathFor } from '../../lib/roles';
 import { cn } from '../../lib/utils';
 import { useDrawerBehavior } from '../../hooks/useDrawerBehavior';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
@@ -118,6 +118,6 @@ export function DashboardTopbar({ role }: { role: DashboardRole }) {
   const { toggleSidebar } = useUiStore();
   const meQuery = useMe();
   const name = meQuery.data?.HoTen ?? (role === ROLE_NAMES.ADMIN ? 'Quản trị viên' : 'Đối tác');
-  const profilePath = role === ROLE_NAMES.PARTNER ? '/owner/profile' : '/profile';
+  const profilePath = profilePathFor(role);
   return <header className="dashboard-topbar"><button type="button" className="dashboard-sidebar-toggle btn btn-icon btn-ghost" onClick={toggleSidebar} aria-label="Mở menu"><Menu className="h-5 w-5" /></button><div className="dashboard-topbar__actions"><Link to={profilePath} className="site-header__user"><span className="site-header__avatar dashboard-user-avatar">{name.charAt(0).toUpperCase()}</span><span className="dashboard-user-meta hidden text-left sm:block"><strong>{name}</strong><small>{role === ROLE_NAMES.ADMIN ? 'Quản trị viên' : 'Chủ khách sạn'}</small></span><ChevronDown className="h-4 w-4 text-slate-400" /></Link></div></header>;
 }

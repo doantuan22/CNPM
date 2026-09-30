@@ -3,6 +3,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMe, useUpdateProfile, useSignOut } from '../features/auth/hooks';
+import { useAuthStore } from '../lib/authStore';
+import { ROLE_NAMES } from '../lib/roles';
 import { updateProfileSchema, UpdateProfileFormValues } from '../features/auth/schemas';
 import { ApiError } from '../services/apiClient';
 
@@ -14,6 +16,8 @@ export default function ProfilePage() {
   const updateMutation = useUpdateProfile();
   const navigate = useNavigate();
   const { signOut } = useSignOut();
+  // The account menu (bookings, support, sign out) is the customer's; admins and owners are already inside their dashboard.
+  const isCustomer = useAuthStore((state) => state.role) === ROLE_NAMES.CUSTOMER;
 
   const {
     register,
@@ -62,6 +66,7 @@ export default function ProfilePage() {
     <div className="bg-surface-secondary text-ink min-h-[80vh]">
       <div className="page-container py-8 flex flex-col md:flex-row gap-8">
         
+        {isCustomer && (
         <aside className="w-full md:w-[250px] shrink-0 bg-white rounded-2xl border border-border shadow-sm p-4">
           <h2 className="text-xs font-semibold text-ink-muted uppercase tracking-wider mb-4 pl-3">Hồ sơ tài khoản</h2>
           <nav className="flex flex-col space-y-1">
@@ -86,6 +91,7 @@ export default function ProfilePage() {
             <span>Đăng xuất</span>
           </button>
         </aside>
+        )}
 
         <div className="flex-1 min-w-0">
           <h1 className="text-2xl font-bold text-ink mb-6">Hồ sơ cá nhân</h1>

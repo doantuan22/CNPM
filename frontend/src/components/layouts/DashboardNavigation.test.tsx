@@ -28,7 +28,7 @@ describe('DashboardTopbar', () => {
 
   it.each([
     [ROLE_NAMES.PARTNER, '/owner/profile'],
-    [ROLE_NAMES.ADMIN, '/profile'],
+    [ROLE_NAMES.ADMIN, '/admin/profile'],
   ])('still offers the menu toggle and the profile link for %s', (role, profile) => {
     renderWithProviders(<DashboardTopbar role={role} />);
 

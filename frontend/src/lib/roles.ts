@@ -13,3 +13,12 @@ export const ROLE_HOME: Record<string, string> = {
   [ROLE_NAMES.PARTNER]: '/owner',
   [ROLE_NAMES.CUSTOMER]: '/',
 };
+
+/** Each role's own profile page: inside their area, so admins and owners stay in their dashboard. */
+export const PROFILE_PATH: Record<string, string> = {
+  [ROLE_NAMES.ADMIN]: '/admin/profile',
+  [ROLE_NAMES.PARTNER]: '/owner/profile',
+  [ROLE_NAMES.CUSTOMER]: '/profile',
+};
+
+export const profilePathFor = (role: string | null): string => (role && PROFILE_PATH[role]) || '/profile';

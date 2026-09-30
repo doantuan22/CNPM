@@ -2,7 +2,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useUiStore } from '../../lib/store';
 import { useAuthStore } from '../../lib/authStore';
 import { useSignOut, useMe } from '../../features/auth/hooks';
-import { ROLE_NAMES } from '../../lib/roles';
+import { ROLE_NAMES, profilePathFor } from '../../lib/roles';
 import { cn } from '../../lib/utils';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDrawerBehavior } from '../../hooks/useDrawerBehavior';
@@ -98,12 +98,14 @@ export function Navbar() {
                         <i className="ph ph-squares-four text-lg"></i> {roleDashboard.label}
                       </Link>
                     )}
-                    <Link to="/profile" className="dropdown-item" onClick={() => setIsDropdownOpen(false)}>
+                    <Link to={profilePathFor(role)} className="dropdown-item" onClick={() => setIsDropdownOpen(false)}>
                       <i className="ph ph-user text-lg"></i> Tài khoản của tôi
                     </Link>
-                    <Link to="/bookings" className="dropdown-item" onClick={() => setIsDropdownOpen(false)}>
-                      <i className="ph ph-calendar-check text-lg"></i> Đơn đặt phòng
-                    </Link>
+                    {role === ROLE_NAMES.CUSTOMER && (
+                      <Link to="/bookings" className="dropdown-item" onClick={() => setIsDropdownOpen(false)}>
+                        <i className="ph ph-calendar-check text-lg"></i> Đơn đặt phòng
+                      </Link>
+                    )}
                     <div className="dropdown-divider"></div>
                     <button 
                       className="dropdown-item danger" 
@@ -156,8 +158,8 @@ export function Navbar() {
             ))}
             {accessToken && <>
               {roleDashboard && <Link to={roleDashboard.to} onClick={toggleSidebar} className="mobile-drawer__link">{roleDashboard.label}</Link>}
-              <Link to="/profile" onClick={toggleSidebar} className="mobile-drawer__link">Tài khoản của tôi</Link>
-              <Link to="/bookings" onClick={toggleSidebar} className="mobile-drawer__link">Đơn đặt phòng</Link>
+              <Link to={profilePathFor(role)} onClick={toggleSidebar} className="mobile-drawer__link">Tài khoản của tôi</Link>
+              {role === ROLE_NAMES.CUSTOMER && <Link to="/bookings" onClick={toggleSidebar} className="mobile-drawer__link">Đơn đặt phòng</Link>}
             </>}
             {!accessToken && (
               <>

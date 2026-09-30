@@ -115,6 +115,7 @@ export default function AppRoutes() {
         {/* Quản trị hệ thống */}
         <Route element={<ProtectedRoute allowedRoles={[ROLE_NAMES.ADMIN]} />}>
           <Route path="/admin" element={<AdminDashboardPage />} />
+          <Route path="/admin/profile" element={<ProfilePage />} />
           <Route path="/admin/accounts" element={<AdminAccountsPage />} />
           <Route path="/admin/accounts/new" element={<AdminCreateAccountPage />} />
           <Route path="/admin/hotels" element={<AdminHotelsPage />} />
