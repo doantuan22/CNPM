@@ -47,11 +47,6 @@ export default function BookingsPage() {
         <div className="flex flex-col gap-4">
           {filteredBookings?.map((b) => (
             <div key={b.MaDatPhong} className="card card-hover flex flex-col sm:flex-row items-stretch sm:items-center p-5 gap-5">
-              <div className="w-full sm:w-[110px] h-32 sm:h-[110px] rounded-md bg-surface-tertiary flex-none overflow-hidden relative">
-                <div className="absolute inset-0 flex items-center justify-center text-slate-300">
-                  <i className="ph-duotone ph-image text-3xl"></i>
-                </div>
-              </div>
               <div className="flex-1 flex flex-col gap-1.5 min-w-0">
                 <div className="flex justify-between items-center flex-wrap gap-2">
                   <span className="text-[13px] font-semibold text-primary">Mã đơn: {b.MaXacNhanDatPhong}</span>

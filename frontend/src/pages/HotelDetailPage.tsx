@@ -12,6 +12,9 @@ import { Input } from '../components/common/Input';
 import { Textarea } from '../components/common/Textarea';
 import { RoomOffer } from '../components/hotels/RoomOffer';
 import { TravelSearchBar } from '../components/hotels/TravelSearchBar';
+import { HotelGalleryDialog } from '../components/hotels/HotelGalleryDialog';
+import { useToast } from '../components/common/FeedbackProvider';
+import { shareUrl } from '../lib/share';
 
 export default function HotelDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -21,6 +24,8 @@ export default function HotelDetailPage() {
   const [selectedRooms, setSelectedRooms] = useState<Record<number, number>>({});
   const [promoCode, setPromoCode] = useState('');
   const [ghiChu, setGhiChu] = useState('');
+  const [galleryIndex, setGalleryIndex] = useState<number | null>(null);
+  const notify = useToast();
   const quoteMutation = useCreateQuote(hotelId);
   const bookingMutation = useCreateBooking(hotelId);
   const accessToken = useAuthStore((s) => s.accessToken);
@@ -119,6 +124,15 @@ export default function HotelDetailPage() {
 
   const hotel = hotelQuery.data;
 
+  const shareHotel = async () => {
+    try {
+      const result = await shareUrl({ title: hotel.TenKhachSan, url: window.location.href });
+      if (result === 'copied') notify({ title: 'Đã sao chép liên kết', tone: 'success' });
+    } catch {
+      notify({ title: 'Không thể chia sẻ', description: 'Hãy sao chép liên kết từ thanh địa chỉ của trình duyệt.', tone: 'error' });
+    }
+  };
+
   return (
     <div className="booking-flow bg-surface text-ink min-h-screen pb-12 w-full !max-w-full !px-0 !py-0">
       
@@ -167,13 +181,9 @@ export default function HotelDetailPage() {
             
             <div className="flex items-center gap-4 self-start lg:self-end">
               <div className="flex items-center gap-2">
-                <button className="h-11 px-3.5 rounded-xl border border-border hover:border-blue-400 hover:bg-surface-secondary text-ink text-xs font-semibold flex items-center gap-2 transition-all shadow-sm">
-                  <i className="ph ph-share-network text-base text-ink-muted"></i>
+                <button type="button" aria-label="Chia sẻ" onClick={shareHotel} className="h-11 px-3.5 rounded-xl border border-border hover:border-blue-400 hover:bg-surface-secondary text-ink text-xs font-semibold flex items-center gap-2 transition-all shadow-sm">
+                  <i className="ph ph-share-network text-base text-ink-muted" aria-hidden="true"></i>
                   <span className="hidden sm:inline">Chia sẻ</span>
-                </button>
-                <button className="h-11 px-3.5 rounded-xl border border-border hover:border-rose-300 hover:bg-rose-50 text-ink text-xs font-semibold flex items-center gap-2 transition-all shadow-sm">
-                  <i className="ph ph-heart text-base text-ink-muted transition-colors"></i>
-                  <span className="hidden sm:inline">Lưu</span>
                 </button>
               </div>
             </div>
@@ -186,30 +196,36 @@ export default function HotelDetailPage() {
         <div className="max-w-[1440px] mx-auto px-6 lg:px-12">
           {hotel.HinhAnh.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-3 rounded-2xl overflow-hidden relative shadow-md">
-              <div className="md:col-span-2 relative group overflow-hidden cursor-pointer h-[320px] md:h-[440px]">
-                <img 
-                  src={hotel.HinhAnh[0].URL} 
-                  alt={hotel.TenKhachSan} 
+              <button type="button" aria-label="Xem ảnh lớn 1" onClick={() => setGalleryIndex(0)} className="md:col-span-2 relative group overflow-hidden cursor-pointer h-[320px] md:h-[440px]">
+                <img
+                  src={hotel.HinhAnh[0].URL}
+                  alt={hotel.TenKhachSan}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
                 />
-              </div>
+              </button>
               <div className="md:col-span-2 grid grid-cols-2 gap-3 h-[320px] md:h-[440px]">
                 {hotel.HinhAnh.slice(1, 5).map((img, index) => (
-                  <div key={img.MaHinhAnh} className="relative group overflow-hidden cursor-pointer rounded-lg">
-                    <img 
-                      src={img.URL} 
-                      alt={`Ảnh ${index + 2}`} 
+                  <button
+                    key={img.MaHinhAnh}
+                    type="button"
+                    aria-label={index === 3 && hotel.HinhAnh.length > 5 ? `Xem tất cả ${hotel.HinhAnh.length} ảnh` : `Xem ảnh lớn ${index + 2}`}
+                    onClick={() => setGalleryIndex(index + 1)}
+                    className="relative group overflow-hidden cursor-pointer rounded-lg"
+                  >
+                    <img
+                      src={img.URL}
+                      alt={`Ảnh ${index + 2}`}
                       className={cn("w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out", index === 3 && "brightness-90")}
                     />
                     {index === 3 && hotel.HinhAnh.length > 5 && (
-                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                        <button className="bg-white/95 text-ink font-bold text-xs px-4 py-2.5 rounded-xl flex items-center gap-2">
-                          <i className="ph ph-squares-four text-base text-primary"></i>
-                          <span>Xem tất cả {hotel.HinhAnh.length} ảnh</span>
-                        </button>
-                      </div>
+                      <span className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                        <span className="bg-white/95 text-ink font-bold text-xs px-4 py-2.5 rounded-xl flex items-center gap-2">
+                          <i className="ph ph-squares-four text-base text-primary" aria-hidden="true"></i>
+                          <span aria-hidden="true">Xem tất cả {hotel.HinhAnh.length} ảnh</span>
+                        </span>
+                      </span>
                     )}
-                  </div>
+                  </button>
                 ))}
               </div>
             </div>
@@ -220,6 +236,8 @@ export default function HotelDetailPage() {
           )}
         </div>
       </section>
+
+      <HotelGalleryDialog hotelName={hotel.TenKhachSan} images={hotel.HinhAnh} startIndex={galleryIndex} onClose={() => setGalleryIndex(null)} />
 
       {/* STICKY PAGE TABS */}
       <div className="sticky top-[4.5rem] z-30 bg-white/95 backdrop-blur-md border-y border-border mt-3">

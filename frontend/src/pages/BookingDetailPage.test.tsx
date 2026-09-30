@@ -47,6 +47,20 @@ const open = (status: string, hash = '') => {
   renderWithProviders(<BookingDetailPage />, { route: `/bookings/5${hash}` });
 };
 
+describe('BookingDetailPage hotel section', () => {
+  it('links to the hotel page instead of a map link that does nothing', () => {
+    open('Đã xác nhận');
+
+    expect(screen.getByRole('link', { name: /Xem thông tin khách sạn/ })).toHaveAttribute('href', '/hotels/1');
+    expect(screen.queryByText(/Xem trên bản đồ/)).not.toBeInTheDocument();
+  });
+
+  it('does not show an empty photo placeholder (the booking API returns no photo)', () => {
+    open('Đã xác nhận');
+    expect(document.querySelector('.ph-image')).toBeNull();
+  });
+});
+
 describe('BookingDetailPage review anchor', () => {
   it('scrolls to the review section when opened with #danh-gia on a completed booking', () => {
     open('Hoàn tất', '#danh-gia');

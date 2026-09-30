@@ -97,13 +97,10 @@ export default function BookingDetailPage() {
           
           <div className="card card-body">
             <div className="flex gap-5 mb-5 flex-wrap">
-              <div className="w-[140px] h-[105px] rounded-lg bg-surface-tertiary flex-none flex items-center justify-center text-slate-300">
-                <i className="ph-duotone ph-image text-4xl"></i>
-              </div>
               <div>
                 <h2 className="text-lg font-bold text-ink mb-1">{booking.TenKhachSan}</h2>
                 {booking.GhiChu && <p className="text-[13px] text-muted mb-2">Ghi chú: {booking.GhiChu}</p>}
-                <p className="text-[13px] text-primary mt-1.5 cursor-pointer hover:underline">Xem trên bản đồ <i className="ph ph-arrow-right"></i></p>
+                <Link to={`/hotels/${booking.MaKhachSan}`} className="mt-1.5 inline-flex items-center gap-1 text-[13px] text-primary hover:underline">Xem thông tin khách sạn <i className="ph ph-arrow-right" aria-hidden="true"></i></Link>
               </div>
             </div>
 

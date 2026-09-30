@@ -40,6 +40,11 @@ describe('BookingsPage', () => {
     expect(reviewLinks[0]).toHaveAttribute('href', '/bookings/3#danh-gia');
   });
 
+  it('does not show an empty photo placeholder (the booking API returns no photo)', () => {
+    renderWithProviders(<BookingsPage />);
+    expect(document.querySelector('.ph-image')).toBeNull();
+  });
+
   it('filters by the exact backend status', async () => {
     renderWithProviders(<BookingsPage />);
     const user = userEvent.setup();
