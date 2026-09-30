@@ -80,6 +80,13 @@ describe('HotelDetailPage share button', () => {
   });
 });
 
+describe('HotelDetailPage stay summary', () => {
+  it('shows the stay dates as dd/mm/yyyy', () => {
+    open();
+    expect(screen.getByText('01/01/2030 → 02/01/2030 · 2 khách')).toBeInTheDocument();
+  });
+});
+
 describe('HotelDetailPage without features that have no backend', () => {
   it('does not offer a "Lưu" (favourite) button', () => {
     open();

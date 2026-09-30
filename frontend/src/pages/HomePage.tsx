@@ -6,6 +6,7 @@ import { defaultSearchDates } from '../features/hotels/schemas';
 import type { LocationSummary } from '../features/hotels/types';
 import { TravelSearchBar } from '../components/hotels/TravelSearchBar';
 import { HotelCard } from '../components/hotels/HotelCard';
+import { formatDateRangeVi } from '../lib/utils';
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -66,7 +67,7 @@ export default function HomePage() {
           <div className="mb-10 flex flex-col sm:flex-row justify-between items-end gap-4 text-center sm:text-left">
             <div>
               <h2 id="home-featured-title" className="text-3xl font-bold text-ink mb-2">Khách sạn nổi bật</h2>
-              <p className="text-ink-muted text-lg">Hạng sao cao nhất, giá cho ngày {defaults.checkIn} → {defaults.checkOut}</p>
+              <p className="text-ink-muted text-lg">Hạng sao cao nhất, giá cho ngày {formatDateRangeVi(defaults.checkIn, defaults.checkOut, ' → ')}</p>
             </div>
             <Link to="/hotels" className="text-primary font-medium hover:underline inline-flex items-center gap-1">
               Xem tất cả <i className="ph ph-arrow-right" aria-hidden="true"></i>

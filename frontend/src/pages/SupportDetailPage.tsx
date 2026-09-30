@@ -3,6 +3,7 @@ import { useMySupportRequest } from '../features/support/hooks';
 import { ApiError } from '../services/apiClient';
 import { CustomerCenterNavigation } from '../components/layouts/CustomerCenterNavigation';
 import { StatusBadge } from '../components/domain/StatusBadge';
+import { formatDateTimeVi } from '../lib/utils';
 
 export default function SupportDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -35,7 +36,7 @@ export default function SupportDetailPage() {
           <div>
             <h1 className="text-[20px] font-bold text-heading">{r.TieuDe}</h1>
             <p className="mt-1 text-[13px] text-muted">
-              {r.LoaiYeuCau} · Gửi lúc {new Date(r.NgayTao).toLocaleString('vi-VN')}
+              {r.LoaiYeuCau} · Gửi lúc {formatDateTimeVi(r.NgayTao)}
             </p>
           </div>
           <StatusBadge domain="support" status={r.TrangThai} />
@@ -56,7 +57,7 @@ export default function SupportDetailPage() {
           <div className="mt-6 bg-emerald-50 border border-emerald-100 rounded-lg p-4">
             <h4 className="text-sm font-bold text-emerald-800 mb-1 flex items-center gap-2">
               <i className="ph-fill ph-check-circle text-emerald-600"></i>
-              Kết quả xử lý {r.NgayXuLy && <span className="font-normal opacity-80">({new Date(r.NgayXuLy).toLocaleString('vi-VN')})</span>}
+              Kết quả xử lý {r.NgayXuLy && <span className="font-normal opacity-80">({formatDateTimeVi(r.NgayXuLy)})</span>}
             </h4>
             <p className="whitespace-pre-wrap text-sm text-emerald-900 leading-relaxed pl-6">{r.KetQuaXuLy}</p>
           </div>

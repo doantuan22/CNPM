@@ -2,7 +2,7 @@ import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { Search } from 'lucide-react';
 import { searchFormSchema, type SearchFormValues } from '../../features/hotels/schemas';
 import { useLocations } from '../../features/locations/hooks';
-import { toDateInputValue } from '../../lib/utils';
+import { toDateInputValue, formatDateRangeVi } from '../../lib/utils';
 import { Combobox } from '../common/Combobox';
 import { GuestPicker } from '../common/GuestPicker';
 
@@ -99,7 +99,7 @@ export function TravelSearchBar({ currentSearch, onSearch, variant = 'compact', 
   };
 
   const dateSummary = draftSearch.checkIn && draftSearch.checkOut
-    ? `${draftSearch.checkIn} – ${draftSearch.checkOut}`
+    ? formatDateRangeVi(draftSearch.checkIn, draftSearch.checkOut)
     : 'Chọn ngày';
   const editor = activeEditor && <div className={`travel-search__editor travel-search__editor--${activeEditor}`} role="dialog" aria-label={`Chỉnh sửa ${editorLabels[activeEditor]}`}>
     <div className="travel-search__editor-heading">

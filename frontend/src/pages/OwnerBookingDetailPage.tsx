@@ -2,7 +2,7 @@ import { Link, useParams } from 'react-router-dom';
 import { useOwnerBooking } from '../features/owner/hooks';
 import { OwnerHotelContextSelector, OwnerHotelScopeState } from '../components/owner/OwnerHotelContext';
 import { useOwnerHotelContext } from '../features/owner/context';
-import { formatCurrencyVND } from '../lib/utils';
+import { formatCurrencyVND, formatDateVi, formatDateTimeVi } from '../lib/utils';
 import { ApiError } from '../services/apiClient';
 import { StatusBadge } from '../components/domain/StatusBadge';
 
@@ -48,7 +48,7 @@ export default function OwnerBookingDetailPage() {
                 <h3 className="text-lg font-bold text-slate-900">#{b.MaXacNhanDatPhong}</h3>
                 <StatusBadge domain="booking" status={b.TrangThai} />
               </div>
-              <p className="text-xs text-slate-500 mt-0.5">Ngày tạo: {new Date(b.NgayTao).toLocaleString('vi-VN')}</p>
+              <p className="text-xs text-slate-500 mt-0.5">Ngày tạo: {formatDateTimeVi(b.NgayTao)}</p>
             </div>
           </div>
           <button type="button" onClick={() => window.print()} className="px-4 py-2 bg-white border border-border rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-50 shadow-sm flex items-center gap-2 print:hidden">
@@ -109,12 +109,12 @@ export default function OwnerBookingDetailPage() {
             <div className="grid grid-cols-2 gap-3 pt-1">
               <div className="p-3 border border-border rounded-xl bg-slate-50/50">
                 <div className="text-[11px] uppercase font-bold text-slate-400">Nhận phòng (Check-in)</div>
-                <div className="font-bold text-slate-900 text-sm mt-0.5">{new Date(b.NgayNhanPhong).toLocaleDateString('vi-VN')}</div>
+                <div className="font-bold text-slate-900 text-sm mt-0.5">{formatDateVi(b.NgayNhanPhong)}</div>
                 <div className="text-[11px] text-slate-500">Từ {b.GioNhanPhong.slice(11, 16)}</div>
               </div>
               <div className="p-3 border border-border rounded-xl bg-slate-50/50">
                 <div className="text-[11px] uppercase font-bold text-slate-400">Trả phòng (Check-out)</div>
-                <div className="font-bold text-slate-900 text-sm mt-0.5">{new Date(b.NgayTraPhong).toLocaleDateString('vi-VN')}</div>
+                <div className="font-bold text-slate-900 text-sm mt-0.5">{formatDateVi(b.NgayTraPhong)}</div>
                 <div className="text-[11px] text-slate-500">Trước {b.GioTraPhong.slice(11, 16)}</div>
               </div>
             </div>

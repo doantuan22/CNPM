@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useMyBookings } from '../features/bookings/hooks';
 import { useCreateSupportRequest, useMySupportRequests } from '../features/support/hooks';
-import { cn } from '../lib/utils';
+import { cn, formatDateVi } from '../lib/utils';
 import { ApiError } from '../services/apiClient';
 import { CustomerCenterNavigation } from '../components/layouts/CustomerCenterNavigation';
 import { StatusBadge } from '../components/domain/StatusBadge';
@@ -164,7 +164,7 @@ export default function SupportPage() {
                       <Link to={`/support/${r.MaYeuCauHoTro}`} className="ticket-title-link">{r.TieuDe}</Link>
                       {r.DAT_PHONG && <span className="ticket-booking-ref block mt-0.5">Đơn liên quan: #{r.DAT_PHONG.MaXacNhanDatPhong}</span>}
                     </td>
-                    <td className="text-[13px] text-muted">{new Date(r.NgayTao).toLocaleDateString('vi-VN')}</td>
+                    <td className="text-[13px] text-muted">{formatDateVi(r.NgayTao)}</td>
                     <td><StatusBadge domain="support" status={r.TrangThai} /></td>
                     <td className="text-right">
                       <Link to={`/support/${r.MaYeuCauHoTro}`} className="btn btn-outline btn-sm">Xem trao đổi</Link>

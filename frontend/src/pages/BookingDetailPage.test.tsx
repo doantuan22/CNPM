@@ -47,6 +47,16 @@ const open = (status: string, hash = '') => {
   renderWithProviders(<BookingDetailPage />, { route: `/bookings/5${hash}` });
 };
 
+describe('BookingDetailPage dates', () => {
+  it('shows check-in and check-out as dd/mm/yyyy, not raw ISO text', () => {
+    open('Đã xác nhận');
+
+    expect(screen.getByText('01/01/2030')).toBeInTheDocument();
+    expect(screen.getByText('02/01/2030')).toBeInTheDocument();
+    expect(screen.queryByText('2030-01-01')).not.toBeInTheDocument();
+  });
+});
+
 describe('BookingDetailPage hotel section', () => {
   it('links to the hotel page instead of a map link that does nothing', () => {
     open('Đã xác nhận');

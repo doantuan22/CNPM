@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { ApiError } from '../services/apiClient';
 import { getAdminPayment } from '../features/admin/payments/api';
 import { StatusBadge } from '../components/domain/StatusBadge';
+import { formatDateTimeVi } from '../lib/utils';
 
 export default function AdminPaymentDetailPage() {
   const id = Number(useParams().id);
@@ -80,7 +81,7 @@ export default function AdminPaymentDetailPage() {
                  <div className="absolute -left-[13px] top-1 w-2.5 h-2.5 rounded-full bg-slate-300 border-2 border-white"></div>
                  <div className="pl-3">
                    <div className="font-bold text-slate-700">Khởi tạo giao dịch (Chờ thanh toán)</div>
-                   <div className="text-slate-400 text-[10px] mt-0.5">{new Date(payment.ThoiGianGiaoDich).toLocaleString('vi-VN')}</div>
+                   <div className="text-slate-400 text-[10px] mt-0.5">{formatDateTimeVi(payment.ThoiGianGiaoDich)}</div>
                  </div>
               </div>
               {payment.TrangThai === 'Thành công' && (
@@ -88,7 +89,7 @@ export default function AdminPaymentDetailPage() {
                    <div className="absolute -left-[13px] top-1 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white"></div>
                    <div className="pl-3">
                      <div className="font-bold text-emerald-700">Thanh toán thành công (Webhook xác nhận)</div>
-                     <div className="text-slate-400 text-[10px] mt-0.5">{new Date(payment.ThoiGianGiaoDich).toLocaleString('vi-VN')}</div>
+                     <div className="text-slate-400 text-[10px] mt-0.5">{formatDateTimeVi(payment.ThoiGianGiaoDich)}</div>
                    </div>
                 </div>
               )}
@@ -97,7 +98,7 @@ export default function AdminPaymentDetailPage() {
                    <div className="absolute -left-[13px] top-1 w-2.5 h-2.5 rounded-full bg-rose-500 border-2 border-white"></div>
                    <div className="pl-3">
                      <div className="font-bold text-rose-700">Giao dịch thất bại / Hết thời gian</div>
-                     <div className="text-slate-400 text-[10px] mt-0.5">{new Date(payment.ThoiGianGiaoDich).toLocaleString('vi-VN')}</div>
+                     <div className="text-slate-400 text-[10px] mt-0.5">{formatDateTimeVi(payment.ThoiGianGiaoDich)}</div>
                    </div>
                 </div>
               )}
@@ -124,7 +125,7 @@ export default function AdminPaymentDetailPage() {
                     </div>
                     <div>
                       <span className="text-amber-700/80 block text-[11px] mb-0.5">Ngày yêu cầu:</span>
-                      <span className="font-medium">{refund.NgayYeuCau ? new Date(refund.NgayYeuCau).toLocaleString('vi-VN') : ''}</span>
+                      <span className="font-medium">{refund.NgayYeuCau ? formatDateTimeVi(refund.NgayYeuCau) : ''}</span>
                     </div>
                     {refund.LyDoHoanTien && (
                       <div className="col-span-2 mt-1">

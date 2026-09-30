@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useOwnerBookings } from '../features/owner/hooks';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
-import { formatCurrencyVND } from '../lib/utils';
+import { formatCurrencyVND, formatDateVi } from '../lib/utils';
 import { StatusBadge } from '../components/domain/StatusBadge';
 import { OwnerHotelContextSelector, OwnerHotelScopeState } from '../components/owner/OwnerHotelContext';
 import { useOwnerHotelContext } from '../features/owner/context';
@@ -192,10 +192,10 @@ export default function OwnerBookingsPage() {
                       <div className="text-xs text-slate-500">{b.KhachHang.SoDienThoai}</div>
                     </td>
                     <td className="py-4 px-4">
-                      <div className="font-medium text-slate-800">{new Date(b.NgayNhanPhong).toLocaleDateString('vi-VN')}</div>
+                      <div className="font-medium text-slate-800">{formatDateVi(b.NgayNhanPhong)}</div>
                     </td>
                     <td className="py-4 px-4">
-                      <div className="font-medium text-slate-800">{new Date(b.NgayTraPhong).toLocaleDateString('vi-VN')}</div>
+                      <div className="font-medium text-slate-800">{formatDateVi(b.NgayTraPhong)}</div>
                     </td>
                     <td className="py-4 px-4 text-xs text-slate-600">
                       {b.ChiTietPhong.map((room) => `${room.TenLoaiPhong} × ${room.SoLuong}`).join(', ')}
@@ -230,8 +230,8 @@ export default function OwnerBookingsPage() {
                   {getStatusBadge(booking.TrangThai)}
                 </div>
                 <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                  <div><dt className="text-xs text-muted">Nhận phòng</dt><dd className="font-medium text-heading">{new Date(booking.NgayNhanPhong).toLocaleDateString('vi-VN')}</dd></div>
-                  <div><dt className="text-xs text-muted">Trả phòng</dt><dd className="font-medium text-heading">{new Date(booking.NgayTraPhong).toLocaleDateString('vi-VN')}</dd></div>
+                  <div><dt className="text-xs text-muted">Nhận phòng</dt><dd className="font-medium text-heading">{formatDateVi(booking.NgayNhanPhong)}</dd></div>
+                  <div><dt className="text-xs text-muted">Trả phòng</dt><dd className="font-medium text-heading">{formatDateVi(booking.NgayTraPhong)}</dd></div>
                   <div className="col-span-2"><dt className="text-xs text-muted">Phòng</dt><dd className="font-medium text-heading">{booking.ChiTietPhong.map((room) => `${room.TenLoaiPhong} × ${room.SoLuong}`).join(', ')}</dd></div>
                   <div className="col-span-2"><dt className="text-xs text-muted">Tổng thanh toán</dt><dd className="font-bold text-heading">{formatCurrencyVND(booking.TongTienThanhToan)}</dd></div>
                 </dl>

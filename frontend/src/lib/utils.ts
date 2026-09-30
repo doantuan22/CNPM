@@ -17,11 +17,16 @@ export function formatDateVi(value: string): string {
   return new Intl.DateTimeFormat('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(date);
 }
 
-/** Timestamp formatter uses the browser locale/timezone, matching current page behavior. */
+/** Timestamp formatter (dd/mm/yyyy + time) uses the browser locale/timezone. */
 export function formatDateTimeVi(value: string): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
-  return new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short', timeStyle: 'short' }).format(date);
+  return new Intl.DateTimeFormat('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(date);
+}
+
+/** "05/10/2026 – 06/10/2026" for a stay; both values are date-only API/URL strings. */
+export function formatDateRangeVi(from: string, to: string, separator = ' – '): string {
+  return `${formatDateVi(from)}${separator}${formatDateVi(to)}`;
 }
 
 /** YYYY-MM-DD for <input type="date"> — always local-date-safe (no timezone shift). */

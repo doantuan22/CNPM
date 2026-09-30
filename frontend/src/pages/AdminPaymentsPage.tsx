@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { ApiError } from '../services/apiClient';
 import { listAdminPayments } from '../features/admin/payments/api';
 import { StatusBadge } from '../components/domain/StatusBadge';
+import { formatDateTimeVi } from '../lib/utils';
 
 const STATUSES = ['Thành công', 'Chờ xử lý', 'Thất bại'];
 
@@ -152,7 +153,7 @@ export default function AdminPaymentsPage() {
                       <span className="font-medium text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md text-[11px]">{payment.PhuongThucThanhToan}</span>
                     </td>
                     <td className="py-4 px-4 text-center text-slate-500 text-[11px]">
-                      {new Date(payment.ThoiGianGiaoDich).toLocaleString('vi-VN')}
+                      {formatDateTimeVi(payment.ThoiGianGiaoDich)}
                     </td>
                     <td className="py-4 px-4 text-center">
                       <StatusBadge domain="payment" status={payment.TrangThai} />

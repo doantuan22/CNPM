@@ -7,7 +7,7 @@ import { useCreateBooking } from '../features/bookings/hooks';
 import { useAuthStore } from '../lib/authStore';
 import { ROLE_NAMES } from '../lib/roles';
 import { ApiError } from '../services/apiClient';
-import { formatCurrencyVND, cn } from '../lib/utils';
+import { formatCurrencyVND, cn, formatDateRangeVi } from '../lib/utils';
 import { Input } from '../components/common/Input';
 import { Textarea } from '../components/common/Textarea';
 import { RoomOffer } from '../components/hotels/RoomOffer';
@@ -312,7 +312,7 @@ export default function HotelDetailPage() {
                     <i className="ph ph-bed text-2xl text-primary"></i>
                     Các loại phòng sẵn có
                   </h2>
-                  <p className="mt-1 text-sm text-ink-muted">{checkIn} → {checkOut} · {guests} khách</p>
+                  <p className="mt-1 text-sm text-ink-muted">{formatDateRangeVi(checkIn, checkOut, ' → ')} · {guests} khách</p>
                 </div>
               </div>
 

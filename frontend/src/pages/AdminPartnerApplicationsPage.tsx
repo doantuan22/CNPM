@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAdminPartnerApplications } from '../features/partners/hooks';
 import { ApiError } from '../services/apiClient';
 import { StatusBadge } from '../components/domain/StatusBadge';
+import { formatDateTimeVi } from '../lib/utils';
 
 export default function AdminPartnerApplicationsPage() {
   const [status, setStatus] = useState('Chờ duyệt');
@@ -78,7 +79,7 @@ export default function AdminPartnerApplicationsPage() {
                       {application.TAI_KHOAN_HO_SO_DOI_TAC_MaTaiKhoanToTAI_KHOAN.HoTen}
                     </td>
                     <td className="py-4 px-4 text-center font-mono text-[11px] text-slate-500">
-                      {new Date(application.NgayNop).toLocaleString('vi-VN')}
+                      {formatDateTimeVi(application.NgayNop)}
                     </td>
                     <td className="py-4 px-4 text-center">
                       <StatusBadge domain="partnerApplication" status={application.TrangThaiDuyet} />

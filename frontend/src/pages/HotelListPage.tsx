@@ -5,7 +5,7 @@ import { useAmenities } from '../features/amenities/hooks';
 import { defaultSearchDates } from '../features/hotels/schemas';
 import type { HotelSearchParams, SortOption } from '../features/hotels/types';
 import { ApiError } from '../services/apiClient';
-import { cn } from '../lib/utils';
+import { cn, formatDateRangeVi } from '../lib/utils';
 import { TravelSearchBar } from '../components/hotels/TravelSearchBar';
 import { HotelCard } from '../components/hotels/HotelCard';
 
@@ -156,7 +156,7 @@ export default function HotelListPage() {
                 </div>
                 <div className="flex flex-wrap items-center gap-1.5 mt-2">
                   {params.location && <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-50 text-primary text-xs font-medium"><i className="ph ph-map-pin"></i> {params.location}</span>}
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 text-xs font-medium"><i className="ph ph-calendar"></i> {params.checkIn} - {params.checkOut}</span>
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 text-xs font-medium"><i className="ph ph-calendar"></i> {formatDateRangeVi(params.checkIn, params.checkOut, ' - ')}</span>
                 </div>
               </div>
               <div className="flex items-center gap-3 self-end md:self-auto shrink-0">

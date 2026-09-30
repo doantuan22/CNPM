@@ -4,6 +4,7 @@ import { useAdminSupportDetail, useAdminUpdateSupportRequest } from '../features
 import { ApiError } from '../services/apiClient';
 import { Alert } from '../components/common/Alert';
 import { StatusBadge } from '../components/domain/StatusBadge';
+import { formatDateTimeVi } from '../lib/utils';
 
 export default function AdminSupportDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -55,7 +56,7 @@ export default function AdminSupportDetailPage() {
                 <StatusBadge domain="support" status={r.TrangThai} />
               </div>
               <p className="text-[11px] text-slate-400 mt-0.5">
-                Khởi tạo: {new Date(r.NgayTao).toLocaleString('vi-VN')}
+                Khởi tạo: {formatDateTimeVi(r.NgayTao)}
               </p>
             </div>
           </div>
@@ -104,7 +105,7 @@ export default function AdminSupportDetailPage() {
               <h4 className="font-bold text-emerald-800 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
                 <i className="ph-fill ph-check-circle text-emerald-600"></i> Phản hồi / Kết quả xử lý
               </h4>
-              <p className="text-[11px] text-emerald-700/80 mb-2">Đã giải quyết vào {r.NgayXuLy ? new Date(r.NgayXuLy).toLocaleString('vi-VN') : ''}</p>
+              <p className="text-[11px] text-emerald-700/80 mb-2">Đã giải quyết vào {r.NgayXuLy ? formatDateTimeVi(r.NgayXuLy) : ''}</p>
               <div className="border-t border-emerald-200 pt-3 text-emerald-900 leading-relaxed font-medium whitespace-pre-wrap">
                 {r.KetQuaXuLy}
               </div>

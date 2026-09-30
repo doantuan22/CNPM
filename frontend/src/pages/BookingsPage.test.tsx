@@ -45,6 +45,14 @@ describe('BookingsPage', () => {
     expect(document.querySelector('.ph-image')).toBeNull();
   });
 
+  it('shows check-in and check-out as dd/mm/yyyy, not raw ISO text', () => {
+    renderWithProviders(<BookingsPage />);
+
+    expect(screen.getAllByText('01/01/2030').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('02/01/2030').length).toBeGreaterThan(0);
+    expect(screen.queryByText('2030-01-01')).not.toBeInTheDocument();
+  });
+
   it('filters by the exact backend status', async () => {
     renderWithProviders(<BookingsPage />);
     const user = userEvent.setup();

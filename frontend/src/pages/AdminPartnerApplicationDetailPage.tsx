@@ -4,6 +4,7 @@ import { ApiError, refreshSession } from '../services/apiClient';
 import { useAdminPartnerApplication, useApprovePartnerApplication, useRejectPartnerApplication } from '../features/partners/hooks';
 import { useConfirm, useToast } from '../components/common/FeedbackProvider';
 import { StatusBadge } from '../components/domain/StatusBadge';
+import { formatDateTimeVi } from '../lib/utils';
 
 export default function AdminPartnerApplicationDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -60,7 +61,7 @@ export default function AdminPartnerApplicationDetailPage() {
                 <StatusBadge domain="partnerApplication" status={application.TrangThaiDuyet} />
               </div>
               <p className="text-xs text-slate-500 mt-0.5 font-mono">
-                Nộp lúc: {new Date(application.NgayNop).toLocaleString('vi-VN')}
+                Nộp lúc: {formatDateTimeVi(application.NgayNop)}
               </p>
             </div>
           </div>

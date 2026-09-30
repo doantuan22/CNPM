@@ -5,7 +5,7 @@ import { useBookingDetail, useCancelBooking } from '../features/bookings/hooks';
 import { hoursBeforeCheckIn, selectRefundPercentPreview, computeRefundAmountPreview } from '../features/bookings/refund-preview';
 import { useCreateVnpayPayment, useRetryRefund } from '../features/payments/hooks';
 import { ReviewSection } from '../components/reviews/ReviewSection';
-import { formatCurrencyVND, cn } from '../lib/utils';
+import { formatCurrencyVND, cn, formatDateVi, formatDateTimeVi } from '../lib/utils';
 import { ApiError } from '../services/apiClient';
 import { CustomerCenterNavigation } from '../components/layouts/CustomerCenterNavigation';
 import { StatusBadge } from '../components/domain/StatusBadge';
@@ -107,11 +107,11 @@ export default function BookingDetailPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 bg-surface-secondary border border-border rounded-lg p-4 gap-4">
               <div>
                 <p className="block text-[12px] text-muted mb-1">Nhận phòng</p>
-                <span className="text-[15px] font-semibold text-heading">{booking.NgayNhanPhong}</span>
+                <span className="text-[15px] font-semibold text-heading">{formatDateVi(booking.NgayNhanPhong)}</span>
               </div>
               <div>
                 <p className="block text-[12px] text-muted mb-1">Trả phòng</p>
-                <span className="text-[15px] font-semibold text-heading">{booking.NgayTraPhong}</span>
+                <span className="text-[15px] font-semibold text-heading">{formatDateVi(booking.NgayTraPhong)}</span>
               </div>
             </div>
           </div>
@@ -185,7 +185,7 @@ export default function BookingDetailPage() {
                      <div>Phương thức: <strong>{payment.PhuongThucThanhToan}</strong></div>
                      <div>Trạng thái: <strong className={payment.TrangThai === 'Thành công' ? 'text-success' : ''}>{payment.TrangThai}</strong></div>
                      <div>Số tiền: <strong>{formatCurrencyVND(payment.SoTien)}</strong></div>
-                     <div className="text-[11px] mt-1">{new Date(payment.ThoiGianGiaoDich).toLocaleString('vi-VN')}</div>
+                     <div className="text-[11px] mt-1">{formatDateTimeVi(payment.ThoiGianGiaoDich)}</div>
                      
                      {payment.HoanTien.length > 0 && (
                        <div className="mt-2 pt-2 border-t border-slate-200">

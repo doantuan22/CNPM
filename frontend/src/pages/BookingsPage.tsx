@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMyBookings } from '../features/bookings/hooks';
 import { CustomerCenterNavigation } from '../components/layouts/CustomerCenterNavigation';
-import { formatCurrencyVND } from '../lib/utils';
+import { formatCurrencyVND, formatDateVi } from '../lib/utils';
 import { ApiError } from '../services/apiClient';
 import { StatusBadge } from '../components/domain/StatusBadge';
 import { BOOKING_TABS, canReviewBooking, matchesBookingTab, type BookingTab } from '../features/bookings/status';
@@ -54,9 +54,9 @@ export default function BookingsPage() {
                 </div>
                 <h3 className="text-base font-semibold text-heading truncate">{b.TenKhachSan}</h3>
                 <div className="text-[13px] text-muted flex gap-x-4 gap-y-1 flex-wrap mt-1">
-                  <span>Nhận: <strong className="text-heading">{b.NgayNhanPhong}</strong></span>
+                  <span>Nhận: <strong className="text-heading">{formatDateVi(b.NgayNhanPhong)}</strong></span>
                   <span className="hidden sm:inline">•</span>
-                  <span>Trả: <strong className="text-heading">{b.NgayTraPhong}</strong></span>
+                  <span>Trả: <strong className="text-heading">{formatDateVi(b.NgayTraPhong)}</strong></span>
                 </div>
               </div>
               <div className="flex flex-col items-start sm:items-end gap-3 min-w-[140px]">

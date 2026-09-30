@@ -3,6 +3,7 @@ import { useAdminReviewDetail, useModerateReview, useRemoveViolationReview } fro
 import { ApiError } from '../services/apiClient';
 import { useConfirm } from '../components/common/FeedbackProvider';
 import { StatusBadge } from '../components/domain/StatusBadge';
+import { formatDateRangeVi } from '../lib/utils';
 
 export default function AdminReviewDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -54,7 +55,7 @@ export default function AdminReviewDetailPage() {
                 <StatusBadge domain="review" status={r.TrangThai} />
               </div>
               <p className="text-[11px] text-slate-400 mt-0.5">
-                Booking: <strong className="font-mono">{r.DAT_PHONG.MaXacNhanDatPhong}</strong> • {r.DAT_PHONG.NgayNhanPhong} → {r.DAT_PHONG.NgayTraPhong}
+                Booking: <strong className="font-mono">{r.DAT_PHONG.MaXacNhanDatPhong}</strong> • {formatDateRangeVi(r.DAT_PHONG.NgayNhanPhong, r.DAT_PHONG.NgayTraPhong, ' → ')}
               </p>
             </div>
           </div>
