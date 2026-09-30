@@ -4,6 +4,7 @@ import { ApiError } from '../services/apiClient';
 import { StatusBadge } from '../components/domain/StatusBadge';
 import { listAdminHotels } from '../features/admin/hotels/api';
 import { useListParams, useUrlSearchInput } from '../hooks/useListParams';
+import { Pagination } from '../components/common/Pagination';
 
 const FILTER_DEFAULTS = { search: '', status: '' };
 
@@ -122,27 +123,7 @@ export default function AdminHotelsPage() {
         )}
 
         {query.data && (
-          <div className="px-6 py-4 border-t border-border bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-xs text-slate-500">
-              Trang <strong className="text-heading">{query.data.pagination.page}</strong> / {query.data.pagination.totalPages} — Tổng <strong className="text-heading">{query.data.pagination.total}</strong> khách sạn
-            </div>
-            <div className="flex gap-1.5">
-              <button
-                disabled={page <= 1}
-                onClick={() => setPage(p => Math.max(1, p - 1))}
-                className="px-3 py-1.5 rounded-lg border border-border bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:hover:bg-white text-xs font-medium transition"
-              >
-                Trước
-              </button>
-              <button
-                disabled={page >= query.data.pagination.totalPages}
-                onClick={() => setPage(p => p + 1)}
-                className="px-3 py-1.5 rounded-lg border border-border bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:hover:bg-white text-xs font-medium transition"
-              >
-                Sau
-              </button>
-            </div>
-          </div>
+          <Pagination page={page} totalPages={query.data.pagination.totalPages} total={query.data.pagination.total} itemLabel="khách sạn" onPageChange={setPage} />
         )}
       </div>
     </div>
