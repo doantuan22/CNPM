@@ -1,6 +1,7 @@
 import { Outlet, useLocation, Link } from 'react-router-dom';
 import { Navbar } from '../common/Navbar';
 import { NavigationEffects } from '../common/NavigationEffects';
+import { AppErrorBoundary } from '../common/AppErrorBoundary';
 import { DashboardNavigation, DashboardTopbar } from './DashboardNavigation';
 import { useAuthStore } from '../../lib/authStore';
 import { ROLE_NAMES } from '../../lib/roles';
@@ -23,7 +24,7 @@ export function MainLayout() {
           <div className="dashboard-main">
             <DashboardTopbar role={role} />
             <main id="main-content" tabIndex={-1} className="dashboard-content focus:outline-none">
-              <Outlet />
+              <AppErrorBoundary inline resetKey={location.pathname}><Outlet /></AppErrorBoundary>
             </main>
           </div>
         </>
@@ -31,7 +32,7 @@ export function MainLayout() {
         <>
           <Navbar />
           <main id="main-content" tabIndex={-1} className="focus:outline-none min-h-[60vh]">
-            <Outlet />
+            <AppErrorBoundary inline resetKey={location.pathname}><Outlet /></AppErrorBoundary>
           </main>
           <footer className="site-footer">
             <div className="site-footer__inner">
