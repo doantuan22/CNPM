@@ -2,7 +2,7 @@ import { randomBytes } from 'node:crypto';
 import { BookingsRepository } from './bookings.repository';
 import { enumerateNights, priceRoomLine, buildBookedByDate, toDateKey, type NightlyRate } from '../hotels/availability';
 import { evaluatePromotion } from '../quotes/promotion-pricing';
-import { expireStalePendingBookings } from './booking-expiry';
+import { expireStalePendingBookings, paymentHold } from './booking-expiry';
 import { completeFinishedBookings } from './booking-completion';
 import { selectRefundPercent, computeRefundAmount } from './refund-policy';
 import { AppError } from '../../common/errors/app-error';
@@ -52,6 +52,10 @@ export interface BookingResponse {
     ChiTiet: Array<{ SoGioTruocNhanPhong: number; TyLeHoanTien: number }>;
   };
   NgayTao: string;
+  /** When a "Chờ thanh toán" booking is auto-cancelled (NgayTao + PAYMENT_TIMEOUT_MINUTES); null once it is no longer waiting for payment. */
+  HanThanhToan: string | null;
+  /** Seconds until HanThanhToan by the server clock (rounded up, at least 0); null when HanThanhToan is null. */
+  SoGiayConLai: number | null;
 }
 
 export interface MyBookingSummary {
@@ -268,6 +272,7 @@ export class BookingsService {
           })),
         },
         NgayTao: booking.NgayTao.toISOString(),
+        ...paymentHold(booking.NgayTao, booking.TrangThai),
       };
     });
   }
@@ -406,6 +411,7 @@ export class BookingsService {
         })),
       },
       NgayTao: booking.NgayTao.toISOString(),
+      ...paymentHold(booking.NgayTao, booking.TrangThai),
       ThanhToan: booking.THANH_TOAN.map((t) => ({
         MaThanhToan: t.MaThanhToan,
         SoTien: toNumber(t.SoTien),

@@ -13,6 +13,7 @@ import {
   deleteTestPromotion,
 } from '../../test/factories';
 import { getPrismaClient } from '../../config/prisma';
+import { env } from '../../config/env';
 import { ROLE_NAMES } from '../../common/constants/roles';
 import { ROOM_RATE_STATUS, BOOKING_STATUS } from '../../common/constants/hotel-status';
 
@@ -150,6 +151,12 @@ describe('POST /api/hotels/:id/bookings — valid booking', () => {
     expect(res.body.data.TongTienThanhToan).toBe(1_000_000);
     expect(res.body.data.TrangThai).toBe(BOOKING_STATUS.PENDING_PAYMENT);
     expect(res.body.data.ChinhSachHuy).not.toBeNull();
+
+    // The payment hold: exactly the instant the booking will be auto-cancelled (NgayTao + PAYMENT_TIMEOUT_MINUTES).
+    const holdMs = env.PAYMENT_TIMEOUT_MINUTES * 60_000;
+    expect(res.body.data.HanThanhToan).toBe(new Date(new Date(res.body.data.NgayTao).getTime() + holdMs).toISOString());
+    expect(res.body.data.SoGiayConLai).toBeGreaterThan(0);
+    expect(res.body.data.SoGiayConLai).toBeLessThanOrEqual(env.PAYMENT_TIMEOUT_MINUTES * 60);
 
     const prisma = getPrismaClient();
     const row = await prisma.dAT_PHONG.findUnique({ where: { MaDatPhong: res.body.data.MaDatPhong } });

@@ -132,7 +132,7 @@ export const openApiSpec = {
           },
         },
         responses: {
-          '201': { description: 'Booking created with MaXacNhanDatPhong, server-computed totals, and the applicable cancellation policy' },
+          '201': { description: 'Booking created with MaXacNhanDatPhong, server-computed totals, the applicable cancellation policy, and the payment hold (HanThanhToan = NgayTao + PAYMENT_TIMEOUT_MINUTES, SoGiayConLai = seconds left by the server clock)' },
           '400': { description: 'Invalid date range/room lines, room id not belonging to this hotel, or an invalid/expired/ineligible promo code' },
           '401': { description: 'Not authenticated' },
           '403': { description: 'Authenticated but not a Khách hàng account' },
@@ -151,7 +151,7 @@ export const openApiSpec = {
     },
     '/bookings/{id}': {
       get: {
-        summary: "Booking detail — includes THANH_TOAN/HOAN_TIEN history (M6, owner only)",
+        summary: "Booking detail — includes THANH_TOAN/HOAN_TIEN history (M6, owner only). While TrangThai is 'Chờ thanh toán', HanThanhToan (ISO instant the booking is auto-cancelled) and SoGiayConLai (seconds left by the server clock, at least 0) tell the client how long the room is held; both are null in any other status.",
         tags: ['Booking'],
         security: [{ BearerAuth: [] }],
         parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],

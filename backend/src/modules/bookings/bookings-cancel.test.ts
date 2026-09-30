@@ -16,6 +16,7 @@ import {
 } from '../../test/factories';
 import { FakeRefundGateway } from '../../test/fakes';
 import { getPrismaClient } from '../../config/prisma';
+import { env } from '../../config/env';
 import { ROLE_NAMES } from '../../common/constants/roles';
 import { BOOKING_STATUS, ROOM_RATE_STATUS } from '../../common/constants/hotel-status';
 import { PAYMENT_STATUS, REFUND_STATUS } from '../../common/constants/payment';
@@ -114,6 +115,24 @@ describe('GET /bookings and GET /bookings/:id (M6 §5 — booking history/detail
     const ids = res.body.data.map((b: { MaDatPhong: number }) => b.MaDatPhong);
     expect(ids).toContain(mine.MaDatPhong);
     expect(ids).not.toContain(notMine.MaDatPhong);
+  });
+
+  it('GET /bookings/:id exposes the payment hold only while the booking waits for payment', async () => {
+    const pending = await makeBooking(BOOKING_STATUS.PENDING_PAYMENT, addDays(40), addDays(41));
+    const confirmed = await makeBooking(BOOKING_STATUS.CONFIRMED, addDays(40), addDays(41));
+    const cancelled = await makeBooking(BOOKING_STATUS.CANCELLED, addDays(40), addDays(41));
+    const detail = async (id: number) => (await request(app).get(`/api/bookings/${id}`).set('Authorization', `Bearer ${customerToken}`)).body.data;
+
+    const waiting = await detail(pending.MaDatPhong);
+    expect(waiting.TrangThai).toBe(BOOKING_STATUS.PENDING_PAYMENT);
+    expect(waiting.HanThanhToan).toBe(new Date(new Date(waiting.NgayTao).getTime() + env.PAYMENT_TIMEOUT_MINUTES * 60_000).toISOString());
+    expect(waiting.SoGiayConLai).toBeGreaterThanOrEqual(0);
+    expect(waiting.SoGiayConLai).toBeLessThanOrEqual(env.PAYMENT_TIMEOUT_MINUTES * 60);
+
+    for (const other of [await detail(confirmed.MaDatPhong), await detail(cancelled.MaDatPhong)]) {
+      expect(other.HanThanhToan).toBeNull();
+      expect(other.SoGiayConLai).toBeNull();
+    }
   });
 
   it('GET /bookings/:id 403 for a non-owning customer, 200 with full detail for the owner', async () => {

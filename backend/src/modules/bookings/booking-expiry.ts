@@ -37,3 +37,30 @@ export const expireStalePendingBookings = async (
   `);
   return Number(result);
 };
+
+/**
+ * The instant a "Chờ thanh toán" booking is auto-cancelled: NgayTao + the payment timeout. Same rule as the
+ * `NgayTao < now - timeout` test in expireStalePendingBookings above, so what the customer is shown here is
+ * exactly when the room is released.
+ */
+export const paymentDeadlineOf = (ngayTao: Date, timeoutMinutes: number = env.PAYMENT_TIMEOUT_MINUTES): Date =>
+  new Date(ngayTao.getTime() + timeoutMinutes * 60_000);
+
+/**
+ * Payment hold to expose on a booking view: the deadline and the seconds left (rounded up, floored at 0),
+ * both null unless the booking is waiting for payment. Seconds are computed on the server so the customer's
+ * countdown does not depend on their device clock being right.
+ */
+export const paymentHold = (
+  ngayTao: Date,
+  trangThai: string,
+  now: Date = new Date(),
+  timeoutMinutes: number = env.PAYMENT_TIMEOUT_MINUTES
+): { HanThanhToan: string | null; SoGiayConLai: number | null } => {
+  if (trangThai !== BOOKING_STATUS.PENDING_PAYMENT) return { HanThanhToan: null, SoGiayConLai: null };
+  const deadline = paymentDeadlineOf(ngayTao, timeoutMinutes);
+  return {
+    HanThanhToan: deadline.toISOString(),
+    SoGiayConLai: Math.max(0, Math.ceil((deadline.getTime() - now.getTime()) / 1000)),
+  };
+};
