@@ -7,12 +7,6 @@ import { ROLE_NAMES } from '../lib/roles';
 import { aliasRoutes } from './aliases';
 import HomePage from '../pages/HomePage';
 import { LegacyOwnerBookingDetailRoute, LegacyOwnerHotelDetailRoute, LegacyOwnerHotelRoute, LegacyOwnerModuleRoute, LegacyOwnerRoomTypeRoute } from './OwnerRouteRedirects';
-import {
-  BookingConfirmPage,
-  BookingRoomPage,
-  PaymentPage,
-  WriteReviewPage,
-} from '../pages/EcodeFlowPages';
 
 const LoginPage = lazy(() => import('../pages/LoginPage'));
 const RegisterPage = lazy(() => import('../pages/RegisterPage'));
@@ -77,14 +71,9 @@ export default function AppRoutes() {
           <Route path="/partner/apply" element={<PartnerApplyPage />} />
           <Route path="/bookings" element={<BookingsPage />} />
           <Route path="/bookings/:id" element={<BookingDetailPage />} />
-          <Route path="/booking/:id/room" element={<BookingRoomPage />} />
-          <Route path="/booking/:id/confirm" element={<BookingConfirmPage />} />
-          <Route path="/booking/:id/payment" element={<PaymentPage />} />
-          <Route path="/payment/:id" element={<PaymentPage />} />
           <Route path="/payment/result" element={<PaymentResultPage />} />
           <Route path="/support" element={<SupportPage />} />
           <Route path="/support/:id" element={<SupportDetailPage />} />
-          <Route path="/write-review/:id" element={<WriteReviewPage />} />
         </Route>
 
         {/* Chủ khách sạn */}

@@ -69,7 +69,7 @@ export default function BookingsPage() {
                 <div className="flex gap-2">
                   <Link to={`/bookings/${b.MaDatPhong}`} className="btn btn-outline btn-sm">Chi tiết</Link>
                   {canReviewBooking(b.TrangThai) && (
-                    <Link to={`/write-review/${b.MaDatPhong}`} className="btn btn-primary btn-sm">Đánh giá</Link>
+                    <Link to={`/bookings/${b.MaDatPhong}#danh-gia`} className="btn btn-primary btn-sm">Đánh giá</Link>
                   )}
                 </div>
               </div>

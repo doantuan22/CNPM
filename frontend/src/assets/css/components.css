@@ -390,15 +390,6 @@ select.ui-field { appearance: none; padding-right: 38px; background-image: url("
 .admin-support-detail__context { grid-column: 2; grid-row: 1; padding: 14px; border-left: 1px solid var(--color-border-default); }
 .admin-support-detail__handler { grid-column: 2; }
 .admin-support-detail__resolution, .admin-support-detail__action { grid-column: 1 / -1; padding-top: 16px; border-top: 1px solid var(--color-border-default); }
-.operation-page__heading { display: flex; align-items: flex-start; gap: 12px; padding-bottom: var(--space-5); border-bottom: 1px solid var(--color-border-default); }
-.operation-page__heading > svg { margin-top: 5px; flex: none; }
-.booking-flow-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 340px); align-items: start; gap: 32px; }
-.booking-context-summary { min-width: 0; background: var(--color-surface-raised); }
-.booking-context-summary__identity { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 0 16px; border-bottom: 1px solid var(--color-border-default); }
-.booking-context-summary__stay { padding: 20px 0; border-bottom: 1px solid var(--color-border-default); }
-.booking-context-summary__price { padding: 18px 0; border-bottom: 1px solid var(--color-border-default); }
-.booking-context-summary__policy { padding: 18px 0; }
-.booking-flow-layout__action { position: sticky; top: 96px; padding: 18px; border: 1px solid var(--color-border-default); border-radius: var(--radius-surface); background: var(--color-surface-raised); }
 @media (max-width: 767px) {
   .admin-dashboard__domains { grid-template-columns: minmax(0, 1fr); gap: 28px; }
   .admin-link-group a { min-height: 64px; }
@@ -413,8 +404,6 @@ select.ui-field { appearance: none; padding-right: 38px; background-image: url("
   .owner-dashboard__filters { padding-inline: 0; }
   .owner-hotel-list__item > div:first-child { max-width: 220px; }
   .owner-hotel-list__item > div:last-child { align-self: stretch; }
-  .booking-flow-layout { grid-template-columns: minmax(0, 1fr); gap: 12px; }
-  .booking-flow-layout__action { position: static; }
 }
 
 .input-icon-wrap { position: relative; }

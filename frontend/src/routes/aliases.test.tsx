@@ -13,6 +13,8 @@ function visit(url: string) {
     <MemoryRouter initialEntries={[url]}>
       <Routes>
         {aliasRoutes()}
+        {/* Same as AppRoutes: the real, static payment result route must win over the dynamic /payment/:id alias. */}
+        <Route path="/payment/result" element={<Where />} />
         <Route path="*" element={<Where />} />
       </Routes>
     </MemoryRouter>
@@ -33,6 +35,11 @@ describe('route aliases', () => {
     ['/support-request', '/support'],
     ['/admin/onboarding', '/admin/partner-applications'],
     ['/admin/operations', '/admin'],
+    ['/booking/5/room', '/bookings/5'],
+    ['/booking/5/confirm', '/bookings/5'],
+    ['/booking/5/payment', '/bookings/5'],
+    ['/payment/5', '/bookings/5'],
+    ['/write-review/5', '/bookings/5#danh-gia'],
   ])('%s redirects to %s', (from, to) => {
     expect(visit(from)).toBe(to);
   });
@@ -49,6 +56,10 @@ describe('route aliases', () => {
 
   it('keeps the hash of the incoming URL when the alias does not define its own', () => {
     expect(visit('/my-bookings#abc')).toBe('/bookings#abc');
+  });
+
+  it('does not swallow the real payment result URL (/payment/:id is dynamic, /payment/result is not)', () => {
+    expect(visit('/payment/result?bookingId=42&status=success')).toBe('/payment/result?bookingId=42&status=success');
   });
 
   it('has no alias that points at another alias, and no duplicate source path', () => {

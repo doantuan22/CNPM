@@ -19,6 +19,13 @@ export const ROUTE_ALIASES: ReadonlyArray<readonly [from: string, to: string]> =
   ['/support-request', '/support'],
   ['/admin/onboarding', '/admin/partner-applications'],
   ['/admin/operations', '/admin'],
+  // Removed booking sequence (room -> confirm -> payment): a booking is now reviewed and paid on its detail page.
+  ['/booking/:id/room', '/bookings/:id'],
+  ['/booking/:id/confirm', '/bookings/:id'],
+  ['/booking/:id/payment', '/bookings/:id'],
+  ['/payment/:id', '/bookings/:id'],
+  // Removed review page: reviewing lives in the review section of the booking detail page.
+  ['/write-review/:id', '/bookings/:id#danh-gia'],
 ];
 
 /** One `<Route>` per alias, to be rendered inside `<Routes>`. */

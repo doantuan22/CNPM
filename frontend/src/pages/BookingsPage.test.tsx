@@ -37,7 +37,7 @@ describe('BookingsPage', () => {
 
     const reviewLinks = screen.getAllByRole('link', { name: 'Đánh giá' });
     expect(reviewLinks).toHaveLength(1);
-    expect(reviewLinks[0]).toHaveAttribute('href', '/write-review/3');
+    expect(reviewLinks[0]).toHaveAttribute('href', '/bookings/3#danh-gia');
   });
 
   it('filters by the exact backend status', async () => {

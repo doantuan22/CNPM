@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { Textarea } from '../components/common/Textarea';
 import { useBookingDetail, useCancelBooking } from '../features/bookings/hooks';
@@ -24,6 +24,12 @@ export default function BookingDetailPage() {
 
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [cancelNote, setCancelNote] = useState('');
+
+  // Linked from the booking list ("Đánh giá"): the review section only exists after the booking has loaded.
+  const bookingLoaded = Boolean(bookingQuery.data);
+  useEffect(() => {
+    if (bookingLoaded && location.hash === '#danh-gia') document.getElementById('danh-gia')?.scrollIntoView();
+  }, [bookingLoaded, location.hash]);
 
   if (bookingQuery.isLoading) {
     return <div className="flex justify-center py-16" role="status" aria-live="polite"><div className="spinner" aria-hidden="true"></div><span className="sr-only">Đang tải...</span></div>;
