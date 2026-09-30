@@ -134,7 +134,7 @@ export default function HotelDetailPage() {
   };
 
   return (
-    <div className="booking-flow bg-surface text-ink min-h-screen pb-12 w-full !max-w-full !px-0 !py-0">
+    <div className="booking-flow bg-surface text-ink min-h-screen w-full">
       
       {/* BREADCRUMB & TOP ACTIONS */}
       <section className="bg-surface-secondary border-b border-border/80">
@@ -250,7 +250,7 @@ export default function HotelDetailPage() {
         </div>
       </div>
 
-      <main className="max-w-[1440px] mx-auto px-6 lg:px-12 py-8">
+      <div className="max-w-[1440px] mx-auto px-6 lg:px-12 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
           <div className="hotel-detail-content lg:col-span-8 flex flex-col gap-8">
@@ -506,7 +506,7 @@ export default function HotelDetailPage() {
           </div>
 
         </div>
-      </main>
+      </div>
     </div>
   );
 }

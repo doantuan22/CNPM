@@ -18,5 +18,18 @@ export default tseslint.config(
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/no-explicit-any': 'warn',
     },
+  },
+  {
+    // MainLayout already renders the page's single <main id="main-content"> landmark.
+    files: ['src/pages/**/*.tsx'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: "JSXOpeningElement[name.name='main']",
+          message: '<main> is rendered once by MainLayout. Use <div> or <section> inside pages (a page must have a single <main> landmark).',
+        },
+      ],
+    },
   }
 );

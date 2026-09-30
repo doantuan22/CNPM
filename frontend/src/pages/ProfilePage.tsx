@@ -58,8 +58,8 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="bg-surface-secondary text-ink min-h-[80vh] !max-w-full !px-0 !py-0">
-      <main className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col md:flex-row gap-8">
+    <div className="bg-surface-secondary text-ink min-h-[80vh]">
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col md:flex-row gap-8">
         
         <aside className="w-full md:w-[250px] shrink-0 bg-white rounded-2xl border border-border shadow-sm p-4">
           <h2 className="text-xs font-semibold text-ink-muted uppercase tracking-wider mb-4 pl-3">Hồ sơ tài khoản</h2>
@@ -196,7 +196,7 @@ export default function ProfilePage() {
           </div>
 
         </div>
-      </main>
+      </div>
     </div>
   );
 }

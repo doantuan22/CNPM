@@ -26,7 +26,7 @@ export default function OwnerBookingDetailPage() {
   
   const b = booking.data;
 
-  if (!hotelId || !b) return <main className="owner-module space-y-5"><header className="owner-module__header"><div><h1>Chi tiết đặt phòng</h1><p>Chi tiết thuộc phạm vi khách sạn đã chọn.</p></div></header><OwnerHotelContextSelector hotels={scope.hotels} hotelId={scope.hotelId} onChange={scope.selectHotel} /><OwnerHotelScopeState loading={false} error={scope.hotelsQuery.error} empty={scope.hotels.length === 0} invalid={scope.invalidHotelId} />{scope.hotels.length > 1 && !hotelId && <div className="owner-scope-state">Chọn khách sạn để tiếp tục.</div>}</main>;
+  if (!hotelId || !b) return <div className="owner-module space-y-5"><header className="owner-module__header"><div><h1>Chi tiết đặt phòng</h1><p>Chi tiết thuộc phạm vi khách sạn đã chọn.</p></div></header><OwnerHotelContextSelector hotels={scope.hotels} hotelId={scope.hotelId} onChange={scope.selectHotel} /><OwnerHotelScopeState loading={false} error={scope.hotelsQuery.error} empty={scope.hotels.length === 0} invalid={scope.invalidHotelId} />{scope.hotels.length > 1 && !hotelId && <div className="owner-scope-state">Chọn khách sạn để tiếp tục.</div>}</div>;
 
   return (
     <div className="owner-module flex flex-col gap-6 max-w-[800px] mx-auto w-full">

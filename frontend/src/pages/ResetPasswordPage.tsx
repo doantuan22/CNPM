@@ -50,8 +50,8 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="bg-surface-secondary font-sans text-ink min-h-[80vh] flex flex-col antialiased !max-w-full !px-0 !py-0">
-      <main className="flex-grow flex items-center justify-center p-4 sm:p-6 lg:p-8">
+    <div className="bg-surface-secondary font-sans text-ink min-h-[80vh] flex flex-col antialiased">
+      <div className="flex-grow flex items-center justify-center p-4 sm:p-6 lg:p-8">
         <div className="bg-white w-full max-w-[580px] rounded-2xl shadow-lg border border-border p-6 sm:p-8 lg:p-10">
           
           {/* Stepper */}
@@ -161,7 +161,7 @@ export default function ResetPasswordPage() {
           </form>
 
         </div>
-      </main>
+      </div>
     </div>
   );
 }

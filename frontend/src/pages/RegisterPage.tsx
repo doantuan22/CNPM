@@ -43,8 +43,8 @@ export default function RegisterPage() {
   const [showConfirmPwd, setShowConfirmPwd] = useState(false);
 
   return (
-    <div className="bg-surface-secondary min-h-[80vh] flex flex-col font-sans antialiased !max-w-full !px-0 !py-0">
-      <main className="max-w-[760px] mx-auto my-10 sm:my-16 px-4 w-full">
+    <div className="bg-surface-secondary min-h-[80vh] flex flex-col font-sans antialiased">
+      <div className="max-w-[760px] mx-auto my-10 sm:my-16 px-4 w-full">
         
         {intent === null ? (
           <section id="step-role" className="animate-in fade-in zoom-in duration-300">
@@ -279,7 +279,7 @@ export default function RegisterPage() {
             </div>
           </section>
         )}
-      </main>
+      </div>
     </div>
   );
 }

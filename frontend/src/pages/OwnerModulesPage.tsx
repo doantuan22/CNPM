@@ -33,7 +33,7 @@ export function OwnerRoomTypesPage() {
       event.currentTarget.reset(); setAdding(false);
     } catch (error) { setFormError(error instanceof ApiError ? error.message : 'Không thể tạo loại phòng.'); }
   };
-  return <main className="owner-module space-y-6">
+  return <div className="owner-module space-y-6">
     <header className="owner-module__header"><div className="owner-module__title"><span className="owner-module__icon"><BedDouble size={20} /></span><div><h1>Loại phòng</h1><p>Cấu hình các hạng phòng trong từng khách sạn.</p></div></div>{scope.hotelId && <button className="btn btn-primary" type="button" onClick={() => setAdding((value) => !value)}><Plus size={16} /> Thêm loại phòng</button>}</header>
     <OwnerHotelContextSelector hotels={scope.hotels} hotelId={scope.hotelId} onChange={scope.selectHotel} />
     {scope.state}
@@ -43,7 +43,7 @@ export function OwnerRoomTypesPage() {
       {adding && <form className="owner-module__form" onSubmit={submit}><h2>Thêm loại phòng</h2>{formError && <p role="alert">{formError}</p>}<div className="owner-module__form-grid"><label>Tên loại phòng<input name="name" minLength={2} maxLength={150} required /></label><label>Loại giường<input name="bed" maxLength={50} required /></label><label>Số giường<input name="beds" type="number" min="1" defaultValue="1" required /></label><label>Sức chứa<input name="capacity" type="number" min="1" defaultValue="2" required /></label><label>Diện tích (m²)<input name="area" type="number" min="0.1" step="0.1" required /></label></div><button className="btn btn-primary" disabled={create.isPending}>{create.isPending ? 'Đang tạo…' : 'Tạo loại phòng'}</button></form>}
       {roomTypes.isLoading ? <div role="status" className="owner-scope-state">Đang tải loại phòng…</div> : roomTypes.isError ? <div className="owner-scope-state is-error" role="alert">{roomTypes.error instanceof ApiError ? roomTypes.error.message : 'Không thể tải loại phòng.'}</div> : visible.length === 0 ? <div className="owner-scope-state">{search ? 'Không có loại phòng khớp từ khóa.' : 'Khách sạn này chưa có loại phòng.'}</div> : <div className="owner-room-type-list">{visible.map((room) => <RoomTypeRow key={room.MaLoaiPhong} room={room} hotel={scope.hotel!} />)}</div>}
     </>}
-  </main>;
+  </div>;
 }
 
 function RoomTypeRow({ room, hotel }: { room: OwnerRoomType; hotel: OwnerHotel }) {
@@ -86,7 +86,7 @@ export function OwnerInventoryPricingPage() {
     try { await update.mutateAsync(ratesPayload); }
     catch (reason) { setError(reason instanceof ApiError ? reason.message : 'Không thể cập nhật giá và quỹ phòng.'); }
   };
-  return <main className="owner-module space-y-6"><header className="owner-module__header"><div className="owner-module__title"><span className="owner-module__icon"><CalendarDays size={20} /></span><div><h1>Quỹ phòng &amp; giá bán</h1><p>Chỉnh sửa các mức giá và số lượng đã lưu theo ngày.</p></div></div></header>
+  return <div className="owner-module space-y-6"><header className="owner-module__header"><div className="owner-module__title"><span className="owner-module__icon"><CalendarDays size={20} /></span><div><h1>Quỹ phòng &amp; giá bán</h1><p>Chỉnh sửa các mức giá và số lượng đã lưu theo ngày.</p></div></div></header>
     <OwnerHotelContextSelector hotels={scope.hotels} hotelId={scope.hotelId} onChange={scope.selectHotel} />{scope.state}
     {!scope.hotelsQuery.isLoading && !scope.hotelsQuery.error && !scope.invalidHotelId && !scope.hotelId && scope.hotels.length > 1 && <div className="owner-scope-state">Chọn khách sạn để tải dữ liệu quỹ phòng và giá bán.</div>}
     {scope.hotelId && <>{roomTypesQuery.isLoading ? <div role="status" className="owner-scope-state">Đang tải loại phòng…</div> : roomTypesQuery.isError ? <div role="alert" className="owner-scope-state is-error">Không thể tải loại phòng.</div> : roomTypesQuery.data?.length ? <>
@@ -94,7 +94,7 @@ export function OwnerInventoryPricingPage() {
       <section className="owner-module__data"><h2>{roomType?.TenLoaiPhong ?? 'Dữ liệu theo ngày'}</h2>{rates.isLoading ? <div role="status" className="owner-scope-state">Đang tải dữ liệu ngày…</div> : rates.isError ? <div role="alert" className="owner-scope-state is-error">{rates.error instanceof ApiError ? rates.error.message : 'Không thể tải dữ liệu ngày.'}</div> : rows.length ? <div className="owner-rate-table-wrap"><table className="owner-rate-table"><thead><tr><th>Ngày áp dụng</th><th>Giá phòng</th><th>Số lượng phòng</th><th>Trạng thái</th></tr></thead><tbody>{rows.map((row) => <tr key={row.MaQuyPhong}><td>{new Date(`${row.NgayApDung.slice(0, 10)}T00:00:00`).toLocaleDateString('vi-VN')}</td><td>{formatCurrencyVND(row.GiaPhong)}</td><td>{row.SoLuongPhong}</td><td>{row.TrangThai}</td></tr>)}</tbody></table></div> : <p className="owner-scope-state">Không có bản ghi giá/quỹ trong khoảng ngày này.</p>}</section>
       <form className="owner-module__form" onSubmit={updateRange}><h2>Cập nhật toàn bộ khoảng ngày đã chọn</h2><p>Gửi đúng ngày, giá, số lượng và trạng thái đến API hiện tại. Không tạo dữ liệu tồn kho suy diễn.</p>{error && <p role="alert" className="is-error">{error}</p>}<div className="owner-module__form-grid"><label>Giá phòng<input name="price" type="number" min="0" step="1000" required /></label><label>Số lượng phòng<input name="quantity" type="number" min="0" step="1" required /></label><label>Trạng thái<select name="status" defaultValue="Mở bán"><option value="Mở bán">Mở bán</option><option value="Đóng bán">Đóng bán</option></select></label></div><button className="btn btn-primary" disabled={update.isPending || !roomType}>{update.isPending ? 'Đang lưu…' : 'Cập nhật khoảng ngày'}</button></form>
     </> : <div className="owner-scope-state">Khách sạn này chưa có loại phòng để thiết lập giá.</div>}</>}
-  </main>;
+  </div>;
 }
 
 function OwnerAnalyticsModule({ mode }: { mode: 'revenue' | 'reports' }) {
@@ -113,7 +113,7 @@ function OwnerAnalyticsModule({ mode }: { mode: 'revenue' | 'reports' }) {
   };
   const data = analytics.data;
   const reports = mode === 'reports';
-  return <main className="owner-module space-y-6"><header className="owner-module__header"><div className="owner-module__title"><span className="owner-module__icon">{reports ? <BarChart3 size={20} /> : <CircleDollarSign size={20} />}</span><div><h1>{reports ? 'Báo cáo thống kê' : 'Doanh thu'}</h1><p>{reports ? 'Theo dõi trạng thái đặt phòng, loại phòng phổ biến và tỷ lệ lấp đầy.' : 'Tổng hợp doanh thu thanh toán và khoản hoàn theo dữ liệu hệ thống.'}</p></div></div></header>
+  return <div className="owner-module space-y-6"><header className="owner-module__header"><div className="owner-module__title"><span className="owner-module__icon">{reports ? <BarChart3 size={20} /> : <CircleDollarSign size={20} />}</span><div><h1>{reports ? 'Báo cáo thống kê' : 'Doanh thu'}</h1><p>{reports ? 'Theo dõi trạng thái đặt phòng, loại phòng phổ biến và tỷ lệ lấp đầy.' : 'Tổng hợp doanh thu thanh toán và khoản hoàn theo dữ liệu hệ thống.'}</p></div></div></header>
     <OwnerHotelContextSelector hotels={scope.hotels} hotelId={scope.hotelId} onChange={scope.selectHotel} />{scope.state}
     {!scope.hotelsQuery.isLoading && !scope.hotelsQuery.error && !scope.invalidHotelId && !scope.hotelId && scope.hotels.length > 1 && <div className="owner-scope-state">Chọn khách sạn để tải số liệu trong module này.</div>}
     {scope.hotelId && <><form className="owner-module__filters" onSubmit={setRange}><label>Từ ngày<input type="date" value={from} onChange={(event) => setFrom(event.target.value)} /></label><label>Đến ngày<input type="date" min={from || undefined} value={to} onChange={(event) => setTo(event.target.value)} /></label><button className="btn btn-secondary">Áp dụng khoảng ngày</button></form>
@@ -122,7 +122,7 @@ function OwnerAnalyticsModule({ mode }: { mode: 'revenue' | 'reports' }) {
         <div className="owner-module__report-grid"><section className="owner-module__data"><h2>Đặt phòng theo trạng thái</h2><BarList items={data.BookingTheoTrangThai.map((item) => ({ label: item.TrangThai, value: item.SoLuong }))} emptyMessage="Chưa có đặt phòng trong khoảng thời gian này" /></section><section className="owner-module__data"><h2>Loại phòng phổ biến</h2><BarList items={data.LoaiPhongPhoBien.map((item) => ({ label: item.TenLoaiPhong, value: item.SoLuongDaDat }))} emptyMessage="Chưa có dữ liệu loại phòng" /></section></div>
       </> : <><section className="owner-revenue-total"><span>Doanh thu thực nhận</span><strong>{formatCurrencyVND(data.DoanhThuThucNhan)}</strong><small>Doanh thu gộp {formatCurrencyVND(data.DoanhThuGop)} · Hoàn tiền {formatCurrencyVND(data.TongHoanTien)}</small></section><section className="owner-module__data"><h2>Tổng hợp trong kỳ</h2><dl className="owner-revenue-breakdown"><div><dt>Doanh thu gộp</dt><dd>{formatCurrencyVND(data.DoanhThuGop)}</dd></div><div><dt>Đã hoàn tiền</dt><dd>{formatCurrencyVND(data.TongHoanTien)}</dd></div><div><dt>Doanh thu thực nhận</dt><dd>{formatCurrencyVND(data.DoanhThuThucNhan)}</dd></div></dl><p className="owner-module__note">API hiện cung cấp số tổng hợp theo kỳ, chưa có chuỗi doanh thu theo ngày hoặc giao dịch chi tiết.</p></section></>}
     </>}
-  </main>;
+  </div>;
 }
 
 export function OwnerRevenuePage() { return <OwnerAnalyticsModule mode="revenue" />; }

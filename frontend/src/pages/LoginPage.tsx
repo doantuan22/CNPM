@@ -41,7 +41,7 @@ export default function LoginPage() {
   const [showPwd, setShowPwd] = useState(false);
 
   return (
-    <div className="flex-grow flex items-center justify-center px-4 py-10 sm:py-14 relative overflow-hidden bg-surface-secondary min-h-[80vh] !max-w-full !p-0">
+    <div className="flex-grow flex items-center justify-center relative overflow-hidden bg-surface-secondary min-h-[80vh]">
       <div className="absolute -top-24 -left-20 w-96 h-96 bg-blue-100/60 rounded-full blur-3xl pointer-events-none"></div>
       <div className="absolute -bottom-24 -right-20 w-96 h-96 bg-indigo-100/50 rounded-full blur-3xl pointer-events-none"></div>
 
