@@ -168,13 +168,6 @@ select.ui-field { appearance: none; padding-right: 38px; background-image: url("
 .ui-alert--success { color: #15803D; background: #F0FDF4; border-color: #BBF7D0; }
 .ui-alert--warning { color: #92400E; background: #FFFBEB; border-color: #FDE68A; }
 .ui-alert--error { color: #B91C1C; background: #FEF2F2; border-color: #FECACA; }
-.ui-loading-state { min-height: 112px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: var(--color-text-muted); font-size: 13px; }
-.ui-empty-state { min-height: 160px; display: grid; align-content: center; justify-items: center; gap: 6px; padding: 28px 20px; text-align: center; }
-.ui-empty-state h2 { font-size: 16px; }
-.ui-empty-state p { max-width: 440px; color: var(--color-text-muted); font-size: 13px; }
-.ui-empty-state > div { margin-top: 10px; }
-.ui-error-state { display: grid; justify-items: start; gap: 12px; }
-.ui-error-state__action { margin-left: 28px; }
 .form-error-summary__list { margin: 4px 0 0; padding-left: 18px; }
 .form-error-summary__list button { padding: 1px 0; border: 0; background: transparent; color: inherit; text-align: left; text-decoration: underline; text-underline-offset: 2px; }
 .ui-status { min-height: 22px; display: inline-flex; align-items: center; gap: 6px; padding: 2px 7px; border-radius: var(--radius-control-sm); font-size: 12px; line-height: 1.35; font-weight: 600; white-space: nowrap; }
