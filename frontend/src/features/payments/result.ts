@@ -16,9 +16,9 @@ export type PaymentResult =
 
 /** Decides what the payment result page should tell the customer, from the booking's payment-status response. */
 export function resolvePaymentResult(status: PaymentStatusResponse): PaymentResult {
-  if (status.TrangThaiDatPhong === BOOKING_STATUS.CONFIRMED) return { kind: 'confirmed' };
-
   const succeeded = status.ThanhToan.filter((payment) => payment.TrangThai === PAYMENT_STATUS.SUCCESS);
+  // A paid stay that has since been completed (link opened again after check-out) is still a paid booking.
+  if (status.TrangThaiDatPhong === BOOKING_STATUS.CONFIRMED || (status.TrangThaiDatPhong === BOOKING_STATUS.COMPLETED && succeeded.length > 0)) return { kind: 'confirmed' };
   if (status.TrangThaiDatPhong === BOOKING_STATUS.CANCELLED && succeeded.length > 0) {
     const paid = succeeded.reduce((sum, payment) => sum + payment.SoTien, 0);
     const refunds = succeeded.flatMap((payment) => payment.HoanTien);

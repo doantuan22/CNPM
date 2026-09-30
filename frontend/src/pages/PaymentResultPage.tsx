@@ -1,8 +1,9 @@
 import { Link, useSearchParams } from 'react-router-dom';
-import { usePaymentStatus } from '../features/payments/hooks';
+import { useCreateVnpayPayment, usePaymentStatus } from '../features/payments/hooks';
 import { formatCurrencyVND } from '../lib/utils';
 import { CustomerCenterNavigation } from '../components/layouts/CustomerCenterNavigation';
 import { resolvePaymentResult, type PaymentResult } from '../features/payments/result';
+import { BOOKING_STATUS } from '../features/bookings/status';
 import { ApiError } from '../services/apiClient';
 
 const resultCardClass = 'bg-white rounded-3xl border border-border p-8 md:p-12 shadow-md w-full max-w-2xl text-center';
@@ -34,6 +35,10 @@ export default function PaymentResultPage() {
   const result = booking ? resolvePaymentResult(booking) : null;
   const isConfirmed = result?.kind === 'confirmed';
   const isFailed = result?.kind === 'failed';
+  // A failed attempt can be retried only while the booking still holds the rooms.
+  const canRetryPayment = isFailed && booking?.TrangThaiDatPhong === BOOKING_STATUS.PENDING_PAYMENT;
+  const payMutation = useCreateVnpayPayment(hasBookingId ? bookingId : 0);
+  const retryPayment = () => payMutation.mutate(undefined, { onSuccess: (payment) => { window.location.href = payment.paymentUrl; } });
 
   return (
     <div className="bg-surface-secondary text-ink min-h-screen flex flex-col font-sans antialiased">
@@ -83,7 +88,7 @@ export default function PaymentResultPage() {
             <p className="text-sm text-muted mb-4">Cảm ơn bạn đã lựa chọn Egode. Đặt phòng của bạn đã được xác nhận.</p>
             {booking && (
               <div className="inline-block text-xl font-bold text-primary bg-blue-50 px-5 py-2 rounded-xl border border-dashed border-primary/40 mb-8">
-                {booking.MaDatPhong}
+                {booking.MaXacNhanDatPhong}
               </div>
             )}
 
@@ -117,9 +122,19 @@ export default function PaymentResultPage() {
               Giao dịch qua thanh toán trực tuyến không thành công. Vui lòng kiểm tra lại số dư tài khoản hoặc thử lại phương thức thanh toán khác.
             </p>
             
+            {payMutation.isError && (
+              <p role="alert" className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">
+                {payMutation.error instanceof ApiError ? payMutation.error.message : 'Không thể khởi tạo thanh toán'}
+              </p>
+            )}
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
+               {canRetryPayment && (
+                 <button type="button" className="btn btn-primary sm:flex-1 py-3 text-base" onClick={retryPayment} disabled={payMutation.isPending}>
+                   {payMutation.isPending ? 'Đang chuyển đến cổng thanh toán...' : 'Thử thanh toán lại'}
+                 </button>
+               )}
                {Number.isFinite(bookingId) && bookingId > 0 && (
-                 <Link to={`/bookings/${bookingId}`} className="btn btn-danger sm:flex-1 py-3 text-base">Về chi tiết đơn</Link>
+                 <Link to={`/bookings/${bookingId}`} className={canRetryPayment ? 'btn btn-secondary sm:flex-1 py-3 text-base' : 'btn btn-danger sm:flex-1 py-3 text-base'}>Về chi tiết đơn</Link>
                )}
             </div>
           </div>

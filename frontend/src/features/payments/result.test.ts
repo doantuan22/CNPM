@@ -17,6 +17,14 @@ describe('resolvePaymentResult', () => {
     expect(resolvePaymentResult(status('Đã xác nhận', [payment('Thành công')]))).toEqual({ kind: 'confirmed' });
   });
 
+  it('a completed stay whose payment succeeded still reads as a paid booking (link opened again later)', () => {
+    expect(resolvePaymentResult(status('Hoàn tất', [payment('Thành công')]))).toEqual({ kind: 'confirmed' });
+  });
+
+  it('a completed booking without a successful payment is not reported as paid', () => {
+    expect(resolvePaymentResult(status('Hoàn tất', []))).toEqual({ kind: 'processing' });
+  });
+
   it('a failed latest payment is a failure', () => {
     expect(resolvePaymentResult(status('Chờ thanh toán', [payment('Thất bại')]))).toEqual({ kind: 'failed' });
   });

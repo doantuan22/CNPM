@@ -2,7 +2,7 @@ import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import PaymentResultPage from './PaymentResultPage';
-import { usePaymentStatus } from '../features/payments/hooks';
+import { useCreateVnpayPayment, usePaymentStatus } from '../features/payments/hooks';
 import { formatCurrencyVND } from '../lib/utils';
 import { ApiError } from '../services/apiClient';
 import { renderWithProviders } from '../test/testUtils';
@@ -20,9 +20,13 @@ const mockStatus = (patch: Partial<ReturnType<typeof usePaymentStatus>>) =>
 
 const renderPage = (search: string) => renderWithProviders(<PaymentResultPage />, { route: `/payment/result${search}` });
 
+const payMutate = vi.fn();
+
 beforeEach(() => {
   vi.mocked(usePaymentStatus).mockReset();
   mockStatus({});
+  payMutate.mockReset();
+  vi.mocked(useCreateVnpayPayment).mockReturnValue({ mutate: payMutate, isPending: false, isError: false, error: null } as unknown as ReturnType<typeof useCreateVnpayPayment>);
 });
 
 describe('PaymentResultPage without a booking id', () => {
@@ -87,6 +91,21 @@ describe('PaymentResultPage other outcomes keep working', () => {
     expect(screen.getByRole('heading', { name: 'Thanh toán thành công!' })).toBeInTheDocument();
   });
 
+  it('confirmed booking shows the customer-facing booking code, not the internal id', () => {
+    mockStatus({ data: data('Đã xác nhận', [payment('Thành công')]) });
+    renderPage('?bookingId=42&status=success');
+
+    expect(screen.getByText('EGD-42')).toBeInTheDocument();
+    expect(screen.queryByText(/^42$/)).not.toBeInTheDocument();
+  });
+
+  it('a completed stay opened from an old link still shows the paid result instead of "processing"', () => {
+    mockStatus({ data: data('Hoàn tất', [payment('Thành công')]) });
+    renderPage('?bookingId=42&status=success');
+
+    expect(screen.getByRole('heading', { name: 'Thanh toán thành công!' })).toBeInTheDocument();
+  });
+
   it('failed payment', () => {
     mockStatus({ data: data('Chờ thanh toán', [payment('Thất bại')]) });
     renderPage('?bookingId=42&status=failed');
@@ -110,5 +129,39 @@ describe('PaymentResultPage other outcomes keep working', () => {
 
     await userEvent.setup().click(screen.getByRole('button', { name: 'Thử lại' }));
     expect(refetch).toHaveBeenCalledOnce();
+  });
+});
+
+describe('PaymentResultPage retry after a failed payment', () => {
+  it('offers to pay again while the booking is still waiting for payment', async () => {
+    mockStatus({ data: data('Chờ thanh toán', [payment('Thất bại')]) });
+    renderPage('?bookingId=42&status=failed');
+
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Thử thanh toán lại' }));
+
+    expect(payMutate).toHaveBeenCalledOnce();
+    // The mutation's onSuccess sends the browser to the VNPAY payment URL.
+    const [, options] = payMutate.mock.calls[0] as [undefined, { onSuccess: (result: { paymentUrl: string }) => void }];
+    const original = window.location;
+    Object.defineProperty(window, 'location', { configurable: true, value: { href: '' } });
+    options.onSuccess({ paymentUrl: 'https://pay.test/vnp' });
+    expect(window.location.href).toBe('https://pay.test/vnp');
+    Object.defineProperty(window, 'location', { configurable: true, value: original });
+  });
+
+  it('does not offer to pay again once the booking is cancelled (the hold expired)', () => {
+    mockStatus({ data: data('Đã hủy', [payment('Thất bại')]) });
+    renderPage('?bookingId=42&status=failed');
+
+    expect(screen.getByRole('heading', { name: 'Thanh toán không thành công' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Thử thanh toán lại' })).not.toBeInTheDocument();
+  });
+
+  it('shows why starting the payment failed', () => {
+    mockStatus({ data: data('Chờ thanh toán', [payment('Thất bại')]) });
+    vi.mocked(useCreateVnpayPayment).mockReturnValue({ mutate: payMutate, isPending: false, isError: true, error: new ApiError('Đặt phòng đã hết hạn thanh toán', 409) } as unknown as ReturnType<typeof useCreateVnpayPayment>);
+    renderPage('?bookingId=42&status=failed');
+
+    expect(screen.getByRole('alert')).toHaveTextContent('Đặt phòng đã hết hạn thanh toán');
   });
 });
