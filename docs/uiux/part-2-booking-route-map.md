@@ -1,5 +1,7 @@
 # Egode Phase 2 — Booking Route Map
 
+> **Cập nhật 2026-09-30 (sau đợt dọn dẹp frontend, xem `docs/frontend-review.md` mục 1.4 và 2.1):** `BookingRoomPage`, `BookingConfirmPage`, `PaymentPage` và `WriteReviewPage` đã bị xóa. Các URL `/booking/:id/room`, `/booking/:id/confirm`, `/booking/:id/payment`, `/payment/:id`, `/write-review/:id` và mọi alias (`/search-results`, `/hotel-detail/:id`, `/booking-detail/:id`, `/my-bookings`, `/payment-result`, `/account-profile`, `/register-partner`, `/support-request`, `/home`) hiện chỉ **chuyển hướng (replace)** về URL chuẩn, giữ query string, khai báo trong `frontend/src/routes/aliases.tsx`. Các bảng bên dưới phản ánh trạng thái **trước** thay đổi này.
+
 **Trace sources:** frontend route table and in-repo `Link`/`navigate`/`window.location` references; booking/payment hooks and API client; backend VNPAY return controller and OpenAPI description; backend booking/payment tests. No test or callback route was removed.
 
 ## Journey as implemented

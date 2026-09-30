@@ -1,7 +1,7 @@
 # Báo cáo rà soát Frontend (cấu trúc, bố cục, luồng) và đề xuất chỉnh sửa
 
 - Phạm vi: thư mục `frontend/` (React 19, React Router 7, TanStack Query 5, Zustand 5, Tailwind 4, Vite 8).
-- Ngày rà soát: 2026-09-30. Cập nhật lần cuối: 2026-09-30, sau khi sửa Giai đoạn 1 (xem [Tiến độ xử lý](#tiến-độ-xử-lý)).
+- Ngày rà soát: 2026-09-30. Cập nhật lần cuối: 2026-09-30, sau khi sửa Giai đoạn 1 và Giai đoạn 2 (xem [Tiến độ xử lý](#tiến-độ-xử-lý)).
 - Phương pháp: chỉ **đọc code**, chưa chạy ứng dụng. Các lỗi luồng được suy ra từ code và cần chạy thử để xác nhận trước khi sửa. Các điểm chưa chắc được đánh dấu **[cần xác nhận]**.
 - Nguyên tắc cho phần đề xuất: chỉ dùng API/kỹ thuật có trong tài liệu chính thức của thư viện đang dùng (React, React Router, TanStack Query, HTML/WAI-ARIA, CSS, Tailwind). Chỗ nào phụ thuộc thay đổi ở backend thì ghi rõ, không giả định backend đã có.
 
@@ -11,17 +11,19 @@ Mức ưu tiên: **P0** = sai chức năng / rủi ro dữ liệu, **P1** = ản
 
 ## Tiến độ xử lý
 
-Giai đoạn 1 (sửa luồng) đã được thực hiện trong 6 commit trên `main`. Mỗi lỗi được xác nhận bằng test thất bại trước khi sửa. Sau các commit này: `npm run lint`, `npm run typecheck`, `npm test` (15 file / 83 test) và `npm run build` đều pass. Chưa thử trên trình duyệt thật.
+Giai đoạn 1 (sửa luồng) và Giai đoạn 2 (dọn dẹp: mục 1.4, 2.1 và 4) đã được thực hiện trong 10 commit trên `main`. Mỗi lỗi được xác nhận bằng test thất bại trước khi sửa. Sau các commit này: `npm run lint`, `npm run typecheck`, `npm test` (23 file / 131 test) và `npm run build` đều pass. **Chưa thử trên trình duyệt thật.**
 
 | Mục | Trạng thái | Commit |
 | --- | --- | --- |
 | 1.1 Cache sau đặt phòng và thanh toán | **Xong, có điều chỉnh so với đề xuất ban đầu** (không dùng polling) | `c8da627`, `fddcf64` |
 | 1.2 Cache khi đăng xuất/hết phiên | **Xong**, dùng `clearUserCache` (giữ dữ liệu công khai) | `7bd88d4`, `3f97ce6` |
 | 1.3 Tab lọc "Đặt phòng của tôi" | **Xong** | `9249e6f` |
-| 1.4 Hai luồng đặt phòng, hai UI đánh giá | Chưa làm | — |
+| 1.4 Hai luồng đặt phòng, hai UI đánh giá | **Xong**, URL cũ giữ dưới dạng redirect | `db35e15` |
 | 1.5 Hạn giữ chỗ, banner "thành công" | Chưa làm (cần backend trả trường hạn thanh toán) | — |
 | 1.6 Điều hướng khi đã đăng nhập / sai vai trò | **Xong**, không có trang 403 | `5a8ba04` |
-| 2 – 6 | Chưa làm | — |
+| 2.1 Route trùng lặp | **Xong một phần**: alias thành redirect; chưa tách route thành module | `9d834e4`, `db35e15` |
+| 4 UI giả | **Xong** (bỏ hoặc làm cho hoạt động thật) | `f834a03`, `36ca0da` |
+| 2.2 – 2.6, 3, 5, 6 | Chưa làm | — |
 
 **Những điểm bản rà soát ban đầu sai hoặc lệch so với code thật** (phát hiện khi xác nhận trước khi sửa):
 
@@ -29,6 +31,9 @@ Giai đoạn 1 (sửa luồng) đã được thực hiện trong 6 commit trên 
 - **Polling trang kết quả không cần thiết.** `vnpayReturn` gọi `handleCallback` và chỉ redirect sau khi transaction xong, nên khi trang kết quả mở, trạng thái trong DB đã là trạng thái cuối. Các trường hợp trang kẹt ở "Đang xử lý…" có nguyên nhân khác (xem 1.1).
 - **Guard `GuestOnlyRoute` cần phức tạp hơn mô tả.** Bản "có token thì redirect" xung đột với `RegisterPage` (tự chuyển sang `/partner/apply`) và `LoginPage` (tự quay về `returnTo`). Xem 1.6.
 - **`queryClient.clear()` xóa cả dữ liệu công khai.** Đã thay bằng `clearUserCache` (xem 1.2).
+- **Alias và luồng cũ không bị xóa hẳn.** Đề xuất ban đầu là xóa route; tài liệu `docs/uiux/part-2-booking-route-map.md` quy định chỉ bỏ sau khi kiểm tra link ngoài. Phía backend đã kiểm tra (chỉ tạo link `/payment/result` và `/reset-password`) nhưng link người dùng tự lưu thì không kiểm tra được, nên các URL cũ được giữ dưới dạng redirect (xem 1.4, 2.1).
+- **`/payment/:id` (alias động) trùng khuôn với `/payment/result` (URL thật mà VNPAY redirect về).** Route tĩnh được ưu tiên hơn route động nên vẫn đúng, nhưng đây là chỗ dễ vỡ nhất; đã có test riêng.
+- **Không dựng được link bản đồ.** API chi tiết đơn chỉ trả `MaKhachSan` và tên khách sạn, không có địa chỉ (xem mục 4).
 
 ---
 
@@ -124,19 +129,26 @@ Giải pháp đầu tiên dùng `queryClient.clear()` (xóa toàn bộ). Sau đ�
 - Một số nơi vẫn so sánh chuỗi trạng thái trực tiếp: `OwnerBookingsPage`, `OwnerBookingDetailPage`, `StatusBadge`, `bookingStatusBadgeClass`.
 - Nút "Đánh giá" vẫn dẫn tới `WriteReviewPage` (xem 1.4).
 
-### 1.4. Hai luồng đặt phòng song song, một luồng là code chết — P1
+### 1.4. Hai luồng đặt phòng song song, một luồng là code chết — P1 — ĐÃ XỬ LÝ
 
-**Hiện trạng**
+**Hiện trạng ban đầu**
 
-- Luồng thật: `HotelDetailPage` → tạo booking → `/bookings/:id` (`state.justBooked`) → "Thanh toán ngay" ([BookingDetailPage.tsx](../frontend/src/pages/BookingDetailPage.tsx)).
-- Luồng cũ: `/booking/:id/room` → `/booking/:id/confirm` → `/booking/:id/payment` và `/payment/:id`, nằm trong [EcodeFlowPages.tsx](../frontend/src/pages/EcodeFlowPages.tsx). Grep toàn `src/` không thấy link nào trỏ tới các route này.
-- Hai UI đánh giá: `WriteReviewPage` (chỉ điểm + nội dung, không upload ảnh, không kiểm tra trạng thái) và `ReviewSection` (đủ ảnh, hiển thị trạng thái). Nút "Đánh giá" ở danh sách dẫn tới bản yếu hơn.
+- Luồng thật: `HotelDetailPage` → tạo booking → `/bookings/:id` → "Thanh toán ngay".
+- Luồng cũ: `/booking/:id/room` → `/confirm` → `/payment` và `/payment/:id` trong `EcodeFlowPages.tsx`. Không có link nội bộ nào trỏ tới (đã grep).
+- Hai UI đánh giá: `WriteReviewPage` (chỉ điểm và nội dung) và `ReviewSection` (đủ ảnh, trạng thái). Nút "Đánh giá" ở danh sách dẫn tới bản yếu hơn.
 
-**Đề xuất**
+**Đã làm** (commit `db35e15`)
 
-- Quyết định một luồng chính. Vì luồng thực tế đã chạy qua `BookingDetailPage`, nên xóa `BookingRoomPage`, `BookingConfirmPage`, `PaymentPage` và các route liên quan. Nếu cần bước "xác nhận trước khi tạo đơn", đặt bước đó **trước** `createBooking` (trong `HotelDetailPage`), không tạo thêm trang sau khi đơn đã tồn tại.
-- Xóa `WriteReviewPage` và route `/write-review/:id`. Nút "Đánh giá" ở danh sách trỏ tới `/bookings/:id#danh-gia` và dùng `ReviewSection` (thêm `id="danh-gia"` để neo).
-- Trước khi xóa route, tìm trong toàn repo (email template, backend redirect, tài liệu) để chắc không có nơi nào dùng URL đó. Backend hiện chỉ redirect tới `/payment/result` và `/reset-password`.
+- Xóa `EcodeFlowPages.tsx` (`BookingRoomPage`, `BookingConfirmPage`, `PaymentPage`, `WriteReviewPage`), component `BookingSummary` chỉ các trang đó dùng, và CSS `.operation-page`, `.booking-flow-layout`, `.booking-context-summary`.
+- **URL cũ vẫn chạy dưới dạng redirect** (bảng `ROUTE_ALIASES`): `/booking/:id/{room,confirm,payment}` và `/payment/:id` về `/bookings/:id`; `/write-review/:id` về `/bookings/:id#danh-gia`. Lý do: tài liệu `docs/uiux/part-2-booking-route-map.md` yêu cầu kiểm tra link ngoài trước khi bỏ route, và link người dùng đã lưu không kiểm tra được.
+- Nút "Đánh giá" ở danh sách dẫn tới `/bookings/:id#danh-gia`, dùng `ReviewSection` đầy đủ. `ReviewSection` có `id="danh-gia"`. Vì mục này chỉ tồn tại sau khi đơn tải xong, `BookingDetailPage` tự gọi `scrollIntoView()` khi đơn đã có dữ liệu và URL có `#danh-gia`. `NavigationEffects` không kéo về đầu trang khi URL có `#anchor` (trước đây luôn `scrollTo(0, 0)` và sẽ ghi đè việc cuộn tới neo).
+- Có test cho redirect, cuộn tới neo và `NavigationEffects`.
+
+**Còn tồn đọng**
+
+- `docs/uiux/part-2-booking-route-map.md` mô tả các trang này là "TRANSITIONAL/KEEP"; đã thêm ghi chú cập nhật ở đầu tài liệu đó.
+- `StayContext`, `PriceDisplay`, `HotelIdentity` không còn nơi nào dùng. Chúng là component dùng chung nên được giữ lại; có thể dọn ở giai đoạn cấu trúc (mục 2.3).
+- Bước "xác nhận trước khi tạo đơn" (nếu sản phẩm cần) chưa có; nếu làm thì đặt **trước** `createBooking`, không thêm trang sau khi đơn đã tồn tại.
 
 ### 1.5. Thiếu hạn giữ chỗ và banner "thành công" gây hiểu nhầm — P1
 
@@ -174,19 +186,24 @@ Giải pháp đầu tiên dùng `queryClient.clear()` (xóa toàn bộ). Sau đ�
 
 ## 2. Cấu trúc code bất hợp lý
 
-### 2.1. Route trùng lặp và route alias — P1
+### 2.1. Route trùng lặp và route alias — P1 — ĐÃ XỬ LÝ MỘT PHẦN
 
-**Hiện trạng** ([AppRoutes.tsx](../frontend/src/routes/AppRoutes.tsx))
+**Hiện trạng ban đầu**
 
-- Cùng một component có nhiều URL: `/` và `/home`; `/hotels` và `/search-results`; `/hotels/:id` và `/hotel-detail/:id`; `/profile` và `/account-profile`; `/bookings` và `/my-bookings`; `/bookings/:id` và `/booking-detail/:id`; `/partner/apply` và `/register-partner`; `/payment/result` và `/payment-result`; `/support` và `/support-request`.
-- Kèm khoảng 20 alias `/partner/*` và `/owner/hotels/:hotelId/*` cho Owner (đã được xử lý bằng `<Navigate>` trong [OwnerRouteRedirects.tsx](../frontend/src/routes/OwnerRouteRedirects.tsx)).
-- Hệ quả: một trang có nhiều URL, menu đánh dấu "active" theo `location.pathname === link.to` sẽ sai với URL alias, và phải bảo trì nhiều đường dẫn.
+Cùng một component có nhiều URL: `/` và `/home`; `/hotels` và `/search-results`; `/hotels/:id` và `/hotel-detail/:id`; `/profile` và `/account-profile`; `/bookings` và `/my-bookings`; `/bookings/:id` và `/booking-detail/:id`; `/partner/apply` và `/register-partner`; `/payment/result` và `/payment-result`; `/support` và `/support-request`; `/admin/onboarding` và `/admin/operations` (cùng trang với `/admin/partner-applications` và `/admin`). Menu đánh dấu "active" theo `location.pathname === link.to` sẽ sai với URL alias. Các dòng `lazy()` và `<Route>` ở khu vực admin bị dồn trên một dòng.
 
-**Đề xuất**
+**Đã làm** (commit `9d834e4`, mở rộng ở `db35e15`)
 
-- Chọn một URL chính cho mỗi trang. Các alias còn giữ (để không làm hỏng link cũ đã phát hành) thì đổi thành `<Navigate replace>` giữ nguyên query string, theo đúng mẫu đã có ở `OwnerRouteRedirects`. Với alias có tham số (`/hotel-detail/:id`) dùng `useParams` như các `Legacy*Route` hiện có.
-- Nếu không có link cũ nào cần giữ (kiểm tra trước), xóa hẳn alias.
-- Tách các route Owner/Admin/Customer thành module riêng (ví dụ `routes/customerRoutes.tsx`, `ownerRoutes.tsx`, `adminRoutes.tsx`) trả về `<Route>` hoặc dùng cấu hình route dạng đối tượng. Mỗi file ngắn và mỗi `lazy()`/`<Route>` một dòng.
+- [routes/aliases.tsx](../frontend/src/routes/aliases.tsx): bảng `ROUTE_ALIASES` (cặp `[từ, đến]`) và `aliasRoutes()` sinh mỗi alias một `<Route>`. Component `RedirectAlias` ([routes/RedirectAlias.tsx](../frontend/src/routes/RedirectAlias.tsx)) dùng `<Navigate replace>`, **giữ nguyên query string** (bộ lọc tìm kiếm, tham số callback VNPAY), điền tham số `:id` từ URL và giữ hash (trừ khi đích có hash riêng).
+- `AppRoutes` không còn route trùng, chỉ gọi `{aliasRoutes()}` một lần trước route `*`. Các dòng bị dồn được tách ra.
+- Test kiểm tra từng alias, giữ query/hash, điền tham số, không có alias trỏ tới alias khác, và route tĩnh `/payment/result` vẫn thắng alias động `/payment/:id`.
+- Các alias không bị xóa hẳn vì lý do đã nêu ở mục 1.4.
+
+**Còn tồn đọng**
+
+- Chưa tách route thành các module riêng (`customerRoutes`, `ownerRoutes`, `adminRoutes`). Việc này chỉ có tính tổ chức, không đổi hành vi, nên để cùng đợt sắp xếp lại `pages/` (mục 2.2).
+- Khoảng 20 alias `/partner/*` và `/owner/hotels/:hotelId/*` của Owner vẫn nằm trong `OwnerRouteRedirects` (đã là `<Navigate>` từ trước), chưa gộp vào bảng chung.
+- Khi thật sự chắc không còn link cũ, có thể xóa hẳn các dòng trong `ROUTE_ALIASES`.
 
 ### 2.2. `pages/` phẳng và file đa trang — P1
 
@@ -354,30 +371,26 @@ Giải pháp đầu tiên dùng `queryClient.clear()` (xóa toàn bộ). Sau đ�
 
 ---
 
-## 4. UI giả (có nút nhưng không có chức năng)
+## 4. UI giả (có nút nhưng không có chức năng) — ĐÃ XỬ LÝ
 
-**Hiện trạng**
+**Hiện trạng ban đầu và cách xử lý** (commit `f834a03` và `36ca0da`):
 
-| Vị trí | Vấn đề |
-| --- | --- |
-| [HotelDetailPage.tsx:170-177](../frontend/src/pages/HotelDetailPage.tsx#L170) | Nút "Chia sẻ", "Lưu" không có `onClick`. |
-| [HotelDetailPage.tsx:206](../frontend/src/pages/HotelDetailPage.tsx#L206) | "Xem tất cả N ảnh" không có `onClick`; ảnh phụ có `cursor-pointer` nhưng không mở gì. |
-| [BookingDetailPage.tsx:101](../frontend/src/pages/BookingDetailPage.tsx#L101) | "Xem trên bản đồ" là `<p>` có `cursor-pointer`, không hành vi (không phải liên kết hay nút). |
-| [DashboardNavigation.tsx:107](../frontend/src/components/layouts/DashboardNavigation.tsx#L107) | Ô "Tìm kiếm…" và chuông thông báo (có chấm đỏ) không làm gì. Ô tìm kiếm dùng ký tự `⌕` thay icon. |
-| [MainLayout.tsx:49-73](../frontend/src/components/layouts/MainLayout.tsx#L49) | Hầu hết link footer trỏ `/`; social `href="#"`; copyright 2024. |
-| [BookingsPage.tsx:60](../frontend/src/pages/BookingsPage.tsx#L60), BookingDetail | Ảnh khách sạn chỉ là ô icon giữ chỗ, dù `AnhDaiDien` có ở nơi khác. |
+| Vị trí | Vấn đề ban đầu | Đã làm |
+| --- | --- | --- |
+| `HotelDetailPage`, "Chia sẻ" | Không có `onClick` | Hoạt động thật qua [lib/share.ts](../frontend/src/lib/share.ts): dùng `navigator.share` khi có, không thì `navigator.clipboard.writeText` và toast "Đã sao chép liên kết". Nếu người dùng đóng khung chia sẻ thì không báo gì; nếu không dùng được cả hai (ví dụ nguồn không an toàn) thì báo lỗi và hướng dẫn sao chép từ thanh địa chỉ. |
+| `HotelDetailPage`, "Lưu" | Không có `onClick`, chưa có API yêu thích | **Bỏ nút.** |
+| `HotelDetailPage`, ảnh và "Xem tất cả N ảnh" | Không có `onClick`; ảnh có `cursor-pointer` | Ảnh là `<button>` thật, mở [HotelGalleryDialog](../frontend/src/components/hotels/HotelGalleryDialog.tsx) dùng thẻ `<dialog>` native với `showModal()` (khóa focus, Esc để đóng, nền bị vô hiệu do trình duyệt lo). Cuộn tới ảnh được chọn. Bỏ nút lồng trong nút. |
+| `BookingDetailPage`, "Xem trên bản đồ" | `<p>` có `cursor-pointer`, không hành vi | Đổi thành link "Xem thông tin khách sạn" tới `/hotels/:MaKhachSan`. **Không dựng được link bản đồ**: API chi tiết đơn chỉ trả `MaKhachSan` và tên khách sạn, không có địa chỉ, nên URL tìm kiếm Google Maps chỉ dựa vào tên sẽ không chính xác. Muốn có bản đồ thật thì backend cần trả thêm địa chỉ. |
+| `BookingsPage` và `BookingDetailPage`, ảnh khách sạn | Chỉ là ô icon giữ chỗ | **Bỏ ô giữ chỗ**: API không trả ảnh. Muốn hiển thị ảnh thì backend cần trả thêm. |
+| `DashboardTopbar`, ô "Tìm kiếm" và chuông thông báo (chấm đỏ) | Không làm gì | **Bỏ cả hai** và CSS đi kèm; chưa có API tìm kiếm hay thông báo. |
+| Footer | Hầu hết link trỏ `/`, social `href="#"`, năm 2024 | Bỏ cột "Về Egode" và các link chưa có trang (Tuyển dụng, Báo chí, Blog, Chính sách bảo mật, Điều khoản, Liên hệ, Giải pháp doanh nghiệp), bỏ link mạng xã hội. Chỉ giữ link tới trang thật (`/support`, `/partner/apply`, `/login`); lưới còn 3 cột. Năm bản quyền lấy từ `new Date().getFullYear()`. |
 
-**Đề xuất**
+**Còn tồn đọng**
 
-- Nguyên tắc: phần tử tương tác phải là `<button>` hoặc `<a href>` thật, có hành vi, hoặc bị bỏ. Không để chức năng chưa có hiển thị như đã hoạt động.
-- Chia sẻ: dùng `navigator.share()` (Web Share API) khi có, fallback `navigator.clipboard.writeText(location.href)` + toast. Cả hai là API trình duyệt chuẩn, cần kiểm tra `if ('share' in navigator)` và bối cảnh HTTPS.
-- Xem tất cả ảnh: `<dialog>` + `showModal()` (như `FeedbackProvider`) hoặc bỏ nút nếu chưa làm gallery.
-- Lưu/Yêu thích, thông báo, tìm kiếm trong dashboard: chưa có API tương ứng ở backend (chưa thấy trong module list), nên **ẩn** cho đến khi có hoặc đánh dấu rõ chưa hỗ trợ. Không nên giữ chuông có chấm đỏ giả.
-- Bản đồ: nếu địa chỉ có sẵn (`DiaChiChiTiet`), tạo liên kết `<a href="https://www.google.com/maps/search/?api=1&query=…" target="_blank" rel="noopener noreferrer">` (URL tìm kiếm Google Maps chính thức, không cần API key).
-- Footer: trỏ đến trang thật hoặc bỏ link chưa có trang; năm bản quyền dùng `new Date().getFullYear()`.
-- Ảnh trong danh sách đặt phòng: chỉ hiển thị nếu API danh sách trả về ảnh; nếu không, cần thêm trường ở backend, hoặc bỏ ô placeholder để không gợi ý sai.
-
----
+- Khi backend có API yêu thích, thông báo, tìm kiếm trong dashboard, địa chỉ và ảnh trong danh sách đặt phòng, các tính năng trên có thể được thêm lại.
+- Cần có các trang thật (chính sách bảo mật, điều khoản, giới thiệu) và tài khoản mạng xã hội thật thì mới nên thêm lại link vào footer.
+- Nhãn "Đăng nhập Partner" ở footer được giữ nguyên (không thuộc phạm vi).
+- **Cần kiểm tra trên trình duyệt:** thư viện ảnh (`showModal`, Esc, cuộn tới ảnh), nút chia sẻ (cần HTTPS hoặc localhost), cuộn tới `#danh-gia`, bố cục footer 3 cột và topbar dashboard sau khi bỏ ô tìm kiếm.
 
 ## 5. Hệ thống style và thư viện
 
@@ -448,7 +461,7 @@ Giải pháp đầu tiên dùng `queryClient.clear()` (xóa toàn bộ). Sau đ�
 | Giai đoạn | Nội dung | Mục | Ước lượng rủi ro |
 | --- | --- | --- | --- |
 | 1 — Sửa luồng | **ĐÃ XONG** (trừ 1.4 và 1.5): invalidate cache sau tạo đơn, xử lý đúng trang kết quả thanh toán (không cần polling), `clearUserCache` khi đăng xuất/đăng nhập/hết phiên, sửa map trạng thái booking, guard cho `/login` và toast sai vai trò | 1.1, 1.2, 1.3, 1.6 | Đã có test đi kèm |
-| 2 — Dọn dẹp | Xóa luồng đặt phòng cũ và `WriteReviewPage` (nút "Đánh giá" ở danh sách đang dẫn tới trang này); alias route thành `<Navigate>`; bỏ UI giả | 1.4, 2.1, 4 | Thấp–trung bình; cần grep link còn dùng. **Bước tiếp theo đề xuất** |
+| 2 — Dọn dẹp | **ĐÃ XONG** (2.1 còn việc tách module route): bỏ luồng đặt phòng cũ và `WriteReviewPage`, alias thành redirect, bỏ hoặc làm thật UI giả | 1.4, 2.1, 4 | Đã có test đi kèm. **Bước tiếp theo đề xuất: Giai đoạn 3 (layout), bắt đầu từ 3.2, 3.1, 3.3** |
 | 3 — Layout | Một container chung, bỏ `<main>` lồng, thanh đặt phòng mobile, `OwnerLayout`, route layout thay `pathname` | 3.1–3.8 | Trung bình; nên chụp ảnh trước/sau từng trang |
 | 4 — Cấu trúc | Tổ chức lại `pages/` và `features/`, `QueryState`/`Pagination`/`DataTable` dùng chung, Prettier | 2.2–2.5 | Trung bình; đổi đường dẫn import nhiều, làm ngoài giờ cao điểm PR |
 | 5 — Nền tảng style | Một bộ icon npm, token thay màu thô, gỡ `booking-flow.css`, ngày định dạng thống nhất | 5.x | Cao về khối lượng; chia nhỏ theo trang |
