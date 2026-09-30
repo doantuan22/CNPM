@@ -15,7 +15,16 @@ import { TravelSearchBar } from '../../components/hotels/TravelSearchBar';
 import { HotelGalleryDialog } from '../../components/hotels/HotelGalleryDialog';
 import { useToast } from '../../components/common/FeedbackProvider';
 import { shareUrl } from '../../lib/share';
+import { useActiveSection } from '../../hooks/useActiveSection';
 import { PageSpinner } from '../../components/common/PageSpinner';
+
+/** In the order they appear on the page; the sticky tabs use the same list. */
+const PAGE_SECTIONS = [
+  { id: 'loai-phong', label: 'Loại phòng & Giá' },
+  { id: 'tong-quan', label: 'Tổng quan' },
+  { id: 'tien-nghi', label: 'Tiện nghi' },
+] as const;
+const SECTION_IDS = PAGE_SECTIONS.map((section) => section.id);
 
 export default function HotelDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -45,6 +54,7 @@ export default function HotelDetailPage() {
 
   const hotelQuery = useHotelDetail(hotelId);
   const hotelLoaded = Boolean(hotelQuery.data);
+  const [activeSection, selectSection] = useActiveSection(SECTION_IDS, hotelLoaded);
   // The mobile summary bar is redundant while the booking panel itself is on screen.
   const [bookingPanelVisible, setBookingPanelVisible] = useState(false);
   useEffect(() => {
@@ -255,14 +265,25 @@ export default function HotelDetailPage() {
         </div>
       )}
 
-      {/* STICKY PAGE TABS */}
-      <div className="sticky top-[4.5rem] z-30 bg-white/95 backdrop-blur-md border-y border-border mt-3">
+      {/* STICKY PAGE TABS: same order as the sections below, and the one being read is marked */}
+      <div className="sticky top-[var(--header-height)] z-30 bg-white/95 backdrop-blur-md border-y border-border mt-3">
         <div className="page-container flex items-center justify-between">
-          <div className="flex items-center space-x-8 overflow-x-auto no-scrollbar py-1">
-            <a href="#tong-quan" className="nav-tab active py-4 border-b-2 border-transparent text-sm text-ink-muted hover:text-ink transition-all whitespace-nowrap">Tổng quan</a>
-            <a href="#loai-phong" className="nav-tab py-4 border-b-2 border-transparent text-sm text-ink-muted hover:text-ink transition-all whitespace-nowrap">Loại phòng & Giá</a>
-            <a href="#tien-nghi" className="nav-tab py-4 border-b-2 border-transparent text-sm text-ink-muted hover:text-ink transition-all whitespace-nowrap">Tiện nghi</a>
-          </div>
+          <nav aria-label="Các phần của trang" className="flex items-center space-x-8 overflow-x-auto no-scrollbar py-1">
+            {PAGE_SECTIONS.map((section) => (
+              <a
+                key={section.id}
+                href={`#${section.id}`}
+                onClick={() => selectSection(section.id)}
+                aria-current={activeSection === section.id ? 'location' : undefined}
+                className={cn(
+                  'py-4 border-b-2 text-sm transition-all whitespace-nowrap',
+                  activeSection === section.id ? 'border-primary text-primary font-semibold' : 'border-transparent text-ink-muted hover:text-ink'
+                )}
+              >
+                {section.label}
+              </a>
+            ))}
+          </nav>
         </div>
       </div>
 
@@ -270,31 +291,8 @@ export default function HotelDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
           <div className="hotel-detail-content lg:col-span-8 flex flex-col gap-8">
-            {/* OVERVIEW */}
-            <section id="tong-quan" className="order-2 pt-2 scroll-mt-36">
-              <div className="bg-white rounded-2xl border border-border p-6 sm:p-8 shadow-md">
-                <h2 className="text-xl sm:text-2xl font-bold text-ink tracking-tight mb-4 flex items-center gap-2.5">
-                  <i className="ph ph-info text-2xl text-primary"></i>
-                  Tổng quan về {hotel.TenKhachSan}
-                </h2>
-                <p className="text-ink-muted text-sm sm:text-base leading-relaxed mb-4 whitespace-pre-line">
-                  {hotel.MoTa ?? 'Khách sạn chưa cập nhật mô tả chi tiết.'}
-                </p>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-border">
-                  {hotel.TienNghi.slice(0,4).map((a) => (
-                    <div key={a.MaTienNghi} className="p-3 bg-surface-secondary rounded-xl border border-blue-100 flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-lg bg-blue-100 text-primary flex items-center justify-center flex-shrink-0">
-                        <i className="ph ph-check-circle text-base"></i>
-                      </div>
-                      <div className="text-xs font-bold text-ink">{a.TenTienNghi}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
-
             {/* ROOM SELECTION LIST */}
-            <section id="loai-phong" className="order-1 pt-2 scroll-mt-36">
+            <section id="loai-phong" className="pt-2 scroll-mt-36">
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h2 className="text-xl sm:text-2xl font-bold text-ink tracking-tight flex items-center gap-2">
@@ -324,9 +322,32 @@ export default function HotelDetailPage() {
                 </div>
               )}
             </section>
-            
+
+            {/* OVERVIEW */}
+            <section id="tong-quan" className="pt-2 scroll-mt-36">
+              <div className="bg-white rounded-2xl border border-border p-6 sm:p-8 shadow-md">
+                <h2 className="text-xl sm:text-2xl font-bold text-ink tracking-tight mb-4 flex items-center gap-2.5">
+                  <i className="ph ph-info text-2xl text-primary"></i>
+                  Tổng quan về {hotel.TenKhachSan}
+                </h2>
+                <p className="text-ink-muted text-sm sm:text-base leading-relaxed mb-4 whitespace-pre-line">
+                  {hotel.MoTa ?? 'Khách sạn chưa cập nhật mô tả chi tiết.'}
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-border">
+                  {hotel.TienNghi.slice(0,4).map((a) => (
+                    <div key={a.MaTienNghi} className="p-3 bg-surface-secondary rounded-xl border border-blue-100 flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-lg bg-blue-100 text-primary flex items-center justify-center flex-shrink-0">
+                        <i className="ph ph-check-circle text-base"></i>
+                      </div>
+                      <div className="text-xs font-bold text-ink">{a.TenTienNghi}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+
             {/* AMENITIES */}
-            <section id="tien-nghi" className="order-3 pt-2 scroll-mt-36">
+            <section id="tien-nghi" className="pt-2 scroll-mt-36">
               <div className="bg-white rounded-2xl border border-border p-6 sm:p-8 shadow-md">
                 <div className="flex items-center justify-between mb-6">
                   <div>
@@ -354,7 +375,7 @@ export default function HotelDetailPage() {
 
           {/* RIGHT COLUMN: BOOKING WIDGET */}
           <div className="lg:col-span-4 relative">
-            <div id="dat-phong" className="hotel-selection-summary scroll-mt-36 lg:sticky lg:top-28 space-y-4">
+            <div id="dat-phong" className="hotel-selection-summary scroll-mt-36 lg:sticky lg:top-40 space-y-4">
               <div className="bg-white rounded-2xl border-2 border-primary/20 p-6 shadow-xl relative overflow-hidden">
                 <h2 className="text-lg font-bold text-ink mb-4 flex items-center gap-2">
                   <i className="ph-fill ph-receipt text-primary text-xl"></i>

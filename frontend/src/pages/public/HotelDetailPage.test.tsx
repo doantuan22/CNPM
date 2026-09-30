@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -294,5 +294,44 @@ describe('HotelDetailPage price quote', () => {
     await user.click(screen.getByRole('button', { name: /Tạo đặt phòng/ }));
 
     expect(bookingMutate.mock.calls[0][0]).toEqual({ ...request(), promoCode: undefined, ghiChu: undefined });
+  });
+});
+
+describe('HotelDetailPage page sections', () => {
+  const tabs = () => within(screen.getByRole('navigation', { name: 'Các phần của trang' })).getAllByRole('link');
+
+  it('lists the sections in the order they appear on the page (keyboard and screen reader follow the DOM)', () => {
+    open();
+
+    const tabTargets = tabs().map((tab) => tab.getAttribute('href'));
+    const sectionsOnPage = [...document.querySelectorAll('section[id]')].map((section) => `#${section.id}`).filter((id) => tabTargets.includes(id));
+
+    expect(tabs().map((tab) => tab.textContent)).toEqual(['Loại phòng & Giá', 'Tổng quan', 'Tiện nghi']);
+    expect(sectionsOnPage).toEqual(tabTargets);
+  });
+
+  it('does not reorder the page with CSS "order-*" classes', () => {
+    open();
+    const reordered = [...document.querySelectorAll('[class]')].filter((element) => [...element.classList].some((name) => /^(?:[a-z]+:)?order-(?:\d+|first|last|none)$/.test(name)));
+    expect(reordered).toEqual([]);
+  });
+
+  it('marks the section being read as the current tab', () => {
+    const observers: Array<{ callback: (entries: unknown[]) => void; targets: Element[] }> = [];
+    vi.stubGlobal('IntersectionObserver', class {
+      targets: Element[] = [];
+      constructor(public callback: (entries: unknown[]) => void) { observers.push(this); }
+      observe(element: Element) { this.targets.push(element); }
+      disconnect() { this.targets = []; }
+    });
+    open();
+    expect(tabs()[0]).toHaveAttribute('aria-current', 'location');
+
+    const spy = observers.find((observer) => observer.targets.some((element) => element.id === 'tien-nghi'))!;
+    act(() => spy.callback([{ target: document.getElementById('tien-nghi'), isIntersecting: true }]));
+
+    expect(screen.getByRole('link', { name: 'Tiện nghi' })).toHaveAttribute('aria-current', 'location');
+    expect(tabs()[0]).not.toHaveAttribute('aria-current');
+    vi.unstubAllGlobals();
   });
 });
