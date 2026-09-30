@@ -57,12 +57,20 @@ Giai đoạn 1 (sửa luồng), 2 (dọn dẹp), 3 (bố cục), 4 (cấu trúc)
 - **Đề xuất `OwnerLayout` dùng `<Outlet context>` (2.4) không cần thiết.** Phần lặp thực chất là khối "chọn khách sạn / chưa có khách sạn"; đã gom bằng hook `useScopedHotels` và `OwnerScopeGate`, không đổi cấu trúc route.
 - **Backend: `authLimiter` dùng chung cho `/auth/login` và `/auth/refresh` (10 lượt / 15 phút / IP).** Phát hiện khi chạy trình duyệt thật: mỗi lần tải lại trang đã đăng nhập gọi `/auth/refresh`, nên vài lần F5 hoặc mở nhiều tab có thể chặn cả đăng nhập (HTTP 429). Đây là lỗi thật nhưng **chưa sửa** vì nằm ngoài phạm vi được phép chỉnh backend (chỉ 1.5). Đề xuất: tách limiter riêng cho `/refresh` với hạn mức cao hơn (hoặc không giới hạn theo IP, vì refresh cần cookie hợp lệ), giữ 10 lượt cho `/login`.
 
+**Quyết định đã chọn khi sửa** (có thể đổi nếu sản phẩm muốn khác):
+
+- Số khách mặc định là 2 (trước đây HotelList và HotelDetail mặc định 1).
+- Các URL cũ giữ dưới dạng redirect vì tài liệu `docs/uiux/part-2-booking-route-map.md` yêu cầu kiểm tra link ngoài trước khi bỏ.
+- Link "Xem trên bản đồ" đổi thành link tới trang khách sạn, vì API đơn không trả địa chỉ.
+- Bề rộng container thống nhất còn 1280px (trước đây có 1536/1440/1280/1200).
+
 **Chưa làm, có chủ ý:**
 
 - **3.7** (trang tổng quan Owner/Admin có số liệu thật): cần quyết định sản phẩm về chỉ số nào hiển thị.
 - **5.1** (token thay màu thô, gỡ `booking-flow.css`, thống nhất `<Button>`/`.btn`): khối lượng lớn, dễ đổi hình ảnh, nên làm theo từng trang với ảnh chụp trước/sau.
 - Chạy Prettier trên toàn repo (sẽ tạo diff rất lớn che lịch sử); Prettier hiện chỉ áp dụng cho file mới/đã sửa.
-- Sắp xếp lại `features/` (2.3), `DataTable` dùng chung (2.4), gộp về một bộ icon (5.2), tự host font Inter.
+- Sắp xếp lại `features/` (2.3), `DataTable` dùng chung (2.4), gộp về một bộ icon (5.2), tự host font Inter: bỏ có chủ ý vì diff lớn, rủi ro cao mà giá trị thấp.
+- **Lỗi backend chưa sửa** (ngoài phạm vi được phép chỉnh backend, chỉ 1.5): `authLimiter` (10 lượt / 15 phút / IP) dùng chung cho `/auth/login` và `/auth/refresh`. Mỗi lần F5 trang đã đăng nhập gọi `/auth/refresh`, nên vài lần tải lại có thể chặn cả đăng nhập bằng lỗi 429. Đề xuất: tách limiter riêng cho `/refresh` với hạn mức cao hơn, giữ 10 lượt cho `/login`.
 
 ---
 
