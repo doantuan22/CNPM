@@ -3,8 +3,10 @@ import { cancelBooking, createBooking, getBookingDetail, listMyBookings } from '
 import type { CancelBookingRequest, CreateBookingRequest } from './types';
 
 export function useCreateBooking(hotelId: number) {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (payload: CreateBookingRequest) => createBooking(hotelId, payload),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['bookings'] }),
   });
 }
 
