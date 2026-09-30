@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { CalendarDays } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
-import { OwnerHotelContextSelector } from '../../components/owner/OwnerHotelContext';
+import { OwnerScopeGate } from '../../components/owner/OwnerScopeGate';
 import { useBulkUpsertRates, useRates, useRoomTypes } from '../../features/owner/hooks';
 import { ALL_WEEKDAYS, WEEKDAYS, buildRatePayload, countDays } from '../../features/owner/rate-range';
 import { useConfirm, useToast } from '../../components/common/FeedbackProvider';
@@ -95,11 +95,7 @@ export default function OwnerInventoryPricingPage() {
           </div>
         </div>
       </header>
-      <OwnerHotelContextSelector hotels={scope.hotels} hotelId={scope.hotelId} onChange={scope.selectHotel} />
-      {scope.state}
-      {!scope.hotelsQuery.isLoading && !scope.hotelsQuery.error && !scope.invalidHotelId && !scope.hotelId && scope.hotels.length > 1 && (
-        <div className="owner-scope-state">Chọn khách sạn để tải dữ liệu quỹ phòng và giá bán.</div>
-      )}
+      <OwnerScopeGate scope={scope} prompt="Chọn khách sạn để tải dữ liệu quỹ phòng và giá bán." />
       {scope.hotelId && (
         <>
           {roomTypesQuery.isLoading ? (

@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { BedDouble, Plus, Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { OwnerHotelContextSelector } from '../../components/owner/OwnerHotelContext';
+import { OwnerScopeGate } from '../../components/owner/OwnerScopeGate';
 import { StatusBadge } from '../../components/domain/StatusBadge';
 import { useCreateRoomType, useRoomTypes } from '../../features/owner/hooks';
 import { OwnerHotel, OwnerRoomType } from '../../features/owner/types';
@@ -54,11 +54,7 @@ export default function OwnerRoomTypesPage() {
           </button>
         )}
       </header>
-      <OwnerHotelContextSelector hotels={scope.hotels} hotelId={scope.hotelId} onChange={scope.selectHotel} />
-      {scope.state}
-      {!scope.hotelsQuery.isLoading && !scope.hotelsQuery.error && !scope.invalidHotelId && !scope.hotelId && scope.hotels.length > 1 && (
-        <div className="owner-scope-state">Chọn khách sạn để xem các loại phòng trong module này.</div>
-      )}
+      <OwnerScopeGate scope={scope} prompt="Chọn khách sạn để xem các loại phòng trong module này." />
       {scope.hotelId && (
         <>
           <div className="owner-module__toolbar">

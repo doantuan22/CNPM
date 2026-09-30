@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { BarChart3, CircleDollarSign } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
-import { OwnerHotelContextSelector } from '../../components/owner/OwnerHotelContext';
+import { OwnerScopeGate } from '../../components/owner/OwnerScopeGate';
 import { BarList } from '../../components/analytics/BarList';
 import { useOwnerHotelAnalytics } from '../../features/analytics/hooks';
 import { formatCurrencyVND } from '../../lib/utils';
@@ -41,11 +41,7 @@ export default function OwnerAnalyticsModule({ mode }: { mode: 'revenue' | 'repo
           </div>
         </div>
       </header>
-      <OwnerHotelContextSelector hotels={scope.hotels} hotelId={scope.hotelId} onChange={scope.selectHotel} />
-      {scope.state}
-      {!scope.hotelsQuery.isLoading && !scope.hotelsQuery.error && !scope.invalidHotelId && !scope.hotelId && scope.hotels.length > 1 && (
-        <div className="owner-scope-state">Chọn khách sạn để tải số liệu trong module này.</div>
-      )}
+      <OwnerScopeGate scope={scope} prompt="Chọn khách sạn để tải số liệu trong module này." />
       {scope.hotelId && (
         <>
           <form className="owner-module__filters" onSubmit={setRange}>
