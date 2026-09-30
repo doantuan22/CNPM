@@ -92,6 +92,19 @@ describe('HotelDetailPage stay summary', () => {
   });
 });
 
+describe('HotelDetailPage guest count', () => {
+  it('asks for rooms for the default number of guests when the link has none, and honours the link otherwise', () => {
+    renderWithProviders(
+      <Routes><Route path="/hotels/:id" element={<FeedbackProvider><HotelDetailPage /></FeedbackProvider>} /></Routes>,
+      { route: '/hotels/1?checkIn=2030-01-01&checkOut=2030-01-02' }
+    );
+    expect(vi.mocked(useHotelRooms).mock.calls.at(-1)?.[1]).toMatchObject({ guests: 2 });
+
+    open();
+    expect(vi.mocked(useHotelRooms).mock.calls.at(-1)?.[1]).toMatchObject({ guests: 2 });
+  });
+});
+
 describe('HotelDetailPage without features that have no backend', () => {
   it('does not offer a "Lưu" (favourite) button', () => {
     open();

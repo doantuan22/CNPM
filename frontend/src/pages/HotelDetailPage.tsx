@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { useHotelDetail, useHotelRooms } from '../features/hotels/hooks';
-import { defaultSearchDates } from '../features/hotels/schemas';
+import { defaultSearchDates, parseGuests } from '../features/hotels/schemas';
 import { useQuote } from '../features/quotes/hooks';
 import { useCreateBooking } from '../features/bookings/hooks';
 import { useAuthStore } from '../lib/authStore';
@@ -35,7 +35,7 @@ export default function HotelDetailPage() {
   const defaults = defaultSearchDates();
   const checkIn = searchParams.get('checkIn') || defaults.checkIn;
   const checkOut = searchParams.get('checkOut') || defaults.checkOut;
-  const guests = Number(searchParams.get('guests')) || 1;
+  const guests = parseGuests(searchParams.get('guests'));
   const selectedRoomLines = Object.entries(selectedRooms)
     .map(([maLoaiPhong, soLuong]) => ({ maLoaiPhong: Number(maLoaiPhong), soLuong }))
     .filter((line) => line.soLuong > 0);

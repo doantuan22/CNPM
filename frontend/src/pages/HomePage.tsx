@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSearchHotels } from '../features/hotels/hooks';
 import { useLocations } from '../features/locations/hooks';
-import { defaultSearchDates } from '../features/hotels/schemas';
+import { DEFAULT_GUESTS, defaultSearchDates } from '../features/hotels/schemas';
 import type { LocationSummary } from '../features/hotels/types';
 import { TravelSearchBar } from '../components/hotels/TravelSearchBar';
 import { HotelCard } from '../components/hotels/HotelCard';
@@ -13,7 +13,7 @@ export default function HomePage() {
   const defaults = useMemo(() => defaultSearchDates(), []);
 
   // Every number and card on this page comes from the API — nothing is hardcoded.
-  const featured = useSearchHotels({ checkIn: defaults.checkIn, checkOut: defaults.checkOut, guests: 1, page: 1, limit: 4, sort: 'star_desc' });
+  const featured = useSearchHotels({ checkIn: defaults.checkIn, checkOut: defaults.checkOut, guests: DEFAULT_GUESTS, page: 1, limit: 4, sort: 'star_desc' });
   const locations = useLocations();
   const destinations = (locations.data ?? []).filter((l) => l.SoKhachSan > 0).sort((a, b) => b.SoKhachSan - a.SoKhachSan);
   const totalHotels = featured.data?.pagination.total;
@@ -34,7 +34,7 @@ export default function HomePage() {
             <h1 id="home-search-title">Tìm nơi ở phù hợp cho hành trình sắp tới</h1>
             <p>So sánh khách sạn theo điểm đến, ngày lưu trú và số khách.</p>
           </div>
-          <TravelSearchBar variant="expanded" currentSearch={{ checkIn: defaults.checkIn, checkOut: defaults.checkOut, guests: 2 }} onSearch={handleSearch} />
+          <TravelSearchBar variant="expanded" currentSearch={{ checkIn: defaults.checkIn, checkOut: defaults.checkOut, guests: DEFAULT_GUESTS }} onSearch={handleSearch} />
           {heroImage && <img className="home-discovery__image" src={heroImage} alt="Khách sạn đang có trên Egode" />}
           {totalHotels !== undefined && <p className="home-discovery__context">{totalHotels} khách sạn đang nhận đặt phòng{destinations.length ? ` · ${destinations.length} điểm đến có chỗ nghỉ` : ''}</p>}
         </div>
@@ -82,7 +82,7 @@ export default function HomePage() {
           ) : (
             <div className="flex flex-col gap-4">
               {featured.data.items.map((hotel) => (
-                <HotelCard key={hotel.MaKhachSan} hotel={hotel} search={`checkIn=${defaults.checkIn}&checkOut=${defaults.checkOut}&guests=1`} />
+                <HotelCard key={hotel.MaKhachSan} hotel={hotel} search={`checkIn=${defaults.checkIn}&checkOut=${defaults.checkOut}&guests=${DEFAULT_GUESTS}`} />
               ))}
             </div>
           )}

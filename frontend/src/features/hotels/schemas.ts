@@ -14,6 +14,15 @@ export const searchFormSchema = z
   });
 export type SearchFormValues = z.infer<typeof searchFormSchema>;
 
+/** Guests assumed when a search does not say: what the home search box shows, and what every page falls back to. */
+export const DEFAULT_GUESTS = 2;
+
+/** Guest count from a URL parameter; the default when it is missing or not a whole number of at least 1. */
+export const parseGuests = (raw: string | null): number => {
+  const guests = Number(raw);
+  return raw !== null && Number.isInteger(guests) && guests >= 1 ? guests : DEFAULT_GUESTS;
+};
+
 /** Defaults a fresh search form to tomorrow → the day after (a valid 1-night stay). */
 export const defaultSearchDates = (): { checkIn: string; checkOut: string } => {
   const tomorrow = new Date();

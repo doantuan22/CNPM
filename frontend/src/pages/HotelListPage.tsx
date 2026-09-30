@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useSearchHotels } from '../features/hotels/hooks';
 import { useAmenities } from '../features/amenities/hooks';
-import { defaultSearchDates } from '../features/hotels/schemas';
+import { defaultSearchDates, parseGuests } from '../features/hotels/schemas';
 import type { HotelSearchParams, SortOption } from '../features/hotels/types';
 import { ApiError } from '../services/apiClient';
 import { cn, formatDateRangeVi } from '../lib/utils';
@@ -18,7 +18,7 @@ function parseParams(searchParams: URLSearchParams): HotelSearchParams {
     location: searchParams.get('location') || undefined,
     checkIn: searchParams.get('checkIn') || defaults.checkIn,
     checkOut: searchParams.get('checkOut') || defaults.checkOut,
-    guests: Number(searchParams.get('guests')) || 1,
+    guests: parseGuests(searchParams.get('guests')),
     minPrice: searchParams.get('minPrice') ? Number(searchParams.get('minPrice')) : undefined,
     maxPrice: searchParams.get('maxPrice') ? Number(searchParams.get('maxPrice')) : undefined,
     starRating: searchParams.get('starRating') ? Number(searchParams.get('starRating')) : undefined,
