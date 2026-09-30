@@ -29,6 +29,8 @@ const booking = (TrangThai: string) =>
     ChiTietPhong: [{ MaLoaiPhong: 1, TenLoaiPhong: 'Phòng đôi', SoLuong: 1 }],
     ChinhSachHuy: { MaChinhSachHuy: 1, TenChinhSach: 'Linh hoạt', MoTa: '', ChiTiet: [{ SoGioTruocNhanPhong: 24, TyLeHoanTien: 100 }] },
     ThanhToan: [],
+    HanThanhToan: TrangThai === 'Chờ thanh toán' ? '2030-01-01T10:15:00.000Z' : null,
+    SoGiayConLai: TrangThai === 'Chờ thanh toán' ? 600 : null,
   }) as unknown as BookingDetail;
 
 const idle = { mutate: vi.fn(), isPending: false, isError: false };
@@ -42,9 +44,9 @@ beforeEach(() => {
   Element.prototype.scrollIntoView = vi.fn();
 });
 
-const open = (status: string, hash = '') => {
-  vi.mocked(useBookingDetail).mockReturnValue({ isLoading: false, isError: false, data: booking(status) } as unknown as ReturnType<typeof useBookingDetail>);
-  renderWithProviders(<BookingDetailPage />, { route: `/bookings/5${hash}` });
+const open = (status: string, hash = '', state?: object) => {
+  vi.mocked(useBookingDetail).mockReturnValue({ isLoading: false, isError: false, data: booking(status), dataUpdatedAt: Date.now(), refetch: vi.fn() } as unknown as ReturnType<typeof useBookingDetail>);
+  renderWithProviders(<BookingDetailPage />, { route: state ? { pathname: `/bookings/5${hash}`, state } : `/bookings/5${hash}` } as never);
 };
 
 describe('BookingDetailPage dates', () => {
@@ -91,5 +93,29 @@ describe('BookingDetailPage review anchor', () => {
     open('Đã xác nhận', '#danh-gia');
     expect(document.getElementById('danh-gia')).toBeNull();
     expect(Element.prototype.scrollIntoView).not.toHaveBeenCalled();
+  });
+});
+
+describe('BookingDetailPage payment hold', () => {
+  it('shows how long the room is held while the booking waits for payment, without any "success" banner', () => {
+    open('Chờ thanh toán');
+
+    expect(screen.getByRole('timer')).toHaveTextContent('10:00');
+    expect(screen.queryByText('Đặt phòng thành công!')).not.toBeInTheDocument();
+  });
+
+  it('acknowledges a just-created booking without calling it a success', () => {
+    open('Chờ thanh toán', '', { justBooked: true });
+    expect(screen.getByRole('heading', { name: 'Đã tạo đơn đặt phòng' })).toBeInTheDocument();
+  });
+
+  it('keeps the notice after a refresh (it depends on the booking state, not on navigation state)', () => {
+    open('Chờ thanh toán');
+    expect(screen.getByRole('heading', { name: 'Đơn đang chờ thanh toán' })).toBeInTheDocument();
+  });
+
+  it.each(['Đã xác nhận', 'Đã hủy', 'Hoàn tất'])('shows no hold for a %s booking', (status) => {
+    open(status);
+    expect(screen.queryByRole('timer')).not.toBeInTheDocument();
   });
 });

@@ -24,6 +24,16 @@ export function formatDateTimeVi(value: string): string {
   return new Intl.DateTimeFormat('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(date);
 }
 
+/** "15:00" / "1:02:05" for a number of seconds left (never negative). */
+export function formatCountdown(totalSeconds: number): string {
+  const seconds = Math.max(0, Math.floor(totalSeconds));
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  const two = (n: number) => String(n).padStart(2, '0');
+  return h > 0 ? `${h}:${two(m)}:${two(s)}` : `${two(m)}:${two(s)}`;
+}
+
 /** "05/10/2026 – 06/10/2026" for a stay; both values are date-only API/URL strings. */
 export function formatDateRangeVi(from: string, to: string, separator = ' – '): string {
   return `${formatDateVi(from)}${separator}${formatDateVi(to)}`;

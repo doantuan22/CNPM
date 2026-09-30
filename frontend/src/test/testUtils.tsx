@@ -13,7 +13,7 @@ export function makeFakeAccessToken(payload: Record<string, unknown>): string {
   return `${toBase64Url({ alg: 'HS256', typ: 'JWT' })}.${toBase64Url(payload)}.fakesignature`;
 }
 
-export function renderWithProviders(ui: ReactElement, { route = '/' }: { route?: string } = {}) {
+export function renderWithProviders(ui: ReactElement, { route = '/' }: { route?: string | { pathname: string; state?: unknown } } = {}) {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });

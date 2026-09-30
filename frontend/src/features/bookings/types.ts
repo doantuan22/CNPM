@@ -36,6 +36,10 @@ export interface Booking {
   GhiChu: string | null;
   ChinhSachHuy: BookingCancellationPolicy;
   NgayTao: string;
+  /** While "Chờ thanh toán": when the booking is auto-cancelled (ISO). Null in any other status. */
+  HanThanhToan: string | null;
+  /** Seconds until HanThanhToan by the SERVER clock at the time of the response; null when there is no hold. */
+  SoGiayConLai: number | null;
 }
 
 export interface CreateBookingRequest {

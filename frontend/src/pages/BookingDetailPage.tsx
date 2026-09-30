@@ -5,6 +5,7 @@ import { useBookingDetail, useCancelBooking } from '../features/bookings/hooks';
 import { hoursBeforeCheckIn, selectRefundPercentPreview, computeRefundAmountPreview } from '../features/bookings/refund-preview';
 import { useCreateVnpayPayment, useRetryRefund } from '../features/payments/hooks';
 import { ReviewSection } from '../components/reviews/ReviewSection';
+import { PaymentHoldNotice } from '../components/bookings/PaymentHoldNotice';
 import { formatCurrencyVND, cn, formatDateVi, formatDateTimeVi } from '../lib/utils';
 import { ApiError } from '../services/apiClient';
 import { CustomerCenterNavigation } from '../components/layouts/CustomerCenterNavigation';
@@ -70,14 +71,14 @@ export default function BookingDetailPage() {
         <span>Quay lại danh sách đặt phòng</span>
       </Link>
 
-      {justBooked && (
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6 text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 mb-3">
-            <i className="ph-fill ph-check-circle text-3xl"></i>
-          </div>
-          <h1 className="text-xl font-bold text-ink">Đặt phòng thành công!</h1>
-          <p className="mt-1 text-sm text-ink-muted">Vui lòng thanh toán để hoàn tất đặt phòng.</p>
-        </div>
+      {booking.TrangThai === BOOKING_STATUS.PENDING_PAYMENT && booking.HanThanhToan && booking.SoGiayConLai !== null && (
+        <PaymentHoldNotice
+          deadline={booking.HanThanhToan}
+          secondsLeft={booking.SoGiayConLai}
+          startedAt={bookingQuery.dataUpdatedAt}
+          justBooked={justBooked}
+          onExpire={() => { void bookingQuery.refetch(); }}
+        />
       )}
 
       <div className="card p-6 flex justify-between items-center flex-wrap gap-3">
