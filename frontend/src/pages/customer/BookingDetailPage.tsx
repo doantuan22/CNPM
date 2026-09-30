@@ -65,7 +65,7 @@ export default function BookingDetailPage() {
   };
 
   return (
-    <div className="page-container flex flex-col gap-6" style={{ paddingTop: '28px', paddingBottom: '60px' }}>
+    <div className="page-container booking-detail-page flex flex-col gap-6">
       <CustomerCenterNavigation />
       <Link to="/bookings" className="breadcrumb w-fit">
         <i className="ph ph-arrow-left"></i>
@@ -99,10 +99,31 @@ export default function BookingDetailPage() {
           
           <div className="card card-body">
             <div className="flex gap-5 mb-5 flex-wrap">
+              {booking.AnhDaiDien && (
+                <img
+                  src={booking.AnhDaiDien}
+                  alt=""
+                  className="booking-detail-page__hotel-image"
+                />
+              )}
               <div>
                 <h2 className="text-lg font-bold text-ink mb-1">{booking.TenKhachSan}</h2>
+                <p className="text-[13px] text-muted flex items-center gap-1.5 mb-2">
+                  <i className="ph ph-map-pin" aria-hidden="true"></i>
+                  {booking.DiaChiChiTiet}
+                </p>
                 {booking.GhiChu && <p className="text-[13px] text-muted mb-2">Ghi chú: {booking.GhiChu}</p>}
-                <Link to={`/hotels/${booking.MaKhachSan}`} className="mt-1.5 inline-flex items-center gap-1 text-[13px] text-primary hover:underline">Xem thông tin khách sạn <i className="ph ph-arrow-right" aria-hidden="true"></i></Link>
+                <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-2">
+                  <Link to={`/hotels/${booking.MaKhachSan}`} className="inline-flex items-center gap-1 text-[13px] text-primary hover:underline">Xem thông tin khách sạn <i className="ph ph-arrow-right" aria-hidden="true"></i></Link>
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${booking.TenKhachSan}, ${booking.DiaChiChiTiet}`)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 text-[13px] text-primary hover:underline"
+                  >
+                    Xem trên bản đồ <i className="ph ph-map-trifold" aria-hidden="true"></i>
+                  </a>
+                </div>
               </div>
             </div>
 

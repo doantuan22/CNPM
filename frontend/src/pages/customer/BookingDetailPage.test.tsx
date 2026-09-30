@@ -17,6 +17,8 @@ const booking = (TrangThai: string) =>
     MaXacNhanDatPhong: 'EGD-5',
     MaKhachSan: 1,
     TenKhachSan: 'Khách sạn thử',
+    DiaChiChiTiet: '1 Đường Thử Nghiệm, Hà Nội',
+    AnhDaiDien: 'https://images.example.test/hotel-cover.jpg',
     NgayNhanPhong: '2030-01-01',
     NgayTraPhong: '2030-01-02',
     SoDem: 1,
@@ -60,16 +62,16 @@ describe('BookingDetailPage dates', () => {
 });
 
 describe('BookingDetailPage hotel section', () => {
-  it('links to the hotel page instead of a map link that does nothing', () => {
+  it('links to the hotel page and builds a map link from the exact address returned by the API', () => {
     open('Đã xác nhận');
 
     expect(screen.getByRole('link', { name: /Xem thông tin khách sạn/ })).toHaveAttribute('href', '/hotels/1');
-    expect(screen.queryByText(/Xem trên bản đồ/)).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Xem trên bản đồ/ })).toHaveAttribute('href', expect.stringContaining('1%20%C4%90%C6%B0%E1%BB%9Dng%20Th%E1%BB%AD%20Nghi%E1%BB%87m'));
   });
 
-  it('does not show an empty photo placeholder (the booking API returns no photo)', () => {
+  it('renders the hotel cover returned by the booking API', () => {
     open('Đã xác nhận');
-    expect(document.querySelector('.ph-image')).toBeNull();
+    expect(document.querySelector('.booking-detail-page__hotel-image')).toHaveAttribute('src', 'https://images.example.test/hotel-cover.jpg');
   });
 });
 

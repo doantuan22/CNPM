@@ -15,7 +15,7 @@ export default function BookingsPage() {
   const filteredBookings = bookingsQuery.data?.filter((b) => matchesBookingTab(b.TrangThai, activeTab));
 
   return (
-    <div className="page-container" style={{ paddingTop: '32px', paddingBottom: '60px' }}>
+    <div className="page-container booking-history-page">
       <CustomerCenterNavigation />
       <div className="page-header">
         <h1>Đặt phòng của tôi</h1>
@@ -48,12 +48,20 @@ export default function BookingsPage() {
         <div className="flex flex-col gap-4">
           {filteredBookings?.map((b) => (
             <div key={b.MaDatPhong} className="card card-hover flex flex-col sm:flex-row items-stretch sm:items-center p-5 gap-5">
+              {b.AnhDaiDien && (
+                <img
+                  src={b.AnhDaiDien}
+                  alt=""
+                  className="booking-history-page__hotel-image"
+                />
+              )}
               <div className="flex-1 flex flex-col gap-1.5 min-w-0">
                 <div className="flex justify-between items-center flex-wrap gap-2">
                   <span className="text-[13px] font-semibold text-primary">Mã đơn: {b.MaXacNhanDatPhong}</span>
                   <StatusBadge domain="booking" status={b.TrangThai} />
                 </div>
                 <h3 className="text-base font-semibold text-heading truncate">{b.TenKhachSan}</h3>
+                <p className="text-[13px] text-muted truncate">{b.DiaChiChiTiet}</p>
                 <div className="text-[13px] text-muted flex gap-x-4 gap-y-1 flex-wrap mt-1">
                   <span>Nhận: <strong className="text-heading">{formatDateVi(b.NgayNhanPhong)}</strong></span>
                   <span className="hidden sm:inline">•</span>

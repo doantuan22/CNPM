@@ -110,11 +110,26 @@ describe('GET /bookings and GET /bookings/:id (M6 §5 — booking history/detail
   it('GET /bookings lists only the requesting customer\'s own bookings', async () => {
     const mine = await makeBooking(BOOKING_STATUS.PENDING_PAYMENT, addDays(40), addDays(41));
     const notMine = await makeBooking(BOOKING_STATUS.PENDING_PAYMENT, addDays(40), addDays(41), { ownerId: otherCustomerId });
+    await getPrismaClient().hINH_ANH_KHACH_SAN.create({
+      data: { MaKhachSan: hotelId, URL: 'https://images.example.test/hotel-cover.jpg', AnhDaiDien: true },
+    });
     const res = await request(app).get('/api/bookings').set('Authorization', `Bearer ${customerToken}`);
     expect(res.status).toBe(200);
     const ids = res.body.data.map((b: { MaDatPhong: number }) => b.MaDatPhong);
     expect(ids).toContain(mine.MaDatPhong);
     expect(ids).not.toContain(notMine.MaDatPhong);
+    const summary = res.body.data.find((b: { MaDatPhong: number }) => b.MaDatPhong === mine.MaDatPhong);
+    expect(summary).toMatchObject({
+      DiaChiChiTiet: expect.any(String),
+      AnhDaiDien: 'https://images.example.test/hotel-cover.jpg',
+    });
+
+    const detail = await request(app).get(`/api/bookings/${mine.MaDatPhong}`).set('Authorization', `Bearer ${customerToken}`);
+    expect(detail.status).toBe(200);
+    expect(detail.body.data).toMatchObject({
+      DiaChiChiTiet: expect.any(String),
+      AnhDaiDien: 'https://images.example.test/hotel-cover.jpg',
+    });
   });
 
   it('GET /bookings/:id exposes the payment hold only while the booking waits for payment', async () => {

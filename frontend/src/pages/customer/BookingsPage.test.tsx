@@ -13,6 +13,8 @@ const booking = (id: number, TrangThai: string) =>
     MaDatPhong: id,
     MaXacNhanDatPhong: `EGD-${id}`,
     TenKhachSan: `Khách sạn ${id}`,
+    DiaChiChiTiet: `Địa chỉ ${id}`,
+    AnhDaiDien: id === 1 ? 'https://images.example.test/hotel-cover.jpg' : null,
     NgayNhanPhong: '2030-01-01',
     NgayTraPhong: '2030-01-02',
     TongTienThanhToan: 1000000,
@@ -40,9 +42,11 @@ describe('BookingsPage', () => {
     expect(reviewLinks[0]).toHaveAttribute('href', '/bookings/3#danh-gia');
   });
 
-  it('does not show an empty photo placeholder (the booking API returns no photo)', () => {
+  it('shows a hotel cover only when the booking API provides one', () => {
     renderWithProviders(<BookingsPage />);
-    expect(document.querySelector('.ph-image')).toBeNull();
+    const images = document.querySelectorAll<HTMLImageElement>('.booking-history-page__hotel-image');
+    expect(images).toHaveLength(1);
+    expect(images[0]).toHaveAttribute('src', 'https://images.example.test/hotel-cover.jpg');
   });
 
   it('shows check-in and check-out as dd/mm/yyyy, not raw ISO text', () => {

@@ -62,6 +62,8 @@ export interface MyBookingSummary {
   MaDatPhong: number;
   MaXacNhanDatPhong: string;
   TenKhachSan: string;
+  DiaChiChiTiet: string;
+  AnhDaiDien: string | null;
   NgayNhanPhong: string;
   NgayTraPhong: string;
   TongTienThanhToan: number;
@@ -88,6 +90,8 @@ export interface PaymentSummary {
 export interface BookingDetail extends Omit<BookingResponse, 'ChiTietPhong'> {
   ChiTietPhong: BookingRoomLine[];
   TenKhachSan: string;
+  DiaChiChiTiet: string;
+  AnhDaiDien: string | null;
   MaTaiKhoanKhachHang: number;
   ThanhToan: PaymentSummary[];
 }
@@ -285,6 +289,8 @@ export class BookingsService {
       MaDatPhong: b.MaDatPhong,
       MaXacNhanDatPhong: b.MaXacNhanDatPhong,
       TenKhachSan: b.KHACH_SAN.TenKhachSan,
+      DiaChiChiTiet: b.KHACH_SAN.DiaChiChiTiet,
+      AnhDaiDien: b.KHACH_SAN.HINH_ANH_KHACH_SAN[0]?.URL ?? null,
       NgayNhanPhong: b.NgayNhanPhong.toISOString().slice(0, 10),
       NgayTraPhong: b.NgayTraPhong.toISOString().slice(0, 10),
       TongTienThanhToan: toNumber(b.TongTienThanhToan),
@@ -383,6 +389,8 @@ export class BookingsService {
       MaXacNhanDatPhong: booking.MaXacNhanDatPhong,
       MaKhachSan: booking.MaKhachSan,
       TenKhachSan: booking.KHACH_SAN.TenKhachSan,
+      DiaChiChiTiet: booking.KHACH_SAN.DiaChiChiTiet,
+      AnhDaiDien: booking.KHACH_SAN.HINH_ANH_KHACH_SAN[0]?.URL ?? null,
       MaTaiKhoanKhachHang: booking.MaTaiKhoanKhachHang,
       NgayNhanPhong: booking.NgayNhanPhong.toISOString().slice(0, 10),
       NgayTraPhong: booking.NgayTraPhong.toISOString().slice(0, 10),

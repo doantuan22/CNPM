@@ -6,7 +6,13 @@ import { createRateLimiter } from '../../middleware/security.middleware';
 
 const router = Router();
 const controller = new AuthController();
-const authLimiter = createRateLimiter({ windowMs: 15 * 60_000, max: 10, keyPrefix: 'auth' });
+// Login is deliberately strict because it accepts a password. Refresh is a
+// cookie-authenticated session-continuation endpoint and is called during app
+// bootstrap (including in several open tabs), so it needs an independent,
+// higher budget. Sharing the old bucket could turn normal refreshes into a
+// 429 on the next login from the same IP.
+const loginLimiter = createRateLimiter({ windowMs: 15 * 60_000, max: 10, keyPrefix: 'auth-login' });
+const refreshLimiter = createRateLimiter({ windowMs: 15 * 60_000, max: 60, keyPrefix: 'auth-refresh' });
 const registerLimiter = createRateLimiter({ windowMs: 60 * 60_000, max: 10, keyPrefix: 'register' });
 const forgotPasswordLimiter = createRateLimiter({ windowMs: 60 * 60_000, max: 5, keyPrefix: 'forgot-password' });
 // Stricter than forgot-password: this endpoint takes a bearer-style secret token
@@ -16,8 +22,8 @@ const applyOutsideTests = (middleware: ReturnType<typeof createRateLimiter>) =>
   process.env.NODE_ENV === 'test' ? (_req: unknown, _res: unknown, next: () => void) => next() : middleware;
 
 router.post('/register', applyOutsideTests(registerLimiter), validateRequest({ body: registerSchema }), controller.register);
-router.post('/login', applyOutsideTests(authLimiter), validateRequest({ body: loginSchema }), controller.login);
-router.post('/refresh', applyOutsideTests(authLimiter), controller.refresh);
+router.post('/login', applyOutsideTests(loginLimiter), validateRequest({ body: loginSchema }), controller.login);
+router.post('/refresh', applyOutsideTests(refreshLimiter), controller.refresh);
 router.post('/logout', controller.logout);
 router.post(
   '/forgot-password',

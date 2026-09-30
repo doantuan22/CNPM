@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import request from 'supertest';
 import app from '../../app';
 import { getPrismaClient } from '../../config/prisma';
+import { seedDiscovery } from '../../../prisma/seed-discovery';
 
 const addDays = (days: number): string => {
   const d = new Date();
@@ -14,6 +15,9 @@ let grandSaigonId: number;
 let danangResortId: number;
 
 beforeAll(async () => {
+  // These assertions intentionally exercise the date-relative demo fixtures.
+  // Re-anchor them through the production seed function before reading them.
+  await seedDiscovery();
   const prisma = getPrismaClient();
   const grandSaigon = await prisma.kHACH_SAN.findFirstOrThrow({ where: { TenKhachSan: 'Grand Saigon Hotel' } });
   const danang = await prisma.kHACH_SAN.findFirstOrThrow({ where: { TenKhachSan: 'Da Nang Beach Resort' } });

@@ -504,6 +504,18 @@ select.ui-field { appearance: none; padding-right: 38px; background-image: url("
 .stat-card__delta.up { color: var(--color-success); }
 .stat-card__delta.down { color: var(--color-danger); }
 
+/* Booking history/detail consume the explicit booking API fields. These are
+   scoped page styles so the retirement of booking-flow.css can happen page by
+   page without selectors that target arbitrary Tailwind utility combinations. */
+.booking-history-page { padding-top: 32px; padding-bottom: 60px; }
+.booking-detail-page { padding-top: 28px; padding-bottom: 60px; }
+.booking-history-page__hotel-image { width: 112px; height: 84px; flex: 0 0 auto; border-radius: var(--radius-control); object-fit: cover; background: var(--color-surface-subtle); }
+.booking-detail-page__hotel-image { width: 148px; height: 110px; flex: 0 0 auto; border-radius: var(--radius-control); object-fit: cover; background: var(--color-surface-subtle); }
+@media (max-width: 639px) {
+  .booking-history-page__hotel-image { width: 100%; height: 160px; }
+  .booking-detail-page__hotel-image { width: 100%; height: 170px; }
+}
+
 /* ---------- Stepper (booking flow / multi-step forms) ---------- */
 .stepper { display: flex; align-items: center; gap: 8px; }
 .stepper__step { display: flex; align-items: center; gap: 10px; }

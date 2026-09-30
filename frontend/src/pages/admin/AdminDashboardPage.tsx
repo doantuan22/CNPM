@@ -1,4 +1,8 @@
 import { Link } from 'react-router-dom';
+import { PageSpinner } from '../../components/common/PageSpinner';
+import { useAdminAnalytics } from '../../features/analytics/hooks';
+import { formatCurrencyVND } from '../../lib/utils';
+import { ApiError } from '../../services/apiClient';
 
 const reviewLinks = [
   { to: '/admin/partner-applications', title: 'Hồ sơ đối tác', detail: 'Đọc hồ sơ và xử lý đăng ký khách sạn' },
@@ -36,12 +40,33 @@ function AdminLinkGroup({ title, links }: { title: string; links: typeof reviewL
 }
 
 export default function AdminDashboardPage() {
+  // Use the existing audited aggregate endpoint. Detailed, date-filtered
+  // analysis remains in /admin/analytics instead of inventing new metrics.
+  const analyticsQuery = useAdminAnalytics({});
+  const analytics = analyticsQuery.data;
+  const activeHotels = analytics?.KhachSanTheoTrangThai.find((item) => item.Label === 'Hoạt động')?.SoLuong ?? 0;
+
   return (
     <div className="admin-dashboard flex flex-col gap-8 max-w-[1200px] mx-auto w-full">
       <header className="admin-dashboard__header">
         <h1 className="type-page-title text-heading">Quản trị nền tảng</h1>
-        <p className="mt-1 text-sm text-slate-600">Chọn nhóm công việc để kiểm tra, xử lý hoặc theo dõi hoạt động Egode.</p>
+        <p className="mt-1 text-sm text-muted">Tổng quan vận hành hiện tại và các nhóm công việc cần xử lý.</p>
       </header>
+
+      {analyticsQuery.isLoading ? (
+        <PageSpinner />
+      ) : analyticsQuery.isError || !analytics ? (
+        <div role="alert" className="rounded-lg border border-danger bg-danger-light px-4 py-3 text-sm text-danger">
+          {analyticsQuery.error instanceof ApiError ? analyticsQuery.error.message : 'Không thể tải số liệu tổng quan'}
+        </div>
+      ) : (
+        <section aria-label="Chỉ số tổng quan" className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+          <article className="stat-card"><p className="stat-card__label">Tài khoản</p><strong className="stat-card__value">{analytics.TongTaiKhoan.toLocaleString('vi-VN')}</strong></article>
+          <article className="stat-card"><p className="stat-card__label">Khách sạn hoạt động</p><strong className="stat-card__value">{activeHotels.toLocaleString('vi-VN')}</strong></article>
+          <article className="stat-card"><p className="stat-card__label">Tổng đặt phòng</p><strong className="stat-card__value">{analytics.TongSoBooking.toLocaleString('vi-VN')}</strong></article>
+          <article className="stat-card"><p className="stat-card__label">Doanh thu thực nhận</p><strong className="stat-card__value">{formatCurrencyVND(analytics.DoanhThuThucNhan)}</strong></article>
+        </section>
+      )}
 
       <div className="admin-dashboard__domains">
         <AdminLinkGroup title="Rà soát & hỗ trợ" links={reviewLinks} />

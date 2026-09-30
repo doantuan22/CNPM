@@ -160,7 +160,21 @@ export class BookingsRepository {
     const prisma = getPrismaClient();
     return prisma.dAT_PHONG.findMany({
       where: { MaTaiKhoanKhachHang: maTaiKhoanKhachHang },
-      include: { KHACH_SAN: { select: { TenKhachSan: true } } },
+      include: {
+        KHACH_SAN: {
+          select: {
+            TenKhachSan: true,
+            DiaChiChiTiet: true,
+            // A history row needs only the cover image. Do not include the
+            // full gallery for every booking in the list response.
+            HINH_ANH_KHACH_SAN: {
+              where: { AnhDaiDien: true },
+              select: { URL: true },
+              take: 1,
+            },
+          },
+        },
+      },
       orderBy: { NgayTao: 'desc' },
     });
   }
@@ -171,7 +185,18 @@ export class BookingsRepository {
     return prisma.dAT_PHONG.findUnique({
       where: { MaDatPhong: maDatPhong },
       include: {
-        KHACH_SAN: { select: { TenKhachSan: true, GioNhanPhong: true } },
+        KHACH_SAN: {
+          select: {
+            TenKhachSan: true,
+            DiaChiChiTiet: true,
+            GioNhanPhong: true,
+            HINH_ANH_KHACH_SAN: {
+              where: { AnhDaiDien: true },
+              select: { URL: true },
+              take: 1,
+            },
+          },
+        },
         CHI_TIET_DAT_PHONG: { include: { LOAI_PHONG: { select: { TenLoaiPhong: true } } } },
         CHINH_SACH_HUY: { include: { CHI_TIET_CHINH_SACH_HUY: { orderBy: { SoGioTruocNhanPhong: 'desc' } } } },
         KHUYEN_MAI: true,

@@ -298,7 +298,12 @@ async function ensureBooking(params: {
   });
 }
 
-async function main() {
+/**
+ * Reusable for the availability seed contract test as well as the CLI seed.
+ * Keeping this as the single entry point prevents date-relative demo bookings
+ * from drifting away from date-relative API tests.
+ */
+export async function seedDiscovery(): Promise<void> {
   console.log('[seed-discovery] Ensuring accounts...');
   const ownerId = await ensureAccount({
     tenDangNhap: 'seed_owner',
@@ -567,11 +572,15 @@ async function main() {
   console.log(`[seed-discovery] Date window seeded: ${today.toISOString().slice(0, 10)} .. ${addDays(today, 44).toISOString().slice(0, 10)}`);
 }
 
-main()
-  .catch((err) => {
-    console.error('[seed-discovery] FAILED:', err);
-    process.exitCode = 1;
-  })
-  .finally(async () => {
-    await disconnectPrisma();
-  });
+const isDirectExecution = process.argv[1]?.replaceAll('\\', '/').endsWith('/prisma/seed-discovery.ts');
+
+if (isDirectExecution) {
+  seedDiscovery()
+    .catch((err) => {
+      console.error('[seed-discovery] FAILED:', err);
+      process.exitCode = 1;
+    })
+    .finally(async () => {
+      await disconnectPrisma();
+    });
+}

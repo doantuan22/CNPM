@@ -4,10 +4,18 @@ import { useMyHotels } from '../../features/owner/hooks';
 import { ApiError } from '../../services/apiClient';
 import { StatusBadge } from '../../components/domain/StatusBadge';
 import { PageSpinner } from '../../components/common/PageSpinner';
+import { OwnerScopeGate } from '../../components/owner/OwnerScopeGate';
+import { useScopedHotels } from '../../components/owner/useScopedHotels';
+import { useOwnerHotelAnalytics } from '../../features/analytics/hooks';
+import { formatCurrencyVND } from '../../lib/utils';
 
 export default function OwnerDashboardPage({ mode }: { mode: 'overview' | 'hotels' }) {
   const isOverview = mode === 'overview';
   const hotelsQuery = useMyHotels();
+  const scope = useScopedHotels();
+  // Owner analytics are defined per hotel, so multi-property owners choose a
+  // scope instead of receiving an incorrect sum assembled in the browser.
+  const overviewAnalytics = useOwnerHotelAnalytics(scope.hotelId ?? 0, {});
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
@@ -81,6 +89,29 @@ export default function OwnerDashboardPage({ mode }: { mode: 'overview' | 'hotel
               <span className="owner-status-dot owner-status-dot--danger" aria-hidden="true"></span>
             </div>
           </div>}
+
+          {isOverview && (
+            <section className="space-y-4" aria-labelledby="owner-overview-performance">
+              <div className="flex flex-col gap-1">
+                <h2 id="owner-overview-performance" className="text-base font-semibold text-heading">Hiệu quả vận hành</h2>
+                <p className="text-sm text-muted">Số liệu tổng hợp cho khách sạn đang chọn.</p>
+              </div>
+              <OwnerScopeGate scope={scope} prompt="Chọn khách sạn để xem số liệu vận hành." />
+              {scope.hotelId && (
+                overviewAnalytics.isLoading ? <PageSpinner /> : overviewAnalytics.isError || !overviewAnalytics.data ? (
+                  <div role="alert" className="rounded-lg border border-danger bg-danger-light px-4 py-3 text-sm text-danger">
+                    {overviewAnalytics.error instanceof ApiError ? overviewAnalytics.error.message : 'Không thể tải số liệu vận hành'}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <article className="stat-card"><p className="stat-card__label">Tổng đặt phòng</p><strong className="stat-card__value">{overviewAnalytics.data.TongSoBooking.toLocaleString('vi-VN')}</strong></article>
+                    <article className="stat-card"><p className="stat-card__label">Tỷ lệ lấp đầy</p><strong className="stat-card__value">{overviewAnalytics.data.TyLeLapDay === null ? 'Chưa có dữ liệu' : `${overviewAnalytics.data.TyLeLapDay}%`}</strong></article>
+                    <article className="stat-card"><p className="stat-card__label">Doanh thu thực nhận</p><strong className="stat-card__value">{formatCurrencyVND(overviewAnalytics.data.DoanhThuThucNhan)}</strong></article>
+                  </div>
+                )
+              )}
+            </section>
+          )}
 
           {!isOverview && <div className="owner-dashboard__filters flex justify-between items-center gap-4 flex-wrap">
             <div className="relative flex-1 max-w-[420px] min-w-[220px]">

@@ -55,6 +55,8 @@ export interface BookingSummary {
   MaDatPhong: number;
   MaXacNhanDatPhong: string;
   TenKhachSan: string;
+  DiaChiChiTiet: string;
+  AnhDaiDien: string | null;
   NgayNhanPhong: string;
   NgayTraPhong: string;
   TongTienThanhToan: number;
@@ -91,6 +93,8 @@ export interface PaymentView {
 export interface BookingDetail extends Omit<Booking, 'ChiTietPhong'> {
   ChiTietPhong: BookingRoomLine[];
   TenKhachSan: string;
+  DiaChiChiTiet: string;
+  AnhDaiDien: string | null;
   MaTaiKhoanKhachHang: number;
   ThanhToan: PaymentView[];
 }
