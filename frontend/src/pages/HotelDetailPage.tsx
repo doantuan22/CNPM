@@ -41,6 +41,16 @@ export default function HotelDetailPage() {
   const selectedRoomCount = selectedRoomLines.reduce((sum, line) => sum + line.soLuong, 0);
 
   const hotelQuery = useHotelDetail(hotelId);
+  const hotelLoaded = Boolean(hotelQuery.data);
+  // The mobile summary bar is redundant while the booking panel itself is on screen.
+  const [bookingPanelVisible, setBookingPanelVisible] = useState(false);
+  useEffect(() => {
+    const panel = document.getElementById('dat-phong');
+    if (!panel || typeof IntersectionObserver === 'undefined') return;
+    const observer = new IntersectionObserver(([entry]) => setBookingPanelVisible(entry.isIntersecting));
+    observer.observe(panel);
+    return () => observer.disconnect();
+  }, [hotelLoaded]);
   const roomsQuery = useHotelRooms(hotelId, { checkIn, checkOut, guests });
 
   const onDatesSubmit = (values: { checkIn: string; checkOut: string; guests: number }) => {
@@ -124,6 +134,13 @@ export default function HotelDetailPage() {
 
   const hotel = hotelQuery.data;
 
+  const goToBookingPanel = () => document.getElementById('dat-phong')?.scrollIntoView({ block: 'start' });
+  const summaryTotal = quoteMutation.isError
+    ? 'Không thể báo giá'
+    : quoteMatchesSelection && quoteMutation.data
+      ? (quoteMutation.data.KhaDung ? formatCurrencyVND(quoteMutation.data.TongTienThanhToan) : 'Cần điều chỉnh lựa chọn')
+      : 'Đang cập nhật báo giá…';
+
   const shareHotel = async () => {
     try {
       const result = await shareUrl({ title: hotel.TenKhachSan, url: window.location.href });
@@ -134,7 +151,7 @@ export default function HotelDetailPage() {
   };
 
   return (
-    <div className="booking-flow bg-surface text-ink min-h-screen w-full">
+    <div className={cn('booking-flow bg-surface text-ink min-h-screen w-full', selectedRoomLines.length > 0 && 'pb-24 lg:pb-0')}>
       
       {/* BREADCRUMB & TOP ACTIONS */}
       <section className="bg-surface-secondary border-b border-border/80">
@@ -239,6 +256,16 @@ export default function HotelDetailPage() {
 
       <HotelGalleryDialog hotelName={hotel.TenKhachSan} images={hotel.HinhAnh} startIndex={galleryIndex} onClose={() => setGalleryIndex(null)} />
 
+      {selectedRoomLines.length > 0 && !bookingPanelVisible && (
+        <div className="hotel-mobile-bar lg:hidden" role="region" aria-label="Tóm tắt lựa chọn phòng">
+          <div className="min-w-0">
+            <p className="text-xs text-ink-muted">{selectedRoomCount} phòng</p>
+            <p className="truncate text-base font-bold text-ink">{summaryTotal}</p>
+          </div>
+          <button type="button" className="btn btn-primary shrink-0" onClick={goToBookingPanel}>Xem chi tiết & đặt phòng</button>
+        </div>
+      )}
+
       {/* STICKY PAGE TABS */}
       <div className="sticky top-[4.5rem] z-30 bg-white/95 backdrop-blur-md border-y border-border mt-3">
         <div className="page-container flex items-center justify-between">
@@ -338,7 +365,7 @@ export default function HotelDetailPage() {
 
           {/* RIGHT COLUMN: BOOKING WIDGET */}
           <div className="lg:col-span-4 relative">
-            <div className="hotel-selection-summary lg:sticky lg:top-28 space-y-4">
+            <div id="dat-phong" className="hotel-selection-summary scroll-mt-36 lg:sticky lg:top-28 space-y-4">
               <div className="bg-white rounded-2xl border-2 border-primary/20 p-6 shadow-xl relative overflow-hidden">
                 <h2 className="text-lg font-bold text-ink mb-4 flex items-center gap-2">
                   <i className="ph-fill ph-receipt text-primary text-xl"></i>

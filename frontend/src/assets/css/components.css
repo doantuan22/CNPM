@@ -255,6 +255,8 @@ select.ui-field { appearance: none; padding-right: 38px; background-image: url("
 .hotel-card-v2__commercial > strong { color: var(--color-text-primary); font-size: 20px; overflow-wrap: anywhere; }
 .hotel-card-v2__action { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; width: 100%; margin-top: 12px; padding: 8px 12px; border-radius: var(--radius-control); background: var(--color-action-primary); color: white; font-size: 13px; font-weight: 600; }
 .hotel-card-v2__action:hover { background: var(--color-action-primary-hover); }
+/* Fixed summary of the selected rooms on small screens; the booking panel is at the bottom of the page there. */
+.hotel-mobile-bar { position: fixed; inset-inline: 0; bottom: 0; z-index: 40; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px var(--gutter); padding-bottom: calc(12px + env(safe-area-inset-bottom)); background: var(--color-surface-raised); border-top: 1px solid var(--color-border-default); box-shadow: var(--elevation-2); }
 .room-offer { display: grid; grid-template-columns: minmax(150px, 205px) minmax(0, 1fr) minmax(185px, 220px); overflow: hidden; border: 1px solid var(--color-border-default); border-radius: var(--radius-surface); background: var(--color-surface-raised); transition: border-color var(--transition-base), background var(--transition-base); }
 .room-offer:hover { border-color: var(--color-border-strong); }
 .room-offer.is-selected { border-color: var(--color-action-primary); background: var(--color-surface-selected); }

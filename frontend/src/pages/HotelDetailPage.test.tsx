@@ -9,6 +9,7 @@ import { useCreateQuote } from '../features/quotes/hooks';
 import { useCreateBooking } from '../features/bookings/hooks';
 import { useLocations } from '../features/locations/hooks';
 import { shareUrl } from '../lib/share';
+import { formatCurrencyVND } from '../lib/utils';
 import { renderWithProviders } from '../test/testUtils';
 
 vi.mock('../features/hotels/hooks');
@@ -103,5 +104,56 @@ describe('HotelDetailPage photo gallery', () => {
     await userEvent.setup().click(screen.getByRole('button', { name: 'Xem ảnh lớn 1' }));
 
     expect(screen.getByRole('dialog', { name: 'Ảnh Khách sạn thử' })).toBeInTheDocument();
+  });
+});
+
+describe('HotelDetailPage mobile summary bar', () => {
+  const room = {
+    MaLoaiPhong: 11, TenLoaiPhong: 'Phòng Superior', SoGiuong: 1, SucChua: 2, DienTich: 24, LoaiGiuong: 'Giường đôi', MoTa: null,
+    HinhAnh: [], TienNghi: [], GiaTheoDem: 700000, TongTien: 700000, SoDem: 1, SoPhongConLai: 5, ConHang: true,
+  };
+  const quote = {
+    MaKhachSan: 1, NgayNhanPhong: '2030-01-01', NgayTraPhong: '2030-01-02', SoDem: 1, KhaDung: true,
+    ChiTietPhong: [{ MaLoaiPhong: 11, TenLoaiPhong: 'Phòng Superior', SoLuongYeuCau: 1, SoPhongConLai: 5, DuPhong: true, CoGiaDayDu: true, GiaTheoDem: 700000, ThanhTien: 700000 }],
+    TongTienPhong: 700000, KhuyenMai: null, SoTienGiam: 0, TongTienThanhToan: 700000, PromoHopLe: false, PromoThongBao: null, ChinhSachHuy: null,
+  };
+  const bar = () => screen.queryByRole('region', { name: 'Tóm tắt lựa chọn phòng' });
+
+  beforeEach(() => {
+    vi.mocked(useHotelRooms).mockReturnValue({ isLoading: false, isError: false, isFetching: false, data: [room] } as unknown as ReturnType<typeof useHotelRooms>);
+  });
+
+  it('is not shown until a room is selected', () => {
+    open();
+    expect(bar()).not.toBeInTheDocument();
+  });
+
+  it('shows the room count and the quoted total once a room is selected, so the price is visible without scrolling', async () => {
+    vi.mocked(useCreateQuote).mockReturnValue({ ...idle, data: quote, variables: { promoCode: undefined } } as unknown as ReturnType<typeof useCreateQuote>);
+    open();
+
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Tăng phòng Phòng Superior' }));
+
+    expect(bar()).toHaveTextContent('1 phòng');
+    expect(bar()).toHaveTextContent(formatCurrencyVND(700000));
+  });
+
+  it('says the quote is updating while there is no matching quote yet', async () => {
+    open();
+
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Tăng phòng Phòng Superior' }));
+
+    expect(bar()).toHaveTextContent('Đang cập nhật báo giá');
+  });
+
+  it('scrolls to the booking panel from the bar', async () => {
+    open();
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: 'Tăng phòng Phòng Superior' }));
+
+    await user.click(screen.getByRole('button', { name: 'Xem chi tiết & đặt phòng' }));
+
+    const target = vi.mocked(Element.prototype.scrollIntoView).mock.contexts.at(-1) as HTMLElement;
+    expect(target.id).toBe('dat-phong');
   });
 });
