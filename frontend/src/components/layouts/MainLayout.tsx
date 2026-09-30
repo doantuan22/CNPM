@@ -43,33 +43,17 @@ export function MainLayout() {
                   <p style={{ fontSize: '14px', color: 'var(--color-muted)', lineHeight: 1.6 }}>Tìm nơi lưu trú, theo dõi chuyến đi và quản lý cơ sở trên Egode.</p>
                 </div>
                 <div className="site-footer__col">
-                  <h4>Về Egode</h4>
-                  <Link to="/">Về chúng tôi</Link>
-                  <Link to="/">Tuyển dụng</Link>
-                  <Link to="/">Báo chí</Link>
-                  <Link to="/">Blog</Link>
-                </div>
-                <div className="site-footer__col">
                   <h4>Hỗ trợ</h4>
                   <Link to="/support">Trung tâm trợ giúp</Link>
-                  <Link to="/">Chính sách bảo mật</Link>
-                  <Link to="/">Điều khoản sử dụng</Link>
-                  <Link to="/">Liên hệ</Link>
                 </div>
                 <div className="site-footer__col">
                   <h4>Đối tác</h4>
                   <Link to="/partner/apply">Đăng ký chỗ nghỉ</Link>
                   <Link to="/login">Đăng nhập Partner</Link>
-                  <Link to="/">Giải pháp doanh nghiệp</Link>
                 </div>
               </div>
               <div className="site-footer__bottom">
-                <p>&copy; 2024 Egode. All rights reserved.</p>
-                <div className="site-footer__social">
-                  <a href="#"><i className="ph-fill ph-facebook-logo"></i></a>
-                  <a href="#"><i className="ph-fill ph-instagram-logo"></i></a>
-                  <a href="#"><i className="ph-fill ph-twitter-logo"></i></a>
-                </div>
+                <p>&copy; {new Date().getFullYear()} Egode. All rights reserved.</p>
               </div>
             </div>
           </footer>

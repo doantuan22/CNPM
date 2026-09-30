@@ -1,4 +1,4 @@
-import { Bell, Building2, CalendarCheck, ChevronDown, CreditCard, FileText, Hotel, LayoutDashboard, LogOut, Menu, MessageSquare, Percent, Star, UserRound, Users, BarChart3 } from 'lucide-react';
+import { Building2, CalendarCheck, ChevronDown, CreditCard, FileText, Hotel, LayoutDashboard, LogOut, Menu, MessageSquare, Percent, Star, UserRound, Users, BarChart3 } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useUiStore } from '../../lib/store';
 import { useLogout, useMe } from '../../features/auth/hooks';
@@ -104,5 +104,5 @@ export function DashboardTopbar({ role }: { role: DashboardRole }) {
   const meQuery = useMe();
   const name = meQuery.data?.HoTen ?? (role === ROLE_NAMES.ADMIN ? 'Quản trị viên' : 'Đối tác');
   const profilePath = role === ROLE_NAMES.PARTNER ? '/owner/profile' : '/profile';
-  return <header className="dashboard-topbar"><button type="button" className="dashboard-sidebar-toggle btn btn-icon btn-ghost" onClick={toggleSidebar} aria-label="Mở menu"><Menu className="h-5 w-5" /></button><div className="dashboard-topbar__search"><span aria-hidden="true">⌕</span><input aria-label="Tìm kiếm" placeholder="Tìm kiếm..." /></div><div className="dashboard-topbar__actions"><button type="button" className="site-header__icon-btn" aria-label="Thông báo"><Bell className="h-[18px] w-[18px]" /><span className="dot" /></button><Link to={profilePath} className="site-header__user"><span className="site-header__avatar dashboard-user-avatar">{name.charAt(0).toUpperCase()}</span><span className="dashboard-user-meta hidden text-left sm:block"><strong>{name}</strong><small>{role === ROLE_NAMES.ADMIN ? 'Quản trị viên' : 'Chủ khách sạn'}</small></span><ChevronDown className="h-4 w-4 text-slate-400" /></Link></div></header>;
+  return <header className="dashboard-topbar"><button type="button" className="dashboard-sidebar-toggle btn btn-icon btn-ghost" onClick={toggleSidebar} aria-label="Mở menu"><Menu className="h-5 w-5" /></button><div className="dashboard-topbar__actions"><Link to={profilePath} className="site-header__user"><span className="site-header__avatar dashboard-user-avatar">{name.charAt(0).toUpperCase()}</span><span className="dashboard-user-meta hidden text-left sm:block"><strong>{name}</strong><small>{role === ROLE_NAMES.ADMIN ? 'Quản trị viên' : 'Chủ khách sạn'}</small></span><ChevronDown className="h-4 w-4 text-slate-400" /></Link></div></header>;
 }
