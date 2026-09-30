@@ -213,8 +213,8 @@ select.ui-field { appearance: none; padding-right: 38px; background-image: url("
 .price-display--secondary strong { font-size: 14px; }
 
 /* Travel discovery controls and bounded quantity selection. */
-.home-discovery { padding: clamp(36px, 6vw, 76px) 20px 34px; background: var(--color-surface-subtle); }
-.home-discovery__inner { width: min(1180px, 100%); margin: 0 auto; }
+.home-discovery { padding: clamp(36px, 6vw, 76px) 0 34px; background: var(--color-surface-subtle); }
+.home-discovery__inner { width: min(100% - 2 * var(--gutter), var(--container-max)); margin: 0 auto; }
 .home-discovery__copy { max-width: 780px; margin: 0 auto 26px; text-align: center; }
 .home-discovery__eyebrow { margin-bottom: 12px; color: var(--color-text-muted); font-size: 12px; font-weight: 700; letter-spacing: .08em; }
 .home-discovery__copy h1 { max-width: 720px; margin: 0 auto; font-size: clamp(30px, 4vw, 48px); letter-spacing: -.035em; }
@@ -592,7 +592,6 @@ select.ui-field { appearance: none; padding-right: 38px; background-image: url("
   .owner-form-actions > div { width: 100%; }
   .owner-form-actions > div > * { flex: 1; justify-content: center; }
   .register-intent-list { grid-template-columns: minmax(0, 1fr); }
-  .home-discovery { padding-inline: 16px; }
   .guest-picker__popover { left: 0; right: auto; }
   .owner-entity-header { align-items: stretch; flex-direction: column; }
   .owner-entity-header__actions { align-items: stretch; }

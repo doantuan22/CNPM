@@ -63,7 +63,7 @@ export default function BookingDetailPage() {
   };
 
   return (
-    <div className="container flex flex-col gap-6" style={{ paddingTop: '28px', paddingBottom: '60px' }}>
+    <div className="page-container flex flex-col gap-6" style={{ paddingTop: '28px', paddingBottom: '60px' }}>
       <CustomerCenterNavigation />
       <Link to="/bookings" className="breadcrumb w-fit">
         <i className="ph ph-arrow-left"></i>

@@ -14,7 +14,7 @@ export default function BookingsPage() {
   const filteredBookings = bookingsQuery.data?.filter((b) => matchesBookingTab(b.TrangThai, activeTab));
 
   return (
-    <div className="container" style={{ paddingTop: '32px', paddingBottom: '60px' }}>
+    <div className="page-container" style={{ paddingTop: '32px', paddingBottom: '60px' }}>
       <CustomerCenterNavigation />
       <div className="page-header">
         <h1>Đặt phòng của tôi</h1>

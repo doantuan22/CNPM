@@ -47,7 +47,7 @@ export default function SupportPage() {
   };
 
   return (
-    <div className="container" style={{ paddingTop: '32px', paddingBottom: '60px', display: 'flex', flexDirection: 'column', gap: '28px' }}>
+    <div className="page-container" style={{ paddingTop: '32px', paddingBottom: '60px', display: 'flex', flexDirection: 'column', gap: '28px' }}>
       <CustomerCenterNavigation />
       <div className="page-header">
         <div>

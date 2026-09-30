@@ -62,7 +62,7 @@ export default function HotelListPage() {
       
       {/* Persistent search context: edits remain draft until explicit submit. */}
       <section className="bg-surface-secondary border-b border-border py-3.5 sticky top-[4.5rem] z-30">
-        <div className="max-w-[1440px] mx-auto px-6 lg:px-12">
+        <div className="page-container">
           <TravelSearchBar
             variant="compact"
             currentSearch={{ location: params.location, checkIn: params.checkIn, checkOut: params.checkOut, guests: params.guests }}
@@ -77,7 +77,7 @@ export default function HotelListPage() {
         </div>
       </section>
 
-      <div className="hotel-results-page max-w-[1440px] mx-auto px-4 lg:px-12 py-8 flex-1 w-full">
+      <div className="hotel-results-page page-container py-8 flex-1 w-full">
         <div className="flex flex-col lg:flex-row items-start gap-8">
           
           {/* SIDEBAR: BỘ LỌC TÌM KIẾM */}

@@ -1,5 +1,9 @@
 /* Egode Design System — Layout: header, footer, dashboard shell */
 
+:root { --gutter: 16px; }
+@media (min-width: 640px) { :root { --gutter: 24px; } }
+@media (min-width: 1024px) { :root { --gutter: 32px; } }
+
 /* ---------- Site header (public + customer) ---------- */
 .site-header {
   position: sticky; top: 0; z-index: 50;
@@ -8,7 +12,7 @@
   backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--color-border);
 }
-.site-header__inner { width: 80%; max-width: var(--container-max); margin: 0 auto; height: 100%; padding: 0 24px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 24px; }
+.site-header__inner { width: min(100% - 2 * var(--gutter), var(--container-max)); margin: 0 auto; height: 100%; padding: 0; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 24px; }
 .site-header__logo { display: flex; align-items: center; gap: 8px; font-size: 20px; font-weight: 800; color: var(--color-heading); justify-self: start; }
 .site-header__logo .accent { color: var(--color-primary); }
 .site-header__logo-image { width: 42px; height: 42px; object-fit: contain; flex: none; }
@@ -30,9 +34,6 @@
   .site-header__nav { display: none; }
   .site-header__menu-toggle { display: flex; }
 }
-@media (max-width: 768px) {
-  .site-header__inner { width: 100%; padding: 0 16px; }
-}
 
 /* Mobile nav drawer */
 .mobile-drawer { position: fixed; inset: 0; z-index: 90; display: none; }
@@ -44,7 +45,7 @@
 
 /* ---------- Site footer ---------- */
 .site-footer { background: var(--color-bg-secondary); border-top: 1px solid var(--color-border); margin-top: 64px; }
-.site-footer__inner { max-width: var(--container-max); margin: 0 auto; padding: 48px 24px 24px; }
+.site-footer__inner { width: min(100% - 2 * var(--gutter), var(--container-max)); margin: 0 auto; padding: 48px 0 24px; }
 .site-footer__grid { display: grid; grid-template-columns: 1.4fr repeat(2, 1fr); gap: 32px; margin-bottom: 32px; }
 .site-footer__col h4 { font-size: 13px; font-weight: 700; color: var(--color-heading); margin-bottom: 14px; text-transform: uppercase; letter-spacing: .03em; }
 .site-footer__brand { display: flex; align-items: center; gap: 8px; color: var(--color-primary) !important; font-size: 20px !important; text-transform: none !important; letter-spacing: 0 !important; }

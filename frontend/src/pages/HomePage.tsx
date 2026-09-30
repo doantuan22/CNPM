@@ -41,7 +41,7 @@ export default function HomePage() {
 
       {/* Popular Destinations */}
       <section className="py-20 bg-white" aria-labelledby="home-destinations-title">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="page-container">
           <div className="mb-10 text-center lg:text-left">
             <h2 id="home-destinations-title" className="text-3xl font-bold text-ink mb-2">Điểm đến phổ biến</h2>
             <p className="text-ink-muted text-lg">Những địa phương có nhiều khách sạn đang nhận đặt phòng nhất</p>
@@ -62,7 +62,7 @@ export default function HomePage() {
 
       {/* Featured Hotels */}
       <section id="deals" className="py-20 bg-surface-secondary" aria-labelledby="home-featured-title">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="page-container">
           <div className="mb-10 flex flex-col sm:flex-row justify-between items-end gap-4 text-center sm:text-left">
             <div>
               <h2 id="home-featured-title" className="text-3xl font-bold text-ink mb-2">Khách sạn nổi bật</h2>

@@ -44,7 +44,7 @@ export default function RegisterPage() {
 
   return (
     <div className="bg-surface-secondary min-h-[80vh] flex flex-col font-sans antialiased">
-      <div className="max-w-[760px] mx-auto my-10 sm:my-16 px-4 w-full">
+      <div className="page-container max-w-[760px] my-10 sm:my-16">
         
         {intent === null ? (
           <section id="step-role" className="animate-in fade-in zoom-in duration-300">

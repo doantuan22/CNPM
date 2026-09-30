@@ -41,14 +41,11 @@ input, select, textarea { font-family: inherit; }
   }
 }
 
-.container {
-  width: 80%;
-  max-width: var(--container-max);
-  margin: 0 auto;
-  padding: 0 24px;
-}
-@media (max-width: 768px) {
-  .container { width: 100%; padding: 0 16px; }
+/* The single content container. Same edges for the header, every page and the footer.
+   (Not named .container: Tailwind generates its own .container with breakpoint max-widths.) */
+.page-container {
+  width: min(100% - 2 * var(--gutter), var(--container-max));
+  margin-inline: auto;
 }
 
 .visually-hidden {

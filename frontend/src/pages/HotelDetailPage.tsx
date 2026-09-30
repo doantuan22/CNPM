@@ -138,7 +138,7 @@ export default function HotelDetailPage() {
       
       {/* BREADCRUMB & TOP ACTIONS */}
       <section className="bg-surface-secondary border-b border-border/80">
-        <div className="max-w-[1440px] mx-auto px-6 lg:px-12 py-3 flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div className="page-container py-3 flex flex-wrap items-center justify-between gap-3 text-xs">
           <nav className="flex items-center gap-2 text-ink-muted overflow-x-auto py-1">
             <Link to="/" className="hover:text-primary font-medium transition-colors">Trang chủ</Link>
             <i className="ph ph-caret-right text-sm text-gray-400"></i>
@@ -157,7 +157,7 @@ export default function HotelDetailPage() {
 
       {/* HOTEL TITLE HEADER */}
       <section className="pt-6 pb-4 bg-white">
-        <div className="max-w-[1440px] mx-auto px-6 lg:px-12">
+        <div className="page-container">
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
             <div>
               <div className="flex items-center gap-2.5 mb-2">
@@ -193,7 +193,7 @@ export default function HotelDetailPage() {
 
       {/* GALLERY GRID SECTION */}
       <section className="py-4 bg-white">
-        <div className="max-w-[1440px] mx-auto px-6 lg:px-12">
+        <div className="page-container">
           {hotel.HinhAnh.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-3 rounded-2xl overflow-hidden relative shadow-md">
               <button type="button" aria-label="Xem ảnh lớn 1" onClick={() => setGalleryIndex(0)} className="md:col-span-2 relative group overflow-hidden cursor-pointer h-[320px] md:h-[440px]">
@@ -241,7 +241,7 @@ export default function HotelDetailPage() {
 
       {/* STICKY PAGE TABS */}
       <div className="sticky top-[4.5rem] z-30 bg-white/95 backdrop-blur-md border-y border-border mt-3">
-        <div className="max-w-[1440px] mx-auto px-6 lg:px-12 flex items-center justify-between">
+        <div className="page-container flex items-center justify-between">
           <div className="flex items-center space-x-8 overflow-x-auto no-scrollbar py-1">
             <a href="#tong-quan" className="nav-tab active py-4 border-b-2 border-transparent text-sm text-ink-muted hover:text-ink transition-all whitespace-nowrap">Tổng quan</a>
             <a href="#loai-phong" className="nav-tab py-4 border-b-2 border-transparent text-sm text-ink-muted hover:text-ink transition-all whitespace-nowrap">Loại phòng & Giá</a>
@@ -250,7 +250,7 @@ export default function HotelDetailPage() {
         </div>
       </div>
 
-      <div className="max-w-[1440px] mx-auto px-6 lg:px-12 py-8">
+      <div className="page-container py-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
           <div className="hotel-detail-content lg:col-span-8 flex flex-col gap-8">

@@ -23,7 +23,7 @@ export default function SupportDetailPage() {
   const r = requestQuery.data;
 
   return (
-    <div className="container" style={{ paddingTop: '32px', paddingBottom: '60px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div className="page-container" style={{ paddingTop: '32px', paddingBottom: '60px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
       <CustomerCenterNavigation />
       <Link to="/support" className="breadcrumb w-fit">
         <i className="ph ph-arrow-left"></i>

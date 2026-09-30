@@ -37,8 +37,8 @@ export default function PaymentResultPage() {
 
   return (
     <div className="bg-surface-secondary text-ink min-h-screen flex flex-col font-sans antialiased">
-      <div className="max-w-[800px] w-full mx-auto px-4 pt-8"><CustomerCenterNavigation /></div>
-      <div className="max-w-[800px] w-full mx-auto px-4 py-12 md:py-16 flex-grow flex flex-col items-center justify-center">
+      <div className="page-container max-w-[800px] pt-8"><CustomerCenterNavigation /></div>
+      <div className="page-container max-w-[800px] py-12 md:py-16 flex-grow flex flex-col items-center justify-center">
 
         {!hasBookingId ? (
           // The gateway redirect carried no booking (unknown callback / invalid signature): nothing to look up, and no outcome to claim.

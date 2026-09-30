@@ -127,7 +127,8 @@
   --header-height: 68px;
   --sidebar-width: 264px;
   --sidebar-width-collapsed: 76px;
-  --container-max: 1536px;
+  --container-max: 1280px; /* the one content width of the site: header, pages, footer */
+  --gutter: 16px; /* space between the viewport edge and the content; grows with the viewport, see layout.css */
 
   /* Motion */
   --transition-fast: 140ms ease;
