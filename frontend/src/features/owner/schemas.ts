@@ -31,4 +31,3 @@ export const rateBulkFormSchema = z
     soLuongPhong: z.coerce.number().int().min(0, 'Số lượng không được âm'),
   })
   .refine((d) => d.to >= d.from, { message: 'Ngày kết thúc phải sau ngày bắt đầu', path: ['to'] });
-export type RateBulkFormValues = z.infer<typeof rateBulkFormSchema>;

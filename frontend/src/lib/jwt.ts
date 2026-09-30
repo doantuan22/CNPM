@@ -27,9 +27,3 @@ export function decodeAccessToken(token: string): DecodedAccessToken | null {
     return null;
   }
 }
-
-export function isTokenExpired(token: string): boolean {
-  const decoded = decodeAccessToken(token);
-  if (!decoded) return true;
-  return decoded.exp * 1000 <= Date.now();
-}

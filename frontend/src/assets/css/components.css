@@ -184,33 +184,11 @@ select.ui-field { appearance: none; padding-right: 38px; background-image: url("
 .ui-status--danger { color: var(--color-danger-text); background: var(--color-danger-subtle); }
 .ui-status--info { color: var(--color-primary-dark); background: var(--color-primary-light); }
 .ui-status--neutral { color: var(--color-text-secondary); background: var(--color-surface-subtle); }
-.ui-choice { display: flex; align-items: flex-start; gap: 10px; min-height: 44px; padding: 10px 8px; color: var(--color-text-secondary); cursor: pointer; }
-.ui-choice input { flex: none; width: 18px; height: 18px; margin: 1px 0 0; accent-color: var(--color-action-primary); }
-.ui-choice__body { display: grid; gap: 3px; min-width: 0; font-size: 14px; }
-.ui-choice__body small { color: var(--color-text-muted); font-size: 12px; }
-.ui-choice--error .ui-choice__body small { color: var(--color-danger-text); }
 .ui-combobox { position: relative; }
 .ui-combobox__list { position: absolute; z-index: 80; inset: calc(100% + 4px) 0 auto; max-height: min(280px, 50vh); overflow-y: auto; margin: 0; padding: 4px; list-style: none; border: 1px solid var(--color-border-default); border-radius: var(--radius-control); background: var(--color-surface-raised); box-shadow: var(--elevation-2); }
 .ui-combobox__option { width: 100%; min-height: 40px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 10px; border: 0; border-radius: var(--radius-control-sm); background: transparent; color: var(--color-text-primary); text-align: left; font: inherit; }
 .ui-combobox__option:hover, .ui-combobox__option.is-active { background: var(--color-surface-selected); color: var(--color-action-primary); }
 .ui-combobox__empty { padding: 12px 10px; color: var(--color-text-muted); font-size: 13px; }
-.hotel-identity { display: flex; align-items: center; gap: 12px; min-width: 0; }
-.hotel-identity__image { width: 64px; height: 56px; flex: none; border-radius: var(--radius-control); object-fit: cover; background: var(--color-surface-subtle); }
-.hotel-identity__body { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; min-width: 0; }
-.hotel-identity__body > strong { color: var(--color-text-primary); overflow-wrap: anywhere; }
-.hotel-identity__stars { color: var(--color-rating); font-size: 12px; }
-.hotel-identity__location, .hotel-identity__body > small { color: var(--color-text-muted); font-size: 13px; }
-.stay-context { display: flex; flex-wrap: wrap; gap: 8px 20px; margin: 0; }
-.stay-context > div { display: grid; gap: 2px; min-width: 0; }
-.stay-context dt { color: var(--color-text-muted); font-size: 11px; }
-.stay-context dd { margin: 0; color: var(--color-text-primary); font-size: 13px; font-weight: 600; }
-.stay-context--compact { gap: 6px 12px; }
-.price-display { display: inline-flex; align-items: baseline; gap: 4px; color: var(--color-text-primary); }
-.price-display strong { font-weight: 700; }
-.price-display small { color: var(--color-text-muted); font-size: 12px; font-weight: 400; }
-.price-display--primary strong { font-size: var(--font-size-price); }
-.price-display--total strong { font-size: 20px; }
-.price-display--secondary strong { font-size: 14px; }
 
 /* Travel discovery controls and bounded quantity selection. */
 .home-discovery { padding: clamp(36px, 6vw, 76px) 0 34px; background: var(--color-surface-subtle); }
@@ -324,7 +302,6 @@ select.ui-field { appearance: none; padding-right: 38px; background-image: url("
 .confirm-dialog h2 { font-size: 18px; }
 .confirm-dialog p { margin-top: 8px; font-size: 14px; line-height: 1.55; }
 .confirm-dialog__actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 24px; }
-.price-display--total strong { color: var(--color-action-primary); }
 @media (max-width: 480px) { .confirm-dialog__actions { flex-direction: column-reverse; } .confirm-dialog__actions .btn { width: 100%; } }
 .toast { transform: none; transition: none; }
 

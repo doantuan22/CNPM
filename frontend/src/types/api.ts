@@ -15,14 +15,3 @@ export interface ApiPaginationMeta {
 export interface PaginatedApiResponse<T> extends ApiResponse<T[]> {
   pagination: ApiPaginationMeta;
 }
-
-export interface HealthCheckData {
-  status: 'ok' | 'degraded';
-  uptime: number;
-  timestamp: string;
-  environment: string;
-  database: {
-    status: 'connected' | 'disconnected';
-    details: string;
-  };
-}
