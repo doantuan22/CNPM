@@ -41,6 +41,8 @@ export function useLogin() {
   return useMutation({
     mutationFn: (payload: LoginPayload) => authApi.login(payload),
     onSuccess: (result) => {
+      // Drop anything cached for a previous session before seeding the new account.
+      queryClient.clear();
       applyAuthResult(result);
       queryClient.setQueryData(meQueryKey, result.account);
     },
@@ -54,8 +56,8 @@ export function useLogout() {
     mutationFn: authApi.logout,
     onSettled: () => {
       clear();
-      queryClient.removeQueries({ queryKey: meQueryKey });
-      queryClient.removeQueries({ queryKey: ['owner'] });
+      // Every feature area caches per-user data (bookings, support, admin, owner...).
+      queryClient.clear();
     },
   });
 }

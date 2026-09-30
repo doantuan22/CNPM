@@ -1,0 +1,72 @@
+import type { ReactNode } from 'react';
+import { renderHook, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { meQueryKey, useLogin, useLogout } from './hooks';
+import * as authApi from './api';
+import { useAuthStore } from '../../lib/authStore';
+import { makeFakeAccessToken } from '../../test/testUtils';
+import type { Account, AuthResult } from '../../types/auth';
+
+vi.mock('./api');
+
+const oldUser = { MaTaiKhoan: 1, HoTen: 'Người dùng cũ' } as Account;
+const newUser = { MaTaiKhoan: 2, HoTen: 'Người dùng mới' } as Account;
+
+function setup<T>(useHook: () => T) {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+  // Data that belongs to the previous signed-in user, across several feature areas.
+  queryClient.setQueryData(meQueryKey, oldUser);
+  queryClient.setQueryData(['bookings'], [{ MaDatPhong: 1 }]);
+  queryClient.setQueryData(['bookings', 1], { MaDatPhong: 1 });
+  queryClient.setQueryData(['support', 'mine'], [{ MaYeuCau: 1 }]);
+  queryClient.setQueryData(['admin', 'accounts'], { items: [] });
+  queryClient.setQueryData(['payment-status', 1], { MaDatPhong: 1 });
+  const wrapper = ({ children }: { children: ReactNode }) => <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+  return { queryClient, ...renderHook(useHook, { wrapper }) };
+}
+
+const cachedKeys = (queryClient: QueryClient) => queryClient.getQueryCache().getAll().map((query) => query.queryKey);
+
+beforeEach(() => {
+  vi.mocked(authApi.logout).mockReset();
+  vi.mocked(authApi.login).mockReset();
+  useAuthStore.setState({ accessToken: makeFakeAccessToken({ sub: '1', role: 'Khách hàng', exp: 9999999999 }), role: 'Khách hàng' });
+});
+
+describe('useLogout', () => {
+  it('drops every cached query so the next user cannot see the previous user’s data', async () => {
+    vi.mocked(authApi.logout).mockResolvedValue(undefined);
+    const { queryClient, result } = setup(useLogout);
+
+    await result.current.mutateAsync();
+
+    expect(cachedKeys(queryClient)).toEqual([]);
+    expect(useAuthStore.getState().accessToken).toBeNull();
+  });
+
+  it('still clears the cache when the logout request itself fails', async () => {
+    vi.mocked(authApi.logout).mockRejectedValue(new Error('offline'));
+    const { queryClient, result } = setup(useLogout);
+
+    await expect(result.current.mutateAsync()).rejects.toThrow('offline');
+
+    expect(cachedKeys(queryClient)).toEqual([]);
+    expect(useAuthStore.getState().accessToken).toBeNull();
+  });
+});
+
+describe('useLogin', () => {
+  it('clears the previous user’s cache but keeps the new account in the "me" query', async () => {
+    const accessToken = makeFakeAccessToken({ sub: '2', role: 'Khách hàng', exp: 9999999999 });
+    vi.mocked(authApi.login).mockResolvedValue({ account: newUser, accessToken } as AuthResult);
+    const { queryClient, result } = setup(useLogin);
+
+    result.current.mutate({ identifier: 'moi', MatKhau: 'x' });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(queryClient.getQueryData(meQueryKey)).toEqual(newUser);
+    expect(cachedKeys(queryClient)).toEqual([meQueryKey]);
+    expect(useAuthStore.getState().accessToken).toBe(accessToken);
+  });
+});

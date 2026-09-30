@@ -1,6 +1,7 @@
 import { ApiResponse } from '../types/api';
 import { AuthResult } from '../types/auth';
 import { getAccessToken, useAuthStore } from '../lib/authStore';
+import { queryClient } from '../lib/queryClient';
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || '/api';
@@ -86,6 +87,8 @@ export async function apiClient<T, TResponse extends ApiResponse<T> = ApiRespons
       useAuthStore.getState().setAccessToken(newToken);
       return apiClient<T, TResponse>(endpoint, { ...options, _retried: true });
     }
+    // The session is gone for good: also drop cached data so it cannot leak to whoever signs in next.
+    queryClient.clear();
     useAuthStore.getState().expireSession();
   }
 
