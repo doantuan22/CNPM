@@ -22,11 +22,16 @@ function setup<T>(useHook: () => T) {
   queryClient.setQueryData(['support', 'mine'], [{ MaYeuCau: 1 }]);
   queryClient.setQueryData(['admin', 'accounts'], { items: [] });
   queryClient.setQueryData(['payment-status', 1], { MaDatPhong: 1 });
+  // Public, identical for everyone: must survive a change of user.
+  queryClient.setQueryData(['hotels', 'search', { page: 1 }], { items: [] });
+  queryClient.setQueryData(['locations'], []);
+  queryClient.setQueryData(['amenities'], []);
   const wrapper = ({ children }: { children: ReactNode }) => <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
   return { queryClient, ...renderHook(useHook, { wrapper }) };
 }
 
 const cachedKeys = (queryClient: QueryClient) => queryClient.getQueryCache().getAll().map((query) => query.queryKey);
+const PUBLIC_KEYS = [['hotels', 'search', { page: 1 }], ['locations'], ['amenities']];
 
 beforeEach(() => {
   vi.mocked(authApi.logout).mockReset();
@@ -35,13 +40,13 @@ beforeEach(() => {
 });
 
 describe('useLogout', () => {
-  it('drops every cached query so the next user cannot see the previous user’s data', async () => {
+  it('drops the previous user’s cached data but keeps public data', async () => {
     vi.mocked(authApi.logout).mockResolvedValue(undefined);
     const { queryClient, result } = setup(useLogout);
 
     await result.current.mutateAsync();
 
-    expect(cachedKeys(queryClient)).toEqual([]);
+    expect(cachedKeys(queryClient)).toEqual(PUBLIC_KEYS);
     expect(useAuthStore.getState().accessToken).toBeNull();
   });
 
@@ -51,7 +56,7 @@ describe('useLogout', () => {
 
     await expect(result.current.mutateAsync()).rejects.toThrow('offline');
 
-    expect(cachedKeys(queryClient)).toEqual([]);
+    expect(cachedKeys(queryClient)).toEqual(PUBLIC_KEYS);
     expect(useAuthStore.getState().accessToken).toBeNull();
   });
 });
@@ -66,7 +71,7 @@ describe('useLogin', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     expect(queryClient.getQueryData(meQueryKey)).toEqual(newUser);
-    expect(cachedKeys(queryClient)).toEqual([meQueryKey]);
+    expect(cachedKeys(queryClient)).toEqual([...PUBLIC_KEYS, meQueryKey]);
     expect(useAuthStore.getState().accessToken).toBe(accessToken);
   });
 });

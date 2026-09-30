@@ -10,6 +10,8 @@ beforeEach(() => {
   queryClient.clear();
   queryClient.setQueryData(['bookings'], [{ MaDatPhong: 1 }]);
   queryClient.setQueryData(['auth', 'me'], { MaTaiKhoan: 1 });
+  queryClient.setQueryData(['hotels', 'detail', 5], { MaKhachSan: 5 });
+  queryClient.setQueryData(['locations'], []);
   useAuthStore.setState({
     accessToken: makeFakeAccessToken({ sub: '1', role: 'Khách hàng', exp: 9999999999 }),
     role: 'Khách hàng',
@@ -23,12 +25,12 @@ afterEach(() => {
 });
 
 describe('apiClient session expiry', () => {
-  it('clears the query cache and flags the session as expired when a 401 survives the refresh attempt', async () => {
+  it('drops user data, keeps public data and flags the session as expired when a 401 survives the refresh attempt', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => json({ success: false, message: 'Unauthorized' }, 401)));
 
     await expect(apiClient('/bookings')).rejects.toBeInstanceOf(ApiError);
 
-    expect(queryClient.getQueryCache().getAll()).toHaveLength(0);
+    expect(queryClient.getQueryCache().getAll().map((query) => query.queryKey)).toEqual([['hotels', 'detail', 5], ['locations']]);
     expect(useAuthStore.getState().accessToken).toBeNull();
     expect(useAuthStore.getState().sessionExpired).toBe(true);
   });

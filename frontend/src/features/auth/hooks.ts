@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as authApi from './api';
 import { applyAuthResult } from '../../services/apiClient';
 import { useAuthStore } from '../../lib/authStore';
+import { clearUserCache } from '../../lib/queryClient';
 import type {
   RegisterPayload,
   LoginPayload,
@@ -42,7 +43,7 @@ export function useLogin() {
     mutationFn: (payload: LoginPayload) => authApi.login(payload),
     onSuccess: (result) => {
       // Drop anything cached for a previous session before seeding the new account.
-      queryClient.clear();
+      clearUserCache(queryClient);
       applyAuthResult(result);
       queryClient.setQueryData(meQueryKey, result.account);
     },
@@ -56,8 +57,8 @@ export function useLogout() {
     mutationFn: authApi.logout,
     onSettled: () => {
       clear();
-      // Every feature area caches per-user data (bookings, support, admin, owner...).
-      queryClient.clear();
+      // Every feature area caches per-user data (bookings, support, admin, owner...); public catalogue data stays.
+      clearUserCache(queryClient);
     },
   });
 }
