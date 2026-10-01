@@ -1,8 +1,9 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
-import { Search } from 'lucide-react';
+import { Icon } from '../common/Icon';
 import { searchFormSchema, type SearchFormValues } from '../../features/hotels/schemas';
 import { useLocations } from '../../features/locations/hooks';
-import { toDateInputValue, formatDateRangeVi } from '../../lib/utils';
+import { toDateInputValue, formatDateRangeVi, formatDateVi } from '../../lib/utils';
+import { DateRangePicker } from '../common/DateRangePicker';
 import { Combobox } from '../common/Combobox';
 import { GuestPicker } from '../common/GuestPicker';
 
@@ -50,7 +51,7 @@ export function TravelSearchBar({ currentSearch, onSearch, variant = 'compact', 
     if (!activeEditor) return;
     requestAnimationFrame(() => {
       if (activeEditor === 'destination') rootRef.current?.querySelector<HTMLInputElement>('.ui-combobox input')?.focus();
-      if (activeEditor === 'dates') rootRef.current?.querySelector<HTMLInputElement>('.travel-search__date-fields input')?.focus();
+      if (activeEditor === 'dates') rootRef.current?.querySelector<HTMLButtonElement>('.travel-search__date-fields .rdp-day button:not(:disabled)')?.focus();
     });
     const onPointerDown = (event: PointerEvent) => {
       if (!rootRef.current?.contains(event.target as Node)) setActiveEditor(null);
@@ -121,12 +122,15 @@ export function TravelSearchBar({ currentSearch, onSearch, variant = 'compact', 
       }}
     />}
     {activeEditor === 'dates' && <div className="travel-search__date-fields">
-      <label htmlFor={`${id}-check-in`}>Nhận phòng
-        <input id={`${id}-check-in`} type="date" value={draftSearch.checkIn} min={enforceFutureDates ? today : undefined} aria-invalid={Boolean(dateError) || undefined} onChange={(event) => { updateDraft({ checkIn: event.target.value }); setDateError(''); }} />
-      </label>
-      <label htmlFor={`${id}-check-out`}>Trả phòng
-        <input id={`${id}-check-out`} type="date" value={draftSearch.checkOut} min={draftSearch.checkIn || (enforceFutureDates ? today : undefined)} aria-invalid={Boolean(dateError) || undefined} onChange={(event) => { updateDraft({ checkOut: event.target.value }); setDateError(''); }} />
-      </label>
+      <DateRangePicker
+        value={{ from: draftSearch.checkIn, to: draftSearch.checkOut }}
+        min={enforceFutureDates ? today : undefined}
+        onChange={({ from, to }) => { updateDraft({ checkIn: from, checkOut: to }); setDateError(''); }}
+      />
+      <p className="travel-search__hint" aria-live="polite">
+        Nhận phòng: <strong>{draftSearch.checkIn ? formatDateVi(draftSearch.checkIn) : 'chưa chọn'}</strong>
+        {' · '}Trả phòng: <strong>{draftSearch.checkOut ? formatDateVi(draftSearch.checkOut) : 'chưa chọn'}</strong>
+      </p>
       {dateError && <p className="travel-search__error" role="alert">{dateError}</p>}
     </div>}
     {activeEditor === 'guests' && <div className="travel-search__guest-editor">
@@ -158,7 +162,7 @@ export function TravelSearchBar({ currentSearch, onSearch, variant = 'compact', 
       </div>
     </div>
     <button type="submit" className="travel-search__submit" disabled={loading}>
-      <Search aria-hidden="true" size={18} />
+      <Icon name="magnifying-glass" size={18} />
       <span>{loading ? 'Đang tìm...' : isStay ? 'Kiểm tra phòng' : 'Tìm kiếm'}</span>
     </button>
     {activeEditor && <button type="button" className="travel-search__backdrop" aria-label="Đóng trình chỉnh sửa" onClick={() => setActiveEditor(null)} />}

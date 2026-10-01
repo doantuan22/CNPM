@@ -47,6 +47,11 @@
   --color-warning-light: var(--state-warning-subtle);
   --color-danger: var(--state-danger);
   --color-danger-light: var(--state-danger-subtle);
+
+  /* Text-safe state colors (>= 4.5:1 on white and on the *-light backgrounds): text-success-ink etc. */
+  --color-success-ink: var(--color-success-text);
+  --color-warning-ink: var(--color-warning-text);
+  --color-danger-ink: var(--color-danger-text);
 }
 
 body {

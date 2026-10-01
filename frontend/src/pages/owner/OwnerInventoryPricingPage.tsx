@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
-import { CalendarDays } from 'lucide-react';
+import { Icon } from '../../components/common/Icon';
+import { FilterChip } from '../../components/common/FilterChip';
+import { InventoryCalendar, type DayCell } from '../../components/owner/InventoryCalendar';
 import { useSearchParams } from 'react-router-dom';
 import { OwnerScopeGate } from '../../components/owner/OwnerScopeGate';
 import { useBulkUpsertRates, useRates, useRoomTypes } from '../../features/owner/hooks';
@@ -8,6 +10,7 @@ import { useConfirm, useToast } from '../../components/common/FeedbackProvider';
 import { formatCurrencyVND, formatDateRangeVi, formatDateVi, toDateInputValue } from '../../lib/utils';
 import { ApiError } from '../../services/apiClient';
 import { useScopedHotels } from '../../components/owner/useScopedHotels';
+import { Button } from '../../components/common/Button';
 
 export default function OwnerInventoryPricingPage() {
   const scope = useScopedHotels();
@@ -20,6 +23,18 @@ export default function OwnerInventoryPricingPage() {
   endDate.setDate(endDate.getDate() + 13);
   const [from, setFrom] = useState(start);
   const [to, setTo] = useState(toDateInputValue(endDate));
+  const [view, setView] = useState<'calendar' | 'table'>('calendar');
+  const [month, setMonth] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+  const monthFrom = toDateInputValue(month);
+  const monthTo = toDateInputValue(new Date(month.getFullYear(), month.getMonth() + 1, 0));
+  const monthRates = useRates(roomType?.MaLoaiPhong ?? 0, monthFrom, monthTo);
+  const calendarCells = useMemo(() => {
+    const cells: Record<string, DayCell> = {};
+    for (const row of monthRates.data ?? []) {
+      cells[row.NgayApDung.slice(0, 10)] = { price: row.GiaPhong, available: row.SoLuongPhong, closed: row.TrangThai === 'Đóng bán' };
+    }
+    return cells;
+  }, [monthRates.data]);
   const rates = useRates(roomType?.MaLoaiPhong ?? 0, from, to);
   const update = useBulkUpsertRates(roomType?.MaLoaiPhong ?? 0);
   const [error, setError] = useState('');
@@ -87,7 +102,7 @@ export default function OwnerInventoryPricingPage() {
       <header className="owner-module__header">
         <div className="owner-module__title">
           <span className="owner-module__icon">
-            <CalendarDays size={20} />
+            <Icon name="calendar-dots" size={20} />
           </span>
           <div>
             <h1>Quỹ phòng &amp; giá bán</h1>
@@ -140,8 +155,34 @@ export default function OwnerInventoryPricingPage() {
                 </label>
               </section>
               <section className="owner-module__data">
-                <h2>{roomType?.TenLoaiPhong ?? 'Dữ liệu theo ngày'}</h2>
-                {rates.isLoading ? (
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <h2>{roomType?.TenLoaiPhong ?? 'Dữ liệu theo ngày'}</h2>
+                  <div role="group" aria-label="Chế độ xem" className="flex gap-2">
+                    <FilterChip pressed={view === 'calendar'} onClick={() => setView('calendar')}>Lịch</FilterChip>
+                    <FilterChip pressed={view === 'table'} onClick={() => setView('table')}>Bảng</FilterChip>
+                  </div>
+                </div>
+                {view === 'calendar' ? (
+                  monthRates.isError ? (
+                    <div role="alert" className="owner-scope-state is-error">
+                      {monthRates.error instanceof ApiError ? monthRates.error.message : 'Không thể tải dữ liệu tháng.'}
+                    </div>
+                  ) : (
+                    <>
+                      <InventoryCalendar
+                        month={month}
+                        cells={calendarCells}
+                        selected={from && to && from <= to ? { from, to } : null}
+                        onSelect={(range) => { setFrom(range.from); setTo(range.to); }}
+                        onMonthChange={setMonth}
+                        formatPrice={formatCurrencyVND}
+                      />
+                      <p className="mt-3 text-sm text-ink-muted" aria-live="polite">
+                        Đang chọn: <strong className="text-ink">{from && to && from <= to ? formatDateRangeVi(from, to) : 'chưa chọn khoảng ngày'}</strong>. Điền giá và số phòng bên dưới rồi bấm "Cập nhật khoảng ngày".
+                      </p>
+                    </>
+                  )
+                ) : rates.isLoading ? (
                   <div role="status" className="owner-scope-state">
                     Đang tải dữ liệu ngày…
                   </div>
@@ -221,9 +262,9 @@ export default function OwnerInventoryPricingPage() {
                     </label>
                   ))}
                 </fieldset>
-                <button className="btn btn-primary" disabled={update.isPending || !roomType}>
+                <Button disabled={update.isPending || !roomType}>
                   {update.isPending ? 'Đang lưu…' : 'Cập nhật khoảng ngày'}
-                </button>
+                </Button>
               </form>
             </>
           ) : (

@@ -5,7 +5,14 @@ import { ApiError } from '../../services/apiClient';
 import { StatusBadge } from '../../components/domain/StatusBadge';
 import { useListParams, useUrlSearchInput } from '../../hooks/useListParams';
 import { Pagination } from '../../components/common/Pagination';
-import { PageSpinner } from '../../components/common/PageSpinner';
+import { PageHeader } from '../../components/common/PageHeader';
+import { FilterBar } from '../../components/common/FilterBar';
+import { DataTable, type Column } from '../../components/common/DataTable';
+import { Button } from '../../components/common/Button';
+import { Icon } from '../../components/common/Icon';
+import { Input } from '../../components/common/Input';
+import { Select } from '../../components/common/Select';
+import type { Promotion } from '../../features/promotions/types';
 
 const PAGE_SIZE = 10;
 const STATUSES = ['Hoạt động', 'Ngừng'];
@@ -31,132 +38,55 @@ export default function AdminPromotionsPage() {
     setPage(1);
   };
 
+  const columns: Column<Promotion>[] = [
+    { key: 'code', header: 'Mã code', cell: (p) => <span className="font-mono text-sm font-bold text-primary-600">{p.MaCode}</span> },
+    { key: 'type', header: 'Loại giảm', cell: (p) => <span className="font-medium text-ink-sub">{p.LoaiGiamGia}</span> },
+    { key: 'value', header: 'Giá trị giảm', align: 'right', cell: (p) => <span className="font-bold text-heading">{p.LoaiGiamGia === 'Phần trăm' ? `${p.GiaTriGiam}%` : formatCurrencyVND(p.GiaTriGiam)}</span> },
+    { key: 'period', header: 'Thời gian áp dụng', align: 'center', cell: (p) => <span className="font-mono text-[11px] text-ink-muted">{p.NgayBatDau} <br /> ↓ <br /> {p.NgayKetThuc}</span> },
+    { key: 'status', header: 'Trạng thái', align: 'center', cell: (p) => <StatusBadge domain="promotion" status={p.TrangThai} /> },
+    { key: 'actions', header: 'Thao tác', align: 'center', cell: (p) => <Link to={`/admin/promotions/${p.MaKhuyenMai}`} className="admin-row-link">Chi tiết</Link> },
+  ];
+
   return (
-    <div className="admin-list-page flex flex-col gap-6 max-w-[1200px] mx-auto w-full">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-heading">Quản lý khuyến mãi</h1>
-          <p className="text-sm text-slate-500 mt-0.5">Thiết lập các mã voucher chiết khấu, chiến dịch giảm giá toàn sàn.</p>
+    <div className="flex flex-col gap-6 max-w-[1200px] mx-auto w-full">
+      <PageHeader
+        title="Quản lý khuyến mãi"
+        description="Thiết lập các mã voucher chiết khấu, chiến dịch giảm giá toàn sàn."
+        actions={<Button asChild><Link to="/admin/promotions/new"><Icon name="plus" size={16} /><span>Tạo khuyến mãi mới</span></Link></Button>}
+      />
+
+      <FilterBar onReset={resetFilters}>
+        <div className="min-w-[240px] flex-[2]">
+          <Input label="Tìm mã code / chương trình" type="text" value={searchInput} onChange={(e) => handleSearchChange(e.target.value)} placeholder="Nhập mã voucher..." />
         </div>
-        
-        <div className="flex items-center gap-3">
-          <Link to="/admin/promotions/new" className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary-dark shadow-sm transition">
-            <i className="ph ph-plus text-lg"></i>
-            <span>Tạo khuyến mãi mới</span>
-          </Link>
+        <div className="min-w-[180px] flex-1">
+          <Select label="Trạng thái áp dụng" value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }}>
+            <option value="">Tất cả trạng thái</option>
+            {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+          </Select>
         </div>
-      </div>
-
-      <div className="bg-white p-5 rounded-[16px] border border-border shadow-sm space-y-3.5">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-3.5 text-xs">
-          <div className="md:col-span-5 relative">
-            <label htmlFor="admin-promotions-field-1" className="block font-semibold text-slate-600 mb-1.5">Tìm mã code / chương trình</label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                <i className="ph ph-magnifying-glass text-[16px]"></i>
-              </div>
-              <input id="admin-promotions-field-1" 
-                type="text" 
-                value={searchInput} 
-                onChange={(e) => handleSearchChange(e.target.value)} 
-                placeholder="Nhập mã voucher..." 
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-border rounded-xl text-sm text-heading placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
-              />
-            </div>
-          </div>
-
-          <div className="md:col-span-3">
-            <label htmlFor="admin-promotions-field-2" className="block font-semibold text-slate-600 mb-1.5">Trạng thái áp dụng</label>
-            <select id="admin-promotions-field-2" 
-              value={status} 
-              onChange={(e) => { setStatus(e.target.value); setPage(1); }} 
-              className="w-full px-3 py-2.5 bg-slate-50 border border-border rounded-xl text-sm text-heading focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition font-medium"
-            >
-              <option value="">Tất cả trạng thái</option>
-              {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
-            </select>
-          </div>
-
-          <div className="md:col-span-2">
-            <label htmlFor="admin-promotions-field-3" className="block font-semibold text-slate-600 mb-1.5">Loại giảm giá</label>
-            <select id="admin-promotions-field-3" 
-              value={type} 
-              onChange={(e) => { setType(e.target.value); setPage(1); }} 
-              className="w-full px-3 py-2.5 bg-slate-50 border border-border rounded-xl text-sm text-heading focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition font-medium"
-            >
-              <option value="">Tất cả loại giảm</option>
-              {TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-            </select>
-          </div>
-
-          <div className="md:col-span-2 flex items-end">
-            <button onClick={resetFilters} className="w-full py-2.5 px-3 border border-border rounded-xl text-slate-600 hover:bg-slate-100 font-semibold text-xs transition flex items-center justify-center gap-1.5">
-              <i className="ph ph-arrow-counter-clockwise"></i> Đặt lại
-            </button>
-          </div>
+        <div className="min-w-[180px] flex-1">
+          <Select label="Loại giảm giá" value={type} onChange={(e) => { setType(e.target.value); setPage(1); }}>
+            <option value="">Tất cả loại giảm</option>
+            {TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+          </Select>
         </div>
-      </div>
+      </FilterBar>
 
-      <div className="bg-white rounded-[16px] border border-border shadow-sm overflow-hidden flex flex-col">
-        {query.isLoading ? (
-          <PageSpinner />
-        ) : query.isError ? (
-          <div role="alert" className="px-6 py-10 text-center text-sm text-red-700">
-            {query.error instanceof ApiError ? query.error.message : 'Không thể tải danh sách khuyến mãi'}
-          </div>
-        ) : query.data && query.data.items.length === 0 ? (
-          <div className="py-16 flex flex-col items-center justify-center text-center">
-            <div className="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
-              <i className="ph ph-ticket text-[28px]"></i>
-            </div>
-            <h4 className="text-sm font-bold text-heading">Không tìm thấy mã khuyến mãi nào</h4>
-            <p className="text-xs text-slate-500 max-w-sm mt-1">Chưa có mã khuyến mãi nào phù hợp với bộ lọc.</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse min-w-[900px]">
-              <thead>
-                <tr className="bg-slate-50/80 border-b border-border text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                  <th className="py-3.5 px-5">Mã code</th>
-                  <th className="py-3.5 px-4">Loại giảm</th>
-                  <th className="py-3.5 px-4 text-right">Giá trị giảm</th>
-                  <th className="py-3.5 px-4 text-center">Thời gian áp dụng</th>
-                  <th className="py-3.5 px-4 text-center">Trạng thái</th>
-                  <th className="py-3.5 px-4 text-center">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-xs">
-                {query.data?.items.map((p) => (
-                  <tr key={p.MaKhuyenMai} className="hover:bg-slate-50 transition-colors">
-                    <td className="py-4 px-5">
-                      <div className="font-mono font-bold text-primary-600 text-sm">{p.MaCode}</div>
-                    </td>
-                    <td className="py-4 px-4 font-medium text-slate-700">{p.LoaiGiamGia}</td>
-                    <td className="py-4 px-4 text-right font-bold text-heading">
-                      {p.LoaiGiamGia === 'Phần trăm' ? `${p.GiaTriGiam}%` : formatCurrencyVND(p.GiaTriGiam)}
-                    </td>
-                    <td className="py-4 px-4 text-center text-[11px] text-slate-500 font-mono">
-                      {p.NgayBatDau} <br /> ↓ <br /> {p.NgayKetThuc}
-                    </td>
-                    <td className="py-4 px-4 text-center">
-                      <StatusBadge domain="promotion" status={p.TrangThai} />
-                    </td>
-                    <td className="py-4 px-4 text-center">
-                      <Link to={`/admin/promotions/${p.MaKhuyenMai}`} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-primary-700 bg-primary-50 hover:bg-primary-100 transition border border-primary-200/60">
-                        Chi tiết
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {query.data && (
+      <DataTable
+        caption="Danh sách khuyến mãi"
+        columns={columns}
+        rows={query.data?.items}
+        getRowKey={(p) => p.MaKhuyenMai}
+        isLoading={query.isLoading}
+        error={query.isError ? (query.error instanceof ApiError ? query.error.message : 'Không thể tải danh sách khuyến mãi') : null}
+        emptyTitle="Không tìm thấy mã khuyến mãi nào"
+        emptyDescription="Chưa có mã khuyến mãi nào phù hợp với bộ lọc."
+        emptyIcon="ticket"
+        footer={query.data && (
           <Pagination page={page} totalPages={query.data.pagination.totalPages} total={query.data.pagination.total} itemLabel="mã" onPageChange={setPage} />
         )}
-      </div>
+      />
     </div>
   );
 }

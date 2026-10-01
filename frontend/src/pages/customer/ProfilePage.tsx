@@ -10,6 +10,7 @@ import { ApiError } from '../../services/apiClient';
 
 import { cn } from '../../lib/utils';
 import { PageSpinner } from '../../components/common/PageSpinner';
+import { Button } from '../../components/common/Button';
 
 export default function ProfilePage() {
   const meQuery = useMe();
@@ -56,7 +57,7 @@ export default function ProfilePage() {
 
   if (meQuery.isError) {
     return (
-      <div role="alert" className="mx-auto max-w-md mt-8 rounded-lg bg-red-50 px-4 py-3 text-center text-sm text-red-700">
+      <div role="alert" className="mx-auto max-w-md mt-8 rounded-lg bg-danger-light px-4 py-3 text-center text-sm text-danger-ink">
         {meQuery.error instanceof ApiError ? meQuery.error.message : 'Không thể tải thông tin cá nhân'}
       </div>
     );
@@ -70,15 +71,15 @@ export default function ProfilePage() {
         <aside className="w-full md:w-[250px] shrink-0 bg-white rounded-2xl border border-border shadow-sm p-4">
           <h2 className="text-xs font-semibold text-ink-muted uppercase tracking-wider mb-4 pl-3">Hồ sơ tài khoản</h2>
           <nav className="flex flex-col space-y-1">
-            <Link to="/profile" className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-blue-50 text-primary font-semibold transition-colors">
+            <Link to="/profile" className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary-50 text-primary font-semibold transition-colors">
               <i className="ph-fill ph-user w-5 text-center text-lg"></i>
               <span>Hồ sơ cá nhân</span>
             </Link>
-            <Link to="/bookings" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-ink-muted hover:bg-slate-50 hover:text-ink transition-colors">
+            <Link to="/bookings" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-ink-muted hover:bg-surface-secondary hover:text-ink transition-colors">
               <i className="ph ph-calendar-check w-5 text-center text-lg"></i>
               <span>Đặt phòng của tôi</span>
             </Link>
-            <Link to="/support" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-ink-muted hover:bg-slate-50 hover:text-ink transition-colors">
+            <Link to="/support" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-ink-muted hover:bg-surface-secondary hover:text-ink transition-colors">
               <i className="ph ph-chat-dots w-5 text-center text-lg"></i>
               <span>Hỗ trợ/Khiếu nại</span>
             </Link>
@@ -86,7 +87,7 @@ export default function ProfilePage() {
 
           <div className="h-px bg-border my-4 mx-3"></div>
 
-          <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-600 hover:bg-red-50 transition-colors font-medium">
+          <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-danger hover:bg-danger-light transition-colors font-medium">
             <i className="ph ph-sign-out w-5 text-center text-lg"></i>
             <span>Đăng xuất</span>
           </button>
@@ -101,7 +102,7 @@ export default function ProfilePage() {
               
               <div className="flex flex-col items-center shrink-0 w-full lg:w-48">
                 <div className="relative group cursor-pointer mb-4">
-                  <div className="w-32 h-32 rounded-full border-4 border-white shadow-sm bg-blue-100 flex items-center justify-center text-primary text-4xl font-bold">
+                  <div className="w-32 h-32 rounded-full border-4 border-white shadow-sm bg-primary-100 flex items-center justify-center text-primary text-4xl font-bold">
                     {meQuery.data?.HoTen?.charAt(0) || 'U'}
                   </div>
                   <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -114,12 +115,12 @@ export default function ProfilePage() {
 
               <div className="flex-1">
                 {updateMutation.isSuccess && (
-                  <div className="mb-4 rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-700 border border-emerald-200">
+                  <div className="mb-4 rounded-lg bg-success-light px-4 py-3 text-sm text-success-ink border border-success/30">
                     Cập nhật thông tin thành công!
                   </div>
                 )}
                 {updateMutation.isError && (
-                  <div role="alert" className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 border border-red-200">
+                  <div role="alert" className="mb-4 rounded-lg bg-danger-light px-4 py-3 text-sm text-danger-ink border border-danger/30">
                     {updateMutation.error instanceof ApiError ? updateMutation.error.message : 'Cập nhật thất bại, vui lòng thử lại'}
                   </div>
                 )}
@@ -130,17 +131,17 @@ export default function ProfilePage() {
                     <label htmlFor="profile-field-1" className="block text-xs font-semibold text-ink mb-1.5">Họ và tên</label>
                     <input id="profile-field-1" 
                       type="text" 
-                      className={cn("w-full px-3.5 py-2.5 rounded-xl border bg-white text-ink text-sm focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all", errors.HoTen ? "border-rose-500 bg-rose-50/20" : "border-border")}
+                      className={cn("w-full px-3.5 py-2.5 rounded-xl border bg-white text-ink text-sm focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all", errors.HoTen ? "border-danger bg-danger-light/20" : "border-border")}
                       {...register('HoTen')} 
                     />
-                    {errors.HoTen && <p className="text-xs text-rose-500 mt-1">{errors.HoTen.message}</p>}
+                    {errors.HoTen && <p className="text-xs text-danger mt-1">{errors.HoTen.message}</p>}
                   </div>
 
                   <div className="sm:col-span-2">
                     <label htmlFor="profile-field-2" className="block text-xs font-semibold text-ink mb-1.5">Email</label>
                     <input id="profile-field-2" 
                       type="email" 
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-slate-50 text-slate-500 text-sm cursor-not-allowed"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-surface-secondary text-ink-muted text-sm cursor-not-allowed"
                       value={meQuery.data?.Email || ''} 
                       readOnly 
                       disabled
@@ -151,17 +152,17 @@ export default function ProfilePage() {
                     <label htmlFor="profile-field-3" className="block text-xs font-semibold text-ink mb-1.5">Số điện thoại</label>
                     <input id="profile-field-3" 
                       type="tel" 
-                      className={cn("w-full px-3.5 py-2.5 rounded-xl border bg-white text-ink text-sm focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all", errors.SoDienThoai ? "border-rose-500 bg-rose-50/20" : "border-border")}
+                      className={cn("w-full px-3.5 py-2.5 rounded-xl border bg-white text-ink text-sm focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all", errors.SoDienThoai ? "border-danger bg-danger-light/20" : "border-border")}
                       {...register('SoDienThoai')} 
                     />
-                    {errors.SoDienThoai && <p className="text-xs text-rose-500 mt-1">{errors.SoDienThoai.message}</p>}
+                    {errors.SoDienThoai && <p className="text-xs text-danger mt-1">{errors.SoDienThoai.message}</p>}
                   </div>
 
                   <div>
                     <label htmlFor="profile-field-4" className="block text-xs font-semibold text-ink mb-1.5">Ngày sinh</label>
                     <input id="profile-field-4" 
                       type="date" 
-                      className={cn("w-full px-3.5 py-2.5 rounded-xl border bg-white text-ink text-sm focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all", errors.NgaySinh ? "border-rose-500 bg-rose-50/20" : "border-border")}
+                      className={cn("w-full px-3.5 py-2.5 rounded-xl border bg-white text-ink text-sm focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all", errors.NgaySinh ? "border-danger bg-danger-light/20" : "border-border")}
                       {...register('NgaySinh')} 
                     />
                   </div>
@@ -180,12 +181,12 @@ export default function ProfilePage() {
                   </div>
 
                   <div className="sm:col-span-2 flex items-center gap-3 mt-4">
-                    <button type="submit" disabled={!isDirty || updateMutation.isPending} className="px-6 py-2.5 bg-primary hover:bg-primary-700 active:bg-primary-800 text-white font-medium rounded-xl transition-all shadow-md disabled:opacity-50">
+                    <Button type="submit" disabled={!isDirty || updateMutation.isPending}>
                       {updateMutation.isPending ? 'Đang lưu...' : 'Lưu thay đổi'}
-                    </button>
-                    <button type="button" onClick={() => reset()} disabled={!isDirty} className="px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-ink font-medium rounded-xl transition-colors disabled:opacity-50">
+                    </Button>
+                    <Button type="button" onClick={() => reset()} disabled={!isDirty} variant="secondary">
                       Hủy
-                    </button>
+                    </Button>
                   </div>
                 </form>
               </div>
@@ -197,7 +198,7 @@ export default function ProfilePage() {
               <h3 className="font-bold text-lg text-ink">Bảo mật tài khoản</h3>
               <p className="text-sm text-ink-muted mt-1">Cập nhật mật khẩu để bảo vệ tài khoản của bạn.</p>
             </div>
-            <Link to="/reset-password" className="px-5 py-2.5 border border-border rounded-xl text-sm font-semibold text-ink hover:bg-slate-50 transition-colors shrink-0 shadow-sm">
+            <Link to="/reset-password" className="px-5 py-2.5 border border-border rounded-xl text-sm font-semibold text-ink hover:bg-surface-secondary transition-colors shrink-0 shadow-sm">
               Đổi mật khẩu
             </Link>
           </div>

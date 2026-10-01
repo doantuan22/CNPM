@@ -12,7 +12,7 @@ export function RoomOffer({ room, selectedQuantity, onQuantityChange }: {
   return (
     <article className={`room-offer ${selectedQuantity > 0 ? 'is-selected' : ''} ${!room.ConHang ? 'is-unavailable' : ''}`}>
       <div className="room-offer__media">
-        {cover ? <img src={cover.URL} alt="" loading="lazy" /> : <span aria-hidden="true"><i className="ph ph-bed" /></span>}
+        {cover ? <img src={cover.URL} alt="" width={205} height={180} loading="lazy" decoding="async" /> : <span aria-hidden="true"><i className="ph ph-bed" /></span>}
       </div>
       <div className="room-offer__details">
         <h3>{room.TenLoaiPhong}</h3>

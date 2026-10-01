@@ -12,6 +12,7 @@ import { useConfirm } from '../../components/common/FeedbackProvider';
 import { StatusBadge } from '../../components/domain/StatusBadge';
 import { Combobox } from '../../components/common/Combobox';
 import { PageSpinner } from '../../components/common/PageSpinner';
+import { Button } from '../../components/common/Button';
 
 export default function OwnerHotelManagePage() {
   const { hotelId: hotelParam } = useParams<{ hotelId: string }>();
@@ -58,7 +59,7 @@ export default function OwnerHotelManagePage() {
 
   if (hotelQuery.isError || !hotelQuery.data) {
     return (
-      <div role="alert" className="mx-auto max-w-md rounded-lg bg-red-50 px-4 py-3 text-center text-sm text-red-700 border border-red-200">
+      <div role="alert" className="mx-auto max-w-md rounded-lg bg-danger-light px-4 py-3 text-center text-sm text-danger-ink border border-danger/30">
         {hotelQuery.error instanceof ApiError ? hotelQuery.error.message : 'Không tìm thấy khách sạn'}
       </div>
     );
@@ -102,9 +103,9 @@ export default function OwnerHotelManagePage() {
           <StatusBadge domain="hotel" status={hotel.TrangThai} />
         </div>
         <div className="owner-entity-header__actions">
-          <button type="submit" form="owner-hotel-editor" disabled={!isDirty || updateMutation.isPending} className="btn btn-primary">
+          <Button type="submit" form="owner-hotel-editor" disabled={!isDirty || updateMutation.isPending}>
             {updateMutation.isPending ? 'Đang lưu...' : 'Lưu thay đổi'}
-          </button>
+          </Button>
           <details className="owner-action-menu" onKeyDown={(event) => {
             if (event.key === 'Escape') {
               event.preventDefault();
@@ -122,12 +123,12 @@ export default function OwnerHotelManagePage() {
         </div>
       </header>
 
-      {deactivateMutation.isSuccess && <div role="status" className="rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">Khách sạn đã ngừng kinh doanh; lịch sử booking được giữ lại.</div>}
-      {deactivateMutation.isError && <div role="alert" className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">{deactivateMutation.error instanceof ApiError ? deactivateMutation.error.message : 'Không thể ngừng kinh doanh khách sạn'}</div>}
+      {deactivateMutation.isSuccess && <div role="status" className="rounded-lg bg-success-light border border-success/30 px-4 py-3 text-sm text-success-ink">Khách sạn đã ngừng kinh doanh; lịch sử booking được giữ lại.</div>}
+      {deactivateMutation.isError && <div role="alert" className="rounded-lg bg-danger-light border border-danger/30 px-4 py-3 text-sm text-danger-ink">{deactivateMutation.error instanceof ApiError ? deactivateMutation.error.message : 'Không thể ngừng kinh doanh khách sạn'}</div>}
 
       <form id="owner-hotel-editor" onSubmit={handleSubmit((v) => updateMutation.mutate(v))} noValidate className="flex flex-col gap-5">
         {updateMutation.isError && (
-          <div role="alert" className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+          <div role="alert" className="rounded-lg bg-danger-light border border-danger/30 px-4 py-3 text-sm text-danger-ink">
             {updateMutation.error instanceof ApiError ? updateMutation.error.message : 'Cập nhật thất bại'}
           </div>
         )}
@@ -140,19 +141,19 @@ export default function OwnerHotelManagePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div className="md:col-span-2">
-              <label htmlFor="owner-hotel-manage-TenKhachSan" className="form-label">Tên cơ sở khách sạn / Resort <span className="text-red-500">*</span></label>
-              <input id="owner-hotel-manage-TenKhachSan" type="text" className={cn("input", errors.TenKhachSan && "border-red-500")} {...register('TenKhachSan')} />
-              {errors.TenKhachSan && <p className="text-xs text-red-500 mt-1">{errors.TenKhachSan.message}</p>}
+              <label htmlFor="owner-hotel-manage-TenKhachSan" className="form-label">Tên cơ sở khách sạn / Resort <span className="text-danger">*</span></label>
+              <input id="owner-hotel-manage-TenKhachSan" type="text" className={cn("input", errors.TenKhachSan && "border-danger")} {...register('TenKhachSan')} />
+              {errors.TenKhachSan && <p className="text-xs text-danger mt-1">{errors.TenKhachSan.message}</p>}
             </div>
 
             <div>
-              <label htmlFor="owner-hotel-manage-HangSao" className="form-label">Xếp hạng sao tiêu chuẩn <span className="text-red-500">*</span></label>
+              <label htmlFor="owner-hotel-manage-HangSao" className="form-label">Xếp hạng sao tiêu chuẩn <span className="text-danger">*</span></label>
               <div className="relative">
-                <select id="owner-hotel-manage-HangSao" className={cn("select", errors.HangSao && "border-red-500")} {...register('HangSao', { valueAsNumber: true })}>
+                <select id="owner-hotel-manage-HangSao" className={cn("select", errors.HangSao && "border-danger")} {...register('HangSao', { valueAsNumber: true })}>
                   <option value="">-- Chọn xếp hạng sao --</option>
                   {[1, 2, 3, 4, 5].map(s => <option key={s} value={s}>{s} Sao</option>)}
                 </select>
-                <i className="ph ph-caret-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none"></i>
+                <i className="ph ph-caret-down absolute right-3 top-1/2 -translate-y-1/2 text-ink-muted pointer-events-none"></i>
               </div>
             </div>
 
@@ -165,9 +166,9 @@ export default function OwnerHotelManagePage() {
             </div>
 
             <div className="md:col-span-2">
-              <label htmlFor="owner-hotel-manage-DiaChiChiTiet" className="form-label">Địa chỉ chi tiết <span className="text-red-500">*</span></label>
-              <input id="owner-hotel-manage-DiaChiChiTiet" type="text" className={cn("input", errors.DiaChiChiTiet && "border-red-500")} {...register('DiaChiChiTiet')} />
-              {errors.DiaChiChiTiet && <p className="text-xs text-red-500 mt-1">{errors.DiaChiChiTiet.message}</p>}
+              <label htmlFor="owner-hotel-manage-DiaChiChiTiet" className="form-label">Địa chỉ chi tiết <span className="text-danger">*</span></label>
+              <input id="owner-hotel-manage-DiaChiChiTiet" type="text" className={cn("input", errors.DiaChiChiTiet && "border-danger")} {...register('DiaChiChiTiet')} />
+              {errors.DiaChiChiTiet && <p className="text-xs text-danger mt-1">{errors.DiaChiChiTiet.message}</p>}
             </div>
           </div>
         </section>
@@ -179,14 +180,14 @@ export default function OwnerHotelManagePage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
-              <label htmlFor="owner-hotel-manage-GioNhanPhong" className="form-label">Giờ nhận phòng tiêu chuẩn (Check-in) <span className="text-red-500">*</span></label>
-              <input id="owner-hotel-manage-GioNhanPhong" type="time" className={cn("input", errors.GioNhanPhong && "border-red-500")} {...register('GioNhanPhong')} />
-              {errors.GioNhanPhong && <p className="text-xs text-red-500 mt-1">{errors.GioNhanPhong.message}</p>}
+              <label htmlFor="owner-hotel-manage-GioNhanPhong" className="form-label">Giờ nhận phòng tiêu chuẩn (Check-in) <span className="text-danger">*</span></label>
+              <input id="owner-hotel-manage-GioNhanPhong" type="time" className={cn("input", errors.GioNhanPhong && "border-danger")} {...register('GioNhanPhong')} />
+              {errors.GioNhanPhong && <p className="text-xs text-danger mt-1">{errors.GioNhanPhong.message}</p>}
             </div>
             <div>
-              <label htmlFor="owner-hotel-manage-GioTraPhong" className="form-label">Giờ trả phòng tiêu chuẩn (Check-out) <span className="text-red-500">*</span></label>
-              <input id="owner-hotel-manage-GioTraPhong" type="time" className={cn("input", errors.GioTraPhong && "border-red-500")} {...register('GioTraPhong')} />
-              {errors.GioTraPhong && <p className="text-xs text-red-500 mt-1">{errors.GioTraPhong.message}</p>}
+              <label htmlFor="owner-hotel-manage-GioTraPhong" className="form-label">Giờ trả phòng tiêu chuẩn (Check-out) <span className="text-danger">*</span></label>
+              <input id="owner-hotel-manage-GioTraPhong" type="time" className={cn("input", errors.GioTraPhong && "border-danger")} {...register('GioTraPhong')} />
+              {errors.GioTraPhong && <p className="text-xs text-danger mt-1">{errors.GioTraPhong.message}</p>}
             </div>
           </div>
         </section>
@@ -197,7 +198,7 @@ export default function OwnerHotelManagePage() {
             <p className="text-sm text-muted">Đoạn văn ngắn làm nổi bật vị trí, phong cách kiến trúc và dịch vụ vượt trội</p>
           </div>
           <div>
-            <textarea rows={4} className={cn("textarea", errors.MoTa && "border-red-500")} {...register('MoTa')} placeholder="Chia sẻ về phong cách thiết kế, vị trí..."></textarea>
+            <textarea rows={4} className={cn("textarea", errors.MoTa && "border-danger")} {...register('MoTa')} placeholder="Chia sẻ về phong cách thiết kế, vị trí..."></textarea>
           </div>
         </section>
 
@@ -213,7 +214,7 @@ export default function OwnerHotelManagePage() {
                   key={a.MaTienNghi} 
                   className={cn(
                     "flex items-center gap-2.5 p-3 rounded-lg border cursor-pointer select-none transition-all",
-                    selectedAmenityIds.has(a.MaTienNghi) ? "bg-blue-50 border-blue-200" : "bg-slate-50 border-border hover:bg-slate-100"
+                    selectedAmenityIds.has(a.MaTienNghi) ? "bg-primary-50 border-primary-200" : "bg-surface-secondary border-border hover:bg-surface-tertiary"
                   )}
                 >
                   <input 
@@ -227,13 +228,13 @@ export default function OwnerHotelManagePage() {
               ))}
             </div>
           ) : (
-            <p className="text-sm text-slate-500">Chưa có danh mục tiện nghi.</p>
+            <p className="text-sm text-ink-muted">Chưa có danh mục tiện nghi.</p>
           )}
         </section>
 
         {isDirty && <p className="text-sm text-muted" role="status">Có thay đổi chưa được lưu.</p>}
         {updateMutation.isSuccess && (
-          <div role="status" className="rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">Cập nhật thành công</div>
+          <div role="status" className="rounded-lg bg-success-light border border-success/30 px-4 py-3 text-sm text-success-ink">Cập nhật thành công</div>
         )}
       </form>
 
@@ -245,21 +246,21 @@ export default function OwnerHotelManagePage() {
           </div>
           <div>
             <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={onImageSelected} />
-            <button type="button" className="btn btn-outline btn-sm" onClick={() => fileInputRef.current?.click()} disabled={uploadImageMutation.isPending}>
+            <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={uploadImageMutation.isPending}>
               <i className="ph ph-upload-simple"></i> {uploadImageMutation.isPending ? 'Đang tải...' : 'Tải ảnh lên'}
-            </button>
+            </Button>
           </div>
         </div>
         
         {(imageError || uploadImageMutation.isError) && (
-          <div role="alert" className="rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700 mb-4">
+          <div role="alert" className="rounded-lg bg-danger-light border border-danger/30 px-3 py-2 text-sm text-danger-ink mb-4">
             {imageError || (uploadImageMutation.error instanceof ApiError ? uploadImageMutation.error.message : 'Không thể tải ảnh')}
           </div>
         )}
 
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3.5">
           {hotel.HINH_ANH_KHACH_SAN.map((img) => (
-            <div key={img.MaHinhAnh} className="relative h-[120px] rounded-[10px] overflow-hidden border border-border bg-slate-100 group">
+            <div key={img.MaHinhAnh} className="relative h-[120px] rounded-[10px] overflow-hidden border border-border bg-surface-tertiary group">
               <img src={img.URL} alt={`${hotel.TenKhachSan} - ảnh cơ sở lưu trú`} className="w-full h-full object-cover" />
               {img.AnhDaiDien && (
                 <span className="absolute top-1.5 left-1.5 bg-primary text-white text-[10px] font-bold px-1.5 py-0.5 rounded-[4px]">Ảnh đại diện</span>
@@ -269,9 +270,9 @@ export default function OwnerHotelManagePage() {
                   Đặt làm bìa
                 </button>
               )}
-              <button type="button" aria-label={`Xóa ảnh ${img.URL}`} onClick={async () => { if (await confirm({ title: 'Xóa ảnh khách sạn?', description: 'Ảnh này sẽ bị xóa khỏi hồ sơ khách sạn.', confirmLabel: 'Xóa ảnh', variant: 'danger' })) deleteImageMutation.mutate(img.MaHinhAnh); }} disabled={deleteImageMutation.isPending} className="absolute top-1.5 right-1.5 w-[22px] h-[22px] rounded-full bg-black/60 text-white border-none flex items-center justify-center text-[12px] cursor-pointer hover:bg-red-500">
+              <Button type="button" aria-label={`Xóa ảnh ${img.URL}`} onClick={async () => { if (await confirm({ title: 'Xóa ảnh khách sạn?', description: 'Ảnh này sẽ bị xóa khỏi hồ sơ khách sạn.', confirmLabel: 'Xóa ảnh', variant: 'danger' })) deleteImageMutation.mutate(img.MaHinhAnh); }} disabled={deleteImageMutation.isPending} variant="danger">
                 <i className="ph ph-x"></i>
-              </button>
+              </Button>
             </div>
           ))}
           <button type="button" aria-label="Thêm ảnh khách sạn" onClick={() => fileInputRef.current?.click()} className="h-[120px] w-full border-[1.5px] border-dashed border-primary bg-[#F5F9FF] rounded-[10px] flex flex-col items-center justify-center gap-1.5 cursor-pointer hover:bg-[#EBF3FF] transition-colors">

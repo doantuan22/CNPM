@@ -12,7 +12,7 @@ const NotFoundPage = lazy(() => import('../pages/public/NotFoundPage'));
 /** The whole route table: each area (public, customer, owner, admin) lives in its own module. */
 export default function AppRoutes() {
   return (
-    <Suspense fallback={<div className="flex justify-center py-16" role="status" aria-live="polite"><span className="sr-only">Đang tải trang...</span><div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600" /></div>}>
+    <Suspense fallback={<div className="flex justify-center py-16" role="status" aria-live="polite"><span className="sr-only">Đang tải trang...</span><div className="h-8 w-8 animate-spin rounded-full border-2 border-border-strong border-t-blue-600" /></div>}>
       <Routes>
         <Route element={<MainLayout />}>
           {publicRoutes}

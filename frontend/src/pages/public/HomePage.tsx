@@ -36,7 +36,7 @@ export default function HomePage() {
             <p>So sánh khách sạn theo điểm đến, ngày lưu trú và số khách.</p>
           </div>
           <TravelSearchBar variant="expanded" currentSearch={{ checkIn: defaults.checkIn, checkOut: defaults.checkOut, guests: DEFAULT_GUESTS }} onSearch={handleSearch} />
-          {heroImage && <img className="home-discovery__image" src={heroImage} alt="Khách sạn đang có trên Egode" />}
+          {heroImage && <img className="home-discovery__image" src={heroImage} alt="Khách sạn đang có trên Egode" fetchPriority="high" decoding="async" />}
           {totalHotels !== undefined && <p className="home-discovery__context">{totalHotels} khách sạn đang nhận đặt phòng{destinations.length ? ` · ${destinations.length} điểm đến có chỗ nghỉ` : ''}</p>}
         </div>
       </section>
@@ -51,7 +51,7 @@ export default function HomePage() {
           {locations.isLoading ? (
             <PageSpinner label="Đang tải điểm đến..." className="py-12" />
           ) : locations.isError ? (
-            <p role="alert" className="text-center text-sm text-rose-600">Không thể tải danh sách điểm đến.</p>
+            <p role="alert" className="text-center text-sm text-danger">Không thể tải danh sách điểm đến.</p>
           ) : destinations.length === 0 ? (
             <p className="text-center text-sm text-ink-muted">Chưa có điểm đến nào có khách sạn đang hoạt động.</p>
           ) : (
@@ -77,7 +77,7 @@ export default function HomePage() {
           {featured.isLoading ? (
             <PageSpinner label="Đang tải khách sạn nổi bật..." className="py-12" />
           ) : featured.isError ? (
-            <p role="alert" className="text-center text-sm text-rose-600">Không thể tải danh sách khách sạn.</p>
+            <p role="alert" className="text-center text-sm text-danger">Không thể tải danh sách khách sạn.</p>
           ) : !featured.data?.items.length ? (
             <p className="text-center text-sm text-ink-muted">Chưa có khách sạn nào đang nhận đặt phòng.</p>
           ) : (
@@ -98,12 +98,12 @@ function DestinationCard({ destination }: { destination: LocationSummary }) {
   return (
     <Link to={`/hotels?location=${encodeURIComponent(destination.TenThanhPho)}`} className="group relative rounded-2xl overflow-hidden aspect-[4/5] block bg-surface-secondary">
       {destination.AnhDaiDien && (
-        <img src={destination.AnhDaiDien} alt="" loading="lazy" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]" />
+        <img src={destination.AnhDaiDien} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]" />
       )}
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
       <div className="absolute bottom-0 left-0 p-6 text-white">
         <h3 className="text-2xl font-bold mb-1">{destination.TenThanhPho}</h3>
-        <p className="text-sm text-gray-200">{destination.SoKhachSan} khách sạn</p>
+        <p className="text-sm text-ink-muted">{destination.SoKhachSan} khách sạn</p>
       </div>
     </Link>
   );

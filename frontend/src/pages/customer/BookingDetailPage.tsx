@@ -1,12 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
-import { Textarea } from '../../components/common/Textarea';
 import { useBookingDetail, useCancelBooking } from '../../features/bookings/hooks';
 import { hoursBeforeCheckIn, selectRefundPercentPreview, computeRefundAmountPreview } from '../../features/bookings/refund-preview';
 import { useCreateVnpayPayment, useRetryRefund } from '../../features/payments/hooks';
 import { ReviewSection } from '../../components/reviews/ReviewSection';
 import { PaymentHoldNotice } from '../../components/bookings/PaymentHoldNotice';
-import { formatCurrencyVND, cn, formatDateVi, formatDateTimeVi } from '../../lib/utils';
+import { BookingSummary } from '../../components/bookings/BookingSummary';
+import { BookingActions } from '../../components/bookings/BookingActions';
+import { Icon } from '../../components/common/Icon';
+import { cn, formatDateVi } from '../../lib/utils';
 import { ApiError } from '../../services/apiClient';
 import { CustomerCenterNavigation } from '../../components/layouts/CustomerCenterNavigation';
 import { StatusBadge } from '../../components/domain/StatusBadge';
@@ -24,9 +26,6 @@ export default function BookingDetailPage() {
   const cancelMutation = useCancelBooking(bookingId);
   const retryRefundMutation = useRetryRefund(bookingId);
 
-  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
-  const [cancelNote, setCancelNote] = useState('');
-
   // Linked from the booking list ("Đánh giá"): the review section only exists after the booking has loaded.
   const bookingLoaded = Boolean(bookingQuery.data);
   useEffect(() => {
@@ -39,7 +38,7 @@ export default function BookingDetailPage() {
 
   if (bookingQuery.isError || !bookingQuery.data) {
     return (
-      <div role="alert" className="mx-auto max-w-md mt-8 rounded-lg bg-red-50 px-4 py-3 text-center text-sm text-red-700">
+      <div role="alert" className="mx-auto max-w-md mt-8 rounded-lg bg-danger-light px-4 py-3 text-center text-sm text-danger-ink">
         {bookingQuery.error instanceof ApiError ? bookingQuery.error.message : 'Không tìm thấy đặt phòng'}
       </div>
     );
@@ -60,15 +59,15 @@ export default function BookingDetailPage() {
     });
   };
 
-  const confirmCancel = () => {
-    cancelMutation.mutate({ ghiChu: cancelNote.trim() || undefined }, { onSuccess: () => setShowCancelConfirm(false) });
+  const confirmCancel = (note: string | undefined, onDone: () => void) => {
+    cancelMutation.mutate({ ghiChu: note }, { onSuccess: onDone });
   };
 
   return (
     <div className="page-container booking-detail-page flex flex-col gap-6">
       <CustomerCenterNavigation />
       <Link to="/bookings" className="breadcrumb w-fit">
-        <i className="ph ph-arrow-left"></i>
+        <Icon name="arrow-left" />
         <span>Quay lại danh sách đặt phòng</span>
       </Link>
 
@@ -103,6 +102,7 @@ export default function BookingDetailPage() {
                 <img
                   src={booking.AnhDaiDien}
                   alt=""
+                  decoding="async"
                   className="booking-detail-page__hotel-image"
                 />
               )}
@@ -163,7 +163,7 @@ export default function BookingDetailPage() {
             <div className="flex flex-col gap-3.5 relative">
               {booking.ChinhSachHuy.ChiTiet.map((tier, i) => (
                 <div key={i} className="flex gap-3.5 relative">
-                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold flex-shrink-0 z-10 bg-blue-50 text-primary border border-blue-100">
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold flex-shrink-0 z-10 bg-primary-50 text-primary border border-primary-100">
                     {i + 1}
                   </div>
                   <div>
@@ -178,123 +178,20 @@ export default function BookingDetailPage() {
         </div>
 
         {/* Right Column */}
-        <div className="flex flex-col gap-5">
-          
-          <div className="card card-body">
-            <div className="text-base font-bold text-heading mb-5 pb-3 border-b border-border">Chi tiết thanh toán</div>
-
-            <div className="flex justify-between text-[14px] text-muted mb-3">
-              <span>Tổng tiền phòng</span>
-              <span>{formatCurrencyVND(booking.TongTienPhong)}</span>
-            </div>
-            {booking.SoTienGiam > 0 && (
-              <div className="flex justify-between text-[14px] text-success mb-3">
-                <span>Khuyến mãi {booking.KhuyenMai?.MaCode}</span>
-                <span>− {formatCurrencyVND(booking.SoTienGiam)}</span>
-              </div>
-            )}
-            
-            <div className="flex justify-between items-center pt-3.5 mt-3.5 border-t border-border">
-              <span className="text-[15px] font-semibold text-heading">Tổng thanh toán</span>
-              <span className="text-[20px] font-bold text-primary">{formatCurrencyVND(booking.TongTienThanhToan)}</span>
-            </div>
-
-            <div className="mt-4 pt-3.5 border-t border-dashed border-border text-[13px] text-muted flex flex-col gap-1.5">
-               {booking.ThanhToan.length === 0 ? (
-                 <div>Chưa có giao dịch thanh toán.</div>
-               ) : (
-                 booking.ThanhToan.map((payment) => (
-                   <div key={payment.MaThanhToan} className="bg-slate-50 p-2 rounded border border-slate-100 mt-2">
-                     <div>Phương thức: <strong>{payment.PhuongThucThanhToan}</strong></div>
-                     <div>Trạng thái: <strong className={payment.TrangThai === 'Thành công' ? 'text-success' : ''}>{payment.TrangThai}</strong></div>
-                     <div>Số tiền: <strong>{formatCurrencyVND(payment.SoTien)}</strong></div>
-                     <div className="text-[11px] mt-1">{formatDateTimeVi(payment.ThoiGianGiaoDich)}</div>
-                     
-                     {payment.HoanTien.length > 0 && (
-                       <div className="mt-2 pt-2 border-t border-slate-200">
-                         {payment.HoanTien.map(r => (
-                           <div key={r.MaHoanTien} className="text-amber-700">
-                             <strong>Hoàn tiền:</strong> {formatCurrencyVND(r.SoTienHoan)} ({r.TrangThai})
-                             {r.TrangThai !== 'Thành công' && (
-                               <button 
-                                 onClick={() => retryRefundMutation.mutate(r.MaHoanTien)}
-                                 className="ml-2 text-[10px] bg-amber-100 px-1.5 py-0.5 rounded text-amber-800 hover:bg-amber-200"
-                               >
-                                 Thử lại
-                               </button>
-                             )}
-                           </div>
-                         ))}
-                       </div>
-                     )}
-                   </div>
-                 ))
-               )}
-            </div>
-          </div>
-
-          {booking.TrangThai === BOOKING_STATUS.PENDING_PAYMENT && (
-             <div className="flex flex-col gap-2">
-               {payMutation.isError && (
-                  <div role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">
-                    {payMutation.error instanceof ApiError ? payMutation.error.message : 'Lỗi tạo TT'}
-                  </div>
-               )}
-               <button type="button" className="btn btn-primary btn-block" onClick={startPayment} disabled={payMutation.isPending}>
-                 {payMutation.isPending ? 'Đang xử lý...' : 'Thanh toán ngay'}
-               </button>
-             </div>
-          )}
-
-          {canCancel && (
-            <div>
-               {!showCancelConfirm ? (
-                 <button type="button" className="btn btn-danger-outline btn-block" onClick={() => setShowCancelConfirm(true)}>
-                   Hủy đặt phòng này
-                 </button>
-               ) : (
-                 <div className="bg-red-50 border border-red-200 rounded-xl p-4 shadow-sm">
-                   <h4 className="text-sm font-bold text-red-800 mb-2">Xác nhận hủy đặt phòng?</h4>
-                   <div className="bg-white border border-red-100 rounded-lg p-3 mb-3 text-[13px] text-red-700">
-                     {successfulPaid > 0 ? (
-                       <>
-                         <div className="flex justify-between mb-1"><span>Đã thanh toán:</span> <span>{formatCurrencyVND(successfulPaid)}</span></div>
-                         <div className="flex justify-between mb-1"><span>Dự kiến hoàn ({previewPercent}%):</span> <strong className="text-base">{formatCurrencyVND(previewAmount)}</strong></div>
-                         <div className="text-[11px] mt-2 opacity-80">Hệ thống sẽ tính lại chính xác khi bạn xác nhận.</div>
-                       </>
-                     ) : (
-                       <div>Đơn này chưa thanh toán nên sẽ không có hoàn tiền.</div>
-                     )}
-                   </div>
-                   
-                   <div className="mb-4">
-                     <label htmlFor="booking-detail-field-1" className="block text-xs text-red-800 font-medium mb-1">Lý do hủy (không bắt buộc)</label>
-                     <Textarea id="booking-detail-field-1" 
-                       rows={2} 
-                       value={cancelNote} 
-                       onChange={e => setCancelNote(e.target.value)}
-                       className="border-red-300 focus:border-red-500 focus:ring-red-200 text-sm"
-                     />
-                   </div>
-
-                   {cancelMutation.isError && (
-                     <div className="mb-3 text-xs text-red-600 bg-red-100 p-2 rounded">Lỗi: {cancelMutation.error?.message}</div>
-                   )}
-
-                   <div className="flex gap-2">
-                     <button type="button" className="btn btn-danger flex-1 py-2" onClick={confirmCancel} disabled={cancelMutation.isPending}>
-                       {cancelMutation.isPending ? 'Đang xử lý' : 'Xác nhận hủy'}
-                     </button>
-                     <button type="button" className="btn btn-outline flex-1 py-2" onClick={() => setShowCancelConfirm(false)}>
-                       Không hủy
-                     </button>
-                   </div>
-                 </div>
-               )}
-            </div>
-          )}
-
-        </div>
+        <aside className="flex flex-col gap-5">
+          <BookingSummary booking={booking} onRetryRefund={(refundId) => retryRefundMutation.mutate(refundId)} />
+          <BookingActions
+            canPay={booking.TrangThai === BOOKING_STATUS.PENDING_PAYMENT}
+            canCancel={canCancel}
+            onPay={startPayment}
+            isPaying={payMutation.isPending}
+            payError={payMutation.isError ? payMutation.error : null}
+            onCancel={confirmCancel}
+            isCancelling={cancelMutation.isPending}
+            cancelError={cancelMutation.isError ? cancelMutation.error : null}
+            refundPreview={{ paid: successfulPaid, percent: previewPercent, amount: previewAmount }}
+          />
+        </aside>
 
       </div>
 

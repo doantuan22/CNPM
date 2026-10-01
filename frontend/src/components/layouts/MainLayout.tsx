@@ -39,9 +39,9 @@ export function MainLayout() {
               <div className="site-footer__grid">
                 <div className="site-footer__col">
                   <div className="site-footer__brand mb-4">
-                    <div className="site-header__logo-mark" style={{ width: '38px', height: '38px' }}>E</div>Egode
+                    <div className="site-header__logo-mark">E</div>Egode
                   </div>
-                  <p style={{ fontSize: '14px', color: 'var(--color-muted)', lineHeight: 1.6 }}>Tìm nơi lưu trú, theo dõi chuyến đi và quản lý cơ sở trên Egode.</p>
+                  <p className="site-footer__tagline">Tìm nơi lưu trú, theo dõi chuyến đi và quản lý cơ sở trên Egode.</p>
                 </div>
                 <div className="site-footer__col">
                   <h4>Hỗ trợ</h4>

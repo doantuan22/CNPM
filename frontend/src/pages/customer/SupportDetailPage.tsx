@@ -16,7 +16,7 @@ export default function SupportDetailPage() {
 
   if (requestQuery.isError || !requestQuery.data) {
     return (
-      <div role="alert" className="mx-auto max-w-md mt-8 rounded-lg bg-red-50 px-4 py-3 text-center text-sm text-red-700">
+      <div role="alert" className="mx-auto max-w-md mt-8 rounded-lg bg-danger-light px-4 py-3 text-center text-sm text-danger-ink">
         {requestQuery.error instanceof ApiError ? requestQuery.error.message : 'Không tìm thấy yêu cầu'}
       </div>
     );
@@ -25,7 +25,7 @@ export default function SupportDetailPage() {
   const r = requestQuery.data;
 
   return (
-    <div className="page-container" style={{ paddingTop: '32px', paddingBottom: '60px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div className="page-container support-page support-page--detail">
       <CustomerCenterNavigation />
       <Link to="/support" className="breadcrumb w-fit">
         <i className="ph ph-arrow-left"></i>
@@ -55,12 +55,12 @@ export default function SupportDetailPage() {
         </div>
 
         {r.KetQuaXuLy && (
-          <div className="mt-6 bg-emerald-50 border border-emerald-100 rounded-lg p-4">
-            <h4 className="text-sm font-bold text-emerald-800 mb-1 flex items-center gap-2">
-              <i className="ph-fill ph-check-circle text-emerald-600"></i>
+          <div className="mt-6 bg-success-light border border-success-light rounded-lg p-4">
+            <h4 className="text-sm font-bold text-success-ink mb-1 flex items-center gap-2">
+              <i className="ph-fill ph-check-circle text-success"></i>
               Kết quả xử lý {r.NgayXuLy && <span className="font-normal opacity-80">({formatDateTimeVi(r.NgayXuLy)})</span>}
             </h4>
-            <p className="whitespace-pre-wrap text-sm text-emerald-900 leading-relaxed pl-6">{r.KetQuaXuLy}</p>
+            <p className="whitespace-pre-wrap text-sm text-success-ink leading-relaxed pl-6">{r.KetQuaXuLy}</p>
           </div>
         )}
 

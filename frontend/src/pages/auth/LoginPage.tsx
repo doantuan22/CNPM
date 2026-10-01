@@ -9,6 +9,7 @@ import { ROLE_HOME } from '../../lib/roles';
 import { decodeAccessToken } from '../../lib/jwt';
 import { useAuthStore } from '../../lib/authStore';
 import { cn } from '../../lib/utils';
+import { Button } from '../../components/common/Button';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -42,8 +43,8 @@ export default function LoginPage() {
 
   return (
     <div className="flex-grow flex items-center justify-center relative overflow-hidden bg-surface-secondary min-h-[80vh]">
-      <div className="absolute -top-24 -left-20 w-96 h-96 bg-blue-100/60 rounded-full blur-3xl pointer-events-none"></div>
-      <div className="absolute -bottom-24 -right-20 w-96 h-96 bg-indigo-100/50 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="absolute -top-24 -left-20 w-96 h-96 bg-primary-100/60 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="absolute -bottom-24 -right-20 w-96 h-96 bg-primary-100/50 rounded-full blur-3xl pointer-events-none"></div>
 
       <div className="w-full max-w-[460px] mx-auto z-10 p-4">
         <div className="bg-white rounded-2xl border border-border shadow-lg p-6 sm:p-8 sm:py-9">
@@ -56,12 +57,12 @@ export default function LoginPage() {
           </div>
 
           {showSessionExpired && !loginMutation.isError && (
-            <div role="alert" className="mb-4 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-700 border border-amber-200">
+            <div role="alert" className="mb-4 rounded-lg bg-warning-light px-4 py-3 text-sm text-warning-ink border border-warning/30">
               Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.
             </div>
           )}
           {loginMutation.isError && (
-            <div role="alert" className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 border border-red-200">
+            <div role="alert" className="mb-4 rounded-lg bg-danger-light px-4 py-3 text-sm text-danger-ink border border-danger/30">
               {loginMutation.error instanceof ApiError
                 ? loginMutation.error.message
                 : 'Đăng nhập thất bại, vui lòng thử lại'}
@@ -72,22 +73,22 @@ export default function LoginPage() {
             
             <div>
               <label htmlFor="identifier" className="block text-xs font-semibold text-ink mb-1.5 uppercase tracking-wide">
-                Email hoặc Tên đăng nhập <span className="text-rose-500">*</span>
+                Email hoặc Tên đăng nhập <span className="text-danger">*</span>
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-ink-muted">
                   <i className="ph ph-user text-lg"></i>
                 </div>
                 <input 
                   type="text" 
                   id="identifier" 
                   placeholder="VD: user@egode.vn hoặc username"
-                  className={cn("w-full pl-10 pr-3.5 py-2.5 rounded-xl border bg-white text-ink text-sm placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all duration-150", errors.identifier ? "border-rose-500 bg-rose-50/20" : "border-border")}
+                  className={cn("w-full pl-10 pr-3.5 py-2.5 rounded-xl border bg-white text-ink text-sm placeholder:text-ink-muted placeholder:font-normal focus:bg-white focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all duration-150", errors.identifier ? "border-danger bg-danger-light/20" : "border-border")}
                   {...register('identifier')}
                 />
               </div>
               {errors.identifier && (
-                <p className="text-xs text-rose-500 mt-1.5 font-medium flex items-center gap-1">
+                <p className="text-xs text-danger mt-1.5 font-medium flex items-center gap-1">
                   <i className="ph-fill ph-warning-circle"></i>
                   <span>{errors.identifier.message}</span>
                 </p>
@@ -97,30 +98,30 @@ export default function LoginPage() {
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label htmlFor="MatKhau" className="block text-xs font-semibold text-ink uppercase tracking-wide">
-                  Mật khẩu <span className="text-rose-500">*</span>
+                  Mật khẩu <span className="text-danger">*</span>
                 </label>
               </div>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-ink-muted">
                    <i className="ph ph-lock-key text-lg"></i>
                 </div>
                 <input 
                   type={showPwd ? "text" : "password"}
                   id="MatKhau" 
                   placeholder="••••••••"
-                  className={cn("w-full pl-10 pr-10 py-2.5 rounded-xl border bg-white text-ink text-sm placeholder:text-slate-400 focus:bg-white focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all duration-150", errors.MatKhau ? "border-rose-500 bg-rose-50/20" : "border-border")}
+                  className={cn("w-full pl-10 pr-10 py-2.5 rounded-xl border bg-white text-ink text-sm placeholder:text-ink-muted focus:bg-white focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all duration-150", errors.MatKhau ? "border-danger bg-danger-light/20" : "border-border")}
                   {...register('MatKhau')}
                 />
                 <button 
                   type="button" 
                   onClick={() => setShowPwd(!showPwd)}
-                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-ink transition-colors focus:outline-none"
+                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-ink-muted hover:text-ink transition-colors focus:outline-none"
                 >
                   <i className={cn("ph text-lg", showPwd ? "ph-eye" : "ph-eye-slash")}></i>
                 </button>
               </div>
               {errors.MatKhau && (
-                <p className="text-xs text-rose-500 mt-1.5 font-medium flex items-center gap-1">
+                <p className="text-xs text-danger mt-1.5 font-medium flex items-center gap-1">
                   <i className="ph-fill ph-warning-circle"></i>
                   <span>{errors.MatKhau.message}</span>
                 </p>
@@ -134,14 +135,13 @@ export default function LoginPage() {
             </div>
 
             <div className="pt-2">
-              <button 
+              <Button 
                 type="submit" 
-                disabled={isSubmitting || loginMutation.isPending}
-                className="w-full py-2.5 px-4 bg-primary hover:bg-primary-700 active:bg-primary-800 text-white font-semibold rounded-xl shadow-md transition-all duration-200 transform active:scale-[0.99] flex items-center justify-center gap-2 text-sm sm:text-base cursor-pointer disabled:opacity-70"
+                disabled={isSubmitting || loginMutation.isPending} className="w-full"
               >
                 <span>{isSubmitting || loginMutation.isPending ? 'Đang xử lý...' : 'Đăng nhập'}</span>
                 <i className="ph-bold ph-arrow-right"></i>
-              </button>
+              </Button>
             </div>
           </form>
 

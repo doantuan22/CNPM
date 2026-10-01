@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { BedDouble, Plus, Search } from 'lucide-react';
+import { Icon } from '../../components/common/Icon';
 import { Link } from 'react-router-dom';
 import { OwnerScopeGate } from '../../components/owner/OwnerScopeGate';
 import { StatusBadge } from '../../components/domain/StatusBadge';
@@ -7,6 +7,7 @@ import { useCreateRoomType, useRoomTypes } from '../../features/owner/hooks';
 import { OwnerHotel, OwnerRoomType } from '../../features/owner/types';
 import { ApiError } from '../../services/apiClient';
 import { useScopedHotels } from '../../components/owner/useScopedHotels';
+import { Button } from '../../components/common/Button';
 
 export default function OwnerRoomTypesPage() {
   const scope = useScopedHotels();
@@ -41,7 +42,7 @@ export default function OwnerRoomTypesPage() {
       <header className="owner-module__header">
         <div className="owner-module__title">
           <span className="owner-module__icon">
-            <BedDouble size={20} />
+            <Icon name="bed" size={20} />
           </span>
           <div>
             <h1>Loại phòng</h1>
@@ -49,9 +50,9 @@ export default function OwnerRoomTypesPage() {
           </div>
         </div>
         {scope.hotelId && (
-          <button className="btn btn-primary" type="button" onClick={() => setAdding((value) => !value)}>
-            <Plus size={16} /> Thêm loại phòng
-          </button>
+          <Button type="button" onClick={() => setAdding((value) => !value)}>
+            <Icon name="plus" size={16} /> Thêm loại phòng
+          </Button>
         )}
       </header>
       <OwnerScopeGate scope={scope} prompt="Chọn khách sạn để xem các loại phòng trong module này." />
@@ -59,7 +60,7 @@ export default function OwnerRoomTypesPage() {
         <>
           <div className="owner-module__toolbar">
             <label className="owner-module__search">
-              <Search size={17} />
+              <Icon name="magnifying-glass" size={17} />
               <input
                 type="search"
                 aria-label="Tìm loại phòng"
@@ -96,9 +97,9 @@ export default function OwnerRoomTypesPage() {
                   <input name="area" type="number" min="0.1" step="0.1" required />
                 </label>
               </div>
-              <button className="btn btn-primary" disabled={create.isPending}>
+              <Button disabled={create.isPending}>
                 {create.isPending ? 'Đang tạo…' : 'Tạo loại phòng'}
-              </button>
+              </Button>
             </form>
           )}
           {roomTypes.isLoading ? (
@@ -131,7 +132,7 @@ function RoomTypeRow({ room, hotel }: { room: OwnerRoomType; hotel: OwnerHotel }
         {room.HINH_ANH_LOAI_PHONG[0]?.URL ? (
           <img src={room.HINH_ANH_LOAI_PHONG[0].URL} alt="" />
         ) : (
-          <BedDouble size={21} aria-hidden="true" />
+          <Icon name="bed" size={21} />
         )}
       </span>
       <span className="owner-room-type-row__main">

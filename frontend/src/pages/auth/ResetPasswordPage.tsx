@@ -6,6 +6,7 @@ import { useResetPassword } from '../../features/auth/hooks';
 import { resetPasswordSchema, ResetPasswordFormValues } from '../../features/auth/schemas';
 import { ApiError } from '../../services/apiClient';
 import { cn } from '../../lib/utils';
+import { Button } from '../../components/common/Button';
 
 export default function ResetPasswordPage() {
   const [searchParams] = useSearchParams();
@@ -38,7 +39,7 @@ export default function ResetPasswordPage() {
     return (
       <div className="bg-surface-secondary min-h-[80vh] flex items-center justify-center font-sans">
         <div className="bg-white w-full max-w-[580px] rounded-2xl shadow-lg border border-border p-6 sm:p-8 lg:p-10 text-center">
-          <div className="inline-flex justify-center items-center w-16 h-16 rounded-full bg-red-50 text-red-500 mb-4 text-3xl">
+          <div className="inline-flex justify-center items-center w-16 h-16 rounded-full bg-danger-light text-danger mb-4 text-3xl">
             <i className="ph-fill ph-warning-circle"></i>
           </div>
           <h1 className="text-2xl font-bold text-ink mb-2">Liên kết không hợp lệ</h1>
@@ -79,7 +80,7 @@ export default function ResetPasswordPage() {
           </div>
 
           <div className="text-center mb-8">
-            <div className="inline-flex justify-center items-center w-16 h-16 rounded-full bg-blue-50 mb-4 text-primary relative">
+            <div className="inline-flex justify-center items-center w-16 h-16 rounded-full bg-primary-50 mb-4 text-primary relative">
               <i className="ph-fill ph-key text-3xl"></i>
               <div className="absolute bottom-0 right-0 bg-white rounded-full">
                 <i className="ph-fill ph-check-circle text-primary text-xl"></i>
@@ -93,7 +94,7 @@ export default function ResetPasswordPage() {
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
             {mutation.isError && (
-              <div role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 border border-red-200">
+              <div role="alert" className="rounded-lg bg-danger-light px-4 py-3 text-sm text-danger-ink border border-danger/30">
                 {mutation.error instanceof ApiError ? mutation.error.message : 'Token không hợp lệ hoặc đã hết hạn'}
               </div>
             )}
@@ -106,18 +107,18 @@ export default function ResetPasswordPage() {
                 <input id="reset-password-field-1" 
                   type={showPwd ? "text" : "password"} 
                   placeholder="••••••••••" 
-                  className={cn("w-full px-4 py-2.5 rounded-lg border bg-white text-ink text-sm placeholder:text-slate-400 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all", errors.MatKhauMoi ? "border-rose-500 bg-rose-50/20" : "border-border")}
+                  className={cn("w-full px-4 py-2.5 rounded-lg border bg-white text-ink text-sm placeholder:text-ink-muted focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all", errors.MatKhauMoi ? "border-danger bg-danger-light/20" : "border-border")}
                   {...register('MatKhauMoi')}
                 />
                 <button 
                   type="button" 
                   onClick={() => setShowPwd(!showPwd)}
-                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-ink transition-colors focus:outline-none"
+                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-ink-muted hover:text-ink transition-colors focus:outline-none"
                 >
                   <i className={cn("ph text-lg", showPwd ? "ph-eye" : "ph-eye-slash")}></i>
                 </button>
               </div>
-              {errors.MatKhauMoi && <p className="text-xs text-rose-500 font-medium mt-1.5 flex items-center gap-1"><i className="ph-fill ph-warning-circle"></i>{errors.MatKhauMoi.message}</p>}
+              {errors.MatKhauMoi && <p className="text-xs text-danger font-medium mt-1.5 flex items-center gap-1"><i className="ph-fill ph-warning-circle"></i>{errors.MatKhauMoi.message}</p>}
             </div>
 
             <div className="space-y-1.5">
@@ -126,31 +127,30 @@ export default function ResetPasswordPage() {
                 <input id="reset-password-field-2" 
                   type={showConfirmPwd ? "text" : "password"} 
                   placeholder="••••••••••" 
-                  className={cn("w-full px-4 py-2.5 rounded-lg border bg-white text-ink text-sm placeholder:text-slate-400 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all", errors.confirmMatKhauMoi ? "border-rose-500 bg-rose-50/20" : "border-border")}
+                  className={cn("w-full px-4 py-2.5 rounded-lg border bg-white text-ink text-sm placeholder:text-ink-muted focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all", errors.confirmMatKhauMoi ? "border-danger bg-danger-light/20" : "border-border")}
                   {...register('confirmMatKhauMoi')}
                 />
                 <button 
                   type="button" 
                   onClick={() => setShowConfirmPwd(!showConfirmPwd)}
-                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-ink transition-colors focus:outline-none"
+                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-ink-muted hover:text-ink transition-colors focus:outline-none"
                 >
                   <i className={cn("ph text-lg", showConfirmPwd ? "ph-eye" : "ph-eye-slash")}></i>
                 </button>
               </div>
-              {errors.confirmMatKhauMoi && <p className="text-xs text-rose-500 font-medium mt-1.5 flex items-center gap-1"><i className="ph-fill ph-warning-circle"></i>{errors.confirmMatKhauMoi.message}</p>}
+              {errors.confirmMatKhauMoi && <p className="text-xs text-danger font-medium mt-1.5 flex items-center gap-1"><i className="ph-fill ph-warning-circle"></i>{errors.confirmMatKhauMoi.message}</p>}
             </div>
 
-            <button 
+            <Button 
               type="submit" 
-              disabled={isSubmitting || mutation.isPending}
-              className="w-full bg-primary hover:bg-primary-700 active:bg-primary-800 text-white font-medium py-3 px-4 rounded-lg transition-all shadow-md shadow-primary/30 mt-6 flex justify-center items-center gap-2 disabled:opacity-70"
+              disabled={isSubmitting || mutation.isPending} size="lg" className="w-full mt-6"
             >
               {isSubmitting || mutation.isPending ? (
                  <>Đang xử lý... <div className="spinner w-4 h-4 border-2 border-white/20 border-t-white" aria-hidden="true"></div></>
               ) : (
                 'Cập nhật mật khẩu'
               )}
-            </button>
+            </Button>
 
             <div className="text-center mt-6">
               <Link to="/login" className="inline-flex items-center gap-1.5 text-sm text-primary font-medium hover:underline">

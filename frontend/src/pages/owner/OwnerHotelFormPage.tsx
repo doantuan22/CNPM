@@ -8,6 +8,7 @@ import { ApiError } from '../../services/apiClient';
 import { cn } from '../../lib/utils';
 import { Combobox } from '../../components/common/Combobox';
 import { FormErrorSummary } from '../../components/common/FormErrorSummary';
+import { Button } from '../../components/common/Button';
 
 export default function OwnerHotelFormPage() {
   const navigate = useNavigate();
@@ -47,7 +48,7 @@ export default function OwnerHotelFormPage() {
         </div>
       </header>
 
-      <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 flex gap-3 items-center text-[13px] text-blue-800">
+      <div className="bg-primary-50 border border-primary-200 rounded-xl px-4 py-3 flex gap-3 items-center text-[13px] text-primary-800">
         <i className="ph ph-info text-lg shrink-0" aria-hidden="true"></i>
         <div>
           <strong>Quy trình phê duyệt:</strong> Sau khi hoàn tất và nhấn <em>"Đăng ký khách sạn"</em>, quản trị viên sẽ thẩm định hồ sơ trước khi cấp phép hoạt động. Bạn có thể bổ sung tiện nghi và hình ảnh sau khi tạo hồ sơ.
@@ -61,7 +62,7 @@ export default function OwnerHotelFormPage() {
           fieldIds={{ TenKhachSan: 'owner-hotel-form-TenKhachSan', HangSao: 'owner-hotel-form-HangSao', MaDiaPhuong: 'owner-hotel-form-MaDiaPhuong', DiaChiChiTiet: 'owner-hotel-form-DiaChiChiTiet', GioNhanPhong: 'owner-hotel-form-GioNhanPhong', GioTraPhong: 'owner-hotel-form-GioTraPhong' }}
         />
         {createMutation.isError && (
-          <div role="alert" className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+          <div role="alert" className="rounded-lg bg-danger-light border border-danger/30 px-4 py-3 text-sm text-danger-ink">
             {createMutation.error instanceof ApiError ? createMutation.error.message : 'Đăng ký thất bại, vui lòng thử lại'}
           </div>
         )}
@@ -74,21 +75,21 @@ export default function OwnerHotelFormPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div className="md:col-span-2">
-              <label htmlFor="owner-hotel-form-TenKhachSan" className="form-label">Tên cơ sở khách sạn / Resort <span className="text-red-500">*</span></label>
-              <input id="owner-hotel-form-TenKhachSan" type="text" className={cn("input", errors.TenKhachSan && "border-red-500")} placeholder="Ví dụ: Grand Palace Saigon Hotel & Spa" {...register('TenKhachSan')} />
-              {errors.TenKhachSan && <p className="text-xs text-red-500 mt-1">{errors.TenKhachSan.message}</p>}
+              <label htmlFor="owner-hotel-form-TenKhachSan" className="form-label">Tên cơ sở khách sạn / Resort <span className="text-danger">*</span></label>
+              <input id="owner-hotel-form-TenKhachSan" type="text" className={cn("input", errors.TenKhachSan && "border-danger")} placeholder="Ví dụ: Grand Palace Saigon Hotel & Spa" {...register('TenKhachSan')} />
+              {errors.TenKhachSan && <p className="text-xs text-danger mt-1">{errors.TenKhachSan.message}</p>}
             </div>
 
             <div>
-              <label htmlFor="owner-hotel-form-HangSao" className="form-label">Xếp hạng sao tiêu chuẩn <span className="text-red-500">*</span></label>
+              <label htmlFor="owner-hotel-form-HangSao" className="form-label">Xếp hạng sao tiêu chuẩn <span className="text-danger">*</span></label>
               <div className="relative">
-                <select id="owner-hotel-form-HangSao" className={cn("select", errors.HangSao && "border-red-500")} {...register('HangSao', { valueAsNumber: true })}>
+                <select id="owner-hotel-form-HangSao" className={cn("select", errors.HangSao && "border-danger")} {...register('HangSao', { valueAsNumber: true })}>
                   <option value="">-- Chọn xếp hạng sao --</option>
                   {[1, 2, 3, 4, 5].map((s) => (
                     <option key={s} value={s}>{s} Sao</option>
                   ))}
                 </select>
-                <i className="ph ph-caret-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none"></i>
+                <i className="ph ph-caret-down absolute right-3 top-1/2 -translate-y-1/2 text-ink-muted pointer-events-none"></i>
               </div>
             </div>
 
@@ -101,9 +102,9 @@ export default function OwnerHotelFormPage() {
             </div>
 
             <div className="md:col-span-2">
-              <label htmlFor="owner-hotel-form-DiaChiChiTiet" className="form-label">Địa chỉ chi tiết <span className="text-red-500">*</span></label>
-              <input id="owner-hotel-form-DiaChiChiTiet" type="text" className={cn("input", errors.DiaChiChiTiet && "border-red-500")} placeholder="Số nhà, tên đường, phường/xã, quận/huyện..." {...register('DiaChiChiTiet')} />
-              {errors.DiaChiChiTiet && <p className="text-xs text-red-500 mt-1">{errors.DiaChiChiTiet.message}</p>}
+              <label htmlFor="owner-hotel-form-DiaChiChiTiet" className="form-label">Địa chỉ chi tiết <span className="text-danger">*</span></label>
+              <input id="owner-hotel-form-DiaChiChiTiet" type="text" className={cn("input", errors.DiaChiChiTiet && "border-danger")} placeholder="Số nhà, tên đường, phường/xã, quận/huyện..." {...register('DiaChiChiTiet')} />
+              {errors.DiaChiChiTiet && <p className="text-xs text-danger mt-1">{errors.DiaChiChiTiet.message}</p>}
             </div>
           </div>
         </section>
@@ -116,14 +117,14 @@ export default function OwnerHotelFormPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
-              <label htmlFor="owner-hotel-form-GioNhanPhong" className="form-label">Giờ nhận phòng tiêu chuẩn (Check-in) <span className="text-red-500">*</span></label>
-              <input id="owner-hotel-form-GioNhanPhong" type="time" className={cn("input", errors.GioNhanPhong && "border-red-500")} {...register('GioNhanPhong')} />
-              {errors.GioNhanPhong && <p className="text-xs text-red-500 mt-1">{errors.GioNhanPhong.message}</p>}
+              <label htmlFor="owner-hotel-form-GioNhanPhong" className="form-label">Giờ nhận phòng tiêu chuẩn (Check-in) <span className="text-danger">*</span></label>
+              <input id="owner-hotel-form-GioNhanPhong" type="time" className={cn("input", errors.GioNhanPhong && "border-danger")} {...register('GioNhanPhong')} />
+              {errors.GioNhanPhong && <p className="text-xs text-danger mt-1">{errors.GioNhanPhong.message}</p>}
             </div>
             <div>
-              <label htmlFor="owner-hotel-form-GioTraPhong" className="form-label">Giờ trả phòng tiêu chuẩn (Check-out) <span className="text-red-500">*</span></label>
-              <input id="owner-hotel-form-GioTraPhong" type="time" className={cn("input", errors.GioTraPhong && "border-red-500")} {...register('GioTraPhong')} />
-              {errors.GioTraPhong && <p className="text-xs text-red-500 mt-1">{errors.GioTraPhong.message}</p>}
+              <label htmlFor="owner-hotel-form-GioTraPhong" className="form-label">Giờ trả phòng tiêu chuẩn (Check-out) <span className="text-danger">*</span></label>
+              <input id="owner-hotel-form-GioTraPhong" type="time" className={cn("input", errors.GioTraPhong && "border-danger")} {...register('GioTraPhong')} />
+              {errors.GioTraPhong && <p className="text-xs text-danger mt-1">{errors.GioTraPhong.message}</p>}
             </div>
           </div>
         </section>
@@ -134,7 +135,7 @@ export default function OwnerHotelFormPage() {
             <p className="text-sm text-muted">Đoạn văn ngắn làm nổi bật vị trí, phong cách kiến trúc và dịch vụ vượt trội</p>
           </div>
           <div>
-            <textarea rows={4} className={cn("textarea", errors.MoTa && "border-red-500")} placeholder="Mô tả khách sạn..." {...register('MoTa')}></textarea>
+            <textarea rows={4} className={cn("textarea", errors.MoTa && "border-danger")} placeholder="Mô tả khách sạn..." {...register('MoTa')}></textarea>
           </div>
         </section>
 
@@ -144,9 +145,9 @@ export default function OwnerHotelFormPage() {
           </span>
           <div className="flex gap-3">
             <Link to="/owner" className="btn btn-secondary">Hủy bỏ</Link>
-            <button type="submit" disabled={isSubmitting || createMutation.isPending} className="btn btn-primary">
+            <Button type="submit" disabled={isSubmitting || createMutation.isPending}>
               {isSubmitting || createMutation.isPending ? 'Đang xử lý...' : 'Gửi đăng ký duyệt'}
-            </button>
+            </Button>
           </div>
         </footer>
       </form>

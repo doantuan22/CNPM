@@ -12,6 +12,7 @@ import type { UpdateAccountPayload } from '../../types/auth';
 import { ApiError } from '../../services/apiClient';
 import { useConfirm } from '../../components/common/FeedbackProvider';
 import { PageSpinner } from '../../components/common/PageSpinner';
+import { Button } from '../../components/common/Button';
 
 export default function AdminAccountDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -46,7 +47,7 @@ export default function AdminAccountDetailPage() {
 
   if (detailQuery.isError || !detailQuery.data) {
     return (
-      <div role="alert" className="mx-auto max-w-md rounded-lg bg-red-50 px-4 py-3 text-center text-sm text-red-700 border border-red-200">
+      <div role="alert" className="mx-auto max-w-md rounded-lg bg-danger-light px-4 py-3 text-center text-sm text-danger-ink border border-danger/30">
         {detailQuery.error instanceof ApiError ? detailQuery.error.message : 'Không tìm thấy tài khoản'}
       </div>
     );
@@ -81,7 +82,7 @@ export default function AdminAccountDetailPage() {
 
       <div className="bg-white border border-border rounded-[16px] shadow-sm overflow-hidden">
         {/* Header */}
-        <div className="px-6 py-5 border-b border-border bg-slate-50 flex items-center justify-between">
+        <div className="px-6 py-5 border-b border-border bg-surface-secondary flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-xl bg-primary-100 text-primary-700 flex items-center justify-center font-bold text-lg uppercase">
               {account.HoTen.charAt(0)}
@@ -89,62 +90,62 @@ export default function AdminAccountDetailPage() {
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-lg font-bold text-heading">{account.HoTen}</h3>
-                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border ${isLocked ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`}>
-                  <span className={`w-1.5 h-1.5 rounded-full ${isLocked ? 'bg-rose-500' : 'bg-emerald-500'}`}></span>
+                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border ${isLocked ? 'bg-danger-light text-danger-ink border-danger/30' : 'bg-success-light text-success-ink border-success/30'}`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${isLocked ? 'bg-danger' : 'bg-success'}`}></span>
                   {account.TrangThai}
                 </span>
               </div>
-              <p className="text-xs text-slate-500 mt-0.5 font-mono">ID: #{account.MaTaiKhoan}</p>
+              <p className="text-xs text-ink-muted mt-0.5 font-mono">ID: #{account.MaTaiKhoan}</p>
             </div>
           </div>
         </div>
 
         <div className="p-6 space-y-6">
           {updateMutation.isSuccess && (
-            <div role="status" className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-700 text-sm font-medium">
+            <div role="status" className="p-3 bg-success-light border border-success/30 rounded-xl text-success-ink text-sm font-medium">
               Cập nhật tài khoản thành công
             </div>
           )}
           {(updateMutation.isError || lockMutation.isError || unlockMutation.isError || deleteMutation.isError) && (
-            <div role="alert" className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-sm font-medium">
+            <div role="alert" className="p-3 bg-danger-light border border-danger/30 rounded-xl text-danger-ink text-sm font-medium">
               Thao tác thất bại, vui lòng thử lại
             </div>
           )}
           {deleteMutation.isSuccess && !deleteMutation.data?.hardDeleted && (
-             <div role="status" className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-sm font-medium">
+             <div role="status" className="p-3 bg-warning-light border border-warning/30 rounded-xl text-warning-ink text-sm font-medium">
                Tài khoản có dữ liệu lịch sử liên quan nên đã được khóa thay vì xóa hoàn toàn.
              </div>
           )}
 
-          <div className="bg-slate-50 border border-border rounded-2xl p-5 space-y-3">
-            <h4 className="font-bold text-slate-700 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+          <div className="bg-surface-secondary border border-border rounded-2xl p-5 space-y-3">
+            <h4 className="font-bold text-ink-sub uppercase tracking-wider text-[11px] flex items-center gap-1.5">
               <i className="ph-fill ph-identification-card text-primary"></i> Thông tin định danh & Cấu hình
             </h4>
             
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-2" noValidate>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label htmlFor="admin-account-detail-TenDangNhap" className="text-xs font-semibold text-slate-600 block">Tên đăng nhập</label>
+                  <label htmlFor="admin-account-detail-TenDangNhap" className="text-xs font-semibold text-ink-sub block">Tên đăng nhập</label>
                   <input id="admin-account-detail-TenDangNhap" type="text" {...register('TenDangNhap')} className="w-full px-3 py-2 bg-white border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition" />
                 </div>
                 <div className="space-y-1.5">
-                  <label htmlFor="admin-account-detail-Email" className="text-xs font-semibold text-slate-600 block">Email</label>
+                  <label htmlFor="admin-account-detail-Email" className="text-xs font-semibold text-ink-sub block">Email</label>
                   <input id="admin-account-detail-Email" type="email" {...register('Email')} className="w-full px-3 py-2 bg-white border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition" />
                 </div>
                 <div className="space-y-1.5">
-                  <label htmlFor="admin-account-detail-HoTen" className="text-xs font-semibold text-slate-600 block">Họ và tên</label>
+                  <label htmlFor="admin-account-detail-HoTen" className="text-xs font-semibold text-ink-sub block">Họ và tên</label>
                   <input id="admin-account-detail-HoTen" type="text" {...register('HoTen')} className="w-full px-3 py-2 bg-white border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition" />
                 </div>
                 <div className="space-y-1.5">
-                  <label htmlFor="admin-account-detail-SoDienThoai" className="text-xs font-semibold text-slate-600 block">Số điện thoại</label>
+                  <label htmlFor="admin-account-detail-SoDienThoai" className="text-xs font-semibold text-ink-sub block">Số điện thoại</label>
                   <input id="admin-account-detail-SoDienThoai" type="tel" {...register('SoDienThoai')} className="w-full px-3 py-2 bg-white border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition" />
                 </div>
                 <div className="space-y-1.5">
-                  <label htmlFor="admin-account-detail-NgaySinh" className="text-xs font-semibold text-slate-600 block">Ngày sinh</label>
+                  <label htmlFor="admin-account-detail-NgaySinh" className="text-xs font-semibold text-ink-sub block">Ngày sinh</label>
                   <input id="admin-account-detail-NgaySinh" type="date" {...register('NgaySinh')} className="w-full px-3 py-2 bg-white border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition" />
                 </div>
                 <div className="space-y-1.5">
-                  <label htmlFor="admin-account-detail-GioiTinh" className="text-xs font-semibold text-slate-600 block">Giới tính</label>
+                  <label htmlFor="admin-account-detail-GioiTinh" className="text-xs font-semibold text-ink-sub block">Giới tính</label>
                   <select id="admin-account-detail-GioiTinh" {...register('GioiTinh')} className="w-full px-3 py-2 bg-white border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition">
                     <option value="">Không chọn</option>
                     <option value="Nam">Nam</option>
@@ -155,44 +156,42 @@ export default function AdminAccountDetailPage() {
               </div>
 
               <div className="flex justify-end pt-2">
-                <button type="submit" disabled={!isDirty || updateMutation.isPending} className="px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary-dark shadow-sm transition disabled:opacity-50">
+                <Button type="submit" disabled={!isDirty || updateMutation.isPending}>
                   {updateMutation.isPending ? 'Đang lưu...' : 'Lưu thay đổi'}
-                </button>
+                </Button>
               </div>
             </form>
           </div>
 
           <div className="bg-white border border-border rounded-2xl p-5 space-y-4">
-            <h4 className="font-bold text-slate-700 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
-              <i className="ph-fill ph-shield-warning text-amber-500"></i> Quản lý bảo mật & Trạng thái
+            <h4 className="font-bold text-ink-sub uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+              <i className="ph-fill ph-shield-warning text-warning"></i> Quản lý bảo mật & Trạng thái
             </h4>
             
             <div className="flex flex-col sm:flex-row gap-3 pt-1">
               {isLocked ? (
-                <button
+                <Button
                   type="button"
                   onClick={() => unlockMutation.mutate(accountId)}
-                  disabled={unlockMutation.isPending}
-                  className="flex-1 px-4 py-2.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl text-sm font-bold hover:bg-emerald-100 transition disabled:opacity-50 flex items-center justify-center gap-2"
+                  disabled={unlockMutation.isPending} variant="success-outline" className="flex-1"
                 >
                   <i className="ph ph-lock-key-open"></i> {unlockMutation.isPending ? 'Đang mở khóa...' : 'Mở khóa tài khoản'}
-                </button>
+                </Button>
               ) : (
-                <button
+                <Button
                   type="button"
                   onClick={() => {
                     void confirm({ title: 'Khóa tài khoản?', description: 'Người dùng sẽ không thể đăng nhập cho đến khi được mở khóa.', confirmLabel: 'Khóa tài khoản', variant: 'danger' }).then((accepted) => { if (accepted) lockMutation.mutate(accountId); });
                   }}
-                  disabled={lockMutation.isPending}
-                  className="flex-1 px-4 py-2.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-xl text-sm font-bold hover:bg-amber-100 transition disabled:opacity-50 flex items-center justify-center gap-2"
+                  disabled={lockMutation.isPending} variant="warning-outline" className="flex-1"
                 >
                   <i className="ph ph-lock-key"></i> {lockMutation.isPending ? 'Đang khóa...' : 'Khóa tài khoản'}
-                </button>
+                </Button>
               )}
 
-              <button type="button" onClick={onDelete} disabled={deleteMutation.isPending} className="flex-1 px-4 py-2.5 bg-rose-50 text-rose-700 border border-rose-200 rounded-xl text-sm font-bold hover:bg-rose-100 transition flex items-center justify-center gap-2 disabled:opacity-50">
+              <Button type="button" onClick={onDelete} disabled={deleteMutation.isPending} variant="danger-outline" className="flex-1">
                 <i className="ph ph-trash" aria-hidden="true"></i> {deleteMutation.isPending ? 'Đang xóa...' : 'Xóa tài khoản'}
-              </button>
+              </Button>
             </div>
           </div>
           

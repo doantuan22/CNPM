@@ -6,7 +6,9 @@ import { cn, formatDateVi } from '../../lib/utils';
 import { ApiError } from '../../services/apiClient';
 import { CustomerCenterNavigation } from '../../components/layouts/CustomerCenterNavigation';
 import { StatusBadge } from '../../components/domain/StatusBadge';
-import { PageSpinner } from '../../components/common/PageSpinner';
+import { DataTable, type Column } from '../../components/common/DataTable';
+import { Button } from '../../components/common/Button';
+import type { SupportRequest } from '../../features/support/types';
 
 const SUPPORT_TYPES = ['Hỗ trợ', 'Khiếu nại'];
 
@@ -47,17 +49,38 @@ export default function SupportPage() {
     }, 100);
   };
 
+  const historyColumns: Column<SupportRequest>[] = [
+    {
+      key: 'type',
+      header: 'Loại',
+      cell: (r) => <span className={cn('badge', r.LoaiYeuCau === 'Khiếu nại' ? 'badge-danger' : 'badge-primary')}>{r.LoaiYeuCau}</span>,
+    },
+    {
+      key: 'title',
+      header: 'Tiêu đề & Đơn liên quan',
+      cell: (r) => (
+        <>
+          <Link to={`/support/${r.MaYeuCauHoTro}`} className="ticket-title-link">{r.TieuDe}</Link>
+          {r.DAT_PHONG && <span className="ticket-booking-ref block mt-0.5">Đơn liên quan: #{r.DAT_PHONG.MaXacNhanDatPhong}</span>}
+        </>
+      ),
+    },
+    { key: 'date', header: 'Ngày gửi', cell: (r) => <span className="text-[13px] text-muted">{formatDateVi(r.NgayTao)}</span> },
+    { key: 'status', header: 'Trạng thái', cell: (r) => <StatusBadge domain="support" status={r.TrangThai} /> },
+    { key: 'actions', header: 'Thao tác', align: 'right', cell: (r) => <Link to={`/support/${r.MaYeuCauHoTro}`} className="btn btn-outline btn-sm">Xem trao đổi</Link> },
+  ];
+
   return (
-    <div className="page-container" style={{ paddingTop: '32px', paddingBottom: '60px', display: 'flex', flexDirection: 'column', gap: '28px' }}>
+    <div className="page-container support-page">
       <CustomerCenterNavigation />
       <div className="page-header">
         <div>
           <h1>Hỗ trợ & Khiếu nại</h1>
           <p className="page-header__desc">Gửi thắc mắc hoặc khiếu nại về đặt phòng và theo dõi tiến độ xử lý của quản trị viên.</p>
         </div>
-        <button type="button" className="btn btn-primary" onClick={scrollToForm}>
+        <Button type="button" onClick={scrollToForm}>
           <i className="ph ph-plus"></i> Tạo yêu cầu mới
-        </button>
+        </Button>
       </div>
 
       {showForm && (
@@ -69,7 +92,7 @@ export default function SupportPage() {
 
           <form onSubmit={submit} className="flex flex-col gap-5">
             {createMutation.isError && (
-              <div role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 border border-red-200">
+              <div role="alert" className="rounded-lg bg-danger-light px-4 py-3 text-sm text-danger-ink border border-danger/30">
                 {createMutation.error instanceof ApiError ? createMutation.error.message : 'Không thể gửi yêu cầu'}
               </div>
             )}
@@ -118,10 +141,10 @@ export default function SupportPage() {
             </div>
 
             <div className="flex justify-end gap-3 mt-2 pt-4 border-t border-border">
-              <button type="button" className="btn btn-secondary" onClick={() => setShowForm(false)}>Hủy</button>
-              <button type="submit" className="btn btn-primary" disabled={createMutation.isPending}>
+              <Button type="button" variant="secondary" onClick={() => setShowForm(false)}>Hủy</Button>
+              <Button type="submit" loading={createMutation.isPending}>
                 {createMutation.isPending ? 'Đang gửi...' : 'Gửi yêu cầu'}
-              </button>
+              </Button>
             </div>
           </form>
         </div>
@@ -133,49 +156,17 @@ export default function SupportPage() {
           <span className="text-[13px] text-muted block mt-1">Theo dõi tiến độ xử lý các phiếu yêu cầu của bạn</span>
         </div>
 
-        {requestsQuery.isLoading ? (
-          <PageSpinner className="py-10" />
-        ) : requestsQuery.isError ? (
-          <div role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
-            {requestsQuery.error instanceof ApiError ? requestsQuery.error.message : 'Không thể tải danh sách yêu cầu'}
-          </div>
-        ) : requestsQuery.data?.length === 0 ? (
-          <div className="text-center py-10 text-muted text-sm">Chưa có yêu cầu nào.</div>
-        ) : (
-          <div className="table-wrap">
-            <table className="data-table whitespace-nowrap">
-              <thead>
-                <tr>
-                  <th>Loại</th>
-                  <th>Tiêu đề & Đơn liên quan</th>
-                  <th>Ngày gửi</th>
-                  <th>Trạng thái</th>
-                  <th className="text-right">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                {requestsQuery.data?.map(r => (
-                  <tr key={r.MaYeuCauHoTro}>
-                    <td>
-                      <span className={cn("badge", r.LoaiYeuCau === 'Khiếu nại' ? 'badge-danger' : 'badge-primary')}>
-                        {r.LoaiYeuCau}
-                      </span>
-                    </td>
-                    <td>
-                      <Link to={`/support/${r.MaYeuCauHoTro}`} className="ticket-title-link">{r.TieuDe}</Link>
-                      {r.DAT_PHONG && <span className="ticket-booking-ref block mt-0.5">Đơn liên quan: #{r.DAT_PHONG.MaXacNhanDatPhong}</span>}
-                    </td>
-                    <td className="text-[13px] text-muted">{formatDateVi(r.NgayTao)}</td>
-                    <td><StatusBadge domain="support" status={r.TrangThai} /></td>
-                    <td className="text-right">
-                      <Link to={`/support/${r.MaYeuCauHoTro}`} className="btn btn-outline btn-sm">Xem trao đổi</Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+        <DataTable
+          bare
+          caption="Lịch sử yêu cầu hỗ trợ đã gửi"
+          columns={historyColumns}
+          rows={requestsQuery.data}
+          getRowKey={(r) => r.MaYeuCauHoTro}
+          isLoading={requestsQuery.isLoading}
+          error={requestsQuery.isError ? (requestsQuery.error instanceof ApiError ? requestsQuery.error.message : 'Không thể tải danh sách yêu cầu') : null}
+          emptyTitle="Chưa có yêu cầu nào."
+          emptyIcon="chat-circle-dots"
+        />
       </div>
 
     </div>

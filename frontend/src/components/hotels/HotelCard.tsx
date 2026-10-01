@@ -8,10 +8,10 @@ export function HotelCard({ hotel, search }: { hotel: HotelSearchItem; search: s
   return (
     <article className="hotel-card-v2">
       <Link className="hotel-card-v2__media" to={detailUrl} aria-label={`Xem phòng tại ${hotel.TenKhachSan}`}>
-        {hotel.AnhDaiDien ? <img src={hotel.AnhDaiDien} alt="" loading="lazy" /> : <span className="hotel-card-v2__fallback" aria-hidden="true"><i className="ph ph-image" /></span>}
+        {hotel.AnhDaiDien ? <img src={hotel.AnhDaiDien} alt="" width={320} height={240} loading="lazy" decoding="async" /> : <span className="hotel-card-v2__fallback" aria-hidden="true"><i className="ph ph-image" /></span>}
       </Link>
       <div className="hotel-card-v2__identity">
-        <div className="hotel-card-v2__title-row"><h2><Link to={detailUrl}>{hotel.TenKhachSan}</Link></h2>{hotel.HangSao > 0 && <span className="hotel-card-v2__stars" aria-label={`${hotel.HangSao} sao`}>{'★'.repeat(Math.min(5, hotel.HangSao))}</span>}</div>
+        <div className="hotel-card-v2__title-row"><h2><Link to={detailUrl}>{hotel.TenKhachSan}</Link></h2>{hotel.HangSao > 0 && <span className="hotel-card-v2__stars" role="img" aria-label={`${hotel.HangSao} sao`}>{'★'.repeat(Math.min(5, hotel.HangSao))}</span>}</div>
         <p className="hotel-card-v2__location"><i className="ph ph-map-pin" aria-hidden="true" />{hotel.DiaPhuong.TenThanhPho}</p>
         <p className={`hotel-card-v2__availability ${hotel.ConPhong ? 'is-available' : 'is-unavailable'}`}>{hotel.ConPhong ? 'Còn phòng theo ngày đã chọn' : 'Hết phòng theo ngày đã chọn'}</p>
       </div>

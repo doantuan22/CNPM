@@ -14,7 +14,7 @@ export function DateRangeFilter({ from, to, onFromChange, onToChange, onApply, o
   return (
     <div className="flex flex-wrap items-end gap-3">
       <div>
-        <label htmlFor="analytics-from" className="mb-1 block text-xs font-medium text-slate-600">
+        <label htmlFor="analytics-from" className="mb-1 block text-xs font-medium text-ink-sub">
           Từ ngày
         </label>
         <Input
@@ -26,7 +26,7 @@ export function DateRangeFilter({ from, to, onFromChange, onToChange, onApply, o
         />
       </div>
       <div>
-        <label htmlFor="analytics-to" className="mb-1 block text-xs font-medium text-slate-600">
+        <label htmlFor="analytics-to" className="mb-1 block text-xs font-medium text-ink-sub">
           Đến ngày
         </label>
         <Input

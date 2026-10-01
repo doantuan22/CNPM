@@ -45,14 +45,14 @@ export function ReviewSection({ bookingId, bookingStatus }: ReviewSectionProps) 
   };
 
   return (
-    <div id="danh-gia" className="scroll-mt-24 space-y-3 rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
-      <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-900">
-        <i className="ph ph-chat-text text-[20px] text-slate-400" aria-hidden="true" /> Đánh giá
+    <div id="danh-gia" className="scroll-mt-24 space-y-3 rounded-2xl border border-border bg-white p-6 shadow-xs">
+      <h2 className="flex items-center gap-2 text-lg font-semibold text-ink">
+        <i className="ph ph-chat-text text-[20px] text-ink-muted" aria-hidden="true" /> Đánh giá
       </h2>
 
       {reviewQuery.isLoading ? (
         <div className="flex justify-center py-6" role="status" aria-live="polite">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600" />
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-border-strong border-t-blue-600" />
         </div>
       ) : reviewQuery.data ? (
         <div className="space-y-2">
@@ -61,7 +61,7 @@ export function ReviewSection({ bookingId, bookingStatus }: ReviewSectionProps) 
               {Array.from({ length: 5 }, (_, i) => (
                 <i
                   key={i}
-                  className={cn('text-base', i < reviewQuery.data!.DiemDanhGia ? 'ph-fill ph-star text-amber-400' : 'ph ph-star text-slate-300')}
+                  className={cn('text-base', i < reviewQuery.data!.DiemDanhGia ? 'ph-fill ph-star text-warning' : 'ph ph-star text-border-strong')}
                   aria-hidden="true"
                 />
               ))}
@@ -70,20 +70,20 @@ export function ReviewSection({ bookingId, bookingStatus }: ReviewSectionProps) 
               {reviewQuery.data.TrangThai}
             </span>
           </div>
-          {reviewQuery.data.NoiDung && <p className="text-sm text-slate-700">{reviewQuery.data.NoiDung}</p>}
+          {reviewQuery.data.NoiDung && <p className="text-sm text-ink-sub">{reviewQuery.data.NoiDung}</p>}
           {reviewQuery.data.HINH_ANH_DANH_GIA.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {reviewQuery.data.HINH_ANH_DANH_GIA.map((img, index) => (
-                <img key={img.MaHinhAnhDanhGia} src={img.URL} alt={`Ảnh đánh giá ${index + 1}`} className="h-16 w-16 rounded-lg object-cover" />
+                <img key={img.MaHinhAnhDanhGia} src={img.URL} alt={`Ảnh đánh giá ${index + 1}`} loading="lazy" decoding="async" className="h-16 w-16 rounded-lg object-cover" />
               ))}
             </div>
           )}
-          <p className="text-xs text-slate-500">Cảm ơn bạn đã đánh giá — đánh giá đang chờ kiểm duyệt trước khi hiển thị công khai.</p>
+          <p className="text-xs text-ink-muted">Cảm ơn bạn đã đánh giá — đánh giá đang chờ kiểm duyệt trước khi hiển thị công khai.</p>
         </div>
       ) : (
         <div className="space-y-3">
           <div>
-            <p className="mb-1 text-xs font-medium text-slate-600">Chấm điểm</p>
+            <p className="mb-1 text-xs font-medium text-ink-sub">Chấm điểm</p>
             <div className="flex gap-1">
               {[1, 2, 3, 4, 5].map((value) => (
                 <button
@@ -93,14 +93,14 @@ export function ReviewSection({ bookingId, bookingStatus }: ReviewSectionProps) 
                   onClick={() => setScore(value)}
                   className="rounded p-0.5"
                 >
-                  <i className={cn('text-2xl', value <= score ? 'ph-fill ph-star text-amber-400' : 'ph ph-star text-slate-300')} aria-hidden="true" />
+                  <i className={cn('text-2xl', value <= score ? 'ph-fill ph-star text-warning' : 'ph ph-star text-border-strong')} aria-hidden="true" />
                 </button>
               ))}
             </div>
           </div>
 
           <div>
-            <label htmlFor="review-content" className="mb-1 block text-xs font-medium text-slate-600">
+            <label htmlFor="review-content" className="mb-1 block text-xs font-medium text-ink-sub">
               Nhận xét (không bắt buộc)
             </label>
             <Textarea
@@ -113,7 +113,7 @@ export function ReviewSection({ bookingId, bookingStatus }: ReviewSectionProps) 
           </div>
 
           <div>
-            <label htmlFor="review-images" className="mb-1 block text-xs font-medium text-slate-600">
+            <label htmlFor="review-images" className="mb-1 block text-xs font-medium text-ink-sub">
               Ảnh (tối đa {MAX_IMAGES}, không bắt buộc)
             </label>
             <input
@@ -124,12 +124,12 @@ export function ReviewSection({ bookingId, bookingStatus }: ReviewSectionProps) 
               onChange={(e) => onFilesSelected(e.target.files)}
               className="block w-full text-sm"
             />
-            {files.length > 0 && <p className="mt-1 text-xs text-slate-500">Đã chọn {files.length} ảnh</p>}
-            {fileError && <p role="alert" className="mt-1 text-xs text-red-600">{fileError}</p>}
+            {files.length > 0 && <p className="mt-1 text-xs text-ink-muted">Đã chọn {files.length} ảnh</p>}
+            {fileError && <p role="alert" className="mt-1 text-xs text-danger">{fileError}</p>}
           </div>
 
           {createMutation.isError && (
-            <div role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">
+            <div role="alert" className="rounded-lg bg-danger-light px-3 py-2 text-xs text-danger-ink">
               {createMutation.error instanceof ApiError ? createMutation.error.message : 'Không thể gửi đánh giá'}
             </div>
           )}

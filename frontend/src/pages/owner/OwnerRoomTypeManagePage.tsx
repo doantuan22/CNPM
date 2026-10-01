@@ -21,6 +21,7 @@ import { fileToDataUrl, imageFileError, cn } from '../../lib/utils';
 import { useConfirm } from '../../components/common/FeedbackProvider';
 import { StatusBadge } from '../../components/domain/StatusBadge';
 import { PageSpinner } from '../../components/common/PageSpinner';
+import { Button } from '../../components/common/Button';
 
 export default function OwnerRoomTypeManagePage() {
   const { roomTypeId: roomTypeParam } = useParams<{ roomTypeId: string }>();
@@ -72,7 +73,7 @@ export default function OwnerRoomTypeManagePage() {
 
   if (roomTypeQuery.isError || !roomTypeQuery.data) {
     return (
-      <div role="alert" className="mx-auto max-w-md rounded-lg bg-red-50 px-4 py-3 text-center text-sm text-red-700 border border-red-200">
+      <div role="alert" className="mx-auto max-w-md rounded-lg bg-danger-light px-4 py-3 text-center text-sm text-danger-ink border border-danger/30">
         {roomTypeQuery.error instanceof ApiError ? roomTypeQuery.error.message : 'Không tìm thấy loại phòng'}
       </div>
     );
@@ -120,7 +121,7 @@ export default function OwnerRoomTypeManagePage() {
 
       <form onSubmit={handleSubmit((v) => updateMutation.mutate(v))} noValidate className="flex flex-col gap-5">
         {updateMutation.isError && (
-          <div role="alert" className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+          <div role="alert" className="rounded-lg bg-danger-light border border-danger/30 px-4 py-3 text-sm text-danger-ink">
             {updateMutation.error instanceof ApiError ? updateMutation.error.message : 'Cập nhật thất bại'}
           </div>
         )}
@@ -133,34 +134,34 @@ export default function OwnerRoomTypeManagePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             <div className="md:col-span-2 lg:col-span-3">
-              <label htmlFor="owner-room-type-manage-TenLoaiPhong" className="form-label">Tên loại phòng <span className="text-red-500">*</span></label>
-              <input id="owner-room-type-manage-TenLoaiPhong" type="text" className={cn("input", errors.TenLoaiPhong && "border-red-500")} {...register('TenLoaiPhong')} />
-              {errors.TenLoaiPhong && <p className="text-xs text-red-500 mt-1">{errors.TenLoaiPhong.message}</p>}
+              <label htmlFor="owner-room-type-manage-TenLoaiPhong" className="form-label">Tên loại phòng <span className="text-danger">*</span></label>
+              <input id="owner-room-type-manage-TenLoaiPhong" type="text" className={cn("input", errors.TenLoaiPhong && "border-danger")} {...register('TenLoaiPhong')} />
+              {errors.TenLoaiPhong && <p className="text-xs text-danger mt-1">{errors.TenLoaiPhong.message}</p>}
             </div>
 
             <div>
-              <label htmlFor="owner-room-type-manage-DienTich" className="form-label">Diện tích phòng (m²) <span className="text-red-500">*</span></label>
-              <input id="owner-room-type-manage-DienTich" type="number" step="0.1" className={cn("input", errors.DienTich && "border-red-500")} {...register('DienTich', { valueAsNumber: true })} />
-              {errors.DienTich && <p className="text-xs text-red-500 mt-1">{errors.DienTich.message}</p>}
+              <label htmlFor="owner-room-type-manage-DienTich" className="form-label">Diện tích phòng (m²) <span className="text-danger">*</span></label>
+              <input id="owner-room-type-manage-DienTich" type="number" step="0.1" className={cn("input", errors.DienTich && "border-danger")} {...register('DienTich', { valueAsNumber: true })} />
+              {errors.DienTich && <p className="text-xs text-danger mt-1">{errors.DienTich.message}</p>}
             </div>
 
             <div>
-              <label htmlFor="owner-room-type-manage-SucChua" className="form-label">Sức chứa tối đa (Khách) <span className="text-red-500">*</span></label>
-              <input id="owner-room-type-manage-SucChua" type="number" className={cn("input", errors.SucChua && "border-red-500")} {...register('SucChua', { valueAsNumber: true })} />
-              {errors.SucChua && <p className="text-xs text-red-500 mt-1">{errors.SucChua.message}</p>}
+              <label htmlFor="owner-room-type-manage-SucChua" className="form-label">Sức chứa tối đa (Khách) <span className="text-danger">*</span></label>
+              <input id="owner-room-type-manage-SucChua" type="number" className={cn("input", errors.SucChua && "border-danger")} {...register('SucChua', { valueAsNumber: true })} />
+              {errors.SucChua && <p className="text-xs text-danger mt-1">{errors.SucChua.message}</p>}
             </div>
 
             <div className="md:col-span-2 lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
-                <label htmlFor="owner-room-type-manage-LoaiGiuong" className="form-label">Loại giường <span className="text-red-500">*</span></label>
-                <input id="owner-room-type-manage-LoaiGiuong" type="text" className={cn("input", errors.LoaiGiuong && "border-red-500")} {...register('LoaiGiuong')} />
-                {errors.LoaiGiuong && <p className="text-xs text-red-500 mt-1">{errors.LoaiGiuong.message}</p>}
+                <label htmlFor="owner-room-type-manage-LoaiGiuong" className="form-label">Loại giường <span className="text-danger">*</span></label>
+                <input id="owner-room-type-manage-LoaiGiuong" type="text" className={cn("input", errors.LoaiGiuong && "border-danger")} {...register('LoaiGiuong')} />
+                {errors.LoaiGiuong && <p className="text-xs text-danger mt-1">{errors.LoaiGiuong.message}</p>}
               </div>
 
               <div>
-                <label htmlFor="owner-room-type-manage-SoGiuong" className="form-label">Số lượng giường <span className="text-red-500">*</span></label>
-                <input id="owner-room-type-manage-SoGiuong" type="number" className={cn("input", errors.SoGiuong && "border-red-500")} {...register('SoGiuong', { valueAsNumber: true })} />
-                {errors.SoGiuong && <p className="text-xs text-red-500 mt-1">{errors.SoGiuong.message}</p>}
+                <label htmlFor="owner-room-type-manage-SoGiuong" className="form-label">Số lượng giường <span className="text-danger">*</span></label>
+                <input id="owner-room-type-manage-SoGiuong" type="number" className={cn("input", errors.SoGiuong && "border-danger")} {...register('SoGiuong', { valueAsNumber: true })} />
+                {errors.SoGiuong && <p className="text-xs text-danger mt-1">{errors.SoGiuong.message}</p>}
               </div>
             </div>
           </div>
@@ -172,24 +173,23 @@ export default function OwnerRoomTypeManagePage() {
             <p className="text-sm text-muted">Nội dung hiển thị cho du khách khi xem chi tiết loại phòng này</p>
           </div>
           <div>
-            <textarea rows={4} className={cn("textarea", errors.MoTa && "border-red-500")} {...register('MoTa')}></textarea>
+            <textarea rows={4} className={cn("textarea", errors.MoTa && "border-danger")} {...register('MoTa')}></textarea>
           </div>
         </section>
 
         <div className="flex justify-between items-center flex-wrap gap-3 bg-white border border-border rounded-[14px] px-6 py-4 shadow-sm">
           <div className="flex items-center gap-3">
-            <button type="submit" disabled={!isDirty || updateMutation.isPending} className="btn btn-primary">
+            <Button type="submit" disabled={!isDirty || updateMutation.isPending}>
               {updateMutation.isPending ? 'Đang lưu...' : 'Lưu thông tin loại phòng'}
-            </button>
+            </Button>
             {roomType.TrangThai === 'Hoạt động' && (
-              <button 
-                type="button" 
-                className="btn btn-danger-outline" 
+              <Button 
+                type="button" variant="danger-outline" 
                 disabled={deactivateMutation.isPending} 
                 onClick={async () => { if (await confirm({ title: 'Ngừng bán loại phòng?', description: 'Các đặt phòng lịch sử sẽ được giữ lại.', confirmLabel: 'Ngừng bán', variant: 'danger' })) deactivateMutation.mutate(); }}
               >
                 {deactivateMutation.isPending ? 'Đang xử lý...' : 'Ngừng bán'}
-              </button>
+              </Button>
             )}
           </div>
         </div>
@@ -208,7 +208,7 @@ export default function OwnerRoomTypeManagePage() {
                 key={a.MaTienNghi} 
                 className={cn(
                   "flex items-center gap-2.5 p-3 rounded-lg border cursor-pointer select-none transition-all",
-                  selectedAmenityIds.has(a.MaTienNghi) ? "bg-blue-50 border-blue-200" : "bg-slate-50 border-border hover:bg-slate-100"
+                  selectedAmenityIds.has(a.MaTienNghi) ? "bg-primary-50 border-primary-200" : "bg-surface-secondary border-border hover:bg-surface-tertiary"
                 )}
               >
                 <input 
@@ -222,7 +222,7 @@ export default function OwnerRoomTypeManagePage() {
             ))}
           </div>
         ) : (
-          <p className="text-sm text-slate-500">Chưa có danh mục tiện nghi.</p>
+          <p className="text-sm text-ink-muted">Chưa có danh mục tiện nghi.</p>
         )}
       </section>
 
@@ -234,21 +234,21 @@ export default function OwnerRoomTypeManagePage() {
           </div>
           <div>
             <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={onImageSelected} />
-            <button type="button" className="btn btn-outline btn-sm" onClick={() => fileInputRef.current?.click()} disabled={uploadImageMutation.isPending}>
+            <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={uploadImageMutation.isPending}>
               <i className="ph ph-upload-simple"></i> {uploadImageMutation.isPending ? 'Đang tải...' : 'Tải ảnh lên'}
-            </button>
+            </Button>
           </div>
         </div>
 
         {(imageError || uploadImageMutation.isError) && (
-          <div role="alert" className="rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700 mb-4">
+          <div role="alert" className="rounded-lg bg-danger-light border border-danger/30 px-3 py-2 text-sm text-danger-ink mb-4">
             {imageError || (uploadImageMutation.error instanceof ApiError ? uploadImageMutation.error.message : 'Không thể tải ảnh')}
           </div>
         )}
 
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           {roomType.HINH_ANH_LOAI_PHONG.map((img) => (
-            <div key={img.MaHinhAnhLoaiPhong} className="relative h-[110px] rounded-lg overflow-hidden border border-border bg-slate-100 group">
+            <div key={img.MaHinhAnhLoaiPhong} className="relative h-[110px] rounded-lg overflow-hidden border border-border bg-surface-tertiary group">
               <img src={img.URL} alt={`${roomType.TenLoaiPhong} - ảnh phòng`} className="w-full h-full object-cover" />
               {img.LaAnhDaiDien && (
                 <span className="absolute top-1.5 left-1.5 bg-primary text-white text-[10px] font-bold px-1.5 py-0.5 rounded-[4px]">Ảnh đại diện</span>
@@ -258,9 +258,9 @@ export default function OwnerRoomTypeManagePage() {
                   Đặt làm bìa
                 </button>
               )}
-              <button type="button" aria-label={`Xóa ảnh ${img.URL}`} onClick={async () => { if (await confirm({ title: 'Xóa ảnh loại phòng?', description: 'Ảnh này sẽ bị xóa khỏi loại phòng.', confirmLabel: 'Xóa ảnh', variant: 'danger' })) deleteImageMutation.mutate(img.MaHinhAnhLoaiPhong); }} disabled={deleteImageMutation.isPending} className="absolute top-1.5 right-1.5 w-[22px] h-[22px] rounded-full bg-black/60 text-white border-none flex items-center justify-center text-[12px] cursor-pointer hover:bg-red-500">
+              <Button type="button" aria-label={`Xóa ảnh ${img.URL}`} onClick={async () => { if (await confirm({ title: 'Xóa ảnh loại phòng?', description: 'Ảnh này sẽ bị xóa khỏi loại phòng.', confirmLabel: 'Xóa ảnh', variant: 'danger' })) deleteImageMutation.mutate(img.MaHinhAnhLoaiPhong); }} disabled={deleteImageMutation.isPending} variant="danger">
                 <i className="ph ph-x"></i>
-              </button>
+              </Button>
             </div>
           ))}
           <button type="button" aria-label="Thêm ảnh loại phòng" onClick={() => fileInputRef.current?.click()} className="h-[110px] w-full border-[1.5px] border-dashed border-primary bg-[#F5F9FF] rounded-lg flex flex-col items-center justify-center gap-1 cursor-pointer hover:bg-[#EBF3FF] transition-colors">

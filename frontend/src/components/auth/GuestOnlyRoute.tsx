@@ -21,7 +21,7 @@ export function GuestOnlyRoute() {
   if (isBootstrapping) {
     return (
       <div className="flex justify-center py-16" role="status" aria-live="polite">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-border-strong border-t-blue-600" />
       </div>
     );
   }

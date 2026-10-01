@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { X } from 'lucide-react';
+import { Icon } from '../common/Icon';
 
 interface GalleryImage {
   MaHinhAnh: number;
@@ -61,12 +61,12 @@ export function HotelGalleryDialog({ hotelName, images, startIndex, onClose }: {
         <div className="flex max-h-[92vh] flex-col">
           <header className="flex items-center justify-between gap-4 border-b border-border px-5 py-3">
             <h2 className="truncate text-base font-semibold text-ink">{hotelName} · {images.length} ảnh</h2>
-            <button type="button" className="btn btn-icon btn-ghost" aria-label="Đóng thư viện ảnh" onClick={requestClose}><X className="h-5 w-5" aria-hidden="true" /></button>
+            <button type="button" className="btn btn-icon btn-ghost" aria-label="Đóng thư viện ảnh" onClick={requestClose}><Icon name="x" size={20} /></button>
           </header>
           <ul className="grid gap-3 overflow-y-auto p-4">
             {images.map((image, index) => (
               <li key={image.MaHinhAnh} ref={(node) => { itemRefs.current[index] = node; }}>
-                <img src={image.URL} alt={`Ảnh ${index + 1} / ${images.length}`} loading="lazy" className="w-full rounded-xl object-cover" />
+                <img src={image.URL} alt={`Ảnh ${index + 1} / ${images.length}`} loading="lazy" decoding="async" className="w-full rounded-xl object-cover" />
               </li>
             ))}
           </ul>

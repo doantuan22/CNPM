@@ -1,4 +1,4 @@
-import { fireEvent, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderWithProviders } from '../../test/testUtils';
@@ -31,16 +31,29 @@ describe('TravelSearchBar', () => {
     expect(onSearch).toHaveBeenCalledWith({ ...currentSearch, location: 'Đà Nẵng' });
   });
 
-  it('rejects invalid dates and leaves committed search unchanged', async () => {
+  it('rejects an incomplete stay and leaves committed search unchanged', async () => {
     const user = userEvent.setup();
-    renderWithProviders(<TravelSearchBar currentSearch={currentSearch} onSearch={onSearch} />);
+    renderWithProviders(<TravelSearchBar currentSearch={{ ...currentSearch, checkOut: '' }} onSearch={onSearch} />);
 
-    await user.click(screen.getByRole('button', { name: /Ngày lưu trú/i }));
-    fireEvent.change(screen.getByLabelText('Trả phòng'), { target: { value: '' } });
     await user.click(screen.getByRole('button', { name: /Tìm kiếm/i }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Vui lòng chọn ngày trả phòng');
     expect(onSearch).not.toHaveBeenCalled();
+  });
+
+  it('picks check-in and check-out from the calendar and submits them as YYYY-MM-DD', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<TravelSearchBar currentSearch={{ ...currentSearch, checkIn: '2099-05-01', checkOut: '2099-05-03' }} onSearch={onSearch} />);
+
+    await user.click(screen.getByRole('button', { name: /Ngày lưu trú/i }));
+    await user.click(document.querySelector('[data-day="2099-05-10"] button') as HTMLElement);
+    await user.click(document.querySelector('[data-day="2099-05-14"] button') as HTMLElement);
+
+    expect(screen.getByText('10/05/2099')).toBeInTheDocument();
+    expect(screen.getByText('14/05/2099')).toBeInTheDocument();
+    expect(onSearch).not.toHaveBeenCalled();
+    await user.click(screen.getByRole('button', { name: /Tìm kiếm/i }));
+    expect(onSearch).toHaveBeenCalledWith({ ...currentSearch, checkIn: '2099-05-10', checkOut: '2099-05-14' });
   });
 
   it('keeps a typed custom destination in draft when switching editors', async () => {

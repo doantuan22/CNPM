@@ -1,17 +1,21 @@
 import { useEffect, useState } from 'react';
-import { useParams, useSearchParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { useHotelDetail, useHotelRooms } from '../../features/hotels/hooks';
 import { defaultSearchDates, parseGuests } from '../../features/hotels/schemas';
 import { useQuote } from '../../features/quotes/hooks';
+import { quoteMatchesRequest } from '../../features/quotes/match';
 import { useCreateBooking } from '../../features/bookings/hooks';
 import { useAuthStore } from '../../lib/authStore';
 import { ROLE_NAMES } from '../../lib/roles';
 import { ApiError } from '../../services/apiClient';
-import { formatCurrencyVND, cn, formatDateRangeVi } from '../../lib/utils';
-import { Input } from '../../components/common/Input';
-import { Textarea } from '../../components/common/Textarea';
-import { RoomOffer } from '../../components/hotels/RoomOffer';
-import { TravelSearchBar } from '../../components/hotels/TravelSearchBar';
+import { formatCurrencyVND, cn } from '../../lib/utils';
+import { HotelHeader } from '../../components/hotels/detail/HotelHeader';
+import { HotelGallery } from '../../components/hotels/detail/HotelGallery';
+import { HotelSectionNav } from '../../components/hotels/detail/HotelSectionNav';
+import { RoomList } from '../../components/hotels/detail/RoomList';
+import { HotelOverview, HotelAmenities } from '../../components/hotels/detail/HotelAbout';
+import { BookingPanel } from '../../components/hotels/detail/BookingPanel';
+import { MobileBookingBar } from '../../components/hotels/detail/MobileBookingBar';
 import { HotelGalleryDialog } from '../../components/hotels/HotelGalleryDialog';
 import { useToast } from '../../components/common/FeedbackProvider';
 import { shareUrl } from '../../lib/share';
@@ -84,21 +88,17 @@ export default function HotelDetailPage() {
     });
   };
 
+  const changePromoCode = (value: string) => {
+    setPromoCode(value);
+    if (!value.trim()) setAppliedPromo('');
+  };
+
   const applyPromo = () => {
     bookingMutation.reset();
     setAppliedPromo(promoCode.trim());
   };
 
-  const quoteMatchesSelection = (() => {
-    const quote = quoteQuery.data;
-    if (!quote || quote.NgayNhanPhong !== checkIn || quote.NgayTraPhong !== checkOut) return false;
-    if (quote.ChiTietPhong.length !== selectedRoomLines.length) return false;
-    return selectedRoomLines.every((line) =>
-      quote.ChiTietPhong.some((quotedLine) =>
-        quotedLine.MaLoaiPhong === line.maLoaiPhong && quotedLine.SoLuongYeuCau === line.soLuong
-      )
-    );
-  })();
+  const quoteMatchesSelection = quoteMatchesRequest(quoteQuery.data, { checkIn, checkOut, rooms: selectedRoomLines });
   const quoteMatchesPromo = appliedPromo === promoCode.trim();
 
   const confirmBooking = () => {
@@ -119,20 +119,17 @@ export default function HotelDetailPage() {
     );
   };
 
-  if (hotelQuery.isLoading) {
-    return <PageSpinner />;
-  }
+  if (hotelQuery.isLoading) return <PageSpinner />;
 
   if (hotelQuery.isError || !hotelQuery.data) {
     return (
-      <div role="alert" className="mx-auto max-w-md mt-8 rounded-lg bg-red-50 px-4 py-3 text-center text-sm text-red-700">
+      <div role="alert" className="mx-auto max-w-md mt-8 rounded-lg bg-danger-light px-4 py-3 text-center text-sm text-danger-ink">
         {hotelQuery.error instanceof ApiError ? hotelQuery.error.message : 'Không tìm thấy khách sạn'}
       </div>
     );
   }
 
   const hotel = hotelQuery.data;
-
   const goToBookingPanel = () => document.getElementById('dat-phong')?.scrollIntoView({ block: 'start' });
   const summaryTotal = quoteQuery.isError
     ? 'Không thể báo giá'
@@ -151,397 +148,50 @@ export default function HotelDetailPage() {
 
   return (
     <div className={cn('booking-flow bg-surface text-ink min-h-screen w-full', selectedRoomLines.length > 0 && 'pb-24 lg:pb-0')}>
-      
-      {/* BREADCRUMB & TOP ACTIONS */}
-      <section className="bg-surface-secondary border-b border-border/80">
-        <div className="page-container py-3 flex flex-wrap items-center justify-between gap-3 text-xs">
-          <nav className="flex items-center gap-2 text-ink-muted overflow-x-auto py-1">
-            <Link to="/" className="hover:text-primary font-medium transition-colors">Trang chủ</Link>
-            <i className="ph ph-caret-right text-sm text-gray-400"></i>
-            <Link to="/hotels" className="hover:text-primary font-medium transition-colors">Khách sạn</Link>
-            <i className="ph ph-caret-right text-sm text-gray-400"></i>
-            <span className="font-semibold text-ink truncate max-w-[200px] sm:max-w-none">{hotel.TenKhachSan}</span>
-          </nav>
-          <div className="flex items-center gap-2">
-            <Link to="/hotels" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-border hover:border-blue-400 text-ink font-medium transition-all shadow-sm hover:text-primary">
-              <i className="ph ph-arrow-left text-sm"></i>
-              <span>Quay lại kết quả tìm kiếm</span>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* HOTEL TITLE HEADER */}
-      <section className="pt-6 pb-4 bg-white">
-        <div className="page-container">
-          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2.5 mb-2">
-                <div className="flex items-center text-warning gap-0.5">
-                  {Array(5).fill(0).map((_, i) => (
-                    <i key={i} className={cn("ph-fill ph-star text-base", i >= hotel.HangSao && "text-slate-300 ph")}></i>
-                  ))}
-                </div>
-                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 text-primary border border-blue-200">
-                  {hotel.HangSao} Sao
-                </span>
-              </div>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-ink tracking-tight">
-                {hotel.TenKhachSan}
-              </h1>
-              <div className="flex items-center flex-wrap gap-2 text-sm text-ink-muted mt-2">
-                <i className="ph ph-map-pin text-base text-primary flex-shrink-0"></i>
-                <span>{hotel.DiaChiChiTiet}</span>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-4 self-start lg:self-end">
-              <div className="flex items-center gap-2">
-                <button type="button" aria-label="Chia sẻ" onClick={shareHotel} className="h-11 px-3.5 rounded-xl border border-border hover:border-blue-400 hover:bg-surface-secondary text-ink text-xs font-semibold flex items-center gap-2 transition-all shadow-sm">
-                  <i className="ph ph-share-network text-base text-ink-muted" aria-hidden="true"></i>
-                  <span className="hidden sm:inline">Chia sẻ</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* GALLERY GRID SECTION */}
-      <section className="py-4 bg-white">
-        <div className="page-container">
-          {hotel.HinhAnh.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 rounded-2xl overflow-hidden relative shadow-md">
-              <button type="button" aria-label="Xem ảnh lớn 1" onClick={() => setGalleryIndex(0)} className="md:col-span-2 relative group overflow-hidden cursor-pointer h-[320px] md:h-[440px]">
-                <img
-                  src={hotel.HinhAnh[0].URL}
-                  alt={hotel.TenKhachSan}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
-                />
-              </button>
-              <div className="md:col-span-2 grid grid-cols-2 gap-3 h-[320px] md:h-[440px]">
-                {hotel.HinhAnh.slice(1, 5).map((img, index) => (
-                  <button
-                    key={img.MaHinhAnh}
-                    type="button"
-                    aria-label={index === 3 && hotel.HinhAnh.length > 5 ? `Xem tất cả ${hotel.HinhAnh.length} ảnh` : `Xem ảnh lớn ${index + 2}`}
-                    onClick={() => setGalleryIndex(index + 1)}
-                    className="relative group overflow-hidden cursor-pointer rounded-lg"
-                  >
-                    <img
-                      src={img.URL}
-                      alt={`Ảnh ${index + 2}`}
-                      className={cn("w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out", index === 3 && "brightness-90")}
-                    />
-                    {index === 3 && hotel.HinhAnh.length > 5 && (
-                      <span className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                        <span className="bg-white/95 text-ink font-bold text-xs px-4 py-2.5 rounded-xl flex items-center gap-2">
-                          <i className="ph ph-squares-four text-base text-primary" aria-hidden="true"></i>
-                          <span aria-hidden="true">Xem tất cả {hotel.HinhAnh.length} ảnh</span>
-                        </span>
-                      </span>
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div className="flex h-72 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
-              <i className="ph-duotone ph-image text-4xl mr-2"></i> Chưa có hình ảnh
-            </div>
-          )}
-        </div>
-      </section>
-
+      <HotelHeader hotel={hotel} onShare={shareHotel} />
+      <HotelGallery hotelName={hotel.TenKhachSan} images={hotel.HinhAnh} onOpen={setGalleryIndex} />
       <HotelGalleryDialog hotelName={hotel.TenKhachSan} images={hotel.HinhAnh} startIndex={galleryIndex} onClose={() => setGalleryIndex(null)} />
 
       {selectedRoomLines.length > 0 && !bookingPanelVisible && (
-        <div className="hotel-mobile-bar lg:hidden" role="region" aria-label="Tóm tắt lựa chọn phòng">
-          <div className="min-w-0">
-            <p className="text-xs text-ink-muted">{selectedRoomCount} phòng</p>
-            <p className="truncate text-base font-bold text-ink">{summaryTotal}</p>
-          </div>
-          <button type="button" className="btn btn-primary shrink-0" onClick={goToBookingPanel}>Xem chi tiết & đặt phòng</button>
-        </div>
+        <MobileBookingBar roomCount={selectedRoomCount} total={summaryTotal} onOpenPanel={goToBookingPanel} />
       )}
 
-      {/* STICKY PAGE TABS: same order as the sections below, and the one being read is marked */}
-      <div className="sticky top-[var(--header-height)] z-30 bg-white/95 backdrop-blur-md border-y border-border mt-3">
-        <div className="page-container flex items-center justify-between">
-          <nav aria-label="Các phần của trang" className="flex items-center space-x-8 overflow-x-auto no-scrollbar py-1">
-            {PAGE_SECTIONS.map((section) => (
-              <a
-                key={section.id}
-                href={`#${section.id}`}
-                onClick={() => selectSection(section.id)}
-                aria-current={activeSection === section.id ? 'location' : undefined}
-                className={cn(
-                  'py-4 border-b-2 text-sm transition-all whitespace-nowrap',
-                  activeSection === section.id ? 'border-primary text-primary font-semibold' : 'border-transparent text-ink-muted hover:text-ink'
-                )}
-              >
-                {section.label}
-              </a>
-            ))}
-          </nav>
-        </div>
-      </div>
+      <HotelSectionNav sections={PAGE_SECTIONS} activeId={activeSection} onSelect={selectSection} />
 
       <div className="page-container py-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
           <div className="hotel-detail-content lg:col-span-8 flex flex-col gap-8">
-            {/* ROOM SELECTION LIST */}
-            <section id="loai-phong" className="pt-2 scroll-mt-36">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h2 className="text-xl sm:text-2xl font-bold text-ink tracking-tight flex items-center gap-2">
-                    <i className="ph ph-bed text-2xl text-primary"></i>
-                    Các loại phòng sẵn có
-                  </h2>
-                  <p className="mt-1 text-sm text-ink-muted">{formatDateRangeVi(checkIn, checkOut, ' → ')} · {guests} khách</p>
-                </div>
-              </div>
-
-              <TravelSearchBar
-                variant="stay"
-                currentSearch={{ checkIn, checkOut, guests }}
-                onSearch={onDatesSubmit}
-                loading={roomsQuery.isFetching}
-              />
-
-              {roomsQuery.isLoading ? (
-                <PageSpinner className="py-10" />
-              ) : roomsQuery.isError ? (
-                 <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">Không thể tải danh sách phòng</div>
-              ) : roomsQuery.data && roomsQuery.data.length === 0 ? (
-                 <div className="rounded-lg bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">Không có loại phòng phù hợp.</div>
-              ) : (
-                <div className="space-y-6">
-                  {roomsQuery.data?.map((room) => <RoomOffer key={room.MaLoaiPhong} room={room} selectedQuantity={selectedRooms[room.MaLoaiPhong] ?? 0} onQuantityChange={(quantity) => setRoomQuantity(room.MaLoaiPhong, quantity, room.SoPhongConLai)} />)}
-                </div>
-              )}
-            </section>
-
-            {/* OVERVIEW */}
-            <section id="tong-quan" className="pt-2 scroll-mt-36">
-              <div className="bg-white rounded-2xl border border-border p-6 sm:p-8 shadow-md">
-                <h2 className="text-xl sm:text-2xl font-bold text-ink tracking-tight mb-4 flex items-center gap-2.5">
-                  <i className="ph ph-info text-2xl text-primary"></i>
-                  Tổng quan về {hotel.TenKhachSan}
-                </h2>
-                <p className="text-ink-muted text-sm sm:text-base leading-relaxed mb-4 whitespace-pre-line">
-                  {hotel.MoTa ?? 'Khách sạn chưa cập nhật mô tả chi tiết.'}
-                </p>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-border">
-                  {hotel.TienNghi.slice(0,4).map((a) => (
-                    <div key={a.MaTienNghi} className="p-3 bg-surface-secondary rounded-xl border border-blue-100 flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-lg bg-blue-100 text-primary flex items-center justify-center flex-shrink-0">
-                        <i className="ph ph-check-circle text-base"></i>
-                      </div>
-                      <div className="text-xs font-bold text-ink">{a.TenTienNghi}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
-
-            {/* AMENITIES */}
-            <section id="tien-nghi" className="pt-2 scroll-mt-36">
-              <div className="bg-white rounded-2xl border border-border p-6 sm:p-8 shadow-md">
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h2 className="text-xl sm:text-2xl font-bold text-ink tracking-tight flex items-center gap-2">
-                      <i className="ph ph-sparkle text-2xl text-primary"></i>
-                      Tiện nghi & Dịch vụ khách sạn
-                    </h2>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
-                  {hotel.TienNghi.map((a) => (
-                    <div key={a.MaTienNghi} className="flex items-start gap-3.5 p-3 rounded-xl hover:bg-surface-secondary transition-colors">
-                      <div className="w-11 h-11 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-primary flex-shrink-0">
-                        <i className="ph ph-check-circle text-xl"></i>
-                      </div>
-                      <div>
-                        <h4 className="text-sm font-bold text-ink">{a.TenTienNghi}</h4>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
+            <RoomList
+              search={{ checkIn, checkOut, guests }}
+              onSearch={onDatesSubmit}
+              roomsQuery={roomsQuery}
+              selectedRooms={selectedRooms}
+              onQuantityChange={setRoomQuantity}
+            />
+            <HotelOverview hotel={hotel} />
+            <HotelAmenities hotel={hotel} />
           </div>
 
-          {/* RIGHT COLUMN: BOOKING WIDGET */}
           <div className="lg:col-span-4 relative">
-            <div id="dat-phong" className="hotel-selection-summary scroll-mt-36 lg:sticky lg:top-40 space-y-4">
-              <div className="bg-white rounded-2xl border-2 border-primary/20 p-6 shadow-xl relative overflow-hidden">
-                <h2 className="text-lg font-bold text-ink mb-4 flex items-center gap-2">
-                  <i className="ph-fill ph-receipt text-primary text-xl"></i>
-                  Chi tiết đặt phòng
-                </h2>
-                
-                {selectedRoomLines.length === 0 ? (
-                   <div className="p-4 bg-blue-50 rounded-xl border border-blue-100 text-center">
-                     <i className="ph-duotone ph-hand-pointing text-3xl text-primary mb-2"></i>
-                     <p className="text-sm font-medium text-blue-900">Chọn số lượng cho một hoặc nhiều loại phòng để xem tổng giá.</p>
-                   </div>
-                ) : (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between border-b border-border pb-3 text-sm">
-                      <span className="font-semibold text-ink">{selectedRoomLines.length} loại phòng</span>
-                      <span className="text-ink-muted">{selectedRoomCount} phòng</span>
-                    </div>
-
-                    {quoteQuery.isLoading ? (
-                       <PageSpinner className="py-6" />
-                    ) : quoteQuery.isError ? (
-                       <div role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">{quoteQuery.error instanceof ApiError ? quoteQuery.error.message : 'Lỗi tạo báo giá'}</div>
-                    ) : !quoteMatchesSelection ? (
-                       <div className="flex justify-center py-6 text-sm text-ink-muted" role="status" aria-live="polite">Đang cập nhật báo giá...</div>
-                    ) : quoteQuery.data ? (
-                      <>
-                        {!quoteQuery.data.KhaDung && (
-                           <div className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700">
-                             Một hoặc nhiều loại phòng không đủ số lượng hoặc chưa có giá cho toàn bộ ngày lưu trú.
-                           </div>
-                        )}
-                        <div className="space-y-3 border-b border-border pb-3 text-sm">
-                          {quoteQuery.data.ChiTietPhong.map((line) => (
-                            <div key={line.MaLoaiPhong} className="space-y-1">
-                              <div className="flex justify-between gap-3 font-semibold text-ink">
-                                <span>{line.TenLoaiPhong}</span>
-                                <span className="shrink-0">{formatCurrencyVND(line.ThanhTien ?? 0)}</span>
-                              </div>
-                              <div className="flex justify-between gap-3 text-xs text-ink-muted">
-                                <span>{line.SoLuongYeuCau} phòng × {quoteQuery.data.SoDem} đêm</span>
-                                <span>{line.GiaTheoDem !== null ? formatCurrencyVND(line.GiaTheoDem) + '/phòng/đêm' : 'Chưa có giá'}</span>
-                              </div>
-                              {!line.DuPhong && <p className="text-xs text-amber-700">Chỉ còn {line.SoPhongConLai} phòng cho loại này.</p>}
-                              {!line.CoGiaDayDu && <p className="text-xs text-amber-700">Thiếu giá cho một hoặc nhiều ngày trong kỳ lưu trú.</p>}
-                            </div>
-                          ))}
-                        </div>
-                        <div className="space-y-2 border-b border-border pb-3 text-sm">
-                          <div className="flex justify-between font-bold text-ink">
-                            <span>Tổng tiền phòng</span>
-                            <span>{formatCurrencyVND(quoteQuery.data.TongTienPhong)}</span>
-                          </div>
-                        </div>
-
-                        <div className="space-y-2">
-                          <label htmlFor="hotel-detail-ml-1" className="flex items-center gap-1 text-xs font-bold text-ink-muted uppercase tracking-wider">
-                            <i className="ph-bold ph-tag"></i> Mã khuyến mãi
-                          </label>
-                          <div className="flex gap-2">
-                            <Input id="hotel-detail-ml-1"
-                              type="text"
-                              value={promoCode}
-                              onChange={(e) => {
-                                const value = e.target.value;
-                                setPromoCode(value);
-                                if (!value.trim()) setAppliedPromo('');
-                              }}
-                              placeholder="Nhập mã (nếu có)"
-                              className="uppercase h-10"
-                            />
-                            <button onClick={applyPromo} disabled={!promoCode.trim() || quoteQuery.isFetching} className="h-10 px-4 bg-slate-900 text-white rounded-lg font-medium text-xs whitespace-nowrap disabled:opacity-50">
-                              Áp dụng
-                            </button>
-                          </div>
-                          {!quoteMatchesPromo && (
-                            <p className="text-xs text-amber-700">Áp dụng mã để cập nhật báo giá trước khi tiếp tục.</p>
-                          )}
-                          {quoteQuery.data.PromoThongBao && quoteMatchesPromo && (
-                             <p className={cn('text-xs font-medium', quoteQuery.data.PromoHopLe ? 'text-emerald-600' : 'text-red-600')}>
-                               {quoteQuery.data.PromoThongBao}
-                             </p>
-                          )}
-                        </div>
-
-                        {quoteQuery.data.PromoHopLe && (
-                           <div className="flex justify-between text-sm text-emerald-600 font-bold bg-emerald-50 p-2 rounded-lg border border-emerald-100">
-                             <span>Khuyến mãi giảm</span>
-                             <span>−{formatCurrencyVND(quoteQuery.data.SoTienGiam)}</span>
-                           </div>
-                        )}
-
-                        <div className="bg-blue-50 p-4 rounded-xl border border-blue-200 mt-2">
-                           <div className="flex items-center justify-between">
-                             <span className="font-bold text-ink">Tổng thanh toán</span>
-                             <div className="text-right">
-                               <span className="text-2xl font-black text-primary leading-none block">{formatCurrencyVND(quoteQuery.data.TongTienThanhToan)}</span>
-                               <span className="text-[10px] text-primary/70 font-semibold uppercase">Đã bao gồm thuế phí</span>
-                             </div>
-                           </div>
-                        </div>
-
-                        <div>
-                          <label htmlFor="hotel-detail-field-2" className="mb-1 block text-xs font-medium text-ink-muted">Ghi chú cho khách sạn</label>
-                          <Textarea id="hotel-detail-field-2"
-                            rows={2}
-                            value={ghiChu}
-                            onChange={(e) => setGhiChu(e.target.value)}
-                            placeholder="Ví dụ: đến muộn..."
-                            className="text-sm"
-                          />
-                        </div>
-
-                        {bookingMutation.isError && (
-                          <div role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">
-                             {bookingMutation.error instanceof ApiError ? bookingMutation.error.message : 'Lỗi'}
-                          </div>
-                        )}
-
-                        <div className="pt-2">
-                          {!accessToken ? (
-                            <button onClick={() => navigate('/login', { state: { from: { pathname: `/hotels/${hotelId}`, search: window.location.search } } })} className="w-full h-12 bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm rounded-xl transition-all shadow-md">
-                              Đăng nhập để đặt phòng
-                            </button>
-                          ) : role !== ROLE_NAMES.CUSTOMER ? (
-                            <div className="text-center">
-                              <button disabled className="w-full h-12 bg-slate-300 text-slate-500 font-bold text-sm rounded-xl cursor-not-allowed">Xác nhận đặt phòng</button>
-                              <p className="text-[11px] text-ink-muted mt-2">Dành cho tài khoản khách hàng</p>
-                            </div>
-                          ) : (
-                            <button
-                              onClick={confirmBooking}
-                              disabled={!quoteMatchesSelection || !quoteMatchesPromo || !quoteQuery.data.KhaDung || quoteQuery.isFetching || bookingMutation.isPending}
-                              className="w-full h-12 bg-primary hover:bg-primary-700 text-white font-bold text-sm rounded-xl shadow-lg shadow-primary/30 transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
-                            >
-                              {bookingMutation.isPending ? 'Đang xử lý...' : (
-                                <>
-                                  <span>Tạo đặt phòng</span>
-                                  <i className="ph-bold ph-arrow-right"></i>
-                                </>
-                              )}
-                            </button>
-                          )}
-                        </div>
-                        
-                        {quoteQuery.data.ChinhSachHuy && (
-                           <div className="mt-4 p-3 bg-emerald-50 border border-emerald-100 rounded-xl">
-                             <div className="flex items-center gap-2 text-emerald-700 font-bold text-xs mb-1">
-                               <i className="ph-fill ph-shield-check text-sm"></i>
-                               {quoteQuery.data.ChinhSachHuy.TenChinhSach}
-                             </div>
-                             <ul className="text-[11px] text-emerald-700/80 pl-6 list-disc">
-                               {quoteQuery.data.ChinhSachHuy.ChiTiet.map((tier, i) => (
-                                 <li key={i}>Hủy trước {tier.SoGioTruocNhanPhong}h hoàn {tier.TyLeHoanTien}%</li>
-                               ))}
-                             </ul>
-                           </div>
-                        )}
-
-                      </>
-                    ) : null}
-                  </div>
-                )}
-              </div>
-            </div>
+            <BookingPanel
+              roomTypeCount={selectedRoomLines.length}
+              roomCount={selectedRoomCount}
+              quoteQuery={quoteQuery}
+              quoteMatchesSelection={quoteMatchesSelection}
+              quoteMatchesPromo={quoteMatchesPromo}
+              promoCode={promoCode}
+              onPromoCodeChange={changePromoCode}
+              onApplyPromo={applyPromo}
+              note={ghiChu}
+              onNoteChange={setGhiChu}
+              bookingError={bookingMutation.isError ? bookingMutation.error : null}
+              isBooking={bookingMutation.isPending}
+              isSignedIn={Boolean(accessToken)}
+              isCustomer={role === ROLE_NAMES.CUSTOMER}
+              onSignIn={() => navigate('/login', { state: { from: { pathname: `/hotels/${hotelId}`, search: window.location.search } } })}
+              onBook={confirmBooking}
+            />
           </div>
-
         </div>
       </div>
     </div>

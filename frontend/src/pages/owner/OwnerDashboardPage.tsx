@@ -1,13 +1,22 @@
 import { Link } from 'react-router-dom';
 import { useMemo, useState } from 'react';
-import { useMyHotels } from '../../features/owner/hooks';
+import { useMyHotels, useOwnerBookings } from '../../features/owner/hooks';
 import { ApiError } from '../../services/apiClient';
 import { StatusBadge } from '../../components/domain/StatusBadge';
 import { PageSpinner } from '../../components/common/PageSpinner';
 import { OwnerScopeGate } from '../../components/owner/OwnerScopeGate';
 import { useScopedHotels } from '../../components/owner/useScopedHotels';
 import { useOwnerHotelAnalytics } from '../../features/analytics/hooks';
-import { formatCurrencyVND } from '../../lib/utils';
+import { formatCurrencyVND, toDateInputValue } from '../../lib/utils';
+import { BOOKING_STATUS } from '../../features/bookings/status';
+import { changeVersusPrevious, computeKpis, lastDaysRanges } from '../../features/analytics/kpi';
+import type { OwnerAnalytics } from '../../features/analytics/types';
+import { KpiCard } from '../../components/owner/KpiCard';
+import { Card } from '../../components/common/Card';
+import { FilterChip } from '../../components/common/FilterChip';
+
+/** KPI period: the last N days against the N days before them. */
+const KPI_PERIOD_DAYS = 30;
 
 export default function OwnerDashboardPage({ mode }: { mode: 'overview' | 'hotels' }) {
   const isOverview = mode === 'overview';
@@ -15,7 +24,12 @@ export default function OwnerDashboardPage({ mode }: { mode: 'overview' | 'hotel
   const scope = useScopedHotels();
   // Owner analytics are defined per hotel, so multi-property owners choose a
   // scope instead of receiving an incorrect sum assembled in the browser.
-  const overviewAnalytics = useOwnerHotelAnalytics(scope.hotelId ?? 0, {});
+  const analyticsHotelId = isOverview ? (scope.hotelId ?? 0) : 0;
+  const ranges = useMemo(() => lastDaysRanges(KPI_PERIOD_DAYS), []);
+  const currentAnalytics = useOwnerHotelAnalytics(analyticsHotelId, ranges.current);
+  const previousAnalytics = useOwnerHotelAnalytics(analyticsHotelId, ranges.previous);
+  const today = toDateInputValue(new Date());
+  const checkInsToday = useOwnerBookings(analyticsHotelId, { page: 1, limit: 1, from: today, to: today, trangThai: BOOKING_STATUS.CONFIRMED });
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
@@ -47,12 +61,12 @@ export default function OwnerDashboardPage({ mode }: { mode: 'overview' | 'hotel
       {hotelsQuery.isLoading ? (
         <PageSpinner />
       ) : hotelsQuery.isError ? (
-        <div role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 border border-red-200">
+        <div role="alert" className="rounded-lg bg-danger-light px-4 py-3 text-sm text-danger-ink border border-danger/30">
           {hotelsQuery.error instanceof ApiError ? hotelsQuery.error.message : 'Không thể tải danh sách khách sạn'}
         </div>
       ) : hotels.length === 0 ? (
         <div className="rounded-2xl border border-border bg-white p-12 text-center shadow-sm">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-blue-50 text-primary text-2xl mb-4">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary-50 text-primary text-2xl mb-4">
             <i className="ph-duotone ph-buildings"></i>
           </div>
           <h2 className="text-lg font-semibold text-heading mb-2">Bạn chưa có khách sạn nào</h2>
@@ -94,36 +108,39 @@ export default function OwnerDashboardPage({ mode }: { mode: 'overview' | 'hotel
             <section className="space-y-4" aria-labelledby="owner-overview-performance">
               <div className="flex flex-col gap-1">
                 <h2 id="owner-overview-performance" className="text-base font-semibold text-heading">Hiệu quả vận hành</h2>
-                <p className="text-sm text-muted">Số liệu tổng hợp cho khách sạn đang chọn.</p>
+                <p className="text-sm text-muted">{KPI_PERIOD_DAYS} ngày gần nhất của khách sạn đang chọn, so với {KPI_PERIOD_DAYS} ngày liền trước.</p>
               </div>
               <OwnerScopeGate scope={scope} prompt="Chọn khách sạn để xem số liệu vận hành." />
               {scope.hotelId && (
-                overviewAnalytics.isLoading ? <PageSpinner /> : overviewAnalytics.isError || !overviewAnalytics.data ? (
-                  <div role="alert" className="rounded-lg border border-danger bg-danger-light px-4 py-3 text-sm text-danger">
-                    {overviewAnalytics.error instanceof ApiError ? overviewAnalytics.error.message : 'Không thể tải số liệu vận hành'}
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <article className="stat-card"><p className="stat-card__label">Tổng đặt phòng</p><strong className="stat-card__value">{overviewAnalytics.data.TongSoBooking.toLocaleString('vi-VN')}</strong></article>
-                    <article className="stat-card"><p className="stat-card__label">Tỷ lệ lấp đầy</p><strong className="stat-card__value">{overviewAnalytics.data.TyLeLapDay === null ? 'Chưa có dữ liệu' : `${overviewAnalytics.data.TyLeLapDay}%`}</strong></article>
-                    <article className="stat-card"><p className="stat-card__label">Doanh thu thực nhận</p><strong className="stat-card__value">{formatCurrencyVND(overviewAnalytics.data.DoanhThuThucNhan)}</strong></article>
-                  </div>
-                )
+                <>
+                  <TodayPanel
+                    checkIns={checkInsToday.data?.pagination.total}
+                    isError={checkInsToday.isError}
+                    to={`/owner/bookings?${new URLSearchParams({ hotelId: String(scope.hotelId), from: today, to: today, trangThai: BOOKING_STATUS.CONFIRMED })}`}
+                  />
+                  {currentAnalytics.isLoading ? <PageSpinner /> : currentAnalytics.isError || !currentAnalytics.data ? (
+                    <div role="alert" className="rounded-lg border border-danger bg-danger-light px-4 py-3 text-sm text-danger">
+                      {currentAnalytics.error instanceof ApiError ? currentAnalytics.error.message : 'Không thể tải số liệu vận hành'}
+                    </div>
+                  ) : (
+                    <KpiGrid current={currentAnalytics.data} previous={previousAnalytics.data} />
+                  )}
+                </>
               )}
             </section>
           )}
 
           {!isOverview && <div className="owner-dashboard__filters flex justify-between items-center gap-4 flex-wrap">
             <div className="relative flex-1 max-w-[420px] min-w-[220px]">
-              <i className="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg"></i>
+              <i className="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-muted text-lg"></i>
               <input type="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} className="input !pl-10" placeholder="Tìm theo tên khách sạn, địa chỉ..." aria-label="Tìm khách sạn theo tên hoặc địa chỉ" />
             </div>
 
             <div className="flex gap-2 flex-wrap" role="group" aria-label="Lọc theo trạng thái khách sạn">
-              <button type="button" aria-pressed={statusFilter === 'all'} onClick={() => setStatusFilter('all')} className={`pill-tab ${statusFilter === 'all' ? 'active' : ''}`}>Tất cả ({hotels.length})</button>
-              <button type="button" aria-pressed={statusFilter === 'Hoạt động'} onClick={() => setStatusFilter('Hoạt động')} className={`pill-tab ${statusFilter === 'Hoạt động' ? 'active' : ''}`}>Hoạt động ({activeCount})</button>
-              <button type="button" aria-pressed={statusFilter === 'Chờ duyệt'} onClick={() => setStatusFilter('Chờ duyệt')} className={`pill-tab ${statusFilter === 'Chờ duyệt' ? 'active' : ''}`}>Chờ duyệt ({pendingCount})</button>
-              {suspendedCount > 0 && <button type="button" aria-pressed={statusFilter === 'Đình chỉ'} onClick={() => setStatusFilter('Đình chỉ')} className={`pill-tab ${statusFilter === 'Đình chỉ' ? 'active' : ''}`}>Đình chỉ ({suspendedCount})</button>}
+              <FilterChip pressed={statusFilter === 'all'} onClick={() => setStatusFilter('all')}>Tất cả ({hotels.length})</FilterChip>
+              <FilterChip pressed={statusFilter === 'Hoạt động'} onClick={() => setStatusFilter('Hoạt động')}>Hoạt động ({activeCount})</FilterChip>
+              <FilterChip pressed={statusFilter === 'Chờ duyệt'} onClick={() => setStatusFilter('Chờ duyệt')}>Chờ duyệt ({pendingCount})</FilterChip>
+              {suspendedCount > 0 && <FilterChip pressed={statusFilter === 'Đình chỉ'} onClick={() => setStatusFilter('Đình chỉ')}>Đình chỉ ({suspendedCount})</FilterChip>}
             </div>
           </div>}
 
@@ -133,9 +150,9 @@ export default function OwnerDashboardPage({ mode }: { mode: 'overview' | 'hotel
             {visibleHotels.map((hotel) => (
               <article key={hotel.MaKhachSan} className="owner-hotel-list__item flex flex-col md:flex-row gap-4 items-stretch md:items-center">
                 
-                <div className="relative w-full md:w-[156px] h-[118px] rounded-lg overflow-hidden flex-shrink-0 bg-slate-100 flex items-center justify-center">
+                <div className="relative w-full md:w-[156px] h-[118px] rounded-lg overflow-hidden flex-shrink-0 bg-surface-tertiary flex items-center justify-center">
                   {hotel.HINH_ANH_KHACH_SAN[0] ? (
-                    <img src={hotel.HINH_ANH_KHACH_SAN[0].URL} alt={hotel.TenKhachSan} className="w-full h-full object-cover" />
+                    <img src={hotel.HINH_ANH_KHACH_SAN[0].URL} alt={hotel.TenKhachSan} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                   ) : (
                     <span className="owner-hotel-image-fallback">Ảnh khách sạn</span>
                   )}
@@ -144,7 +161,7 @@ export default function OwnerDashboardPage({ mode }: { mode: 'overview' | 'hotel
                 <div className="flex-1 flex flex-col gap-2.5 min-w-0">
                   <div className="flex items-center gap-3 flex-wrap">
                     <h3 className="text-[17px] font-bold text-heading">{hotel.TenKhachSan}</h3>
-                    <span className="text-amber-500 text-[13px] tracking-widest">
+                    <span className="text-warning text-[13px] tracking-widest">
                       {'★'.repeat(hotel.HangSao)}{'☆'.repeat(5 - hotel.HangSao)}
                     </span>
                     <StatusBadge domain="hotel" status={hotel.TrangThai} />
@@ -164,7 +181,7 @@ export default function OwnerDashboardPage({ mode }: { mode: 'overview' | 'hotel
                       <>
                         <div className="flex flex-col gap-0.5">
                           <span className="text-[12px] text-muted">Trạng thái</span>
-                          <strong className="text-[14px] font-semibold text-amber-600">Đang chờ xử lý</strong>
+                          <strong className="text-[14px] font-semibold text-warning-ink">Đang chờ xử lý</strong>
                         </div>
                       </>
                     )}
@@ -191,5 +208,56 @@ export default function OwnerDashboardPage({ mode }: { mode: 'overview' | 'hotel
         </>
       )}
     </div>
+  );
+}
+
+const money = (value: number | null) => (value === null ? 'Chưa có dữ liệu' : formatCurrencyVND(value));
+const PREVIOUS_LABEL = `${KPI_PERIOD_DAYS} ngày trước`;
+
+function KpiGrid({ current, previous }: { current: OwnerAnalytics; previous: OwnerAnalytics | undefined }) {
+  const now = computeKpis(current);
+  const before = previous ? computeKpis(previous) : null;
+  return (
+    <div aria-label="Chỉ số chính" role="group" className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <KpiCard
+        label="Công suất phòng"
+        value={now.occupancy === null ? 'Chưa có dữ liệu' : `${now.occupancy}%`}
+        change={before && changeVersusPrevious(now.occupancy, before.occupancy, 'points', PREVIOUS_LABEL)}
+      />
+      <KpiCard
+        label="ADR (giá phòng trung bình)"
+        value={money(now.adr)}
+        change={before && changeVersusPrevious(now.adr, before.adr, 'percent', PREVIOUS_LABEL)}
+        note="Ước tính: doanh thu thực nhận chia số phòng-đêm đã bán"
+      />
+      <KpiCard
+        label="RevPAR"
+        value={money(now.revpar)}
+        change={before && changeVersusPrevious(now.revpar, before.revpar, 'percent', PREVIOUS_LABEL)}
+        note="Ước tính: doanh thu thực nhận chia số phòng-đêm có thể bán"
+      />
+      <KpiCard
+        label="Đặt phòng mới"
+        value={now.newBookings.toLocaleString('vi-VN')}
+        change={before && changeVersusPrevious(now.newBookings, before.newBookings, 'percent', PREVIOUS_LABEL)}
+      />
+    </div>
+  );
+}
+
+/** What needs the owner today. Only counts the API can give: confirmed bookings checking in today. */
+function TodayPanel({ checkIns, isError, to }: { checkIns: number | undefined; isError: boolean; to: string }) {
+  return (
+    <Card>
+      <h3 className="font-semibold text-heading">Hôm nay</h3>
+      <ul className="mt-3 grid gap-2 sm:grid-cols-3">
+        <li>
+          <Link to={to} className="block rounded-lg bg-surface-secondary p-3 transition-colors hover:bg-primary-50">
+            <span className="text-2xl font-semibold text-ink">{isError ? '—' : (checkIns ?? '…')}</span>
+            <span className="block text-sm text-ink-muted">khách nhận phòng</span>
+          </Link>
+        </li>
+      </ul>
+    </Card>
   );
 }

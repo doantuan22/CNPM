@@ -47,6 +47,12 @@ export function toDateInputValue(date: Date): string {
   return `${y}-${m}-${d}`;
 }
 
+/** Inverse of {@link toDateInputValue}: a local-midnight Date for a YYYY-MM-DD string, or undefined when it is not one. */
+export function fromDateInputValue(value: string | undefined): Date | undefined {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value ?? '');
+  return match ? new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3])) : undefined;
+}
+
 /** Reads a File as a base64 data URI (owner image upload — sent as JSON, no multipart). */
 export function fileToDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {

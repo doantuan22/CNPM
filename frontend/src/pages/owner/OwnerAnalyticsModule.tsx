@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { BarChart3, CircleDollarSign } from 'lucide-react';
+import { Icon } from '../../components/common/Icon';
 import { useSearchParams } from 'react-router-dom';
 import { OwnerScopeGate } from '../../components/owner/OwnerScopeGate';
 import { BarList } from '../../components/analytics/BarList';
@@ -7,6 +7,7 @@ import { useOwnerHotelAnalytics } from '../../features/analytics/hooks';
 import { formatCurrencyVND } from '../../lib/utils';
 import { ApiError } from '../../services/apiClient';
 import { useScopedHotels } from '../../components/owner/useScopedHotels';
+import { Button } from '../../components/common/Button';
 
 export default function OwnerAnalyticsModule({ mode }: { mode: 'revenue' | 'reports' }) {
   const scope = useScopedHotels();
@@ -30,7 +31,7 @@ export default function OwnerAnalyticsModule({ mode }: { mode: 'revenue' | 'repo
     <div className="owner-module space-y-6">
       <header className="owner-module__header">
         <div className="owner-module__title">
-          <span className="owner-module__icon">{reports ? <BarChart3 size={20} /> : <CircleDollarSign size={20} />}</span>
+          <span className="owner-module__icon">{reports ? <Icon name="chart-bar" size={20} /> : <Icon name="currency-circle-dollar" size={20} />}</span>
           <div>
             <h1>{reports ? 'Báo cáo thống kê' : 'Doanh thu'}</h1>
             <p>
@@ -53,7 +54,7 @@ export default function OwnerAnalyticsModule({ mode }: { mode: 'revenue' | 'repo
               Đến ngày
               <input type="date" min={from || undefined} value={to} onChange={(event) => setTo(event.target.value)} />
             </label>
-            <button className="btn btn-secondary">Áp dụng khoảng ngày</button>
+            <Button variant="secondary">Áp dụng khoảng ngày</Button>
           </form>
           {analytics.isLoading ? (
             <div role="status" className="owner-scope-state">

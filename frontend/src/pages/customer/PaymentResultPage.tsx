@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useCreateVnpayPayment, usePaymentStatus } from '../../features/payments/hooks';
 import { formatCurrencyVND } from '../../lib/utils';
@@ -6,8 +7,9 @@ import { resolvePaymentResult, type PaymentResult } from '../../features/payment
 import { BOOKING_STATUS } from '../../features/bookings/status';
 import { ApiError } from '../../services/apiClient';
 import { PageSpinner } from '../../components/common/PageSpinner';
-
-const resultCardClass = 'bg-white rounded-3xl border border-border p-8 md:p-12 shadow-md w-full max-w-2xl text-center';
+import { Button } from '../../components/common/Button';
+import { StatusBadge } from '../../components/domain/StatusBadge';
+import { ResultBanner } from '../../components/bookings/ResultBanner';
 
 function refundMessage(result: Extract<PaymentResult, { kind: 'cancelled-paid' }>, confirmationCode: string): string {
   switch (result.refund) {
@@ -41,122 +43,122 @@ export default function PaymentResultPage() {
   const payMutation = useCreateVnpayPayment(hasBookingId ? bookingId : 0);
   const retryPayment = () => payMutation.mutate(undefined, { onSuccess: (payment) => { window.location.href = payment.paymentUrl; } });
 
+  const bookingLink = hasBookingId ? `/bookings/${bookingId}` : null;
+  const linkButton = (to: string, label: string, variant: 'primary' | 'secondary' | 'danger' = 'primary') => (
+    <Button asChild variant={variant} size="lg" className="sm:flex-1"><Link to={to}>{label}</Link></Button>
+  );
+
+  let outcome: ReactNode;
+  if (!hasBookingId) {
+    // The gateway redirect carried no booking (unknown callback / invalid signature): nothing to look up, and no outcome to claim.
+    outcome = (
+      <ResultBanner
+        tone="error"
+        title="Chưa xác định được kết quả thanh toán"
+        description='Chúng tôi không nhận được thông tin đơn đặt phòng từ cổng thanh toán nên chưa thể xác nhận giao dịch. Nếu tài khoản của bạn đã bị trừ tiền, hãy kiểm tra trong "Đặt phòng của tôi" hoặc gửi yêu cầu hỗ trợ kèm thời điểm thanh toán.'
+        actions={<>{linkButton('/bookings', 'Xem đặt phòng của tôi')}{linkButton('/support', 'Liên hệ hỗ trợ', 'secondary')}</>}
+      />
+    );
+  } else if (statusQuery.isLoading) {
+    outcome = <PageSpinner />;
+  } else if (statusQuery.isError && !booking) {
+    outcome = (
+      <ResultBanner
+        tone="error"
+        title="Không thể tải kết quả thanh toán"
+        actions={
+          <>
+            <Button type="button" size="lg" className="sm:flex-1" onClick={() => statusQuery.refetch()}>Thử lại</Button>
+            {linkButton(`/bookings/${bookingId}`, 'Xem đơn đặt phòng', 'secondary')}
+          </>
+        }
+      >
+        <p role="alert" className="mx-auto mb-6 max-w-md text-sm leading-relaxed text-muted">
+          {statusQuery.error instanceof ApiError ? statusQuery.error.message : 'Đã có lỗi khi lấy trạng thái đơn đặt phòng. Vui lòng thử lại.'}
+        </p>
+      </ResultBanner>
+    );
+  } else if (result?.kind === 'cancelled-paid' && booking) {
+    outcome = (
+      <ResultBanner
+        tone="error"
+        title="Đơn đặt phòng không được xác nhận"
+        description="Đơn đã hết hạn hoặc đã bị hủy trước khi thanh toán hoàn tất, nên không được xác nhận."
+        actions={<>{linkButton(`/bookings/${bookingId}`, 'Xem chi tiết đơn')}{linkButton('/support', 'Liên hệ hỗ trợ', 'secondary')}</>}
+      >
+        <p className="mx-auto mb-6 max-w-md text-sm font-semibold leading-relaxed text-heading">{refundMessage(result, booking.MaXacNhanDatPhong)}</p>
+      </ResultBanner>
+    );
+  } else if (isConfirmed) {
+    outcome = (
+      <ResultBanner
+        tone="success"
+        title="Thanh toán thành công!"
+        description="Cảm ơn bạn đã lựa chọn Egode. Đặt phòng của bạn đã được xác nhận."
+        actions={<>{bookingLink && linkButton(bookingLink, 'Xem đơn đặt phòng')}{linkButton('/', 'Về trang chủ', 'secondary')}</>}
+      >
+        {booking && (
+          <>
+            <div className="mb-8 inline-block rounded-xl border border-dashed border-primary/40 bg-primary-50 px-5 py-2 text-xl font-bold text-primary">
+              {booking.MaXacNhanDatPhong}
+            </div>
+            <div className="mb-8 rounded-xl border border-border bg-surface-secondary p-5 text-left">
+              <div className="mb-5 flex items-center justify-between border-b border-border pb-4">
+                <h2 className="text-base font-semibold text-heading">Tổng quan giao dịch</h2>
+                <StatusBadge domain="payment" status="Thành công" />
+              </div>
+              <div className="flex items-center justify-between pt-2">
+                <span className="text-sm text-muted">Số tiền thanh toán</span>
+                <span className="text-xl font-bold text-primary">{formatCurrencyVND(latestPayment?.SoTien || 0)}</span>
+              </div>
+            </div>
+          </>
+        )}
+      </ResultBanner>
+    );
+  } else if (isFailed) {
+    outcome = (
+      <ResultBanner
+        tone="error"
+        title="Thanh toán không thành công"
+        description="Giao dịch qua thanh toán trực tuyến không thành công. Vui lòng kiểm tra lại số dư tài khoản hoặc thử lại phương thức thanh toán khác."
+        actions={
+          <>
+            {canRetryPayment && (
+              <Button type="button" size="lg" className="sm:flex-1" onClick={retryPayment} loading={payMutation.isPending}>
+                {payMutation.isPending ? 'Đang chuyển đến cổng thanh toán...' : 'Thử thanh toán lại'}
+              </Button>
+            )}
+            {bookingLink && linkButton(bookingLink, 'Về chi tiết đơn', canRetryPayment ? 'secondary' : 'danger')}
+          </>
+        }
+      >
+        {payMutation.isError && (
+          <p role="alert" className="mb-4 rounded-lg bg-danger-light p-3 text-sm text-danger-ink">
+            {payMutation.error instanceof ApiError ? payMutation.error.message : 'Không thể khởi tạo thanh toán'}
+          </p>
+        )}
+      </ResultBanner>
+    );
+  } else {
+    outcome = (
+      <ResultBanner
+        tone="pending"
+        title="Đang xử lý kết quả..."
+        description={hintStatus === 'success'
+          ? 'VNPAY báo thành công, đang chờ xác nhận cuối cùng từ hệ thống.'
+          : 'Vui lòng kiểm tra lại trạng thái đặt phòng trong ít phút.'}
+        actions={bookingLink ? linkButton(bookingLink, 'Xem đơn đặt phòng') : undefined}
+      />
+    );
+  }
+
   return (
     <div className="bg-surface-secondary text-ink min-h-screen flex flex-col font-sans antialiased">
       <div className="page-container max-w-[800px] pt-8"><CustomerCenterNavigation /></div>
       <div className="page-container max-w-[800px] py-12 md:py-16 flex-grow flex flex-col items-center justify-center">
-
-        {!hasBookingId ? (
-          // The gateway redirect carried no booking (unknown callback / invalid signature): nothing to look up, and no outcome to claim.
-          <div className={resultCardClass}>
-            <h1 className="text-2xl font-bold text-heading mb-2">Chưa xác định được kết quả thanh toán</h1>
-            <p className="text-sm text-muted leading-relaxed mb-6">
-              Chúng tôi không nhận được thông tin đơn đặt phòng từ cổng thanh toán nên chưa thể xác nhận giao dịch. Nếu tài khoản của bạn đã bị trừ tiền, hãy kiểm tra trong "Đặt phòng của tôi" hoặc gửi yêu cầu hỗ trợ kèm thời điểm thanh toán.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/bookings" className="btn btn-primary sm:flex-1 py-3 text-base">Xem đặt phòng của tôi</Link>
-              <Link to="/support" className="btn btn-secondary sm:flex-1 py-3 text-base">Liên hệ hỗ trợ</Link>
-            </div>
-          </div>
-        ) : statusQuery.isLoading ? (
-          <PageSpinner />
-        ) : statusQuery.isError && !booking ? (
-          <div className={resultCardClass}>
-            <h1 className="text-2xl font-bold text-heading mb-2">Không thể tải kết quả thanh toán</h1>
-            <p role="alert" className="text-sm text-muted leading-relaxed mb-6">
-              {statusQuery.error instanceof ApiError ? statusQuery.error.message : 'Đã có lỗi khi lấy trạng thái đơn đặt phòng. Vui lòng thử lại.'}
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button type="button" className="btn btn-primary sm:flex-1 py-3 text-base" onClick={() => statusQuery.refetch()}>Thử lại</button>
-              <Link to={`/bookings/${bookingId}`} className="btn btn-secondary sm:flex-1 py-3 text-base">Xem đơn đặt phòng</Link>
-            </div>
-          </div>
-        ) : result?.kind === 'cancelled-paid' && booking ? (
-          <div className={resultCardClass}>
-            <h1 className="text-2xl font-bold text-heading mb-2">Đơn đặt phòng không được xác nhận</h1>
-            <p className="text-sm text-muted leading-relaxed mb-3">
-              Đơn đã hết hạn hoặc đã bị hủy trước khi thanh toán hoàn tất, nên không được xác nhận.
-            </p>
-            <p className="text-sm font-semibold text-heading leading-relaxed mb-6">{refundMessage(result, booking.MaXacNhanDatPhong)}</p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to={`/bookings/${bookingId}`} className="btn btn-primary sm:flex-1 py-3 text-base">Xem chi tiết đơn</Link>
-              <Link to="/support" className="btn btn-secondary sm:flex-1 py-3 text-base">Liên hệ hỗ trợ</Link>
-            </div>
-          </div>
-        ) : isConfirmed ? (
-          <div className="bg-white rounded-3xl border border-border p-8 md:p-12 shadow-md w-full max-w-2xl text-center">
-            <h1 className="text-2xl font-bold text-heading mb-2">Thanh toán thành công!</h1>
-            <p className="text-sm text-muted mb-4">Cảm ơn bạn đã lựa chọn Egode. Đặt phòng của bạn đã được xác nhận.</p>
-            {booking && (
-              <div className="inline-block text-xl font-bold text-primary bg-blue-50 px-5 py-2 rounded-xl border border-dashed border-primary/40 mb-8">
-                {booking.MaXacNhanDatPhong}
-              </div>
-            )}
-
-            {booking && (
-              <div className="card text-left mb-8 shadow-sm border border-border">
-                <div className="card-body">
-                  <div className="flex justify-between items-center mb-5 pb-4 border-b border-border">
-                    <h3 className="text-base font-semibold text-heading">Tổng quan giao dịch</h3>
-                    <span className="status-badge status-confirmed">Thành công</span>
-                  </div>
-                  
-                  <div className="flex justify-between items-center pt-2">
-                    <span className="text-sm text-muted">Số tiền thanh toán</span>
-                    <span className="text-xl font-bold text-primary">{formatCurrencyVND(latestPayment?.SoTien || 0)}</span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              {Number.isFinite(bookingId) && bookingId > 0 && (
-                <Link to={`/bookings/${bookingId}`} className="btn btn-primary sm:flex-1 py-3 text-base">Xem đơn đặt phòng</Link>
-              )}
-              <Link to="/" className="btn btn-secondary sm:flex-1 py-3 text-base">Về trang chủ</Link>
-            </div>
-          </div>
-        ) : isFailed ? (
-          <div className="bg-white rounded-3xl border border-border p-8 md:p-12 shadow-md w-full max-w-2xl text-center">
-            <h1 className="text-2xl font-bold text-heading mb-2">Thanh toán không thành công</h1>
-            <p className="text-sm text-muted leading-relaxed mb-6">
-              Giao dịch qua thanh toán trực tuyến không thành công. Vui lòng kiểm tra lại số dư tài khoản hoặc thử lại phương thức thanh toán khác.
-            </p>
-            
-            {payMutation.isError && (
-              <p role="alert" className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">
-                {payMutation.error instanceof ApiError ? payMutation.error.message : 'Không thể khởi tạo thanh toán'}
-              </p>
-            )}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-               {canRetryPayment && (
-                 <button type="button" className="btn btn-primary sm:flex-1 py-3 text-base" onClick={retryPayment} disabled={payMutation.isPending}>
-                   {payMutation.isPending ? 'Đang chuyển đến cổng thanh toán...' : 'Thử thanh toán lại'}
-                 </button>
-               )}
-               {Number.isFinite(bookingId) && bookingId > 0 && (
-                 <Link to={`/bookings/${bookingId}`} className={canRetryPayment ? 'btn btn-secondary sm:flex-1 py-3 text-base' : 'btn btn-danger sm:flex-1 py-3 text-base'}>Về chi tiết đơn</Link>
-               )}
-            </div>
-          </div>
-        ) : (
-          <div className="bg-white rounded-3xl border border-border p-8 md:p-12 shadow-md w-full max-w-2xl text-center">
-            <h1 className="text-2xl font-bold text-heading mb-2">Đang xử lý kết quả...</h1>
-            <p className="text-sm text-muted leading-relaxed mb-6">
-              {hintStatus === 'success'
-                ? 'VNPAY báo thành công, đang chờ xác nhận cuối cùng từ hệ thống.'
-                : 'Vui lòng kiểm tra lại trạng thái đặt phòng trong ít phút.'}
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-               {Number.isFinite(bookingId) && bookingId > 0 && (
-                 <Link to={`/bookings/${bookingId}`} className="btn btn-primary sm:flex-1 py-3 text-base">Xem đơn đặt phòng</Link>
-               )}
-            </div>
-          </div>
-        )}
-
+        {outcome}
       </div>
-
     </div>
   );
 }

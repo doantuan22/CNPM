@@ -6,6 +6,7 @@ import { formatCurrencyVND, formatDateVi } from '../../lib/utils';
 import { ApiError } from '../../services/apiClient';
 import { StatusBadge } from '../../components/domain/StatusBadge';
 import { BOOKING_TABS, canReviewBooking, matchesBookingTab, type BookingTab } from '../../features/bookings/status';
+import { FilterChip } from '../../components/common/FilterChip';
 import { PageSpinner } from '../../components/common/PageSpinner';
 
 export default function BookingsPage() {
@@ -21,14 +22,14 @@ export default function BookingsPage() {
         <h1>Đặt phòng của tôi</h1>
       </div>
 
-      <div className="pill-tabs mb-5">
-        {BOOKING_TABS.map((tab) => (<button key={tab.key} type="button" className={`pill-tab ${activeTab === tab.key ? 'active' : ''}`} onClick={() => setActiveTab(tab.key)}>{tab.label}</button>))}
+      <div role="group" aria-label="Lọc đặt phòng theo trạng thái" className="pill-tabs mb-5">
+        {BOOKING_TABS.map((tab) => (<FilterChip key={tab.key} pressed={activeTab === tab.key} onClick={() => setActiveTab(tab.key)}>{tab.label}</FilterChip>))}
       </div>
 
       {bookingsQuery.isLoading ? (
         <PageSpinner />
       ) : bookingsQuery.isError ? (
-        <div role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div role="alert" className="rounded-lg bg-danger-light px-4 py-3 text-sm text-danger-ink">
           {bookingsQuery.error instanceof ApiError ? bookingsQuery.error.message : 'Không thể tải danh sách đặt phòng'}
         </div>
       ) : !bookingsQuery.data || bookingsQuery.data.length === 0 ? (
@@ -52,6 +53,8 @@ export default function BookingsPage() {
                 <img
                   src={b.AnhDaiDien}
                   alt=""
+                  loading="lazy"
+                  decoding="async"
                   className="booking-history-page__hotel-image"
                 />
               )}

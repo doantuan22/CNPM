@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { useForgotPassword } from '../../features/auth/hooks';
 import { forgotPasswordSchema, ForgotPasswordFormValues } from '../../features/auth/schemas';
 import { cn } from '../../lib/utils';
+import { Button } from '../../components/common/Button';
 
 export default function ForgotPasswordPage() {
   const mutation = useForgotPassword();
@@ -35,34 +36,34 @@ export default function ForgotPasswordPage() {
             </div>
 
             <div className="flex items-center gap-2 bg-white px-2">
-              <div className={cn("w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs border-2", mutation.isSuccess ? "bg-primary border-primary text-white" : "border-slate-300 text-slate-400")}>
+              <div className={cn("w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs border-2", mutation.isSuccess ? "bg-primary border-primary text-white" : "border-border-strong text-ink-muted")}>
                 2
               </div>
-              <span className={cn("text-sm font-medium hidden sm:inline", mutation.isSuccess ? "text-primary font-bold" : "text-slate-400")}>2. Kiểm tra email</span>
+              <span className={cn("text-sm font-medium hidden sm:inline", mutation.isSuccess ? "text-primary font-bold" : "text-ink-muted")}>2. Kiểm tra email</span>
             </div>
 
             <div className="flex items-center gap-2 bg-white pl-2">
-              <div className="w-6 h-6 rounded-full border-2 border-slate-300 flex items-center justify-center text-slate-400 font-bold text-xs">
+              <div className="w-6 h-6 rounded-full border-2 border-border-strong flex items-center justify-center text-ink-muted font-bold text-xs">
                 3
               </div>
-              <span className="text-sm font-medium text-slate-400 hidden sm:inline">3. Đặt mật khẩu mới</span>
+              <span className="text-sm font-medium text-ink-muted hidden sm:inline">3. Đặt mật khẩu mới</span>
             </div>
           </div>
 
           {mutation.isSuccess ? (
-            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-5 flex gap-4 mb-8">
+            <div className="bg-success-light border border-success/30 rounded-xl p-5 flex gap-4 mb-8">
               <div className="flex-shrink-0 mt-0.5">
-                <i className="ph-fill ph-check-circle text-emerald-600 text-2xl"></i>
+                <i className="ph-fill ph-check-circle text-success text-2xl"></i>
               </div>
-              <p className="text-sm text-emerald-800 leading-relaxed">
+              <p className="text-sm text-success-ink leading-relaxed">
                 Một hướng dẫn đặt lại mật khẩu đã được gửi đến địa chỉ email: <br/>
-                <span className="font-bold text-emerald-900">{email}</span>. Vui lòng kiểm tra hộp thư đến (và thư rác).
+                <span className="font-bold text-success-ink">{email}</span>. Vui lòng kiểm tra hộp thư đến (và thư rác).
               </p>
             </div>
           ) : (
             <>
               <div className="text-center mb-8">
-                <div className="inline-flex justify-center items-center w-16 h-16 rounded-full bg-blue-50 mb-4 text-primary">
+                <div className="inline-flex justify-center items-center w-16 h-16 rounded-full bg-primary-50 mb-4 text-primary">
                   <i className="ph-duotone ph-envelope-simple-open text-3xl"></i>
                 </div>
                 <h1 className="text-2xl font-bold text-ink mb-2">Quên mật khẩu?</h1>
@@ -73,7 +74,7 @@ export default function ForgotPasswordPage() {
 
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
                 {mutation.isError && (
-                  <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 border border-red-200">
+                  <div className="rounded-lg bg-danger-light px-4 py-3 text-sm text-danger-ink border border-danger/30">
                     Có lỗi xảy ra, vui lòng kiểm tra lại email hoặc thử lại sau.
                   </div>
                 )}
@@ -81,31 +82,30 @@ export default function ForgotPasswordPage() {
                 <div className="space-y-1.5">
                   <label htmlFor="Email" className="block text-sm font-semibold text-ink">Địa chỉ Email</label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-ink-muted">
                       <i className="ph ph-envelope-simple text-lg"></i>
                     </div>
                     <input 
                       type="email" 
                       id="Email" 
                       placeholder="name@example.com"
-                      className={cn("w-full pl-10 pr-4 py-3 rounded-xl border bg-white text-ink text-sm placeholder:text-slate-400 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all", errors.Email ? "border-rose-500 bg-rose-50/20" : "border-border")}
+                      className={cn("w-full pl-10 pr-4 py-3 rounded-xl border bg-white text-ink text-sm placeholder:text-ink-muted focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/15 transition-all", errors.Email ? "border-danger bg-danger-light/20" : "border-border")}
                       {...register('Email')}
                     />
                   </div>
-                  {errors.Email && <p className="text-xs text-rose-500 font-medium mt-1.5 flex items-center gap-1"><i className="ph-fill ph-warning-circle"></i>{errors.Email.message}</p>}
+                  {errors.Email && <p className="text-xs text-danger font-medium mt-1.5 flex items-center gap-1"><i className="ph-fill ph-warning-circle"></i>{errors.Email.message}</p>}
                 </div>
 
-                <button 
+                <Button 
                   type="submit" 
-                  disabled={isSubmitting || mutation.isPending}
-                  className="w-full bg-primary hover:bg-primary-700 active:bg-primary-800 text-white font-bold py-3.5 px-4 rounded-xl transition-all shadow-md shadow-primary/30 mt-6 disabled:opacity-70 flex justify-center items-center gap-2"
+                  disabled={isSubmitting || mutation.isPending} size="lg" className="w-full mt-6"
                 >
                   {isSubmitting || mutation.isPending ? (
                      <>Đang gửi... <div className="spinner w-4 h-4 border-2 border-white/20 border-t-white" aria-hidden="true"></div></>
                   ) : (
                     'Gửi hướng dẫn qua email'
                   )}
-                </button>
+                </Button>
 
                 <div className="text-center mt-6">
                   <Link to="/login" className="inline-flex items-center gap-1.5 text-sm text-primary font-bold hover:underline">

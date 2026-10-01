@@ -1,4 +1,4 @@
-import { Building2, CalendarCheck, ChevronDown, CreditCard, FileText, Hotel, LayoutDashboard, LogOut, Menu, MessageSquare, Percent, Star, UserRound, Users, BarChart3 } from 'lucide-react';
+import { Icon } from '../common/Icon';
 import { useCallback, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useUiStore } from '../../lib/store';
@@ -12,32 +12,38 @@ type DashboardRole = typeof ROLE_NAMES.ADMIN | typeof ROLE_NAMES.PARTNER;
 
 const ownerGroups = [
   { title: 'Quản lý khách sạn', items: [
-    { to: '/owner/overview', label: 'Tổng quan', icon: LayoutDashboard },
-    { to: '/owner/hotels', label: 'Khách sạn của tôi', icon: Building2 },
-    { to: '/owner/room-types', label: 'Loại phòng', icon: Hotel },
-    { to: '/owner/inventory-pricing', label: 'Quỹ phòng & giá bán', icon: CalendarCheck },
-    { to: '/owner/bookings', label: 'Đặt phòng', icon: FileText },
+    { to: '/owner/overview', label: 'Tổng quan', icon: 'squares-four' },
+    { to: '/owner/hotels', label: 'Khách sạn của tôi', icon: 'buildings' },
+    { to: '/owner/room-types', label: 'Loại phòng', icon: 'bed' },
+    { to: '/owner/inventory-pricing', label: 'Quỹ phòng & giá bán', icon: 'calendar-check' },
+    { to: '/owner/bookings', label: 'Đặt phòng', icon: 'file-text' },
   ]},
   { title: 'Kinh doanh & báo cáo', items: [
-    { to: '/owner/revenue', label: 'Doanh thu', icon: CreditCard },
-    { to: '/owner/reports', label: 'Báo cáo thống kê', icon: BarChart3 },
-    { to: '/owner/profile', label: 'Hồ sơ cá nhân', icon: UserRound },
+    { to: '/owner/revenue', label: 'Doanh thu', icon: 'credit-card' },
+    { to: '/owner/reports', label: 'Báo cáo thống kê', icon: 'chart-bar' },
+    { to: '/owner/profile', label: 'Hồ sơ cá nhân', icon: 'user' },
   ]},
 ];
 
 const adminGroups = [
-  { title: 'Điều hành nền tảng', items: [
-    { to: '/admin', label: 'Tổng quan', icon: LayoutDashboard },
-    { to: '/admin/accounts', label: 'Tài khoản', icon: Users },
-    { to: '/admin/partner-applications', label: 'Hồ sơ đăng ký', icon: FileText },
-    { to: '/admin/hotels', label: 'Khách sạn', icon: Building2 },
+  { title: 'Tổng quan', items: [
+    { to: '/admin', label: 'Bảng điều khiển', icon: 'squares-four' },
+    { to: '/admin/analytics', label: 'Thống kê', icon: 'chart-bar' },
   ]},
-  { title: 'Vận hành sàn', items: [
-    { to: '/admin/payments', label: 'Thanh toán & giao dịch', icon: CreditCard },
-    { to: '/admin/reviews', label: 'Đánh giá', icon: Star },
-    { to: '/admin/support', label: 'Hỗ trợ & khiếu nại', icon: MessageSquare },
-    { to: '/admin/promotions', label: 'Khuyến mãi', icon: Percent },
-    { to: '/admin/analytics', label: 'Thống kê', icon: BarChart3 },
+  { title: 'Đối tác & khách sạn', items: [
+    { to: '/admin/partner-applications', label: 'Hồ sơ đăng ký', icon: 'file-text' },
+    { to: '/admin/hotels', label: 'Khách sạn', icon: 'buildings' },
+  ]},
+  { title: 'Người dùng', items: [
+    { to: '/admin/accounts', label: 'Tài khoản', icon: 'users' },
+  ]},
+  { title: 'Giao dịch', items: [
+    { to: '/admin/payments', label: 'Thanh toán & giao dịch', icon: 'credit-card' },
+    { to: '/admin/promotions', label: 'Khuyến mãi', icon: 'percent' },
+  ]},
+  { title: 'Nội dung & hỗ trợ', items: [
+    { to: '/admin/reviews', label: 'Đánh giá', icon: 'star' },
+    { to: '/admin/support', label: 'Hỗ trợ & khiếu nại', icon: 'chat-text' },
   ]},
 ];
 
@@ -98,15 +104,14 @@ export function DashboardNavigation({ role }: { role: DashboardRole }) {
             <div key={group.title}>
               <p className="dashboard-sidebar__group-title">{group.title}</p>
               {group.items.map((item) => {
-                const Icon = item.icon;
                 const active = activePath(location.pathname, item.to);
-                return <Link key={`${item.to}-${item.label}`} to={destinationFor(item.to)} onClick={closeSidebar} className={cn('dashboard-sidebar__item', active && 'active')} aria-current={active ? 'page' : undefined}><Icon className="h-[18px] w-[18px]" /><span>{item.label}</span></Link>;
+                return <Link key={`${item.to}-${item.label}`} to={destinationFor(item.to)} onClick={closeSidebar} className={cn('dashboard-sidebar__item', active && 'active')} aria-current={active ? 'page' : undefined}><Icon name={item.icon} size={18} /><span>{item.label}</span></Link>;
               })}
             </div>
           ))}
         </nav>
         <div className="dashboard-sidebar__footer">
-          <button type="button" className="dashboard-sidebar__item text-red-600 hover:bg-red-50" onClick={logout} disabled={isSigningOut}><LogOut className="h-[18px] w-[18px]" /><span>{isSigningOut ? 'Đang thoát...' : 'Đăng xuất'}</span></button>
+          <button type="button" className="dashboard-sidebar__item text-danger hover:bg-danger-light" onClick={logout} disabled={isSigningOut}><Icon name="sign-out" size={18} /><span>{isSigningOut ? 'Đang thoát...' : 'Đăng xuất'}</span></button>
         </div>
       </aside>
       {isSidebarOpen && <button type="button" aria-label="Đóng menu" className="sidebar-scrim open" onClick={closeSidebar} />}
@@ -119,5 +124,5 @@ export function DashboardTopbar({ role }: { role: DashboardRole }) {
   const meQuery = useMe();
   const name = meQuery.data?.HoTen ?? (role === ROLE_NAMES.ADMIN ? 'Quản trị viên' : 'Đối tác');
   const profilePath = profilePathFor(role);
-  return <header className="dashboard-topbar"><button type="button" className="dashboard-sidebar-toggle btn btn-icon btn-ghost" onClick={toggleSidebar} aria-label="Mở menu"><Menu className="h-5 w-5" /></button><div className="dashboard-topbar__actions"><Link to={profilePath} className="site-header__user"><span className="site-header__avatar dashboard-user-avatar">{name.charAt(0).toUpperCase()}</span><span className="dashboard-user-meta hidden text-left sm:block"><strong>{name}</strong><small>{role === ROLE_NAMES.ADMIN ? 'Quản trị viên' : 'Chủ khách sạn'}</small></span><ChevronDown className="h-4 w-4 text-slate-400" /></Link></div></header>;
+  return <header className="dashboard-topbar"><button type="button" className="dashboard-sidebar-toggle btn btn-icon btn-ghost" onClick={toggleSidebar} aria-label="Mở menu"><Icon name="list" size={20} /></button><div className="dashboard-topbar__actions"><Link to={profilePath} className="site-header__user"><span className="site-header__avatar dashboard-user-avatar">{name.charAt(0).toUpperCase()}</span><span className="dashboard-user-meta hidden text-left sm:block"><strong>{name}</strong><small>{role === ROLE_NAMES.ADMIN ? 'Quản trị viên' : 'Chủ khách sạn'}</small></span><Icon name="caret-down" size={16} className="text-ink-muted" /></Link></div></header>;
 }
