@@ -1,3 +1,6 @@
+USE HotelBooking;
+GO
+
 -- =====================================================================
 -- DB-0 Baseline Migration 003: Room Inventory
 -- Tables: LOAI_PHONG, HINH_ANH_LOAI_PHONG, LOAI_PHONG_TIEN_NGHI, QUY_PHONG_GIA
