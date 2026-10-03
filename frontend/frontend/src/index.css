@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+@import "./assets/css/variables.css";
+@import "./assets/css/base.css";
+@import "./assets/css/layout.css";
+@import "./assets/css/components.css";
+@import "./assets/css/booking-flow.css";
+
+
+@theme {
+  --font-sans: var(--font-family);
+  --radius-sm: var(--radius-control-sm);
+  --radius-md: var(--radius-control);
+  --radius-lg: var(--radius-control);
+  --radius-xl: var(--radius-surface);
+  --radius-2xl: var(--radius-surface);
+  --radius-full: var(--radius-pill);
+  --shadow-xs: var(--elevation-1);
+  --shadow-sm: var(--elevation-1);
+  --shadow-md: var(--elevation-2);
+  --shadow-lg: var(--elevation-3);
+
+  /* Tailwind utilities consume the same semantic CSS tokens as component CSS. */
+  --color-primary-50: color-mix(in srgb, var(--color-action-primary) 5%, white);
+  --color-primary-100: color-mix(in srgb, var(--color-action-primary) 12%, white);
+  --color-primary-200: color-mix(in srgb, var(--color-action-primary) 24%, white);
+  --color-primary-300: color-mix(in srgb, var(--color-action-primary) 42%, white);
+  --color-primary-400: color-mix(in srgb, var(--color-action-primary) 62%, white);
+  --color-primary-500: color-mix(in srgb, var(--color-action-primary) 82%, white);
+  --color-primary-600: var(--color-action-primary);
+  --color-primary-700: var(--color-action-primary-hover);
+  --color-primary-800: var(--color-action-primary-active);
+  --color-primary: var(--color-action-primary);
+
+  --color-ink: var(--color-text-primary);
+  --color-ink-sub: var(--color-text-secondary);
+  --color-ink-muted: var(--color-text-muted);
+
+  --color-surface: var(--color-surface-raised);
+  --color-surface-secondary: var(--color-surface-page);
+  --color-surface-tertiary: var(--color-surface-subtle);
+
+  --color-border: var(--color-border-default);
+  --color-border-strong: var(--border-strong);
+  --color-success: var(--state-success);
+  --color-success-light: var(--state-success-subtle);
+  --color-warning: var(--state-warning);
+  --color-warning-light: var(--state-warning-subtle);
+  --color-danger: var(--state-danger);
+  --color-danger-light: var(--state-danger-subtle);
+
+  /* Text-safe state colors (>= 4.5:1 on white and on the *-light backgrounds): text-success-ink etc. */
+  --color-success-ink: var(--color-success-text);
+  --color-warning-ink: var(--color-warning-text);
+  --color-danger-ink: var(--color-danger-text);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  background-color: var(--color-bg-secondary);
+}
