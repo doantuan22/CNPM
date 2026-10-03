@@ -1,17 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  Link,
-  useLocation,
-  useNavigate,
-} from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 import { useLogin } from '../../features/auth/hooks';
-
 import {
   loginSchema,
-  type LoginFormValues,
+  LoginFormValues,
 } from '../../features/auth/schemas';
 
 import { ApiError } from '../../services/apiClient';
@@ -19,7 +14,6 @@ import { ROLE_HOME } from '../../lib/roles';
 import { decodeAccessToken } from '../../lib/jwt';
 import { useAuthStore } from '../../lib/authStore';
 import { cn } from '../../lib/utils';
-
 import { Button } from '../../components/common/Button';
 
 const LOGO_SRC = '/egode_logo.png';
@@ -45,136 +39,99 @@ export default function LoginPage() {
   const [showPwd, setShowPwd] = useState(false);
 
   useEffect(() => {
-    useAuthStore
-      .getState()
-      .acknowledgeSessionExpired();
+    useAuthStore.getState().acknowledgeSessionExpired();
   }, []);
 
   const {
     register,
     handleSubmit,
-
-    formState: {
-      errors,
-      isSubmitting,
-    },
+    formState: { errors, isSubmitting },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
   });
 
-  const onSubmit = async (
-    data: LoginFormValues
-  ) => {
+  const onSubmit = async (data: LoginFormValues) => {
     try {
-      const result =
-        await loginMutation.mutateAsync(data);
+      const result = await loginMutation.mutateAsync(data);
 
-      const decoded =
-        decodeAccessToken(
-          result.accessToken
-        );
+      const decoded = decodeAccessToken(
+        result.accessToken
+      );
 
       const fallback =
-        (decoded &&
-          ROLE_HOME[decoded.role]) ||
-        '/';
+        (decoded && ROLE_HOME[decoded.role]) || '/';
 
-      const returnTo =
-        location.state?.from;
+      const returnTo = location.state?.from;
 
       navigate(
         returnTo?.pathname
-          ? `${returnTo.pathname}${
-              returnTo.search ?? ''
-            }`
+          ? `${returnTo.pathname}${returnTo.search ?? ''}`
           : fallback,
         {
           replace: true,
         }
       );
     } catch {
-      // Error displayed below
+      // Lỗi hiển thị bằng loginMutation.isError
     }
   };
 
-  const busy =
-    isSubmitting ||
-    loginMutation.isPending;
-
-  const inputClass = (
-    hasError?: boolean
-  ) =>
+  const inputClass = (hasError?: boolean) =>
     cn(
       `
-        h-[54px]
         w-full
-        rounded-[14px]
+        rounded-xl
         border
         bg-white
-        py-0
-        text-[14px]
+        py-3
+        text-sm
         font-medium
-        leading-none
-        text-slate-800
+        text-slate-900
         outline-none
-
         transition-all
         duration-200
-
-        placeholder:font-normal
         placeholder:text-slate-400
-
-        hover:border-slate-300
-
-        focus:border-blue-500
+        focus:border-primary
         focus:ring-4
-        focus:ring-blue-500/10
+        focus:ring-primary/10
       `,
       hasError
-        ? `
-            border-red-400
-            bg-red-50/30
-          `
-        : `
-            border-slate-200
-          `
+        ? 'border-danger bg-danger-light/20'
+        : 'border-slate-200 hover:border-slate-300'
     );
 
   return (
-    <main
+    <div
       className="
         relative
-        isolate
-        min-h-[calc(100vh-var(--header-height))]
         overflow-hidden
-        bg-slate-950
         bg-cover
         bg-center
         bg-no-repeat
       "
       style={{
+        minHeight:
+          'calc(100vh - var(--header-height))',
+
         backgroundImage:
           "url('/login_bg.jpg')",
 
         fontFamily:
-          '"Be Vietnam Pro", sans-serif',
+          'var(--font-family)',
       }}
     >
-      {/* ==========================
+      {/* =====================================================
           BACKGROUND
-      ========================== */}
+      ===================================================== */}
 
       <div
         className="
           absolute
           inset-0
-          -z-10
-
           bg-gradient-to-r
-
-          from-slate-950/80
-          via-slate-950/42
-          to-slate-900/5
+          from-slate-950/62
+          via-slate-900/25
+          to-sky-900/5
         "
       />
 
@@ -183,445 +140,344 @@ export default function LoginPage() {
           absolute
           inset-x-0
           bottom-0
-          -z-10
-          h-[55%]
-
+          h-[35%]
           bg-gradient-to-t
-          from-slate-950/55
-          via-slate-950/15
+          from-slate-950/28
           to-transparent
         "
       />
 
-      <div
-        className="
-          pointer-events-none
-          absolute
-          -left-40
-          top-[22%]
-          -z-10
-
-          h-[500px]
-          w-[500px]
-
-          rounded-full
-
-          bg-cyan-400/10
-
-          blur-[130px]
-        "
-      />
-
-      {/* ==========================
-          PAGE
-      ========================== */}
+      {/* =====================================================
+          MAIN
+      ===================================================== */}
 
       <div
         className="
+          relative
+          z-10
           mx-auto
-
           flex
-
-          min-h-[calc(100vh-var(--header-height))]
-
           w-full
           max-w-[1500px]
-
           items-center
-
-          px-6
-          py-8
-
+          px-7
+          py-6
           lg:px-12
-
-          xl:px-16
+          xl:px-14
         "
+        style={{
+          minHeight:
+            'calc(100vh - var(--header-height))',
+        }}
       >
         <div
           className="
             grid
             w-full
             items-center
-
             gap-10
-
-            lg:grid-cols-[minmax(0,1.15fr)_minmax(430px,520px)]
-
-            xl:gap-20
+            lg:grid-cols-[1.05fr_0.95fr]
+            xl:gap-14
           "
         >
+          {/* =================================================
+              LEFT HERO
+          ================================================= */}
 
-          {/* ==========================================
-              LEFT
-          ========================================== */}
-
-          <section
-            className="
-              hidden
-              lg:block
-            "
-          >
+          <section className="hidden lg:block">
             <div className="max-w-[760px]">
 
-              {/* Mini badge */}
-
-              <div
-                className="
-                  mb-7
-
-                  inline-flex
-                  items-center
-                  gap-2.5
-
-                  rounded-full
-
-                  border
-                  border-white/20
-
-                  bg-slate-950/35
-
-                  px-5
-                  py-2.5
-
-                  text-[14px]
-                  font-semibold
-
-                  text-slate-100
-
-                  shadow-lg
-
-                  backdrop-blur-md
-                "
-              >
-                <i
-                  className="
-                    ph
-                    ph-map-pin
-
-                    text-[19px]
-                    text-cyan-300
-                  "
-                  aria-hidden="true"
-                />
-
-                Đặt phòng dễ dàng cùng Egode
-              </div>
-
-              {/* MAIN HEADLINE */}
+              {/* DÒNG 1 */}
 
               <h1
                 className="
-                  max-w-[720px]
-
-                  text-[clamp(3rem,4.3vw,4.65rem)]
-
-                  font-extrabold
-
-                  leading-[1.12]
-
-                  tracking-[-0.045em]
+                  whitespace-nowrap
+                  text-[clamp(3rem,4vw,4.3rem)]
+                  font-bold
+                  italic
+                  leading-[1]
+                  tracking-[-0.035em]
                 "
                 style={{
-                  color: '#ffffff',
+                  fontFamily:
+                    'Georgia, "Times New Roman", serif',
+
+                  color: '#FFFFFF',
 
                   textShadow:
-                    '0 4px 18px rgba(0,0,0,0.55)',
+                    '0 3px 6px rgba(0,0,0,0.85), 0 10px 26px rgba(0,0,0,0.55)',
                 }}
               >
-                <span
-                  className="
-                    block
-                    !text-white
-                  "
-                >
-                  Chào mừng trở lại
-                </span>
-
-                <span
-                  className="
-                    mt-2
-                    block
-                    !text-white
-                  "
-                >
-                  cùng{' '}
-
-                  <span
-                    className="
-                      inline-block
-
-                      italic
-                      font-extrabold
-
-                      bg-gradient-to-r
-                      from-cyan-300
-                      via-sky-300
-                      to-blue-400
-
-                      bg-clip-text
-
-                      text-transparent
-
-                      drop-shadow-[0_4px_14px_rgba(34,211,238,0.40)]
-
-                      transition-all
-                      duration-300
-
-                      hover:scale-[1.03]
-                    "
-                    style={{
-                      transform:
-                        'skewX(-3deg)',
-                    }}
-                  >
-                    Egode.
-                  </span>
-                </span>
+                Chào mừng trở lại
               </h1>
 
-              {/* decorative line */}
+              {/* DÒNG 2 */}
 
               <div
                 className="
-                  relative
-
-                  mt-6
-
-                  h-[4px]
-                  w-[150px]
-
-                  overflow-hidden
-
-                  rounded-full
-
-                  bg-white/15
+                  mt-1
+                  whitespace-nowrap
+                  text-[clamp(3.05rem,4.15vw,4.5rem)]
+                  font-extrabold
+                  italic
+                  leading-[1]
+                  tracking-[-0.045em]
                 "
+                style={{
+                  fontFamily:
+                    '"Segoe UI", Arial, Helvetica, sans-serif',
+                }}
               >
-                <div
+                <span
+                  style={{
+                    color: '#FFFFFF',
+
+                    textShadow:
+                      '0 3px 6px rgba(0,0,0,0.85), 0 8px 22px rgba(0,0,0,0.50)',
+                  }}
+                >
+                  cùng{' '}
+                </span>
+
+                <span
+                  style={{
+                    color: '#66D9FF',
+
+                    textShadow:
+                      '0 3px 6px rgba(0,0,0,0.75), 0 8px 20px rgba(0,0,0,0.45)',
+                  }}
+                >
+                  Egode.
+                </span>
+              </div>
+
+              {/* =================================================
+                  BRUSH WAVE
+              ================================================= */}
+
+              <div className="mt-2 ml-[62px]">
+                <svg
+                  viewBox="0 0 560 48"
+                  fill="none"
                   className="
-                    absolute
-                    inset-y-0
-                    left-0
-
-                    w-[80%]
-
-                    rounded-full
-
-                    bg-gradient-to-r
-                    from-cyan-300
-                    to-blue-500
-
-                    shadow-[0_0_18px_rgba(56,189,248,0.85)]
+                    h-[32px]
+                    w-[430px]
+                    overflow-visible
                   "
-                />
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-hidden="true"
+                >
+                  <defs>
+                    <linearGradient
+                      id="loginWaveGradient"
+                      x1="0"
+                      y1="0"
+                      x2="560"
+                      y2="0"
+                      gradientUnits="userSpaceOnUse"
+                    >
+                      <stop
+                        offset="0%"
+                        stopColor="#8BE8FF"
+                        stopOpacity="0.08"
+                      />
+
+                      <stop
+                        offset="12%"
+                        stopColor="#75E2FF"
+                        stopOpacity="0.95"
+                      />
+
+                      <stop
+                        offset="50%"
+                        stopColor="#55CEF5"
+                      />
+
+                      <stop
+                        offset="86%"
+                        stopColor="#72DFFF"
+                        stopOpacity="0.9"
+                      />
+
+                      <stop
+                        offset="100%"
+                        stopColor="#A2EEFF"
+                        stopOpacity="0.08"
+                      />
+                    </linearGradient>
+
+                    <filter
+                      id="loginWaveGlow"
+                      x="-20%"
+                      y="-100%"
+                      width="140%"
+                      height="300%"
+                    >
+                      <feGaussianBlur
+                        stdDeviation="1.2"
+                        result="blur"
+                      />
+
+                      <feMerge>
+                        <feMergeNode in="blur" />
+                        <feMergeNode in="SourceGraphic" />
+                      </feMerge>
+                    </filter>
+                  </defs>
+
+                  <path
+                    d="
+                      M8 26
+                      C86 12 167 8 252 10
+                      C335 12 416 21 548 24
+
+                      C431 27 343 24 255 21
+                      C169 18 90 20 8 31
+                      Z
+                    "
+                    fill="url(#loginWaveGradient)"
+                    opacity="0.98"
+                    filter="url(#loginWaveGlow)"
+                  />
+
+                  <path
+                    d="
+                      M118 36
+                      C184 31 257 30 325 32
+                      C383 34 430 37 477 41
+
+                      C421 39 373 38 319 37
+                      C252 35 186 35 118 39
+                      Z
+                    "
+                    fill="#82E5FF"
+                    opacity="0.32"
+                  />
+                </svg>
               </div>
 
               {/* DESCRIPTION */}
 
               <p
                 className="
-                  mt-6
-
-                  max-w-[670px]
-
+                  mt-3
+                  max-w-[650px]
                   text-[16px]
-
-                  font-medium
-
-                  leading-[1.9]
-
-                  !text-white
+                  font-semibold
+                  leading-7
                 "
                 style={{
+                  color: '#FFFFFF',
+
                   textShadow:
-                    '0 2px 8px rgba(0,0,0,0.75)',
+                    '0 2px 5px rgba(0,0,0,0.95), 0 5px 14px rgba(0,0,0,0.55)',
                 }}
               >
-                Đăng nhập để tiếp tục tìm kiếm
+                Đăng nhập để tiếp tục khám phá
                 khách sạn, quản lý chuyến đi và
-                hoàn tất những kỳ nghỉ bạn đang
-                lên kế hoạch.
+                trải nghiệm những kỳ nghỉ tuyệt vời
+                cùng Egode.
               </p>
+            </div>
 
-              {/* ======================================
-                  FEATURE CARDS
-              ====================================== */}
+            {/* =================================================
+                FEATURE CARDS
+            ================================================= */}
 
-              <div
-                className="
-                  mt-9
+            <div
+              className="
+                mt-8
+                grid
+                max-w-[680px]
+                grid-cols-3
+                gap-4
+              "
+            >
+              <LoginFeatureCard
+                icon="ph-map-pin"
+                title="Khám phá"
+                description="Tìm kiếm điểm đến và khách sạn phù hợp."
+              />
 
-                  grid
+              <LoginFeatureCard
+                icon="ph-shield-check"
+                title="An toàn"
+                description="Thông tin và tài khoản được quản lý bảo mật."
+              />
 
-                  max-w-[720px]
-
-                  grid-cols-3
-
-                  gap-4
-                "
-              >
-                <LoginFeatureCard
-                  icon="ph-map-pin"
-                  title="Khám phá"
-                  description="Tìm kiếm điểm đến và khách sạn phù hợp."
-                />
-
-                <LoginFeatureCard
-                  icon="ph-shield-check"
-                  title="An tâm"
-                  description="Thông tin tài khoản của bạn được bảo vệ."
-                />
-
-                <LoginFeatureCard
-                  icon="ph-lightning"
-                  title="Nhanh chóng"
-                  description="Tiếp tục đặt phòng chỉ trong vài bước."
-                />
-              </div>
-
+              <LoginFeatureCard
+                icon="ph-cursor-click"
+                title="Nhanh chóng"
+                description="Tiếp tục hành trình chỉ với vài thao tác."
+              />
             </div>
           </section>
 
-          {/* ==========================================
-              RIGHT
-          ========================================== */}
+          {/* =================================================
+              LOGIN CARD
+          ================================================= */}
 
-          <div
-            className="
-              flex
-              w-full
-
-              justify-center
-
-              lg:justify-end
-            "
-          >
+          <div className="flex justify-center lg:justify-end">
             <section
               className="
                 w-full
-                max-w-[510px]
-
+                max-w-[520px]
                 rounded-[30px]
-
                 border
-                border-white/70
-
+                border-white/80
                 bg-white/95
-
-                px-8
-                py-9
-
-                shadow-[0_30px_100px_rgba(15,23,42,0.38)]
-
+                px-7
+                py-7
+                shadow-[0_25px_80px_rgba(15,23,42,0.28)]
                 backdrop-blur-xl
-
-                sm:px-10
+                sm:px-8
               "
             >
+              {/* LOGO */}
 
-              {/* ======================================
-                  HEADER
-              ====================================== */}
-
-              <header
-                className="
-                  mb-9
-
-                  flex
-                  flex-col
-
-                  items-center
-
-                  text-center
-                "
-              >
-
-                {/* LOGO */}
-
-                <div
+              <div className="mb-4 flex justify-center">
+                <img
+                  src={LOGO_SRC}
+                  alt="Egode"
                   className="
-                    mb-6
-
-                    flex
-                    h-[66px]
-
-                    items-center
-                    justify-center
+                    h-[64px]
+                    w-auto
+                    max-w-[210px]
+                    object-contain
                   "
-                >
-                  <img
-                    src={LOGO_SRC}
-                    alt="Egode"
+                />
+              </div>
 
-                    className="
-                      h-[60px]
-                      w-auto
+              {/* HEADER */}
 
-                      object-contain
-
-                      drop-shadow-[0_5px_10px_rgba(37,99,235,0.15)]
-                    "
-                  />
-                </div>
-
-                {/* TITLE */}
-
-                <h2
+              <div className="mb-7 text-center">
+                <h1
                   className="
-                    !m-0
-
-                    bg-gradient-to-r
-                    from-slate-900
-                    via-blue-900
-                    to-blue-600
-
-                    bg-clip-text
-
-                    text-[31px]
-
+                    text-[30px]
                     font-extrabold
-
-                    leading-[1.3]
-
-                    tracking-[-0.035em]
-
-                    !text-transparent
+                    tracking-[-0.025em]
+                    text-slate-900
                   "
                 >
                   Đăng nhập
-                </h2>
-
-                {/* SUBTITLE */}
+                </h1>
 
                 <p
                   className="
                     mx-auto
-                    mt-3
-
-                    max-w-[365px]
-
-                    text-[14px]
-
-                    font-normal
-
+                    mt-1.5
+                    max-w-[390px]
+                    text-sm
+                    font-medium
                     leading-6
-
-                    !text-slate-500
+                    text-slate-500
                   "
                 >
-                  Chào mừng bạn quay lại.
-                  Đăng nhập để tiếp tục trải nghiệm{' '}
-
-                  <span
-                    className="
-                      font-semibold
-                      text-blue-600
-                    "
-                  >
-                    cùng Egode.
-                  </span>
+                  Chào mừng bạn quay lại!
+                  Đăng nhập để tiếp tục trải nghiệm
+                  cùng Egode.
                 </p>
-              </header>
+              </div>
 
               {/* SESSION EXPIRED */}
 
@@ -629,44 +485,23 @@ export default function LoginPage() {
                 !loginMutation.isError && (
                   <div
                     role="alert"
-
                     className="
-                      mb-5
-
+                      mb-4
                       flex
                       items-start
-
                       gap-2.5
-
                       rounded-xl
-
                       border
-                      border-amber-200
-
-                      bg-amber-50
-
+                      border-warning/30
+                      bg-warning-light
                       px-4
                       py-3
-
                       text-sm
                       font-medium
-
-                      text-amber-800
+                      text-warning-ink
                     "
                   >
-                    <i
-                      className="
-                        ph-fill
-                        ph-warning-circle
-
-                        mt-0.5
-
-                        shrink-0
-
-                        text-lg
-                      "
-                      aria-hidden="true"
-                    />
+                    <i className="ph-fill ph-warning-circle mt-0.5 text-lg" />
 
                     <span>
                       Phiên đăng nhập đã hết hạn.
@@ -680,208 +515,150 @@ export default function LoginPage() {
               {loginMutation.isError && (
                 <div
                   role="alert"
-
                   className="
-                    mb-5
-
+                    mb-4
                     flex
                     items-start
-
                     gap-2.5
-
                     rounded-xl
-
                     border
-                    border-red-200
-
-                    bg-red-50
-
+                    border-danger/30
+                    bg-danger-light
                     px-4
                     py-3
-
                     text-sm
                     font-medium
-
-                    text-red-700
+                    text-danger-ink
                   "
                 >
-                  <i
-                    className="
-                      ph-fill
-                      ph-warning-circle
-
-                      mt-0.5
-
-                      shrink-0
-
-                      text-lg
-                    "
-                    aria-hidden="true"
-                  />
+                  <i className="ph-fill ph-warning-circle mt-0.5 text-lg" />
 
                   <span>
-                    {loginMutation.error
-                      instanceof ApiError
+                    {loginMutation.error instanceof
+                    ApiError
                       ? loginMutation.error.message
                       : 'Đăng nhập thất bại, vui lòng thử lại'}
                   </span>
                 </div>
               )}
 
-              {/* ======================================
+              {/* =================================================
                   FORM
-              ====================================== */}
+              ================================================= */}
 
               <form
-                onSubmit={
-                  handleSubmit(onSubmit)
-                }
-
+                onSubmit={handleSubmit(onSubmit)}
                 className="space-y-5"
-
                 noValidate
               >
+                {/* IDENTIFIER */}
 
-                {/* USERNAME */}
-
-                <div>
+                <div className="space-y-1.5">
                   <label
                     htmlFor="identifier"
-
                     className="
-                      mb-2
-
                       block
-
-                      text-[13px]
-
+                      text-xs
                       font-bold
-
-                      leading-5
-
-                      !text-slate-700
+                      uppercase
+                      tracking-wide
+                      text-slate-700
                     "
                   >
                     Email hoặc tên đăng nhập
 
-                    <span className="ml-1 text-red-500">
+                    <span className="text-danger">
                       *
                     </span>
                   </label>
 
                   <div className="relative">
-
                     <i
                       className="
                         ph
                         ph-user
-
-                        pointer-events-none
-
                         absolute
-
-                        left-4
+                        left-3.5
                         top-1/2
-
                         -translate-y-1/2
-
-                        text-[20px]
-
+                        text-lg
                         text-slate-400
                       "
-                      aria-hidden="true"
                     />
 
                     <input
                       type="text"
-
                       id="identifier"
-
                       placeholder="Email hoặc tên đăng nhập"
-
                       autoComplete="username"
-
                       className={cn(
                         inputClass(
                           !!errors.identifier
                         ),
-                        'pl-12 pr-4'
+                        'pl-10 pr-3.5'
                       )}
-
-                      {...register(
-                        'identifier'
-                      )}
+                      {...register('identifier')}
                     />
                   </div>
 
                   {errors.identifier && (
                     <p
                       className="
-                        mt-1.5
-
+                        flex
+                        items-center
+                        gap-1
                         text-xs
-
                         font-medium
-
-                        text-red-500
+                        text-danger
                       "
                     >
-                      {
-                        errors.identifier
-                          .message
-                      }
+                      <i className="ph-fill ph-warning-circle" />
+
+                      <span>
+                        {
+                          errors.identifier
+                            .message
+                        }
+                      </span>
                     </p>
                   )}
                 </div>
 
                 {/* PASSWORD */}
 
-                <div>
-                  <label
-                    htmlFor="MatKhau"
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label
+                      htmlFor="MatKhau"
+                      className="
+                        block
+                        text-xs
+                        font-bold
+                        uppercase
+                        tracking-wide
+                        text-slate-700
+                      "
+                    >
+                      Mật khẩu
 
-                    className="
-                      mb-2
-
-                      block
-
-                      text-[13px]
-
-                      font-bold
-
-                      leading-5
-
-                      !text-slate-700
-                    "
-                  >
-                    Mật khẩu
-
-                    <span className="ml-1 text-red-500">
-                      *
-                    </span>
-                  </label>
+                      <span className="text-danger">
+                        *
+                      </span>
+                    </label>
+                  </div>
 
                   <div className="relative">
-
                     <i
                       className="
                         ph
                         ph-lock-key
-
-                        pointer-events-none
-
                         absolute
-
-                        left-4
+                        left-3.5
                         top-1/2
-
                         -translate-y-1/2
-
-                        text-[19px]
-
+                        text-lg
                         text-slate-400
                       "
-                      aria-hidden="true"
                     />
 
                     <input
@@ -890,60 +667,32 @@ export default function LoginPage() {
                           ? 'text'
                           : 'password'
                       }
-
                       id="MatKhau"
-
                       placeholder="Nhập mật khẩu"
-
                       autoComplete="current-password"
-
                       className={cn(
                         inputClass(
                           !!errors.MatKhau
                         ),
-                        'pl-12 pr-12'
+                        'pl-10 pr-11'
                       )}
-
-                      {...register(
-                        'MatKhau'
-                      )}
+                      {...register('MatKhau')}
                     />
 
                     <button
                       type="button"
-
                       onClick={() =>
-                        setShowPwd(
-                          (value) => !value
-                        )
+                        setShowPwd(!showPwd)
                       }
-
                       className="
                         absolute
-
-                        right-3
+                        right-3.5
                         top-1/2
-
-                        flex
-
-                        h-8
-                        w-8
-
                         -translate-y-1/2
-
-                        items-center
-                        justify-center
-
-                        rounded-lg
-
                         text-slate-400
-
                         transition
-
-                        hover:bg-slate-100
-                        hover:text-blue-600
+                        hover:text-slate-800
                       "
-
                       aria-label={
                         showPwd
                           ? 'Ẩn mật khẩu'
@@ -960,50 +709,43 @@ export default function LoginPage() {
                         )}
                       />
                     </button>
-
                   </div>
 
                   {errors.MatKhau && (
                     <p
                       className="
-                        mt-1.5
-
+                        flex
+                        items-center
+                        gap-1
                         text-xs
-
                         font-medium
-
-                        text-red-500
+                        text-danger
                       "
                     >
-                      {
-                        errors.MatKhau
-                          .message
-                      }
+                      <i className="ph-fill ph-warning-circle" />
+
+                      <span>
+                        {
+                          errors.MatKhau
+                            .message
+                        }
+                      </span>
                     </p>
                   )}
                 </div>
 
                 {/* FORGOT PASSWORD */}
 
-                <div
-                  className="
-                    flex
-                    justify-end
-                  "
-                >
+                <div className="flex justify-end">
                   <Link
                     to="/forgot-password"
-
                     className="
-                      text-[13px]
-
+                      text-sm
                       font-semibold
-
-                      text-slate-600
-
-                      transition-colors
-
-                      hover:text-blue-600
+                      text-primary
+                      transition
+                      hover:text-primary-700
+                      hover:underline
                     "
                   >
                     Quên mật khẩu?
@@ -1014,162 +756,81 @@ export default function LoginPage() {
 
                 <Button
                   type="submit"
-
                   size="lg"
-
-                  disabled={busy}
-
-                  className="
-                    min-h-[54px]
-
-                    w-full
-
-                    justify-center
-
-                    rounded-[12px]
-
-                    bg-gradient-to-r
-                    from-blue-600
-                    to-blue-500
-
-                    text-[15px]
-
-                    font-bold
-
-                    text-white
-
-                    shadow-[0_8px_24px_rgba(37,99,235,0.24)]
-
-                    transition-all
-
-                    duration-200
-
-                    hover:-translate-y-[1px]
-                    hover:shadow-[0_12px_30px_rgba(37,99,235,0.32)]
-                  "
+                  disabled={
+                    isSubmitting ||
+                    loginMutation.isPending
+                  }
+                  className="w-full"
                 >
-                  {busy ? (
+                  {isSubmitting ||
+                  loginMutation.isPending ? (
                     <>
                       Đang xử lý...
 
-                      <span
+                      <div
                         className="
                           spinner
-
                           h-4
                           w-4
-
                           border-2
-
                           border-white/20
                           border-t-white
                         "
+                        aria-hidden="true"
                       />
                     </>
                   ) : (
                     <>
                       Đăng nhập
 
-                      <i
-                        className="
-                          ph
-                          ph-arrow-right
-
-                          text-lg
-                        "
-                      />
+                      <i className="ph ph-arrow-right ml-1 text-lg" />
                     </>
                   )}
                 </Button>
-
               </form>
 
-              {/* ======================================
-                  DIVIDER
-              ====================================== */}
+              {/* DIVIDER */}
 
-              <div
-                className="
-                  my-7
+              <div className="my-6 flex items-center gap-3">
+                <div className="h-px flex-1 bg-slate-200" />
 
-                  flex
-                  items-center
-
-                  gap-4
-                "
-              >
-                <div
-                  className="
-                    h-px
-                    flex-1
-
-                    bg-slate-200
-                  "
-                />
-
-                <span
-                  className="
-                    text-xs
-                    font-medium
-
-                    text-slate-400
-                  "
-                >
+                <span className="text-xs font-medium text-slate-400">
                   hoặc
                 </span>
 
-                <div
-                  className="
-                    h-px
-                    flex-1
-
-                    bg-slate-200
-                  "
-                />
+                <div className="h-px flex-1 bg-slate-200" />
               </div>
 
               {/* REGISTER */}
 
-              <p
-                className="
-                  text-center
-
-                  text-[14px]
-
-                  !text-slate-500
-                "
-              >
+              <p className="text-center text-sm font-medium text-slate-500">
                 Chưa có tài khoản?{' '}
 
                 <Link
                   to="/register"
-
                   className="
                     font-bold
-
-                    text-blue-600
-
-                    transition-colors
-
-                    hover:text-blue-700
+                    text-primary
+                    transition
+                    hover:text-primary-700
+                    hover:underline
                   "
                 >
                   Đăng ký ngay
                 </Link>
               </p>
-
             </section>
           </div>
-
         </div>
       </div>
-    </main>
+    </div>
   );
 }
 
-/* ==========================================================
+/* =========================================================
    FEATURE CARD
-========================================================== */
+========================================================= */
 
 interface LoginFeatureCardProps {
   icon: string;
@@ -1183,118 +844,62 @@ function LoginFeatureCard({
   description,
 }: LoginFeatureCardProps) {
   return (
-    <article
+    <div
       className="
-        group
-
-        min-h-[168px]
-
         rounded-[22px]
-
         border
-        border-white/20
-
-        bg-slate-950/55
-
+        border-white/25
+        bg-[#102033]/84
         p-5
-
-        shadow-[0_18px_45px_rgba(0,0,0,0.22)]
-
-        backdrop-blur-md
-
-        transition-all
+        shadow-lg
+        backdrop-blur-xl
+        transition
         duration-300
-
         hover:-translate-y-1
-
-        hover:border-cyan-300/35
-
-        hover:bg-slate-900/70
-
-        hover:shadow-[0_22px_55px_rgba(0,0,0,0.30)]
+        hover:bg-[#152A42]/94
       "
     >
-
-      {/* ICON */}
-
       <div
         className="
           mb-4
-
           flex
-
           h-12
           w-12
-
           items-center
           justify-center
-
-          rounded-[14px]
-
+          rounded-2xl
           border
-          border-cyan-200/20
-
-          bg-gradient-to-br
-          from-cyan-300/15
-          to-blue-500/15
-
-          text-cyan-300
-
-          shadow-inner
-
-          transition
-
-          duration-300
-
-          group-hover:scale-105
-
-          group-hover:border-cyan-300/40
+          border-white/20
+          bg-white/10
+          text-sky-300
         "
       >
         <i
-          className={`ph ${icon} text-[25px]`}
-          aria-hidden="true"
+          className={`ph ${icon} text-[26px]`}
         />
       </div>
 
-      {/* TITLE */}
-
-      <h3
+      <p
         className="
-          !text-[16px]
-
-          !font-bold
-
-          !leading-6
-
-          !text-white
+          text-[17px]
+          font-extrabold
+          text-white
         "
-        style={{
-          textShadow:
-            '0 2px 7px rgba(0,0,0,0.65)',
-        }}
       >
         {title}
-      </h3>
-
-      {/* DESCRIPTION */}
+      </p>
 
       <p
         className="
-          mt-1.5
-
+          mt-2
           text-[13px]
-
-          font-normal
-
-          leading-5
-
-          !text-slate-200
+          font-medium
+          leading-6
+          text-slate-200
         "
       >
         {description}
       </p>
-
-    </article>
+    </div>
   );
 }
