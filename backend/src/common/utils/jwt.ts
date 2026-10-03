@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { env } from '../../config/env';
+import { FINGERPRINT_PATTERN } from './password-fingerprint';
 
 const ACCESS_TOKEN_TTL = '15m';
 const REFRESH_TOKEN_TTL = '7d';
@@ -12,8 +13,18 @@ export interface JwtPayload {
   role: string; // VAI_TRO.TenVaiTro
 }
 
+/**
+ * Refresh tokens also carry `pwdv`, a fingerprint of the password hash they were
+ * issued under. AuthService.refresh() compares it with the account's current hash,
+ * so a password change/reset kills every refresh token issued before it.
+ */
+export interface RefreshJwtPayload extends JwtPayload {
+  pwdv: string;
+}
+
 interface SignedTokenPayload extends JwtPayload {
   typ: 'access' | 'refresh';
+  pwdv?: unknown;
 }
 
 export const signAccessToken = (payload: JwtPayload): string => {
@@ -26,7 +37,7 @@ export const signAccessToken = (payload: JwtPayload): string => {
   });
 };
 
-export const signRefreshToken = (payload: JwtPayload): string => {
+export const signRefreshToken = (payload: RefreshJwtPayload): string => {
   const body: SignedTokenPayload = { ...payload, typ: 'refresh' };
   return jwt.sign(body, env.JWT_REFRESH_SECRET, {
     expiresIn: REFRESH_TOKEN_TTL,
@@ -51,11 +62,17 @@ export const verifyAccessToken = (token: string): JwtPayload => {
   return assertPayload(decoded, 'access');
 };
 
-export const verifyRefreshToken = (token: string): JwtPayload => {
+export const verifyRefreshToken = (token: string): RefreshJwtPayload => {
   const decoded = jwt.verify(token, env.JWT_REFRESH_SECRET, {
     algorithms: [JWT_ALGORITHM], issuer: JWT_ISSUER, audience: JWT_AUDIENCE,
   }) as SignedTokenPayload;
-  return assertPayload(decoded, 'refresh');
+  const payload = assertPayload(decoded, 'refresh');
+  // A refresh token without a valid fingerprint predates BUG-012 (or is forged); it cannot be
+  // checked against the password, so it is refused and the user signs in again.
+  if (typeof decoded.pwdv !== 'string' || !FINGERPRINT_PATTERN.test(decoded.pwdv)) {
+    throw new Error('Invalid token payload');
+  }
+  return { ...payload, pwdv: decoded.pwdv };
 };
 
 export const REFRESH_TOKEN_COOKIE_NAME = 'refresh_token';

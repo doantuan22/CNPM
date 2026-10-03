@@ -34,6 +34,13 @@ export function formatCountdown(totalSeconds: number): string {
   return h > 0 ? `${h}:${two(m)}:${two(s)}` : `${two(m)}:${two(s)}`;
 }
 
+/** "tuan@gmail.com" -> "t***@gmail.com": enough for the owner to recognise it, not enough to read it aloud. */
+export function maskEmail(email: string): string {
+  const at = email.lastIndexOf('@');
+  if (at < 1) return email;
+  return `${email[0]}***${email.slice(at)}`;
+}
+
 /** "05/10/2026 – 06/10/2026" for a stay; both values are date-only API/URL strings. */
 export function formatDateRangeVi(from: string, to: string, separator = ' – '): string {
   return `${formatDateVi(from)}${separator}${formatDateVi(to)}`;

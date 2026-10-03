@@ -33,3 +33,9 @@ export const resetPasswordSchema = z.object({
   MatKhauMoi: z.string().min(8, 'Mật khẩu phải có ít nhất 8 ký tự').max(128),
 });
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
+
+export const changePasswordSchema = z.object({
+  MatKhauCu: z.string().min(1, 'Vui lòng nhập mật khẩu hiện tại').max(128),
+  MatKhauMoi: z.string().min(8, 'Mật khẩu phải có ít nhất 8 ký tự').max(128),
+});
+export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;

@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { useResetPassword } from '../../features/auth/hooks';
+import { useResetPassword, useSignOut } from '../../features/auth/hooks';
+import { useAuthStore } from '../../lib/authStore';
 import { resetPasswordSchema, ResetPasswordFormValues } from '../../features/auth/schemas';
 import { ApiError } from '../../services/apiClient';
 import { cn } from '../../lib/utils';
@@ -13,6 +14,9 @@ export default function ResetPasswordPage() {
   const navigate = useNavigate();
   const token = searchParams.get('token') ?? '';
   const mutation = useResetPassword();
+  // The same email link serves "forgot password" (signed out) and "change password" from the profile (signed in).
+  const isChangingPassword = useAuthStore((s) => !!s.accessToken);
+  const { signOut } = useSignOut();
 
   const {
     register,
@@ -29,6 +33,8 @@ export default function ResetPasswordPage() {
   const onSubmit = async (data: ResetPasswordFormValues) => {
     try {
       await mutation.mutateAsync(data);
+      // Every session was just invalidated, this one included: drop it locally so /login is not bounced back home.
+      if (isChangingPassword) await signOut();
       navigate('/login', { replace: true });
     } catch {
       // surfaced via mutation.isError below
@@ -43,8 +49,14 @@ export default function ResetPasswordPage() {
             <i className="ph-fill ph-warning-circle"></i>
           </div>
           <h1 className="text-2xl font-bold text-ink mb-2">Liên kết không hợp lệ</h1>
-          <p className="text-sm text-ink-muted mb-6">Thiếu token đặt lại mật khẩu. Vui lòng yêu cầu lại từ trang quên mật khẩu.</p>
-          <Link to="/forgot-password" className="text-sm font-semibold text-primary hover:underline">Quên mật khẩu</Link>
+          <p className="text-sm text-ink-muted mb-6">
+            {isChangingPassword
+              ? 'Thiếu token đổi mật khẩu. Vui lòng quay lại hồ sơ và bấm Đổi mật khẩu để nhận link mới.'
+              : 'Thiếu token đặt lại mật khẩu. Vui lòng yêu cầu lại từ trang quên mật khẩu.'}
+          </p>
+          {isChangingPassword
+            ? <Link to="/profile" className="text-sm font-semibold text-primary hover:underline">Quay lại hồ sơ</Link>
+            : <Link to="/forgot-password" className="text-sm font-semibold text-primary hover:underline">Quên mật khẩu</Link>}
         </div>
       </div>
     );
@@ -63,7 +75,7 @@ export default function ResetPasswordPage() {
               <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white font-bold text-xs">
                 <i className="ph-bold ph-check text-sm"></i>
               </div>
-              <span className="text-sm font-medium text-ink hidden sm:inline">1. Nhập email</span>
+              <span className="text-sm font-medium text-ink hidden sm:inline">{isChangingPassword ? '1. Yêu cầu đổi mật khẩu' : '1. Nhập email'}</span>
             </div>
 
             <div className="flex items-center gap-2 bg-white px-2">
@@ -86,9 +98,11 @@ export default function ResetPasswordPage() {
                 <i className="ph-fill ph-check-circle text-primary text-xl"></i>
               </div>
             </div>
-            <h1 className="text-2xl font-bold text-ink mb-2">Đặt mật khẩu mới</h1>
+            <h1 className="text-2xl font-bold text-ink mb-2">{isChangingPassword ? 'Đổi mật khẩu' : 'Đặt mật khẩu mới'}</h1>
             <p className="text-sm text-ink-muted leading-relaxed max-w-md mx-auto">
-              Vui lòng nhập mật khẩu mới và xác nhận lại để hoàn tất việc đặt lại mật khẩu.
+              {isChangingPassword
+                ? 'Email của bạn đã được xác nhận. Nhập mật khẩu mới; sau khi hoàn tất, bạn sẽ cần đăng nhập lại trên mọi thiết bị.'
+                : 'Vui lòng nhập mật khẩu mới và xác nhận lại để hoàn tất việc đặt lại mật khẩu.'}
             </p>
           </div>
 
@@ -153,9 +167,9 @@ export default function ResetPasswordPage() {
             </Button>
 
             <div className="text-center mt-6">
-              <Link to="/login" className="inline-flex items-center gap-1.5 text-sm text-primary font-medium hover:underline">
+              <Link to={isChangingPassword ? '/profile' : '/login'} className="inline-flex items-center gap-1.5 text-sm text-primary font-medium hover:underline">
                 <i className="ph-bold ph-arrow-left"></i>
-                Quay lại Đăng nhập
+                {isChangingPassword ? 'Quay lại hồ sơ' : 'Quay lại Đăng nhập'}
               </Link>
             </div>
           </form>
