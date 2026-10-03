@@ -119,3 +119,93 @@ describe('PATCH /api/profile/me', () => {
     expect(res.body.data.GioiTinh).toBe('Khác');
   });
 });
+
+describe('SoDienThoai validation is the same for register and PATCH /api/profile/me (BUG-009)', () => {
+  const VALID: Array<[string, string]> = [
+    ['0901234567', '0901234567'],
+    ['+84901234567', '+84901234567'],
+    [' 0901234567 ', '0901234567'], // trimmed, then stored
+    ['12345678', '12345678'], // 8 digits: lower bound
+    ['123456789012345', '123456789012345'], // 15 digits: upper bound
+  ];
+  const INVALID = [
+    'abcdefgh',
+    'not-a-phone-number',
+    '09012abc567',
+    '1234567', // 7 digits
+    '1234567890123456', // 18 digits
+    '+' + '1'.repeat(16), // 16 digits after +
+    '090 123 4567', // inner spaces
+    '++84901234567',
+    '84+901234567', // + not at the start
+    '',
+    '   ',
+  ];
+
+  const patchPhone = async (token: string, SoDienThoai: unknown) =>
+    request(app).patch('/api/profile/me').set('Authorization', `Bearer ${token}`).send({ SoDienThoai });
+
+  it('accepts valid numbers on update (trimmed) and persists them', async () => {
+    const { account, plainPassword } = await createTestAccount();
+    createdAccountIds.push(account.MaTaiKhoan);
+    const token = await loginAndGetToken(account.Email, plainPassword);
+
+    for (const [input, stored] of VALID) {
+      const res = await patchPhone(token, input);
+      expect(res.status, JSON.stringify(input)).toBe(200);
+      expect(res.body.data.SoDienThoai, JSON.stringify(input)).toBe(stored);
+    }
+  });
+
+  it('rejects invalid numbers on update with 400 and leaves the stored number untouched', async () => {
+    const { account, plainPassword } = await createTestAccount();
+    createdAccountIds.push(account.MaTaiKhoan);
+    const token = await loginAndGetToken(account.Email, plainPassword);
+    const before = (await request(app).get('/api/profile/me').set('Authorization', `Bearer ${token}`)).body.data.SoDienThoai;
+
+    for (const input of INVALID) {
+      const res = await patchPhone(token, input);
+      expect(res.status, JSON.stringify(input)).toBe(400);
+    }
+    const after = (await request(app).get('/api/profile/me').set('Authorization', `Bearer ${token}`)).body.data.SoDienThoai;
+    expect(after).toBe(before);
+  });
+
+  it('a non-string SoDienThoai is rejected on update', async () => {
+    const { account, plainPassword } = await createTestAccount();
+    createdAccountIds.push(account.MaTaiKhoan);
+    const token = await loginAndGetToken(account.Email, plainPassword);
+    expect((await patchPhone(token, 901234567)).status).toBe(400);
+  });
+
+  it('omitting SoDienThoai on update is still fine (partial update)', async () => {
+    const { account, plainPassword } = await createTestAccount();
+    createdAccountIds.push(account.MaTaiKhoan);
+    const token = await loginAndGetToken(account.Email, plainPassword);
+    const res = await request(app).patch('/api/profile/me').set('Authorization', `Bearer ${token}`).send({ HoTen: 'Only Name Changes' });
+    expect(res.status).toBe(200);
+  });
+
+  it('registration applies the exact same rule (valid trimmed, invalid 400)', async () => {
+    const register = (SoDienThoai: string) => {
+      const suffix = `${Date.now()}_${Math.floor(Math.random() * 1e6)}`;
+      return request(app).post('/api/auth/register').send({
+        TenDangNhap: `phone_${suffix}`,
+        Email: `phone_${suffix}@example.com`,
+        MatKhau: 'Test@12345',
+        HoTen: 'Phone Rule',
+        SoDienThoai,
+      });
+    };
+
+    for (const [input, stored] of VALID) {
+      const res = await register(input);
+      expect(res.status, JSON.stringify(input)).toBe(201);
+      expect(res.body.data.account.SoDienThoai, JSON.stringify(input)).toBe(stored);
+      createdAccountIds.push(res.body.data.account.MaTaiKhoan);
+    }
+    for (const input of INVALID) {
+      expect((await register(input)).status, JSON.stringify(input)).toBe(400);
+    }
+  });
+});

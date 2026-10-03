@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { phoneNumberSchema } from '../../common/utils/phone-number';
 
 export const registerSchema = z.object({
   TenDangNhap: z
@@ -9,7 +10,7 @@ export const registerSchema = z.object({
   Email: z.string().trim().email('Email không đúng định dạng').max(255).transform((value) => value.toLowerCase()),
   MatKhau: z.string().min(8, 'Mật khẩu phải có ít nhất 8 ký tự').max(128),
   HoTen: z.string().trim().min(2, 'Họ tên ít nhất 2 ký tự').max(150),
-  SoDienThoai: z.string().trim().regex(/^\+?[0-9]{8,15}$/, 'Số điện thoại không hợp lệ'),
+  SoDienThoai: phoneNumberSchema,
   // DDI-01 (resolved): optional at registration — nullable in the baseline.
   NgaySinh: z.coerce.date().optional(),
   GioiTinh: z.enum(['Nam', 'Nữ', 'Khác']).optional(),

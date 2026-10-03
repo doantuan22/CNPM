@@ -148,3 +148,27 @@ describe('GET /admin/analytics — review/support breakdowns', () => {
     expect(Array.isArray(res.body.data.HoanTienTheoTrangThai)).toBe(true);
   });
 });
+
+describe('GET /admin/analytics — date range validation (BUG-007)', () => {
+  const get = (query: Record<string, string>) =>
+    request(app).get('/api/admin/analytics').query(query).set('Authorization', `Bearer ${adminToken}`);
+
+  it('rejects an inverted range (from after to) with 400 instead of silently reporting an empty period', async () => {
+    const res = await get({ from: '2021-06-30', to: '2021-06-01' });
+    expect(res.status).toBe(400);
+    expect(res.body.success).toBe(false);
+    expect(res.body.errors[0].field).toBe('from');
+    expect(res.body.data).toBeUndefined();
+  });
+
+  it('still accepts a one-day range (from == to), an open-ended range, and no range at all', async () => {
+    expect((await get({ from: '2021-06-15', to: '2021-06-15' })).status).toBe(200);
+    expect((await get({ from: '2021-06-15' })).status).toBe(200);
+    expect((await get({ to: '2021-06-15' })).status).toBe(200);
+    expect((await get({})).status).toBe(200);
+  });
+
+  it('still rejects an unparseable date with 400', async () => {
+    expect((await get({ to: 'not-a-date' })).status).toBe(400);
+  });
+});

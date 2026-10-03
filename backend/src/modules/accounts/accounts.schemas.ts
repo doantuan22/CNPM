@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { phoneNumberSchema } from '../../common/utils/phone-number';
 
 export const listAccountsQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
@@ -18,7 +19,7 @@ export const createAccountSchema = z.object({
   Email: z.string().email(),
   MatKhau: z.string().min(8, 'Mật khẩu phải có ít nhất 8 ký tự').max(128),
   HoTen: z.string().min(2).max(150),
-  SoDienThoai: z.string().min(8).max(20),
+  SoDienThoai: phoneNumberSchema,
   // DDI-01 (resolved): nullable in the baseline, optional here too.
   NgaySinh: z.coerce.date().optional(),
   GioiTinh: z.enum(['Nam', 'Nữ', 'Khác']).optional(),
@@ -38,7 +39,7 @@ export const updateAccountSchema = z
       .regex(/^[a-zA-Z0-9_.]+$/),
     Email: z.string().email(),
     HoTen: z.string().min(2).max(150),
-    SoDienThoai: z.string().min(8).max(20),
+    SoDienThoai: phoneNumberSchema,
     NgaySinh: z.coerce.date(),
     GioiTinh: z.enum(['Nam', 'Nữ', 'Khác']),
     AnhDaiDien: z.string().max(500),

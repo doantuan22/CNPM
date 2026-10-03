@@ -218,3 +218,117 @@ describe('Role lookups for admin account forms', () => {
     expect(JSON.stringify(detail.body.data)).not.toContain('MatKhau');
   });
 });
+
+describe('SoDienThoai validation on admin create/update uses the shared phone rule', () => {
+  const INVALID = [
+    'abcdefgh',
+    '09012abc567',
+    '1234567', // 7 digits
+    '123456', // far below 8
+    '1234567890123456', // 18 digits
+    '+' + '1'.repeat(16), // 16 digits after +
+    '090 123 4567', // inner spaces
+    '',
+    '   ',
+  ];
+
+  const adminCreate = async (token: string, SoDienThoai: unknown) => {
+    const suffix = `${Date.now()}${Math.floor(Math.random() * 100000)}`;
+    return request(app)
+      .post('/api/admin/accounts')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        TenDangNhap: `phone_admin_${suffix}`,
+        Email: `phone_admin_${suffix}@example.com`,
+        MatKhau: 'Test@12345',
+        HoTen: 'Phone Rule',
+        SoDienThoai,
+        MaVaiTro: await getRoleId(ROLE_NAMES.CUSTOMER),
+      });
+  };
+
+  const adminUpdate = (token: string, maTaiKhoan: number, body: Record<string, unknown>) =>
+    request(app).patch(`/api/admin/accounts/${maTaiKhoan}`).set('Authorization', `Bearer ${token}`).send(body);
+
+  const storedPhone = async (maTaiKhoan: number) =>
+    (await getPrismaClient().tAI_KHOAN.findUnique({ where: { MaTaiKhoan: maTaiKhoan } }))?.SoDienThoai;
+
+  it('create: accepts 0901234567 and +84901234567', async () => {
+    const { token } = await makeAdminToken();
+    for (const phone of ['0901234567', '+84901234567']) {
+      const res = await adminCreate(token, phone);
+      expect(res.status, phone).toBe(201);
+      expect(res.body.data.SoDienThoai, phone).toBe(phone);
+      createdAccountIds.push(res.body.data.MaTaiKhoan);
+    }
+  });
+
+  it('create: trims leading/trailing whitespace before storing', async () => {
+    const { token } = await makeAdminToken();
+    const res = await adminCreate(token, '  0901234567  ');
+    expect(res.status).toBe(201);
+    expect(res.body.data.SoDienThoai).toBe('0901234567');
+    expect(await storedPhone(res.body.data.MaTaiKhoan)).toBe('0901234567');
+    createdAccountIds.push(res.body.data.MaTaiKhoan);
+  });
+
+  it('create: rejects abcdefgh, 09012abc567, <8 digits and >15 digits with 400, and creates nothing', async () => {
+    const { token } = await makeAdminToken();
+    const prisma = getPrismaClient();
+    const before = await prisma.tAI_KHOAN.count();
+    for (const phone of INVALID) {
+      const res = await adminCreate(token, phone);
+      expect(res.status, JSON.stringify(phone)).toBe(400);
+    }
+    expect((await adminCreate(token, 901234567)).status).toBe(400); // non-string
+    expect(await prisma.tAI_KHOAN.count()).toBe(before);
+  });
+
+  it('update: accepts valid numbers (trimmed) and persists them', async () => {
+    const { token } = await makeAdminToken();
+    const { account } = await createTestAccount();
+    createdAccountIds.push(account.MaTaiKhoan);
+
+    for (const [input, stored] of [
+      ['0987654321', '0987654321'],
+      ['+84987654321', '+84987654321'],
+      ['  0912345678  ', '0912345678'],
+    ]) {
+      const res = await adminUpdate(token, account.MaTaiKhoan, { SoDienThoai: input });
+      expect(res.status, input).toBe(200);
+      expect(res.body.data.SoDienThoai, input).toBe(stored);
+      expect(await storedPhone(account.MaTaiKhoan), input).toBe(stored);
+    }
+  });
+
+  it('update: rejects invalid numbers with 400 and leaves the stored number (and other fields) untouched', async () => {
+    const { token } = await makeAdminToken();
+    const { account } = await createTestAccount();
+    createdAccountIds.push(account.MaTaiKhoan);
+    const before = await storedPhone(account.MaTaiKhoan);
+
+    for (const phone of INVALID) {
+      // HoTen rides along: a rejected request must not apply ANY of its fields.
+      const res = await adminUpdate(token, account.MaTaiKhoan, { SoDienThoai: phone, HoTen: 'Should Not Be Saved' });
+      expect(res.status, JSON.stringify(phone)).toBe(400);
+    }
+    expect((await adminUpdate(token, account.MaTaiKhoan, { SoDienThoai: 901234567 })).status).toBe(400);
+
+    const row = await getPrismaClient().tAI_KHOAN.findUnique({ where: { MaTaiKhoan: account.MaTaiKhoan } });
+    expect(row?.SoDienThoai).toBe(before);
+    expect(row?.HoTen).toBe(account.HoTen);
+  });
+
+  it('update: omitting SoDienThoai still works and leaves the stored number as is', async () => {
+    const { token } = await makeAdminToken();
+    const { account } = await createTestAccount();
+    createdAccountIds.push(account.MaTaiKhoan);
+    const before = await storedPhone(account.MaTaiKhoan);
+
+    const res = await adminUpdate(token, account.MaTaiKhoan, { HoTen: 'Name Only' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.data.HoTen).toBe('Name Only');
+    expect(await storedPhone(account.MaTaiKhoan)).toBe(before);
+  });
+});

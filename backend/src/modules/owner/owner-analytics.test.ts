@@ -170,6 +170,30 @@ describe('GET /owner/hotels/:id/analytics — date range', () => {
   });
 });
 
+describe('GET /owner/hotels/:id/analytics — date range validation (BUG-007)', () => {
+  const get = (query: Record<string, string>) =>
+    request(app).get(`/api/owner/hotels/${hotelAId}/analytics`).query(query).set('Authorization', `Bearer ${ownerAToken}`);
+
+  it('rejects an inverted range (from after to) with 400 instead of silently reporting an empty period', async () => {
+    const res = await get({ from: '2020-01-31', to: '2020-01-01' });
+    expect(res.status).toBe(400);
+    expect(res.body.success).toBe(false);
+    expect(res.body.errors[0].field).toBe('from');
+    expect(res.body.data).toBeUndefined();
+  });
+
+  it('still accepts a one-day range (from == to), an open-ended range, and no range at all', async () => {
+    expect((await get({ from: '2020-01-15', to: '2020-01-15' })).status).toBe(200);
+    expect((await get({ from: '2020-01-15' })).status).toBe(200);
+    expect((await get({ to: '2020-01-15' })).status).toBe(200);
+    expect((await get({})).status).toBe(200);
+  });
+
+  it('still rejects an unparseable date with 400', async () => {
+    expect((await get({ from: 'not-a-date' })).status).toBe(400);
+  });
+});
+
 describe('GET /owner/hotels/:id/analytics — room types and occupancy', () => {
   it('ranks the most-booked room type, and computes an exact occupancy rate from QUY_PHONG_GIA + CHI_TIET_DAT_PHONG', async () => {
     const prisma = getPrismaClient();
