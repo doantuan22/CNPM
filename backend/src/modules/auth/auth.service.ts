@@ -85,12 +85,17 @@ export class AuthService {
       throw AppError.unauthorized('Email/tên đăng nhập hoặc mật khẩu không đúng');
     }
 
+    // BUG-004: check the lock BEFORE the password. Doing it after made a locked
+    // account answer 403 only to the correct password and 401 to a wrong one,
+    // so anyone could use the status code as a password oracle. A locked
+    // account now answers 403 regardless of the password, which is never checked.
+    if (account.TrangThai === ACCOUNT_STATUS.LOCKED) {
+      throw AppError.forbidden('Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên');
+    }
+
     const validPassword = await verifyPassword(input.MatKhau, account.MatKhau);
     if (!validPassword) {
       throw AppError.unauthorized('Email/tên đăng nhập hoặc mật khẩu không đúng');
-    }
-    if (account.TrangThai === ACCOUNT_STATUS.LOCKED) {
-      throw AppError.forbidden('Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên');
     }
 
     const role = await this.rolesRepository.findById(account.MaVaiTro);

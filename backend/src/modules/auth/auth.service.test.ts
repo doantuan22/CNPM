@@ -1,3 +1,4 @@
+import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { describe, expect, it, vi } from 'vitest';
 import { env } from '../../config/env';
@@ -7,6 +8,7 @@ import { AuthRepository } from './auth.repository';
 import { RolesRepository } from '../roles/roles.repository';
 import { AuthService } from './auth.service';
 import { FakeEmailService } from '../email/email.service';
+import { ACCOUNT_STATUS } from '../../common/constants/account-status';
 
 const makeAccount = async () => ({
   MaTaiKhoan: 42,
@@ -99,5 +101,46 @@ describe('AuthService resetPassword', () => {
     await expect(service.resetPassword({ token: expiredToken, MatKhauMoi: 'NewPassword@123' })).rejects.toThrow(
       'Token đặt lại mật khẩu không hợp lệ hoặc đã hết hạn'
     );
+  });
+});
+
+describe('AuthService login — BUG-004', () => {
+  const loginService = (account: Record<string, unknown> | null) => {
+    const repository = { findByEmailOrUsername: vi.fn().mockResolvedValue(account) } as unknown as AuthRepository;
+    return new AuthService(repository, {} as RolesRepository, new FakeEmailService());
+  };
+
+  it('never runs the password check for a locked account, whatever password is sent', async () => {
+    const account = { ...(await makeAccount()), TrangThai: ACCOUNT_STATUS.LOCKED, MaVaiTro: 1 };
+    const service = loginService(account);
+    const compare = vi.spyOn(bcrypt, 'compare');
+
+    try {
+      for (const MatKhau of ['OldPassword@123', 'WrongPassword@123']) {
+        await expect(service.login({ identifier: account.Email, MatKhau })).rejects.toMatchObject({
+          statusCode: 403,
+          message: 'Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên',
+        });
+      }
+      expect(compare).not.toHaveBeenCalled();
+    } finally {
+      compare.mockRestore();
+    }
+  });
+
+  it('still checks the password for an active account and answers 401 when it is wrong', async () => {
+    const account = { ...(await makeAccount()), TrangThai: ACCOUNT_STATUS.ACTIVE, MaVaiTro: 1 };
+    const service = loginService(account);
+    const compare = vi.spyOn(bcrypt, 'compare');
+
+    try {
+      await expect(service.login({ identifier: account.Email, MatKhau: 'WrongPassword@123' })).rejects.toMatchObject({
+        statusCode: 401,
+        message: 'Email/tên đăng nhập hoặc mật khẩu không đúng',
+      });
+      expect(compare).toHaveBeenCalledOnce();
+    } finally {
+      compare.mockRestore();
+    }
   });
 });

@@ -166,6 +166,72 @@ describe('POST /api/auth/login', () => {
   });
 });
 
+describe('POST /api/auth/login — BUG-004: locked account is not a password oracle', () => {
+  const login = (identifier: string, MatKhau: string) => request(app).post('/api/auth/login').send({ identifier, MatKhau });
+
+  it('locked + correct password -> 403, locked + wrong password -> 403, with identical responses', async () => {
+    const { account, plainPassword } = await createTestAccount({ status: ACCOUNT_STATUS.LOCKED });
+    createdAccountIds.push(account.MaTaiKhoan);
+
+    const correct = await login(account.Email, plainPassword);
+    const wrong = await login(account.Email, 'WrongPassword123');
+
+    expect(correct.status).toBe(403);
+    expect(wrong.status).toBe(403);
+    // An attacker must not be able to tell the two apart: same status, same body, no tokens/cookie.
+    expect(wrong.body).toEqual(correct.body);
+    expect(correct.body.success).toBe(false);
+    expect(correct.body.message).toBe('Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên');
+    expect(correct.body.data).toBeUndefined();
+    expect(correct.headers['set-cookie']).toBeUndefined();
+    expect(wrong.headers['set-cookie']).toBeUndefined();
+    // Neither the submitted password nor any hash may be echoed back.
+    for (const res of [correct, wrong]) {
+      const raw = JSON.stringify(res.body);
+      expect(raw).not.toContain(plainPassword);
+      expect(raw).not.toContain('WrongPassword123');
+      expect(raw).not.toContain('$2');
+    }
+  });
+
+  it('locked account answers the same when addressed by TenDangNhap', async () => {
+    const { account, plainPassword } = await createTestAccount({ status: ACCOUNT_STATUS.LOCKED });
+    createdAccountIds.push(account.MaTaiKhoan);
+
+    expect((await login(account.TenDangNhap, plainPassword)).status).toBe(403);
+    expect((await login(account.TenDangNhap, 'WrongPassword123')).status).toBe(403);
+  });
+
+  it('active + correct password -> 200 with tokens', async () => {
+    const { account, plainPassword } = await createTestAccount();
+    createdAccountIds.push(account.MaTaiKhoan);
+
+    const res = await login(account.Email, plainPassword);
+    expect(res.status).toBe(200);
+    expect(res.body.data.accessToken).toBeTypeOf('string');
+    expect(res.body.data.account).not.toHaveProperty('MatKhau');
+  });
+
+  it('active + wrong password -> 401 with the generic message', async () => {
+    const { account } = await createTestAccount();
+    createdAccountIds.push(account.MaTaiKhoan);
+
+    const res = await login(account.Email, 'WrongPassword123');
+    expect(res.status).toBe(401);
+    expect(res.body.message).toBe('Email/tên đăng nhập hoặc mật khẩu không đúng');
+  });
+
+  it('unknown account -> 401 with the same generic message as a wrong password', async () => {
+    const { account } = await createTestAccount();
+    createdAccountIds.push(account.MaTaiKhoan);
+
+    const unknown = await login('nobody@example.com', 'whatever123');
+    const wrongPassword = await login(account.Email, 'WrongPassword123');
+    expect(unknown.status).toBe(401);
+    expect(unknown.body).toEqual(wrongPassword.body);
+  });
+});
+
 describe('Authenticated route protection', () => {
   it('rejects a protected endpoint with no token', async () => {
     const res = await request(app).get('/api/profile/me');
