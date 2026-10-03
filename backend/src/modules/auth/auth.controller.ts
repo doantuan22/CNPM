@@ -8,11 +8,20 @@ import {
   REFRESH_TOKEN_COOKIE_MAX_AGE_MS,
 } from '../../common/utils/jwt';
 
-const REFRESH_COOKIE_OPTIONS = {
+// BUG-006: the single source of truth for the refresh cookie. Everything that decides WHERE the
+// cookie lives and HOW it is protected (path/domain/httpOnly/secure/sameSite) is here and is used
+// for both setting and clearing, so the two can never drift apart. No `domain` is set today:
+// the cookie is host-only. If one is ever added, add it here and login/logout both follow.
+const REFRESH_COOKIE_BASE_OPTIONS = {
   httpOnly: true,
   secure: env.NODE_ENV === 'production',
   sameSite: 'lax' as const,
   path: '/api/auth',
+};
+
+// Only setting a cookie carries a lifetime; clearing must not (it expires the cookie immediately).
+const REFRESH_COOKIE_OPTIONS = {
+  ...REFRESH_COOKIE_BASE_OPTIONS,
   maxAge: REFRESH_TOKEN_COOKIE_MAX_AGE_MS,
 };
 
@@ -65,7 +74,7 @@ export class AuthController {
     // No REFRESH_TOKEN table exists (Gate 0) — logout is stateless: clearing
     // the httpOnly cookie is the whole strategy. The token itself remains
     // cryptographically valid until it naturally expires (<=7 days).
-    res.clearCookie(REFRESH_TOKEN_COOKIE_NAME, { path: '/api/auth' });
+    res.clearCookie(REFRESH_TOKEN_COOKIE_NAME, REFRESH_COOKIE_BASE_OPTIONS);
     sendSuccess(res, undefined, 'Đăng xuất thành công');
   };
 
