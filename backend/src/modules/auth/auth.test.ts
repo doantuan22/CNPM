@@ -1,4 +1,4 @@
-import { describe, it, expect, afterAll } from 'vitest';
+import { describe, it, expect, afterAll, vi } from 'vitest';
 import request from 'supertest';
 import app from '../../app';
 import { createTestAccount, deleteTestAccount } from '../../test/factories';
@@ -304,5 +304,139 @@ describe('POST /api/auth/forgot-password', () => {
       .post('/api/auth/login')
       .send({ identifier: account.Email, MatKhau: 'NewPassword@123' });
     expect(newLogin.status).toBe(200);
+  });
+});
+
+describe('POST /api/auth/change-password', () => {
+  const NEW_PASSWORD = 'BrandNew@4567';
+
+  const signIn = async () => {
+    const { account, plainPassword } = await createTestAccount();
+    createdAccountIds.push(account.MaTaiKhoan);
+    const login = await request(app)
+      .post('/api/auth/login')
+      .send({ identifier: account.Email, MatKhau: plainPassword });
+    return { account, plainPassword, token: login.body.data.accessToken as string };
+  };
+
+  const login = (identifier: string, MatKhau: string) =>
+    request(app).post('/api/auth/login').send({ identifier, MatKhau });
+
+  it('rejects an unauthenticated caller with 401', async () => {
+    const res = await request(app)
+      .post('/api/auth/change-password')
+      .send({ MatKhauCu: 'Test@12345', MatKhauMoi: NEW_PASSWORD });
+    expect(res.status).toBe(401);
+  });
+
+  it('changes the password when the current one is right, then only the new one logs in', async () => {
+    const { account, plainPassword, token } = await signIn();
+    const logSpies = (['log', 'info', 'warn', 'error'] as const).map((method) => vi.spyOn(console, method));
+
+    const res = await request(app)
+      .post('/api/auth/change-password')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ MatKhauCu: plainPassword, MatKhauMoi: NEW_PASSWORD });
+
+    const logged = JSON.stringify(logSpies.flatMap((spy) => spy.mock.calls));
+    logSpies.forEach((spy) => spy.mockRestore());
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+
+    // Neither the response nor anything logged may carry a password or hash.
+    const stored = await getPrismaClient().tAI_KHOAN.findUnique({ where: { MaTaiKhoan: account.MaTaiKhoan } });
+    const serializedResponse = JSON.stringify(res.body);
+    for (const secret of [plainPassword, NEW_PASSWORD, stored!.MatKhau]) {
+      expect(serializedResponse).not.toContain(secret);
+      expect(logged).not.toContain(secret);
+    }
+    expect(res.body.data ?? {}).not.toHaveProperty('MatKhau');
+
+    expect(stored!.MatKhau).not.toBe(NEW_PASSWORD);
+    expect(await verifyPassword(NEW_PASSWORD, stored!.MatKhau)).toBe(true);
+
+    expect((await login(account.Email, NEW_PASSWORD)).status).toBe(200);
+    expect((await login(account.Email, plainPassword)).status).toBe(401);
+  });
+
+  it('rejects a wrong current password with 400 and leaves the password unchanged', async () => {
+    const { account, plainPassword, token } = await signIn();
+
+    const res = await request(app)
+      .post('/api/auth/change-password')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ MatKhauCu: 'NotMyPassword@1', MatKhauMoi: NEW_PASSWORD });
+
+    expect(res.status).toBe(400);
+    expect(res.body.success).toBe(false);
+    expect((await login(account.Email, plainPassword)).status).toBe(200);
+    expect((await login(account.Email, NEW_PASSWORD)).status).toBe(401);
+  });
+
+  it('rejects a new password equal to the current one', async () => {
+    const { account, plainPassword, token } = await signIn();
+
+    const res = await request(app)
+      .post('/api/auth/change-password')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ MatKhauCu: plainPassword, MatKhauMoi: plainPassword });
+
+    expect(res.status).toBe(400);
+    expect((await login(account.Email, plainPassword)).status).toBe(200);
+  });
+
+  it.each([
+    ['too short', 'Ab@1'],
+    ['too long', 'a'.repeat(129)],
+    ['missing', undefined],
+  ])('rejects a new password that fails the policy (%s)', async (_label, MatKhauMoi) => {
+    const { account, plainPassword, token } = await signIn();
+
+    const res = await request(app)
+      .post('/api/auth/change-password')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ MatKhauCu: plainPassword, MatKhauMoi });
+
+    expect(res.status).toBe(400);
+    expect((await login(account.Email, plainPassword)).status).toBe(200);
+  });
+
+  it('rejects a missing current password', async () => {
+    const { token } = await signIn();
+
+    const res = await request(app)
+      .post('/api/auth/change-password')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ MatKhauMoi: NEW_PASSWORD });
+
+    expect(res.status).toBe(400);
+  });
+
+  it('refuses a locked account even with the right current password', async () => {
+    const { account, plainPassword, token } = await signIn();
+    await getPrismaClient().tAI_KHOAN.update({
+      where: { MaTaiKhoan: account.MaTaiKhoan },
+      data: { TrangThai: ACCOUNT_STATUS.LOCKED },
+    });
+
+    const res = await request(app)
+      .post('/api/auth/change-password')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ MatKhauCu: plainPassword, MatKhauMoi: NEW_PASSWORD });
+
+    expect(res.status).toBe(403);
+  });
+
+  it('does not let PATCH /profile/me change the password', async () => {
+    const { account, plainPassword, token } = await signIn();
+
+    await request(app)
+      .patch('/api/profile/me')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ MatKhau: NEW_PASSWORD, HoTen: 'Still Same' });
+
+    expect((await login(account.Email, plainPassword)).status).toBe(200);
+    expect((await login(account.Email, NEW_PASSWORD)).status).toBe(401);
   });
 });

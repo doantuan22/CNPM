@@ -3,17 +3,20 @@ import { RolesRepository } from '../roles/roles.repository';
 import { AppError } from '../../common/errors/app-error';
 import { hashPassword, verifyPassword } from '../../common/utils/password';
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../../common/utils/jwt';
-import {
-  signPasswordResetToken,
-  decodePasswordResetToken,
-  matchesPasswordFingerprint,
-} from '../../common/utils/password-reset-token';
+import { signPasswordResetToken, decodePasswordResetToken } from '../../common/utils/password-reset-token';
+import { passwordFingerprint, matchesPasswordFingerprint } from '../../common/utils/password-fingerprint';
 import { toSafeAccount, SafeAccount } from '../../common/utils/account-mapper';
 import { ROLE_NAMES } from '../../common/constants/roles';
 import { ACCOUNT_STATUS } from '../../common/constants/account-status';
 import { EmailService, NodemailerEmailService } from '../email/email.service';
 import { env } from '../../config/env';
-import type { RegisterInput, LoginInput, ForgotPasswordInput, ResetPasswordInput } from './auth.schemas';
+import type {
+  RegisterInput,
+  LoginInput,
+  ForgotPasswordInput,
+  ResetPasswordInput,
+  ChangePasswordInput,
+} from './auth.schemas';
 
 export interface AuthTokens {
   accessToken: string;
@@ -32,11 +35,15 @@ export class AuthService {
     private readonly emailService: EmailService = new NodemailerEmailService()
   ) {}
 
-  private async issueTokens(maTaiKhoan: number, role: string): Promise<AuthTokens> {
+  /**
+   * `passwordHash` is the account's CURRENT bcrypt hash. Only its fingerprint is put into the
+   * refresh token (BUG-012), so a later password change invalidates that token.
+   */
+  private async issueTokens(maTaiKhoan: number, role: string, passwordHash: string): Promise<AuthTokens> {
     const payload = { sub: String(maTaiKhoan), role };
     return {
       accessToken: signAccessToken(payload),
-      refreshToken: signRefreshToken(payload),
+      refreshToken: signRefreshToken({ ...payload, pwdv: passwordFingerprint(passwordHash) }),
     };
   }
 
@@ -72,7 +79,7 @@ export class AuthService {
       VAI_TRO: { connect: { MaVaiTro: customerRole.MaVaiTro } },
     });
 
-    const tokens = await this.issueTokens(account.MaTaiKhoan, ROLE_NAMES.CUSTOMER);
+    const tokens = await this.issueTokens(account.MaTaiKhoan, ROLE_NAMES.CUSTOMER, account.MatKhau);
     return { account: toSafeAccount(account), tokens };
   }
 
@@ -99,7 +106,7 @@ export class AuthService {
     }
 
     const role = await this.rolesRepository.findById(account.MaVaiTro);
-    const tokens = await this.issueTokens(account.MaTaiKhoan, role?.TenVaiTro ?? '');
+    const tokens = await this.issueTokens(account.MaTaiKhoan, role?.TenVaiTro ?? '', account.MatKhau);
     return { account: toSafeAccount(account), tokens };
   }
 
@@ -116,9 +123,15 @@ export class AuthService {
       throw AppError.unauthorized('Tài khoản không khả dụng');
     }
 
+    // BUG-012: the token was issued under an older password. Same message as an expired
+    // token, so the response does not reveal that the password changed.
+    if (!matchesPasswordFingerprint(payload.pwdv, account.MatKhau)) {
+      throw AppError.unauthorized('Refresh token không hợp lệ hoặc đã hết hạn');
+    }
+
     const role = await this.rolesRepository.findById(account.MaVaiTro);
     if (!role) throw AppError.unauthorized('Vai trò tài khoản không hợp lệ');
-    return this.issueTokens(account.MaTaiKhoan, role.TenVaiTro);
+    return this.issueTokens(account.MaTaiKhoan, role.TenVaiTro, account.MatKhau);
   }
 
   /** Always preserves the same observable result for known/unknown emails. */
@@ -154,5 +167,38 @@ export class AuthService {
 
     const newHash = await hashPassword(input.MatKhauMoi);
     await this.authRepository.updatePassword(account.MaTaiKhoan, newHash);
+  }
+
+  /**
+   * Authenticated password change. A wrong current password is a 400, not a 401:
+   * the caller's session is fine, and a 401 would make the client think it must
+   * refresh or drop the session.
+   */
+  async changePassword(maTaiKhoan: number, input: ChangePasswordInput): Promise<AuthTokens> {
+    const account = await this.authRepository.findById(maTaiKhoan);
+    if (!account) throw AppError.unauthorized('Tài khoản không khả dụng');
+    if (account.TrangThai === ACCOUNT_STATUS.LOCKED) {
+      throw AppError.forbidden('Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên');
+    }
+
+    const validCurrent = await verifyPassword(input.MatKhauCu, account.MatKhau);
+    if (!validCurrent) throw AppError.badRequest('Mật khẩu hiện tại không đúng');
+
+    // MatKhauCu was just verified against the stored hash, so equality here
+    // means the new password is the current one.
+    if (input.MatKhauMoi === input.MatKhauCu) {
+      throw AppError.badRequest('Mật khẩu mới phải khác mật khẩu hiện tại');
+    }
+
+    const role = await this.rolesRepository.findById(account.MaVaiTro);
+    if (!role) throw AppError.unauthorized('Vai trò tài khoản không hợp lệ');
+
+    const newHash = await hashPassword(input.MatKhauMoi);
+    await this.authRepository.updatePassword(account.MaTaiKhoan, newHash);
+
+    // BUG-012: the new hash changes the fingerprint, so every refresh token issued before this
+    // point (other devices included) stops working. The caller gets a fresh pair bound to the
+    // new hash so their own session carries on.
+    return this.issueTokens(account.MaTaiKhoan, role.TenVaiTro, newHash);
   }
 }

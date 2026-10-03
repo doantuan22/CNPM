@@ -1,5 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import { formatCountdown, formatDateRangeVi, formatDateTimeVi, formatDateVi } from './utils';
+import { formatCountdown, formatDateRangeVi, formatDateTimeVi, formatDateVi, maskEmail } from './utils';
+
+describe('maskEmail', () => {
+  it('keeps the first character and the domain only', () => {
+    expect(maskEmail('tuan0947881956@gmail.com')).toBe('t***@gmail.com');
+    expect(maskEmail('a@x.vn')).toBe('a***@x.vn');
+  });
+
+  it('returns a value without a usable local part unchanged', () => {
+    expect(maskEmail('not-an-email')).toBe('not-an-email');
+    expect(maskEmail('@gmail.com')).toBe('@gmail.com');
+  });
+});
 
 describe('formatDateVi', () => {
   it('formats a date-only API value as dd/mm/yyyy without any timezone shift', () => {

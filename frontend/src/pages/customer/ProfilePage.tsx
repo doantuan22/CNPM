@@ -2,19 +2,21 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, useNavigate } from 'react-router-dom';
-import { useMe, useUpdateProfile, useSignOut } from '../../features/auth/hooks';
+import { useMe, useUpdateProfile, useSignOut, useForgotPassword } from '../../features/auth/hooks';
 import { useAuthStore } from '../../lib/authStore';
 import { ROLE_NAMES } from '../../lib/roles';
 import { updateProfileSchema, UpdateProfileFormValues } from '../../features/auth/schemas';
 import { ApiError } from '../../services/apiClient';
 
-import { cn } from '../../lib/utils';
+import { cn, maskEmail } from '../../lib/utils';
 import { PageSpinner } from '../../components/common/PageSpinner';
 import { Button } from '../../components/common/Button';
 
 export default function ProfilePage() {
   const meQuery = useMe();
   const updateMutation = useUpdateProfile();
+  // Changing the password reuses the forgot-password flow: the reset link goes to the account's own email.
+  const changePasswordLink = useForgotPassword();
   const navigate = useNavigate();
   const { signOut } = useSignOut();
   // The account menu (bookings, support, sign out) is the customer's; admins and owners are already inside their dashboard.
@@ -41,6 +43,12 @@ export default function ProfilePage() {
   const handleLogout = async () => {
     await signOut();
     navigate('/login', { replace: true });
+  };
+
+  const requestPasswordChange = () => {
+    const email = meQuery.data?.Email;
+    if (!email || changePasswordLink.isPending) return;
+    changePasswordLink.mutate({ Email: email });
   };
 
   const onSubmit = (data: UpdateProfileFormValues) =>
@@ -193,14 +201,26 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-border shadow-sm p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div>
-              <h3 className="font-bold text-lg text-ink">Bảo mật tài khoản</h3>
-              <p className="text-sm text-ink-muted mt-1">Cập nhật mật khẩu để bảo vệ tài khoản của bạn.</p>
+          <div className="bg-white rounded-xl border border-border shadow-sm p-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <h3 className="font-bold text-lg text-ink">Bảo mật tài khoản</h3>
+                <p className="text-sm text-ink-muted mt-1">Chúng tôi sẽ gửi link xác nhận tới email của bạn để đặt mật khẩu mới.</p>
+              </div>
+              <Button type="button" variant="outline" className="shrink-0" loading={changePasswordLink.isPending} onClick={requestPasswordChange}>
+                {changePasswordLink.isSuccess ? 'Gửi lại link' : 'Đổi mật khẩu'}
+              </Button>
             </div>
-            <Link to="/reset-password" className="px-5 py-2.5 border border-border rounded-xl text-sm font-semibold text-ink hover:bg-surface-secondary transition-colors shrink-0 shadow-sm">
-              Đổi mật khẩu
-            </Link>
+            {changePasswordLink.isSuccess && (
+              <div role="status" className="mt-4 rounded-lg bg-success-light px-4 py-3 text-sm text-success-ink border border-success/30">
+                Đã gửi link tới <strong>{maskEmail(meQuery.data?.Email ?? '')}</strong>. Mở email và làm theo hướng dẫn để đặt mật khẩu mới (link có hiệu lực 15 phút).
+              </div>
+            )}
+            {changePasswordLink.isError && (
+              <div role="alert" className="mt-4 rounded-lg bg-danger-light px-4 py-3 text-sm text-danger-ink border border-danger/30">
+                {changePasswordLink.error instanceof ApiError ? changePasswordLink.error.message : 'Không thể gửi email lúc này. Vui lòng thử lại sau.'}
+              </div>
+            )}
           </div>
 
         </div>

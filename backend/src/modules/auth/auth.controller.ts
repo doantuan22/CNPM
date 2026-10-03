@@ -66,6 +66,11 @@ export class AuthController {
       res.cookie(REFRESH_TOKEN_COOKIE_NAME, tokens.refreshToken, REFRESH_COOKIE_OPTIONS);
       sendSuccess(res, { accessToken: tokens.accessToken }, 'Làm mới token thành công');
     } catch (error) {
+      // A refresh token the server refused (expired, stale after a password change, locked
+      // account) is dead weight: drop the cookie, with the same attributes it was set with.
+      if (error instanceof AppError && error.statusCode === 401) {
+        res.clearCookie(REFRESH_TOKEN_COOKIE_NAME, REFRESH_COOKIE_BASE_OPTIONS);
+      }
       next(error);
     }
   };
@@ -95,6 +100,19 @@ export class AuthController {
     try {
       await this.authService.resetPassword(req.body);
       sendSuccess(res, undefined, 'Đặt lại mật khẩu thành công');
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  changePassword = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      // `authenticate` guarantees req.user; guard anyway so a mis-wired route fails closed.
+      if (!req.user) throw AppError.unauthorized('Authentication required');
+      const tokens = await this.authService.changePassword(req.user.maTaiKhoan, req.body);
+      // Replace this device's refresh cookie with one bound to the new password.
+      res.cookie(REFRESH_TOKEN_COOKIE_NAME, tokens.refreshToken, REFRESH_COOKIE_OPTIONS);
+      sendSuccess(res, { accessToken: tokens.accessToken }, 'Đổi mật khẩu thành công');
     } catch (error) {
       next(error);
     }

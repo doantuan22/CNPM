@@ -733,6 +733,27 @@ export const openApiSpec = {
         },
       },
     },
+    '/auth/change-password': {
+      post: {
+        summary: 'Change the password of the signed-in account (requires the current password)',
+        tags: ['Auth'],
+        security: [{ BearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: { 'application/json': { schema: { $ref: '#/components/schemas/ChangePasswordRequest' } } },
+        },
+        responses: {
+          '200': {
+            description:
+              'Password updated. Returns a new accessToken and replaces the refresh cookie; refresh tokens issued before the change (other devices) stop working.',
+          },
+          '400': { description: 'Current password wrong, new password invalid, or same as the current one' },
+          '401': { description: 'Unauthenticated' },
+          '403': { description: 'Account locked' },
+          '429': { description: 'Too many attempts' },
+        },
+      },
+    },
     '/profile/me': {
       get: {
         summary: "Get the caller's own account profile",
@@ -1087,6 +1108,14 @@ export const openApiSpec = {
         type: 'object',
         required: ['token', 'MatKhauMoi'],
         properties: { token: { type: 'string' }, MatKhauMoi: { type: 'string', minLength: 6 } },
+      },
+      ChangePasswordRequest: {
+        type: 'object',
+        required: ['MatKhauCu', 'MatKhauMoi'],
+        properties: {
+          MatKhauCu: { type: 'string', description: 'Current password' },
+          MatKhauMoi: { type: 'string', minLength: 8, maxLength: 128 },
+        },
       },
       UpdateProfileRequest: {
         type: 'object',

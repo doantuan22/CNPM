@@ -1,7 +1,14 @@
 import { Router } from 'express';
 import { AuthController } from './auth.controller';
 import { validateRequest } from '../../middleware/validate.middleware';
-import { registerSchema, loginSchema, forgotPasswordSchema, resetPasswordSchema } from './auth.schemas';
+import {
+  registerSchema,
+  loginSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+  changePasswordSchema,
+} from './auth.schemas';
+import { authenticate } from '../../middleware/auth.middleware';
 import { createRateLimiter } from '../../middleware/security.middleware';
 
 const router = Router();
@@ -18,6 +25,8 @@ const forgotPasswordLimiter = createRateLimiter({ windowMs: 60 * 60_000, max: 5,
 // Stricter than forgot-password: this endpoint takes a bearer-style secret token
 // as input, so a missing limit here would let an attacker brute-force it.
 const resetPasswordLimiter = createRateLimiter({ windowMs: 60 * 60_000, max: 10, keyPrefix: 'reset-password' });
+// Takes the current password as input, so it needs a guess limit like login does.
+const changePasswordLimiter = createRateLimiter({ windowMs: 15 * 60_000, max: 10, keyPrefix: 'change-password' });
 const applyOutsideTests = (middleware: ReturnType<typeof createRateLimiter>) =>
   process.env.NODE_ENV === 'test' ? (_req: unknown, _res: unknown, next: () => void) => next() : middleware;
 
@@ -36,6 +45,13 @@ router.post(
   applyOutsideTests(resetPasswordLimiter),
   validateRequest({ body: resetPasswordSchema }),
   controller.resetPassword
+);
+router.post(
+  '/change-password',
+  applyOutsideTests(changePasswordLimiter),
+  authenticate,
+  validateRequest({ body: changePasswordSchema }),
+  controller.changePassword
 );
 
 export default router;

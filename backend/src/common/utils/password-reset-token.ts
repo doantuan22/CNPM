@@ -1,6 +1,9 @@
 import jwt from 'jsonwebtoken';
-import { createHash } from 'crypto';
 import { env } from '../../config/env';
+import { FINGERPRINT_PATTERN, passwordFingerprint } from './password-fingerprint';
+
+// Re-exported so existing callers keep importing it from here.
+export { matchesPasswordFingerprint } from './password-fingerprint';
 
 export const PASSWORD_RESET_TOKEN_TTL_MINUTES = 15;
 const RESET_TOKEN_TTL = `${PASSWORD_RESET_TOKEN_TTL_MINUTES}m`;
@@ -21,14 +24,11 @@ interface ResetTokenPayload {
  * matches and the token is rejected — giving effectively single-use,
  * self-expiring tokens without any new persistence.
  */
-const fingerprint = (passwordHash: string): string =>
-  createHash('sha256').update(passwordHash).digest('hex').slice(0, 32);
-
 export const signPasswordResetToken = (maTaiKhoan: number, currentPasswordHash: string): string => {
   const payload: ResetTokenPayload = {
     sub: String(maTaiKhoan),
     typ: 'pwd_reset',
-    fp: fingerprint(currentPasswordHash),
+    fp: passwordFingerprint(currentPasswordHash),
   };
   return jwt.sign(payload, env.JWT_ACCESS_SECRET, {
     expiresIn: RESET_TOKEN_TTL,
@@ -48,12 +48,11 @@ export const decodePasswordResetToken = (token: string): { maTaiKhoan: number; f
     algorithms: ['HS256'], issuer: RESET_TOKEN_ISSUER, audience: RESET_TOKEN_AUDIENCE,
   }) as ResetTokenPayload;
   const accountId = Number(decoded.sub);
-  if (decoded.typ !== 'pwd_reset' || !Number.isSafeInteger(accountId) || accountId <= 0 || !/^[a-f0-9]{32}$/.test(decoded.fp)) {
+  if (decoded.typ !== 'pwd_reset' || !Number.isSafeInteger(accountId) || accountId <= 0 || !FINGERPRINT_PATTERN.test(decoded.fp)) {
     throw new Error('Invalid token type');
   }
   return { maTaiKhoan: accountId, fp: decoded.fp };
 };
 
-/** Must be called after decodePasswordResetToken() to confirm the token is still current. */
-export const matchesPasswordFingerprint = (fp: string, currentPasswordHash: string): boolean =>
-  fp === fingerprint(currentPasswordHash);
+// matchesPasswordFingerprint (re-exported above) must be called after
+// decodePasswordResetToken() to confirm the token is still current.
