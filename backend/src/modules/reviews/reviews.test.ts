@@ -26,6 +26,7 @@ vi.mock('../../integrations/cloudinary.integration', () => ({
       url: 'https://res.cloudinary.com/demo/image/upload/v1/hotel-booking/reviews/fake123.jpg',
       publicId: 'hotel-booking/reviews/fake123',
     }),
+    deleteImage: vi.fn().mockResolvedValue(true),
   },
 }));
 

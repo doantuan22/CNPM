@@ -1,5 +1,5 @@
 import { ReviewsRepository } from './reviews.repository';
-import { CloudinaryIntegration } from '../../integrations/cloudinary.integration';
+import { CloudinaryIntegration, type UploadImageResult } from '../../integrations/cloudinary.integration';
 import { validateReviewImages } from './review-images';
 import { completeFinishedBookings } from '../bookings/booking-completion';
 import { getPrismaClient } from '../../config/prisma';
@@ -11,6 +11,16 @@ import type { ApiPaginationMeta } from '../../common/types/api-response';
 import type { CreateReviewInput, AdminListReviewsQuery } from './reviews.schemas';
 
 const REVIEW_IMAGE_FOLDER = 'hotel-booking/reviews';
+
+/**
+ * The booking was already reviewed. Two shapes of the same race: P2002 when both
+ * inserts collide on UQ_DANH_GIA_MaDatPhong, and P2014 when the winner has already
+ * committed by the time the loser's nested connect to DAT_PHONG checks the
+ * one-review-per-booking relation.
+ */
+const isDuplicateReviewError = (err: unknown): boolean =>
+  err instanceof Prisma.PrismaClientKnownRequestError &&
+  (err.code === 'P2002' || (err.code === 'P2014' && err.meta?.relation === 'DANH_GIAToDAT_PHONG'));
 
 export class ReviewsService {
   constructor(private readonly repository: ReviewsRepository = new ReviewsRepository()) {}
@@ -36,13 +46,17 @@ export class ReviewsService {
     if (existing) throw AppError.conflict('Đặt phòng này đã được đánh giá');
 
     validateReviewImages(input.hinhAnh);
-    const imageUrls: string[] = [];
-    for (const dataUri of input.hinhAnh ?? []) {
-      const uploaded = await CloudinaryIntegration.uploadImage(dataUri, REVIEW_IMAGE_FOLDER);
-      imageUrls.push(uploaded.url);
-    }
 
+    // BUG-005: images reach Cloudinary BEFORE the review row exists, so any
+    // failure from the first upload up to the DB commit would orphan them.
+    // Track exactly what THIS request uploaded and delete it if anything throws.
+    const uploadedImages: UploadImageResult[] = [];
     try {
+      for (const dataUri of input.hinhAnh ?? []) {
+        // Recorded right after each success, so a later failure still knows about it.
+        uploadedImages.push(await CloudinaryIntegration.uploadImage(dataUri, REVIEW_IMAGE_FOLDER));
+      }
+
       return await this.repository.create(
         {
           maDatPhong,
@@ -52,15 +66,36 @@ export class ReviewsService {
           noiDung: input.noiDung ?? null,
           trangThai: REVIEW_STATUS.PENDING,
         },
-        imageUrls
+        uploadedImages.map((image) => image.url)
       );
     } catch (err) {
+      await this.deleteUploadedImages(uploadedImages);
       // RB26 (UQ_DANH_GIA_MaDatPhong) — guards the same-instant double-submit race the findByBookingId check above can't fully close.
-      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
+      if (isDuplicateReviewError(err)) {
         throw AppError.conflict('Đặt phòng này đã được đánh giá');
       }
       throw err;
     }
+  }
+
+  /**
+   * Best-effort rollback of this request's Cloudinary uploads. Never throws, so
+   * it cannot mask the error that triggered it, and one failed delete never
+   * stops the others. Failures log only the publicId and the error message —
+   * no image data, URL or credentials.
+   */
+  private async deleteUploadedImages(images: UploadImageResult[]): Promise<void> {
+    if (images.length === 0) return;
+    const results = await Promise.allSettled(images.map((image) => CloudinaryIntegration.deleteImage(image.publicId)));
+    results.forEach((result, index) => {
+      const publicId = images[index].publicId;
+      if (result.status === 'rejected') {
+        const reason = result.reason instanceof Error ? result.reason.message : String(result.reason);
+        console.error('Review image cleanup failed', { publicId, reason });
+      } else if (!result.value) {
+        console.error('Review image cleanup failed', { publicId, reason: 'Cloudinary did not confirm deletion' });
+      }
+    });
   }
 
   /** null when the customer hasn't reviewed this booking yet — not an error (same convention as GET /partners/me). */
