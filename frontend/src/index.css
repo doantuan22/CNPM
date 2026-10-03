@@ -6,6 +6,7 @@
 @import "./assets/css/components.css";
 @import "./assets/css/booking-flow.css";
 
+
 @theme {
   --font-sans: var(--font-family);
   --radius-sm: var(--radius-control-sm);
