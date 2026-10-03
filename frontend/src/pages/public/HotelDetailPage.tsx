@@ -1,12 +1,8 @@
+import { useEffect, useState } from 'react';
 import {
-  useEffect,
-  useState,
-} from 'react';
-
-import {
-  useNavigate,
   useParams,
   useSearchParams,
+  useNavigate,
 } from 'react-router-dom';
 
 import {
@@ -26,44 +22,50 @@ import { useCreateBooking } from '../../features/bookings/hooks';
 
 import { useAuthStore } from '../../lib/authStore';
 import { ROLE_NAMES } from '../../lib/roles';
-
 import { ApiError } from '../../services/apiClient';
 
 import {
-  cn,
   formatCurrencyVND,
+  cn,
 } from '../../lib/utils';
 
 import { HotelHeader } from '../../components/hotels/detail/HotelHeader';
+
 import { HotelGallery } from '../../components/hotels/detail/HotelGallery';
+
 import { HotelSectionNav } from '../../components/hotels/detail/HotelSectionNav';
+
 import { RoomList } from '../../components/hotels/detail/RoomList';
 
 import {
-  HotelAmenities,
   HotelOverview,
+  HotelAmenities,
 } from '../../components/hotels/detail/HotelAbout';
 
 import { BookingPanel } from '../../components/hotels/detail/BookingPanel';
+
 import { MobileBookingBar } from '../../components/hotels/detail/MobileBookingBar';
 
 import { HotelGalleryDialog } from '../../components/hotels/HotelGalleryDialog';
 
 import { useToast } from '../../components/common/FeedbackProvider';
-import { PageSpinner } from '../../components/common/PageSpinner';
 
 import { shareUrl } from '../../lib/share';
+
 import { useActiveSection } from '../../hooks/useActiveSection';
 
+import { PageSpinner } from '../../components/common/PageSpinner';
+
 /* =========================================================
-   PAGE SECTIONS
+   SECTION ORDER
+
+   Thứ tự hiển thị trên trang:
+   1. Tổng quan
+   2. Tiện nghi
+   3. Loại phòng & Giá
 ========================================================= */
 
 const PAGE_SECTIONS = [
-  {
-    id: 'loai-phong',
-    label: 'Loại phòng & Giá',
-  },
   {
     id: 'tong-quan',
     label: 'Tổng quan',
@@ -72,22 +74,26 @@ const PAGE_SECTIONS = [
     id: 'tien-nghi',
     label: 'Tiện nghi',
   },
+  {
+    id: 'loai-phong',
+    label: 'Loại phòng & Giá',
+  },
 ] as const;
 
 const SECTION_IDS =
   PAGE_SECTIONS.map(
-    (section) =>
-      section.id
+    (section) => section.id
   );
+
+/* =========================================================
+   HOTEL DETAIL PAGE
+========================================================= */
 
 export default function HotelDetailPage() {
   const { id } =
-    useParams<{
-      id: string;
-    }>();
+    useParams<{ id: string }>();
 
-  const hotelId =
-    Number(id);
+  const hotelId = Number(id);
 
   const navigate =
     useNavigate();
@@ -96,6 +102,10 @@ export default function HotelDetailPage() {
     searchParams,
     setSearchParams,
   ] = useSearchParams();
+
+  /* =======================================================
+     LOCAL STATE
+  ======================================================= */
 
   const [
     selectedRooms,
@@ -110,8 +120,9 @@ export default function HotelDetailPage() {
   ] = useState('');
 
   /*
-   * Mã khuyến mãi thực tế
-   * được dùng để báo giá.
+   * Promo code thực tế đang được dùng để báo giá.
+   * Chỉ thay đổi khi người dùng bấm "Áp dụng"
+   * hoặc thay đổi phòng.
    */
   const [
     appliedPromo,
@@ -133,26 +144,32 @@ export default function HotelDetailPage() {
   const notify =
     useToast();
 
+  /* =======================================================
+     AUTH
+  ======================================================= */
+
+  const accessToken =
+    useAuthStore(
+      (s) => s.accessToken
+    );
+
+  const role =
+    useAuthStore(
+      (s) => s.role
+    );
+
+  /* =======================================================
+     BOOKING MUTATION
+  ======================================================= */
+
   const bookingMutation =
     useCreateBooking(
       hotelId
     );
 
-  const accessToken =
-    useAuthStore(
-      (state) =>
-        state.accessToken
-    );
-
-  const role =
-    useAuthStore(
-      (state) =>
-        state.role
-    );
-
-  /* =========================================================
-     SEARCH PARAMS
-  ========================================================= */
+  /* =======================================================
+     SEARCH PARAMETERS
+  ======================================================= */
 
   const defaults =
     defaultSearchDates();
@@ -176,9 +193,9 @@ export default function HotelDetailPage() {
       )
     );
 
-  /* =========================================================
+  /* =======================================================
      SELECTED ROOMS
-  ========================================================= */
+  ======================================================= */
 
   const selectedRoomLines =
     Object.entries(
@@ -210,12 +227,54 @@ export default function HotelDetailPage() {
       ) =>
         sum +
         line.soLuong,
+
       0
     );
 
-  /* =========================================================
+  /* =======================================================
+     HOTEL DATA
+  ======================================================= */
+
+  const hotelQuery =
+    useHotelDetail(
+      hotelId
+    );
+
+  const hotelLoaded =
+    Boolean(
+      hotelQuery.data
+    );
+
+  /* =======================================================
+     SECTION NAV
+  ======================================================= */
+
+  const [
+    activeSection,
+    selectSection,
+  ] =
+    useActiveSection(
+      SECTION_IDS,
+      hotelLoaded
+    );
+
+  /* =======================================================
+     ROOM AVAILABILITY
+  ======================================================= */
+
+  const roomsQuery =
+    useHotelRooms(
+      hotelId,
+      {
+        checkIn,
+        checkOut,
+        guests,
+      }
+    );
+
+  /* =======================================================
      QUOTE
-  ========================================================= */
+  ======================================================= */
 
   const quoteQuery =
     useQuote(
@@ -225,6 +284,7 @@ export default function HotelDetailPage() {
         0
         ? {
             checkIn,
+
             checkOut,
 
             rooms:
@@ -237,32 +297,9 @@ export default function HotelDetailPage() {
         : null
     );
 
-  /* =========================================================
-     HOTEL DATA
-  ========================================================= */
-
-  const hotelQuery =
-    useHotelDetail(
-      hotelId
-    );
-
-  const hotelLoaded =
-    Boolean(
-      hotelQuery.data
-    );
-
-  const [
-    activeSection,
-    selectSection,
-  ] =
-    useActiveSection(
-      SECTION_IDS,
-      hotelLoaded
-    );
-
-  /* =========================================================
+  /* =======================================================
      BOOKING PANEL VISIBILITY
-  ========================================================= */
+  ======================================================= */
 
   const [
     bookingPanelVisible,
@@ -299,23 +336,9 @@ export default function HotelDetailPage() {
       observer.disconnect();
   }, [hotelLoaded]);
 
-  /* =========================================================
-     ROOMS
-  ========================================================= */
-
-  const roomsQuery =
-    useHotelRooms(
-      hotelId,
-      {
-        checkIn,
-        checkOut,
-        guests,
-      }
-    );
-
-  /* =========================================================
-     DATE SEARCH
-  ========================================================= */
+  /* =======================================================
+     CHANGE SEARCH DATES
+  ======================================================= */
 
   const onDatesSubmit = (
     values: {
@@ -324,6 +347,13 @@ export default function HotelDetailPage() {
       guests: number;
     }
   ) => {
+    /*
+     * Khi đổi ngày:
+     * - bỏ phòng đang chọn
+     * - reset booking error
+     * - cập nhật query URL
+     */
+
     setSelectedRooms(
       {}
     );
@@ -344,9 +374,9 @@ export default function HotelDetailPage() {
     });
   };
 
-  /* =========================================================
+  /* =======================================================
      ROOM QUANTITY
-  ========================================================= */
+  ======================================================= */
 
   const setRoomQuantity = (
     maLoaiPhong: number,
@@ -355,6 +385,10 @@ export default function HotelDetailPage() {
   ) => {
     bookingMutation.reset();
 
+    /*
+     * Nếu user thay đổi phòng
+     * thì quote lại với promo hiện đang nhập.
+     */
     setAppliedPromo(
       promoCode.trim()
     );
@@ -401,9 +435,9 @@ export default function HotelDetailPage() {
     );
   };
 
-  /* =========================================================
+  /* =======================================================
      PROMO
-  ========================================================= */
+  ======================================================= */
 
   const changePromoCode = (
     value: string
@@ -429,9 +463,9 @@ export default function HotelDetailPage() {
     );
   };
 
-  /* =========================================================
-     QUOTE MATCH
-  ========================================================= */
+  /* =======================================================
+     QUOTE VALIDATION
+  ======================================================= */
 
   const quoteMatchesSelection =
     quoteMatchesRequest(
@@ -439,7 +473,9 @@ export default function HotelDetailPage() {
 
       {
         checkIn,
+
         checkOut,
+
         rooms:
           selectedRoomLines,
       }
@@ -449,9 +485,9 @@ export default function HotelDetailPage() {
     appliedPromo ===
     promoCode.trim();
 
-  /* =========================================================
+  /* =======================================================
      CONFIRM BOOKING
-  ========================================================= */
+  ======================================================= */
 
   const confirmBooking = () => {
     if (
@@ -467,6 +503,7 @@ export default function HotelDetailPage() {
     bookingMutation.mutate(
       {
         checkIn,
+
         checkOut,
 
         rooms:
@@ -482,12 +519,14 @@ export default function HotelDetailPage() {
           ghiChu.trim() ||
           undefined,
       },
+
       {
         onSuccess: (
           booking
         ) => {
           navigate(
             `/bookings/${booking.MaDatPhong}`,
+
             {
               state: {
                 justBooked:
@@ -500,92 +539,67 @@ export default function HotelDetailPage() {
     );
   };
 
-  /* =========================================================
+  /* =======================================================
      LOADING
-  ========================================================= */
+  ======================================================= */
 
   if (
     hotelQuery.isLoading
   ) {
     return (
-      <div className="booking-flow min-h-[70vh] bg-surface-secondary">
-
-        <div
-          className="
-            page-container
-            flex
-            min-h-[60vh]
-            items-center
-            justify-center
-          "
-        >
-          <PageSpinner />
-        </div>
-
-      </div>
+      <PageSpinner />
     );
   }
 
-  /* =========================================================
-     ERROR
-  ========================================================= */
+  /* =======================================================
+     HOTEL ERROR
+  ======================================================= */
 
   if (
     hotelQuery.isError ||
     !hotelQuery.data
   ) {
     return (
-      <div className="booking-flow min-h-[70vh] bg-surface-secondary px-4 py-12">
+      <div
+        role="alert"
+        className="
+          mx-auto
+          mt-8
 
-        <div
-          role="alert"
-          className="
-            mx-auto
-            max-w-md
-            rounded-[22px]
-            border
-            border-danger/30
-            bg-danger-light
-            px-6
-            py-10
-            text-center
-            text-sm
-            text-danger-ink
-            shadow-sm
-          "
-        >
-          <div
-            className="
-              mx-auto
-              mb-4
-              grid
-              h-12
-              w-12
-              place-items-center
-              rounded-full
-              bg-white
-            "
-          >
-            <i className="ph ph-warning-circle text-2xl" />
-          </div>
+          max-w-md
 
-          {hotelQuery.error instanceof
-          ApiError
-            ? hotelQuery
-                .error.message
-            : 'Không tìm thấy khách sạn'}
-        </div>
+          rounded-lg
 
+          bg-danger-light
+
+          px-4
+          py-3
+
+          text-center
+          text-sm
+
+          text-danger-ink
+        "
+      >
+        {hotelQuery.error instanceof
+        ApiError
+          ? hotelQuery.error
+              .message
+          : 'Không tìm thấy khách sạn'}
       </div>
     );
   }
 
+  /* =======================================================
+     HOTEL
+  ======================================================= */
+
   const hotel =
     hotelQuery.data;
 
-  /* =========================================================
-     MOBILE BOOKING
-  ========================================================= */
+  /* =======================================================
+     MOBILE BOOKING PANEL
+  ======================================================= */
 
   const goToBookingPanel =
     () =>
@@ -595,31 +609,34 @@ export default function HotelDetailPage() {
         )
         ?.scrollIntoView({
           block: 'start',
-          behavior:
-            'smooth',
         });
 
-  /* =========================================================
-     SUMMARY TOTAL
-  ========================================================= */
+  /* =======================================================
+     MOBILE SUMMARY TOTAL
+  ======================================================= */
 
   const summaryTotal =
     quoteQuery.isError
       ? 'Không thể báo giá'
+
       : quoteMatchesSelection &&
           quoteQuery.data
+
         ? quoteQuery.data
             .KhaDung
+
           ? formatCurrencyVND(
               quoteQuery.data
                 .TongTienThanhToan
             )
+
           : 'Cần điều chỉnh lựa chọn'
+
         : 'Đang cập nhật báo giá…';
 
-  /* =========================================================
+  /* =======================================================
      SHARE
-  ========================================================= */
+  ======================================================= */
 
   const shareHotel =
     async () => {
@@ -660,14 +677,21 @@ export default function HotelDetailPage() {
       }
     };
 
+  /* =======================================================
+     RENDER
+  ======================================================= */
+
   return (
     <div
       className={cn(
         `
           booking-flow
+
           min-h-screen
           w-full
-          bg-surface-secondary
+
+          bg-surface
+
           text-ink
         `,
 
@@ -676,118 +700,36 @@ export default function HotelDetailPage() {
           'pb-24 lg:pb-0'
       )}
     >
+      {/* ===================================================
+          HOTEL HEADER
+      =================================================== */}
 
-      {/* =====================================================
-          TOP BAR
-      ===================================================== */}
+      <HotelHeader
+        hotel={hotel}
+        onShare={
+          shareHotel
+        }
+      />
 
-      <section
-        className="
-          border-b
-          border-primary/10
-          bg-gradient-to-r
-          from-[#062f4f]
-          via-[#075985]
-          to-[#0284c7]
-          text-white
-        "
-      >
+      {/* ===================================================
+          GALLERY
+      =================================================== */}
 
-        <div
-          className="
-            page-container
-            flex
-            min-h-14
-            items-center
-            justify-between
-            gap-4
-            py-2
-          "
-        >
+      <HotelGallery
+        hotelName={
+          hotel.TenKhachSan
+        }
+        images={
+          hotel.HinhAnh
+        }
+        onOpen={
+          setGalleryIndex
+        }
+      />
 
-          <button
-            type="button"
-            onClick={() =>
-              navigate(
-                '/hotels'
-              )
-            }
-            className="
-              inline-flex
-              items-center
-              gap-2
-              rounded-xl
-              px-3
-              py-2
-              text-sm
-              font-semibold
-              text-white/90
-              transition
-              hover:bg-white/10
-              hover:text-white
-            "
-          >
-            <i className="ph ph-arrow-left text-lg" />
-
-            Danh sách khách sạn
-          </button>
-
-          <div
-            className="
-              hidden
-              items-center
-              gap-2
-              rounded-full
-              border
-              border-white/15
-              bg-white/10
-              px-3
-              py-1.5
-              text-xs
-              font-semibold
-              text-white/85
-              sm:flex
-            "
-          >
-            <i className="ph ph-shield-check text-base text-cyan-200" />
-
-            Đặt phòng an tâm
-          </div>
-
-        </div>
-
-      </section>
-
-      {/* =====================================================
-          HEADER + GALLERY
-      ===================================================== */}
-
-      <div className="bg-white">
-
-        <HotelHeader
-          hotel={hotel}
-          onShare={
-            shareHotel
-          }
-        />
-
-        <HotelGallery
-          hotelName={
-            hotel.TenKhachSan
-          }
-          images={
-            hotel.HinhAnh
-          }
-          onOpen={
-            setGalleryIndex
-          }
-        />
-
-      </div>
-
-      {/* =====================================================
-          GALLERY DIALOG
-      ===================================================== */}
+      {/* ===================================================
+          FULL GALLERY
+      =================================================== */}
 
       <HotelGalleryDialog
         hotelName={
@@ -806,14 +748,13 @@ export default function HotelDetailPage() {
         }
       />
 
-      {/* =====================================================
-          MOBILE BOOKING BAR
-      ===================================================== */}
+      {/* ===================================================
+          MOBILE BOOKING SUMMARY
+      =================================================== */}
 
       {selectedRoomLines.length >
         0 &&
         !bookingPanelVisible && (
-
           <MobileBookingBar
             roomCount={
               selectedRoomCount
@@ -827,54 +768,9 @@ export default function HotelDetailPage() {
           />
         )}
 
-      {/* =====================================================
-          TRUST STRIP
-      ===================================================== */}
-
-      <div
-        className="
-          border-y
-          border-border
-          bg-white
-        "
-      >
-
-        <div
-          className="
-            page-container
-            grid
-            grid-cols-1
-            gap-3
-            py-4
-            sm:grid-cols-3
-          "
-        >
-
-          <HotelBenefit
-            icon="ph-currency-circle-dollar"
-            title="Giá rõ ràng"
-            description="Kiểm tra báo giá trước khi xác nhận."
-          />
-
-          <HotelBenefit
-            icon="ph-shield-check"
-            title="Đặt phòng an tâm"
-            description="Thông tin được quản lý trong tài khoản."
-          />
-
-          <HotelBenefit
-            icon="ph-headset"
-            title="Luôn có hỗ trợ"
-            description="Dễ dàng liên hệ khi cần trợ giúp."
-          />
-
-        </div>
-
-      </div>
-
-      {/* =====================================================
+      {/* ===================================================
           SECTION NAV
-      ===================================================== */}
+      =================================================== */}
 
       <HotelSectionNav
         sections={
@@ -888,355 +784,199 @@ export default function HotelDetailPage() {
         }
       />
 
-      {/* =====================================================
+      {/* ===================================================
           MAIN CONTENT
-      ===================================================== */}
+      =================================================== */}
 
-      <main className="page-container py-8 lg:py-10">
+      <div
+        className="
+          page-container
+          py-8
+        "
+      >
+        {/* =================================================
+            1. OVERVIEW
+        ================================================= */}
 
         <div
           className="
-            grid
-            grid-cols-1
-            items-start
-            gap-7
-            lg:grid-cols-12
-            lg:gap-8
+            hotel-detail-content
           "
         >
+          <HotelOverview
+            hotel={hotel}
+          />
+        </div>
 
-          {/* =================================================
-              LEFT CONTENT
-          ================================================= */}
+        {/* =================================================
+            2. AMENITIES
+        ================================================= */}
+
+        <div
+          className="
+            hotel-detail-content
+            mt-8
+          "
+        >
+          <HotelAmenities
+            hotel={hotel}
+          />
+        </div>
+
+        {/* =================================================
+            3. ROOMS + BOOKING
+        ================================================= */}
+
+        <div
+          className="
+            mt-8
+
+            grid
+            grid-cols-1
+
+            gap-8
+
+            items-start
+
+            lg:grid-cols-12
+          "
+        >
+          {/* ===============================================
+              ROOM LIST
+          =============================================== */}
 
           <div
             className="
               hotel-detail-content
-              flex
-              flex-col
-              gap-6
+
               lg:col-span-8
             "
           >
+            <RoomList
+              search={{
+                checkIn,
+                checkOut,
+                guests,
+              }}
 
-            {/* Rooms */}
+              onSearch={
+                onDatesSubmit
+              }
 
-            <div
-              className="
-                overflow-hidden
-                rounded-[24px]
-                border
-                border-border
-                bg-white
-                p-4
-                shadow-sm
-                sm:p-5
-              "
-            >
-              <RoomList
-                search={{
-                  checkIn,
-                  checkOut,
-                  guests,
-                }}
-                onSearch={
-                  onDatesSubmit
-                }
-                roomsQuery={
-                  roomsQuery
-                }
-                selectedRooms={
-                  selectedRooms
-                }
-                onQuantityChange={
-                  setRoomQuantity
-                }
-              />
-            </div>
+              roomsQuery={
+                roomsQuery
+              }
 
-            {/* Overview */}
+              selectedRooms={
+                selectedRooms
+              }
 
-            <div
-              className="
-                overflow-hidden
-                rounded-[24px]
-                border
-                border-border
-                bg-white
-                p-5
-                shadow-sm
-                sm:p-6
-              "
-            >
-              <HotelOverview
-                hotel={
-                  hotel
-                }
-              />
-            </div>
-
-            {/* Amenities */}
-
-            <div
-              className="
-                overflow-hidden
-                rounded-[24px]
-                border
-                border-border
-                bg-white
-                p-5
-                shadow-sm
-                sm:p-6
-              "
-            >
-              <HotelAmenities
-                hotel={
-                  hotel
-                }
-              />
-            </div>
-
+              onQuantityChange={
+                setRoomQuantity
+              }
+            />
           </div>
 
-          {/* =================================================
+          {/* ===============================================
               BOOKING PANEL
-          ================================================= */}
+          =============================================== */}
 
-          <aside
+          <div
             className="
               relative
+
               lg:col-span-4
             "
           >
+            <BookingPanel
+              roomTypeCount={
+                selectedRoomLines.length
+              }
 
-            <div
-              className="
-                overflow-hidden
-                rounded-[24px]
-                border
-                border-border
-                bg-white
-                shadow-lg
-              "
-            >
+              roomCount={
+                selectedRoomCount
+              }
 
-              {/* Panel heading */}
+              quoteQuery={
+                quoteQuery
+              }
 
-              <div
-                className="
-                  border-b
-                  border-border
-                  bg-gradient-to-r
-                  from-[#eef9ff]
-                  to-white
-                  px-5
-                  py-4
-                "
-              >
+              quoteMatchesSelection={
+                quoteMatchesSelection
+              }
 
-                <div className="flex items-center gap-3">
+              quoteMatchesPromo={
+                quoteMatchesPromo
+              }
 
-                  <div
-                    className="
-                      grid
-                      h-10
-                      w-10
-                      place-items-center
-                      rounded-xl
-                      bg-primary
-                      text-white
-                      shadow-sm
-                    "
-                  >
-                    <i className="ph ph-calendar-check text-xl" />
-                  </div>
+              promoCode={
+                promoCode
+              }
 
-                  <div>
+              onPromoCodeChange={
+                changePromoCode
+              }
 
-                    <span
-                      className="
-                        block
-                        text-[10px]
-                        font-extrabold
-                        uppercase
-                        tracking-[0.12em]
-                        text-primary
-                      "
-                    >
-                      EGODE
-                    </span>
+              onApplyPromo={
+                applyPromo
+              }
 
-                    <h2
-                      className="
-                        m-0
-                        text-base
-                        font-extrabold
-                        text-ink
-                      "
-                    >
-                      Thông tin đặt phòng
-                    </h2>
+              note={
+                ghiChu
+              }
 
-                  </div>
+              onNoteChange={
+                setGhiChu
+              }
 
-                </div>
+              bookingError={
+                bookingMutation.isError
+                  ? bookingMutation.error
+                  : null
+              }
 
-              </div>
+              isBooking={
+                bookingMutation.isPending
+              }
 
-              <div className="p-1">
+              isSignedIn={
+                Boolean(
+                  accessToken
+                )
+              }
 
-                <BookingPanel
-                  roomTypeCount={
-                    selectedRoomLines.length
+              isCustomer={
+                role ===
+                ROLE_NAMES.CUSTOMER
+              }
+
+              onSignIn={() =>
+                navigate(
+                  '/login',
+
+                  {
+                    state: {
+                      from: {
+                        pathname:
+                          `/hotels/${hotelId}`,
+
+                        search:
+                          window
+                            .location
+                            .search,
+                      },
+                    },
                   }
-                  roomCount={
-                    selectedRoomCount
-                  }
-                  quoteQuery={
-                    quoteQuery
-                  }
-                  quoteMatchesSelection={
-                    quoteMatchesSelection
-                  }
-                  quoteMatchesPromo={
-                    quoteMatchesPromo
-                  }
-                  promoCode={
-                    promoCode
-                  }
-                  onPromoCodeChange={
-                    changePromoCode
-                  }
-                  onApplyPromo={
-                    applyPromo
-                  }
-                  note={
-                    ghiChu
-                  }
-                  onNoteChange={
-                    setGhiChu
-                  }
-                  bookingError={
-                    bookingMutation.isError
-                      ? bookingMutation.error
-                      : null
-                  }
-                  isBooking={
-                    bookingMutation.isPending
-                  }
-                  isSignedIn={
-                    Boolean(
-                      accessToken
-                    )
-                  }
-                  isCustomer={
-                    role ===
-                    ROLE_NAMES.CUSTOMER
-                  }
-                  onSignIn={() =>
-                    navigate(
-                      '/login',
-                      {
-                        state: {
-                          from: {
-                            pathname:
-                              `/hotels/${hotelId}`,
+                )
+              }
 
-                            search:
-                              window.location.search,
-                          },
-                        },
-                      }
-                    )
-                  }
-                  onBook={
-                    confirmBooking
-                  }
-                />
-
-              </div>
-
-            </div>
-
-          </aside>
-
+              onBook={
+                confirmBooking
+              }
+            />
+          </div>
         </div>
-
-      </main>
-
-    </div>
-  );
-}
-
-/* =========================================================
-   BENEFIT
-========================================================= */
-
-function HotelBenefit({
-  icon,
-  title,
-  description,
-}: {
-  icon: string;
-  title: string;
-  description: string;
-}) {
-  return (
-    <div
-      className="
-        flex
-        items-center
-        gap-3
-        rounded-2xl
-        px-3
-        py-2
-      "
-    >
-
-      <div
-        className="
-          grid
-          h-10
-          w-10
-          shrink-0
-          place-items-center
-          rounded-xl
-          bg-primary-50
-          text-primary
-        "
-      >
-        <i
-          className={`ph ${icon} text-xl`}
-        />
       </div>
-
-      <div>
-
-        <h3
-          className="
-            m-0
-            text-sm
-            font-bold
-            text-ink
-          "
-        >
-          {title}
-        </h3>
-
-        <p
-          className="
-            m-0
-            mt-0.5
-            text-xs
-            leading-5
-            text-ink-muted
-          "
-        >
-          {description}
-        </p>
-
-      </div>
-
     </div>
   );
 }
