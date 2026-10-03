@@ -1,4 +1,5 @@
 import { getPrismaClient } from '../../config/prisma';
+import { AppError } from '../../common/errors/app-error';
 import { Prisma } from '../../generated/prisma/client';
 import { HOTEL_STATUS, ROOM_TYPE_STATUS, ROOM_RATE_STATUS, BOOKING_STATUS } from '../../common/constants/hotel-status';
 import { CANCELLATION_POLICY_STATUS } from '../../common/constants/commercial';
@@ -17,6 +18,31 @@ export interface BookedRow {
   NgayNhanPhong: Date;
   NgayTraPhong: Date;
 }
+
+/** A KHUYEN_MAI row read under usp_KhoaKhuyenMaiChoDatPhong's lock, plus its non-cancelled usage count at that moment. */
+export interface LockedPromotion {
+  MaKhuyenMai: number;
+  MaCode: string;
+  LoaiGiamGia: string;
+  GiaTriGiam: number;
+  GiaTriDonToiThieu: number;
+  MucGiamToiDa: number;
+  SoLuongGioiHan: number;
+  NgayBatDau: Date;
+  NgayKetThuc: Date;
+  TrangThai: string;
+  DaDung: number;
+}
+
+/** THROW numbers raised by usp_KhoaKhuyenMaiChoDatPhong (database/migrations/008_promotion_booking_lock.sql). */
+const PROMOTION_SQL_ERROR = { NOT_FOUND: 50011, EXHAUSTED: 50012 } as const;
+
+/** The SQL Server error number behind a failed raw query, or null if it is not one. */
+const sqlErrorNumber = (err: unknown): number | null => {
+  if (!(err instanceof Prisma.PrismaClientKnownRequestError) || err.code !== 'P2010') return null;
+  const cause = (err.meta as { driverAdapterError?: { cause?: { code?: unknown } } } | undefined)?.driverAdapterError?.cause;
+  return typeof cause?.code === 'number' ? cause.code : null;
+};
 
 export interface InsertBookingData {
   maXacNhanDatPhong: string;
@@ -106,12 +132,30 @@ export class BookingsRepository {
     }));
   }
 
-  async findPromotionByCode(tx: Prisma.TransactionClient, maCode: string) {
-    return tx.kHUYEN_MAI.findUnique({ where: { MaCode: maCode } });
-  }
-
-  async countPromotionUsage(tx: Prisma.TransactionClient, maKhuyenMai: number): Promise<number> {
-    return tx.dAT_PHONG.count({ where: { MaKhuyenMai: maKhuyenMai, TrangThai: { not: BOOKING_STATUS.CANCELLED } } });
+  /**
+   * First step of a booking that uses a promo code (BUG-001). Calls
+   * usp_KhoaKhuyenMaiChoDatPhong, which — inside THIS transaction — locks the
+   * promo's KHUYEN_MAI row (UPDLOCK, HOLDLOCK, ROWLOCK), and only then reads it
+   * and counts its non-cancelled bookings. The lock is held until the booking
+   * transaction ends, so concurrent bookings of the same promo queue here and
+   * each sees every earlier one. Must run BEFORE lockRatesForUpdate (lock order:
+   * KHUYEN_MAI -> QUY_PHONG_GIA -> INSERT). The procedure THROWs when the promo
+   * does not exist or its SoLuongGioiHan is already used up.
+   */
+  async lockPromotionForBooking(tx: Prisma.TransactionClient, maCode: string): Promise<LockedPromotion> {
+    try {
+      const rows = await tx.$queryRaw<LockedPromotion[]>`EXEC dbo.usp_KhoaKhuyenMaiChoDatPhong ${maCode}`;
+      return rows[0];
+    } catch (err) {
+      switch (sqlErrorNumber(err)) {
+        case PROMOTION_SQL_ERROR.NOT_FOUND:
+          throw AppError.badRequest('Mã khuyến mãi không tồn tại');
+        case PROMOTION_SQL_ERROR.EXHAUSTED:
+          throw AppError.badRequest('Mã khuyến mãi đã hết lượt sử dụng');
+        default:
+          throw err;
+      }
+    }
   }
 
   /** Same resolution rule as M4 (oldest still-active policy) — re-read fresh inside the transaction, never trusted from a prior quote. */

@@ -128,6 +128,12 @@ export class BookingsService {
       // blocks this request from seeing the room as available (M6 §2).
       await expireStalePendingBookings(tx);
 
+      // BUG-001 lock order: KHUYEN_MAI -> QUY_PHONG_GIA -> INSERT. The promo row
+      // is locked (and its usage limit enforced) BEFORE the inventory lock, so
+      // bookings that share a promo but not a room type still queue on it.
+      // Bookings without a promo skip this step; the order is never inverted.
+      const lockedPromo = input.promoCode ? await this.repository.lockPromotionForBooking(tx, input.promoCode) : null;
+
       // Everything below is computed fresh from the DB, inside the locked
       // transaction — the client's prior quote (if any) is never trusted.
       const rateRows = await this.repository.lockRatesForUpdate(tx, requestedIds, input.checkIn, input.checkOut);
@@ -179,11 +185,9 @@ export class BookingsService {
       let khuyenMai: BookingResponse['KhuyenMai'] = null;
       let soTienGiam = 0;
 
-      if (input.promoCode) {
-        const promo = await this.repository.findPromotionByCode(tx, input.promoCode);
-        if (!promo) throw AppError.badRequest('Mã khuyến mãi không tồn tại');
-
-        const usedCount = await this.repository.countPromotionUsage(tx, promo.MaKhuyenMai);
+      if (lockedPromo) {
+        const promo = lockedPromo;
+        const usedCount = promo.DaDung;
         const evalResult = evaluatePromotion(
           {
             MaKhuyenMai: promo.MaKhuyenMai,
