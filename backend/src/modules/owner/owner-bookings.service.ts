@@ -1,6 +1,9 @@
 import { AppError } from '../../common/errors/app-error';
 import { OwnerHotelsService } from './owner-hotels.service';
 import { OwnerBookingsRepository } from './owner-bookings.repository';
+import { expireStalePendingBookings } from '../bookings/booking-expiry';
+import { completeFinishedBookings } from '../bookings/booking-completion';
+import { getPrismaClient } from '../../config/prisma';
 import type { OwnerBookingsQuery } from './owner-bookings.schemas';
 
 const toNumber = (value: unknown) => Number(value);
@@ -20,14 +23,28 @@ export class OwnerBookingsService {
     };
   }
 
+  /**
+   * BUG-008: booking status changes lazily (no cron) — a "Chờ thanh toán" booking past its
+   * payment hold becomes "Đã hủy", a "Đã xác nhận" one past check-out becomes "Hoàn tất" —
+   * so every read that shows a status must run the same two sweeps the customer-facing
+   * BookingsService runs, in the same order. Call it only AFTER the ownership check: both
+   * sweeps are system-wide UPDATEs and a rejected request must not trigger them.
+   */
+  private async refreshBookingLifecycle(): Promise<void> {
+    await expireStalePendingBookings(getPrismaClient());
+    await completeFinishedBookings(getPrismaClient());
+  }
+
   async list(ownerId: number, hotelId: number, query: OwnerBookingsQuery) {
     await this.hotels.getOwnedHotel(ownerId, hotelId);
+    await this.refreshBookingLifecycle();
     const { items, total } = await this.repository.listForHotel(hotelId, query);
     return { items: items.map((item) => this.map(item)), pagination: { page: query.page, limit: query.limit, total, totalPages: Math.max(1, Math.ceil(total / query.limit)) } };
   }
 
   async getOne(ownerId: number, hotelId: number, bookingId: number) {
     await this.hotels.getOwnedHotel(ownerId, hotelId);
+    await this.refreshBookingLifecycle();
     const booking = await this.repository.findForHotel(hotelId, bookingId);
     if (!booking) throw AppError.notFound('Không tìm thấy đặt phòng thuộc khách sạn này');
     return this.map(booking);
