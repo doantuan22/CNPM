@@ -2,6 +2,13 @@ import { getPrismaClient } from '../../config/prisma';
 import type { Prisma } from '../../generated/prisma/client';
 import type { AdminListSupportQuery } from './support.schemas';
 
+// Detail reads and updates must return the same relations for the admin cache.
+const supportDetailInclude = {
+  DAT_PHONG: { select: { MaDatPhong: true, MaXacNhanDatPhong: true } },
+  TAI_KHOAN_YEU_CAU_HO_TRO_MaTaiKhoanKhachHangToTAI_KHOAN: { select: { MaTaiKhoan: true, HoTen: true, Email: true } },
+  TAI_KHOAN_YEU_CAU_HO_TRO_MaTaiKhoanXuLyToTAI_KHOAN: { select: { MaTaiKhoan: true, HoTen: true } },
+} satisfies Prisma.YEU_CAU_HO_TROInclude;
+
 export interface CreateSupportData {
   maTaiKhoanKhachHang: number;
   maDatPhong: number | null;
@@ -53,11 +60,7 @@ export class SupportRepository {
     const prisma = getPrismaClient();
     return prisma.yEU_CAU_HO_TRO.findUnique({
       where: { MaYeuCauHoTro: maYeuCauHoTro },
-      include: {
-        DAT_PHONG: { select: { MaDatPhong: true, MaXacNhanDatPhong: true } },
-        TAI_KHOAN_YEU_CAU_HO_TRO_MaTaiKhoanKhachHangToTAI_KHOAN: { select: { MaTaiKhoan: true, HoTen: true, Email: true } },
-        TAI_KHOAN_YEU_CAU_HO_TRO_MaTaiKhoanXuLyToTAI_KHOAN: { select: { MaTaiKhoan: true, HoTen: true } },
-      },
+      include: supportDetailInclude,
     });
   }
 
@@ -104,6 +107,7 @@ export class SupportRepository {
         TAI_KHOAN_YEU_CAU_HO_TRO_MaTaiKhoanXuLyToTAI_KHOAN: { connect: { MaTaiKhoan: data.maTaiKhoanXuLy } },
         ...(data.ngayXuLy ? { NgayXuLy: data.ngayXuLy } : {}),
       },
+      include: supportDetailInclude,
     });
   }
 }

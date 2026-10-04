@@ -2,6 +2,14 @@ import { getPrismaClient } from '../../config/prisma';
 import type { Prisma } from '../../generated/prisma/client';
 import type { AdminListReviewsQuery } from './reviews.schemas';
 
+// Moderation responses replace the cached admin detail, so retain all relations.
+const adminReviewDetailInclude = {
+  HINH_ANH_DANH_GIA: true,
+  TAI_KHOAN: { select: { MaTaiKhoan: true, HoTen: true, Email: true } },
+  KHACH_SAN: { select: { MaKhachSan: true, TenKhachSan: true } },
+  DAT_PHONG: { select: { MaDatPhong: true, MaXacNhanDatPhong: true, NgayNhanPhong: true, NgayTraPhong: true } },
+} satisfies Prisma.DANH_GIAInclude;
+
 export interface CreateReviewData {
   maDatPhong: number;
   maKhachHang: number;
@@ -48,12 +56,7 @@ export class ReviewsRepository {
     const prisma = getPrismaClient();
     return prisma.dANH_GIA.findUnique({
       where: { MaDanhGia: maDanhGia },
-      include: {
-        HINH_ANH_DANH_GIA: true,
-        TAI_KHOAN: { select: { MaTaiKhoan: true, HoTen: true, Email: true } },
-        KHACH_SAN: { select: { MaKhachSan: true, TenKhachSan: true } },
-        DAT_PHONG: { select: { MaDatPhong: true, MaXacNhanDatPhong: true, NgayNhanPhong: true, NgayTraPhong: true } },
-      },
+      include: adminReviewDetailInclude,
     });
   }
 
@@ -93,6 +96,10 @@ export class ReviewsRepository {
 
   async updateStatus(maDanhGia: number, trangThai: string) {
     const prisma = getPrismaClient();
-    return prisma.dANH_GIA.update({ where: { MaDanhGia: maDanhGia }, data: { TrangThai: trangThai } });
+    return prisma.dANH_GIA.update({
+      where: { MaDanhGia: maDanhGia },
+      data: { TrangThai: trangThai },
+      include: adminReviewDetailInclude,
+    });
   }
 }

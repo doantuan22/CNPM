@@ -287,12 +287,18 @@ describe('Admin review moderation', () => {
     expect(detail.status).toBe(200);
     expect(detail.body.data.TAI_KHOAN.MaTaiKhoan).toBe(customerId);
 
-    const moderated = await request(app)
-      .patch(`/api/admin/reviews/${reviewId}/moderate`)
-      .set('Authorization', `Bearer ${adminToken}`)
-      .send({ trangThai: REVIEW_STATUS.VIOLATION });
-    expect(moderated.status).toBe(200);
-    expect(moderated.body.data.TrangThai).toBe(REVIEW_STATUS.VIOLATION);
+    for (const trangThai of [REVIEW_STATUS.VISIBLE, REVIEW_STATUS.HIDDEN, REVIEW_STATUS.VIOLATION]) {
+      const moderated = await request(app)
+        .patch(`/api/admin/reviews/${reviewId}/moderate`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ trangThai });
+      expect(moderated.status).toBe(200);
+      expect(moderated.body.data.TrangThai).toBe(trangThai);
+      expect(moderated.body.data.TAI_KHOAN).toEqual(detail.body.data.TAI_KHOAN);
+      expect(moderated.body.data.KHACH_SAN).toEqual(detail.body.data.KHACH_SAN);
+      expect(moderated.body.data.DAT_PHONG).toEqual(detail.body.data.DAT_PHONG);
+      expect(moderated.body.data.HINH_ANH_DANH_GIA).toEqual(detail.body.data.HINH_ANH_DANH_GIA);
+    }
   });
 
   it('admin can filter the list by star score', async () => {

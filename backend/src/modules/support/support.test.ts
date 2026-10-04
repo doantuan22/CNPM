@@ -183,11 +183,12 @@ describe('Admin support handling', () => {
     expect(list.status).toBe(403);
   });
 
-  it('admin lists all requests (filter by TrangThai/LoaiYeuCau), views detail, claims, then resolves it', async () => {
+  it.each([false, true])('admin claims and resolves a request with complete detail relations (linked booking: %s)', async (linkedBooking) => {
+    const booking = linkedBooking ? await makeBooking() : null;
     const created = await request(app)
       .post('/api/support')
       .set('Authorization', `Bearer ${customerToken}`)
-      .send({ loaiYeuCau: SUPPORT_TYPE.COMPLAINT, tieuDe: 'Cần xử lý', noiDung: 'Chi tiết khiếu nại' });
+      .send({ loaiYeuCau: SUPPORT_TYPE.COMPLAINT, tieuDe: 'Cần xử lý', noiDung: 'Chi tiết khiếu nại', ...(booking ? { maDatPhong: booking.MaDatPhong } : {}) });
     const id = created.body.data.MaYeuCauHoTro;
 
     const list = await request(app)
@@ -207,6 +208,9 @@ describe('Admin support handling', () => {
       .send({ trangThai: SUPPORT_STATUS.IN_PROGRESS, maTaiKhoanXuLy: 999999 });
     expect(claim.status).toBe(200);
     expect(claim.body.data.TrangThai).toBe(SUPPORT_STATUS.IN_PROGRESS);
+    expect(claim.body.data.TAI_KHOAN_YEU_CAU_HO_TRO_MaTaiKhoanKhachHangToTAI_KHOAN).toEqual(detail.body.data.TAI_KHOAN_YEU_CAU_HO_TRO_MaTaiKhoanKhachHangToTAI_KHOAN);
+    expect(claim.body.data.TAI_KHOAN_YEU_CAU_HO_TRO_MaTaiKhoanXuLyToTAI_KHOAN).toMatchObject({ MaTaiKhoan: adminId, HoTen: expect.any(String) });
+    expect(claim.body.data.DAT_PHONG).toEqual(detail.body.data.DAT_PHONG);
 
     const prisma = getPrismaClient();
     const afterClaim = await prisma.yEU_CAU_HO_TRO.findUnique({ where: { MaYeuCauHoTro: id } });
@@ -227,6 +231,9 @@ describe('Admin support handling', () => {
     expect(resolve.body.data.TrangThai).toBe(SUPPORT_STATUS.RESOLVED);
     expect(resolve.body.data.KetQuaXuLy).toBe('Đã hoàn tiền cho khách.');
     expect(resolve.body.data.NgayXuLy).not.toBeNull();
+    expect(resolve.body.data.TAI_KHOAN_YEU_CAU_HO_TRO_MaTaiKhoanKhachHangToTAI_KHOAN).toEqual(detail.body.data.TAI_KHOAN_YEU_CAU_HO_TRO_MaTaiKhoanKhachHangToTAI_KHOAN);
+    expect(resolve.body.data.TAI_KHOAN_YEU_CAU_HO_TRO_MaTaiKhoanXuLyToTAI_KHOAN).toEqual(claim.body.data.TAI_KHOAN_YEU_CAU_HO_TRO_MaTaiKhoanXuLyToTAI_KHOAN);
+    expect(resolve.body.data.DAT_PHONG).toEqual(detail.body.data.DAT_PHONG);
 
     // Immutable once resolved.
     const reopenAttempt = await request(app)
